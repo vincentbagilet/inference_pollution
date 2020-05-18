@@ -1,6 +1,15 @@
 ---
 title: "Download pollution data"
-output: html_notebook
+output: 
+  html_notebook: 
+    toc: yes
+    theme: simplex
+    highlight: pygments
+  html_document:
+    theme: simplex
+    highlight: pygments
+author: "Vincent Bagilet"
+date: "May 18, 2020"
 ---
 
 # Data description and access
@@ -13,8 +22,6 @@ The process to access the data is as follows:
 parameters can be left blank to access all the values for this parameter (here `CityName` is left blank. 
 - This URL leads to the right URL to get the data (year by year)
 
-# Packages and so on
-
 ```{r setup, include=FALSE, results='hide', warning=FALSE}
 library(knitr)
 opts_chunk$set(fig.path = "images/",
@@ -25,13 +32,13 @@ opts_chunk$set(fig.path = "images/",
                warning = FALSE)  
 ```  
 
-```{r}
+```{r include=FALSE}
 library(tidyverse)
 library(httr)
 library(lubridate)
 ```
 
-# Downloading the data
+# Observational data
 
 First, generate a request URL with desired parameter values. It will provides a set of URLs to access the data. Then, store the list of URLs it in a vector. Finally, access all the URLs and merge the outputs to get a unique data frame.
 
@@ -39,7 +46,7 @@ First, generate a request URL with desired parameter values. It will provides a 
 
 ```{r}
 download_pollution <- function(country = "", city = "", pollutant = "", begin = "", end = "") {
-  request_url <- str_c("https://fme.discomap.eea.europa.eu/fmedatastreaming/AirQualityDownload/AQData_Extract.fmw?CountryCode=",  country, "&CityName=", city, "&Pollutant=", pollutant, "&Year_from=", begin,"&Year_to=", end, "&Station=&Samplingpoint=&Source=E1a&Output=TEXT&UpdateDate=&TimeCoverage=Year")
+  request_url <- str_c("https://fme.discomap.eea.europa.eu/fmedatastreaming/AirQualityDownload/AQData_Extract.fmw?CountryCode=",  country, "&CityName=", city, "&Pollutant=", pollutant, "&Year_from=", begin,"&Year_to=", end, "&Station=&Samplingpoint=&Source=All&Output=TEXT&UpdateDate=&TimeCoverage=Year")
 
   vector_urls <- GET(request_url) %>% 
     content(as = "text") %>% 
@@ -61,7 +68,7 @@ download_pollution <- function(country = "", city = "", pollutant = "", begin = 
 ## Download
 
 ```{r message=FALSE}
-whole_data <- download_pollution(country = "FR", city = "Paris", pollutant = "5018", begin = 2013, end = 2020)
+data_whole <- download_pollution(country = "FR", city = "Paris", pollutant = "5018", begin = 2013, end = 2020)
 ```
 
 # Cleaning the data
@@ -71,7 +78,7 @@ There are several units of measurement, I convert everything in $\mu g/m^3$.
 For now, I assume that we only need a limited subset of variables (AirPollutant, AirQualityStation, Concentration, DatetimeBegin and DatetimeEnd)
 
 ```{r}
-data_clean <- whole_data %>% 
+data_clean <- data_whole %>% 
   mutate(
     Concentration = ifelse(UnitOfMeasurement == "ng/m3", Concentration*1000, Concentration),
     DatetimeBegin = as_datetime(DatetimeBegin),
@@ -82,6 +89,38 @@ data_clean <- whole_data %>%
 
 
 # Covariates
+
+## Downloading covariates
+
+The metadata file is updated daily and can be access through the data website.
+
+```{r}
+temp <- tempfile()
+download.file("https://discomap.eea.europa.eu/map/fme/metadata/PanEuropean_metadata.csv", temp)
+metadata_whole <- read_delim(temp, "\t", escape_double = FALSE, trim_ws = TRUE)
+```
+
+## Cleaning covariates
+
+- For now, we are only working with France. 
+- I assume that we only need a couple of covariates (AirQualityStation, Longitude, Latitude, Altitude, AirQualityStationType). 
+- I still need to look at why some variables change in time.
+
+```{r}
+metadata_clean <- metadata_whole %>% 
+  filter(Countrycode == "FR") %>% 
+  select(AirQualityStation, Longitude, Latitude, Altitude, AirQualityStationType)
+```
+
+# Merge and export
+
+```{r}
+pollution_data <- data_clean %>% 
+  left_join(metadata_clean)
+
+save(pollution_data, file = "../Outputs/pollution_data.Rda")
+```
+
 
 
 
