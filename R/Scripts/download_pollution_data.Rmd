@@ -42,17 +42,30 @@ library(lubridate)
 
 First, generate a request URL with desired parameter values. It will provides a set of URLs to access the data. Then, store the list of URLs it in a vector. Finally, access all the URLs and merge the outputs to get a unique data frame.
 
-## Function
+## Functions
 
 ```{r}
-download_pollution <- function(country = "", city = "", pollutant = "", begin = "", end = "") {
-  request_url <- str_c("https://fme.discomap.eea.europa.eu/fmedatastreaming/AirQualityDownload/AQData_Extract.fmw?CountryCode=",  country, "&CityName=", city, "&Pollutant=", pollutant, "&Year_from=", begin,"&Year_to=", end, "&Station=&Samplingpoint=&Source=All&Output=TEXT&UpdateDate=&TimeCoverage=Year")
+get_urls <- function(country = "", cities = "", pollutants = "", begin = "", end = "") {
+ 
+  vector_urls <- NULL
+  
+  for (city in cities) {
+    for (pollutant in pollutants) {
+      request_url <- str_c("https://fme.discomap.eea.europa.eu/fmedatastreaming/AirQualityDownload/AQData_Extract.fmw?CountryCode=",  country, "&CityName=", city, "&Pollutant=", pollutant, "&Year_from=", begin,"&Year_to=", end, "&Station=&Samplingpoint=&Source=All&Output=TEXT&UpdateDate=&TimeCoverage=Year")
+      
+      vector_urls <- GET(request_url) %>% 
+        content(as = "text") %>% 
+        str_split("\r\n") %>% 
+        as_vector() %>% 
+        head(-1) %>% #last value empty: delete
+        c(vector_urls, .)
+    }
+  }
+  return(vector_urls)
+}
 
-  vector_urls <- GET(request_url) %>% 
-    content(as = "text") %>% 
-    str_split("\r\n") %>% 
-    as_vector() %>% 
-    head(-1) #last value empty: delete
+download_pollution <- function(country = "", cities = "", pollutants = "", begin = "", end = "") {
+  vector_urls <- get_urls(country, cities, pollutants, begin, end)
 
   data <- NULL
   for (url in vector_urls) {
@@ -67,8 +80,10 @@ download_pollution <- function(country = "", city = "", pollutant = "", begin = 
 
 ## Download
 
+Note: I do not know if it would not be quicker to download the whole data set for France and to filter it out after with the cities and pollutants we want. That would avoid enable to get only one request url and not. But it would require to download a much larger number of datasets. To do that, no need to change the code, only put `cities = ""` and `pollutants = ""`.
+
 ```{r message=FALSE}
-data_whole <- download_pollution(country = "FR", city = "Paris", pollutant = "5018", begin = 2013, end = 2020)
+data_whole <- download_pollution(country = "FR", cities = c("Paris", "Marseille"), pollutants = "5018", begin = 2013, end = 2020)
 ```
 
 # Cleaning the data
