@@ -1,0 +1,78 @@
+---
+title: "Download pollution data"
+output: html_notebook
+---
+
+# Data description and access
+
+This document contains the code used to download the data on air pollution. The data comes from the European Environment agency and is accessible through this URL: https://discomap.eea.europa.eu/map/fme/AirQualityExport.htm. The web page contains information on how to download the data. 
+
+The process to access the data is as follows:
+
+- Write a simple request URL taking the form: https://fme.discomap.eea.europa.eu/fmedatastreaming/AirQualityDownload/AQData_Extract.fmw?CountryCode=FR&CityName=&Pollutant=5018&Year_from=2020&Year_to=2020&Station=&Samplingpoint=&Source=E1a&Output=HTML&UpdateDate=&TimeCoverage=Year. Note that
+parameters can be left blank to access all the values for this parameter (here `CityName` is left blank. 
+- This URL leads to the right URL to get the data (year by year)
+
+# Packages and so on
+
+```{r setup, include=FALSE, results='hide', warning=FALSE}
+library(knitr)
+opts_chunk$set(fig.path = "images/",
+               cache.path = "cache/",
+               cache = FALSE,
+               echo = TRUE,
+               message = FALSE,
+               warning = FALSE)  
+```  
+
+```{r}
+library(tidyverse)
+library(httr)
+```
+
+# Example for Paris
+
+Before putting everything in functions, I tried out for one city, Paris.
+
+First, generate a request URL with desired parameter values. It will provides a set of URLs to access the data. We store the list of URLs it in a vector.
+
+```{r}
+country <- "FR"
+city <- "Paris"
+pollutant <- ""
+begin <- "2018"
+end <- "2020"
+
+url <- str_c("https://fme.discomap.eea.europa.eu/fmedatastreaming/AirQualityDownload/AQData_Extract.fmw?CountryCode=",  country, "&CityName=", city, "&Pollutant=", pollutant, "&Year_from=", begin,"&Year_to=", end, "&Station=&Samplingpoint=&Source=E1a&Output=TEXT&UpdateDate=&TimeCoverage=Year")
+
+urls_paris <- GET(url) %>% 
+  content(as = "text") %>% 
+  str_split("\r\n") %>% 
+  as_vector() %>% 
+  head(-1) #last value empty: delete
+```
+
+Then, access all the URLs and merge the outputs to get a unique data frame.
+
+```{r results = 'hide'}
+#only consider first data sets
+subset_url <- urls_paris %>%
+  head(10)
+
+data <- NULL
+for (url in subset_url) {
+  temp <- tempfile()
+  download.file(url, temp)
+  data <- data %>% 
+    rbind(read_csv(temp))
+}
+```
+
+
+
+
+
+
+
+
+
