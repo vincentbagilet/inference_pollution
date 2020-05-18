@@ -28,48 +28,60 @@ opts_chunk$set(fig.path = "images/",
 ```{r}
 library(tidyverse)
 library(httr)
+library(lubridate)
 ```
 
-# Example for Paris
+# Downloading the data
 
-Before putting everything in functions, I tried out for one city, Paris.
+First, generate a request URL with desired parameter values. It will provides a set of URLs to access the data. Then, store the list of URLs it in a vector. Finally, access all the URLs and merge the outputs to get a unique data frame.
 
-First, generate a request URL with desired parameter values. It will provides a set of URLs to access the data. We store the list of URLs it in a vector.
+## Function
 
 ```{r}
-country <- "FR"
-city <- "Paris"
-pollutant <- ""
-begin <- "2018"
-end <- "2020"
+download_pollution <- function(country = "", city = "", pollutant = "", begin = "", end = "") {
+  request_url <- str_c("https://fme.discomap.eea.europa.eu/fmedatastreaming/AirQualityDownload/AQData_Extract.fmw?CountryCode=",  country, "&CityName=", city, "&Pollutant=", pollutant, "&Year_from=", begin,"&Year_to=", end, "&Station=&Samplingpoint=&Source=E1a&Output=TEXT&UpdateDate=&TimeCoverage=Year")
 
-url <- str_c("https://fme.discomap.eea.europa.eu/fmedatastreaming/AirQualityDownload/AQData_Extract.fmw?CountryCode=",  country, "&CityName=", city, "&Pollutant=", pollutant, "&Year_from=", begin,"&Year_to=", end, "&Station=&Samplingpoint=&Source=E1a&Output=TEXT&UpdateDate=&TimeCoverage=Year")
+  vector_urls <- GET(request_url) %>% 
+    content(as = "text") %>% 
+    str_split("\r\n") %>% 
+    as_vector() %>% 
+    head(-1) #last value empty: delete
 
-urls_paris <- GET(url) %>% 
-  content(as = "text") %>% 
-  str_split("\r\n") %>% 
-  as_vector() %>% 
-  head(-1) #last value empty: delete
-```
-
-Then, access all the URLs and merge the outputs to get a unique data frame.
-
-```{r results = 'hide'}
-#only consider first data sets
-subset_url <- urls_paris %>%
-  head(10)
-
-data <- NULL
-for (url in subset_url) {
-  temp <- tempfile()
-  download.file(url, temp)
-  data <- data %>% 
-    rbind(read_csv(temp))
+  data <- NULL
+  for (url in vector_urls) {
+    temp <- tempfile()
+    download.file(url, temp)
+    data <- data %>% 
+      rbind(read_csv(temp))
+  }
+  return(data)
 }
 ```
 
+## Download
+
+```{r message=FALSE}
+whole_data <- download_pollution(country = "FR", city = "Paris", pollutant = "5018", begin = 2013, end = 2020)
+```
+
+# Cleaning the data
+
+There are several units of measurement, I convert everything in $\mu g/m^3$.
+
+For now, I assume that we only need a limited subset of variables (AirPollutant, AirQualityStation, Concentration, DatetimeBegin and DatetimeEnd)
+
+```{r}
+data_clean <- whole_data %>% 
+  mutate(
+    Concentration = ifelse(UnitOfMeasurement == "ng/m3", Concentration*1000, Concentration),
+    DatetimeBegin = as_datetime(DatetimeBegin),
+    DatetimeEnd = as_datetime(DatetimeEnd)
+  ) %>% 
+  select("AirPollutant", "AirQualityStation", "Concentration", "DatetimeBegin", "DatetimeEnd")
+```
 
 
+# Covariates
 
 
 

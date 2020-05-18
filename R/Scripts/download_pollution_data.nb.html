@@ -1771,38 +1771,71 @@ library(httr)</code></pre>
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 </div>
-<div id="example-for-paris" class="section level1">
-<h1>Example for Paris</h1>
-<p>Before putting everything in functions, I tried out for one city, Paris.</p>
-<p>First, generate a request URL with desired parameter values. It will provides a set of URLs to access the data. We store the list of URLs it in a vector.</p>
+<div id="downloading-the-data" class="section level1">
+<h1>Downloading the data</h1>
+<p>First, generate a request URL with desired parameter values. It will provides a set of URLs to access the data. Then, store the list of URLs it in a vector. Finally, access all the URLs and merge the outputs to get a unique data frame.</p>
+<div id="function" class="section level2">
+<h2>Function</h2>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY291bnRyeSA8LSBcIkZSXCJcbmNpdHkgPC0gXCJQYXJpc1wiXG5wb2xsdXRhbnQgPC0gXCJcIlxuYmVnaW4gPC0gXCIyMDE4XCJcbmVuZCA8LSBcIjIwMjBcIlxuXG51cmwgPC0gc3RyX2MoXCJodHRwczovL2ZtZS5kaXNjb21hcC5lZWEuZXVyb3BhLmV1L2ZtZWRhdGFzdHJlYW1pbmcvQWlyUXVhbGl0eURvd25sb2FkL0FRRGF0YV9FeHRyYWN0LmZtdz9Db3VudHJ5Q29kZT1cIiwgIGNvdW50cnksIFwiJkNpdHlOYW1lPVwiLCBjaXR5LCBcIiZQb2xsdXRhbnQ9XCIsIHBvbGx1dGFudCwgXCImWWVhcl9mcm9tPVwiLCBiZWdpbixcIiZZZWFyX3RvPVwiLCBlbmQsIFwiJlN0YXRpb249JlNhbXBsaW5ncG9pbnQ9JlNvdXJjZT1FMWEmT3V0cHV0PVRFWFQmVXBkYXRlRGF0ZT0mVGltZUNvdmVyYWdlPVllYXJcIilcblxudXJsc19wYXJpcyA8LSBHRVQodXJsKSAlPiUgXG4gIGNvbnRlbnQoYXMgPSBcInRleHRcIikgJT4lIFxuICBzdHJfc3BsaXQoXCJcXHJcXG5cIikgJT4lIFxuICBhc192ZWN0b3IoKSAlPiUgXG4gIGhlYWQoLTEpICNsYXN0IHZhbHVlIGVtcHR5OiBkZWxldGVcbmBgYCJ9 -->
-<pre class="r"><code>country &lt;- &quot;FR&quot;
-city &lt;- &quot;Paris&quot;
-pollutant &lt;- &quot;&quot;
-begin &lt;- &quot;2018&quot;
-end &lt;- &quot;2020&quot;
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZG93bmxvYWRfcG9sbHV0aW9uIDwtIGZ1bmN0aW9uKGNvdW50cnkgPSBcIlwiLCBjaXR5ID0gXCJcIiwgcG9sbHV0YW50ID0gXCJcIiwgYmVnaW4gPSBcIlwiLCBlbmQgPSBcIlwiKSB7XG4gIHJlcXVlc3RfdXJsIDwtIHN0cl9jKFwiaHR0cHM6Ly9mbWUuZGlzY29tYXAuZWVhLmV1cm9wYS5ldS9mbWVkYXRhc3RyZWFtaW5nL0FpclF1YWxpdHlEb3dubG9hZC9BUURhdGFfRXh0cmFjdC5mbXc/Q291bnRyeUNvZGU9XCIsICBjb3VudHJ5LCBcIiZDaXR5TmFtZT1cIiwgY2l0eSwgXCImUG9sbHV0YW50PVwiLCBwb2xsdXRhbnQsIFwiJlllYXJfZnJvbT1cIiwgYmVnaW4sXCImWWVhcl90bz1cIiwgZW5kLCBcIiZTdGF0aW9uPSZTYW1wbGluZ3BvaW50PSZTb3VyY2U9RTFhJk91dHB1dD1URVhUJlVwZGF0ZURhdGU9JlRpbWVDb3ZlcmFnZT1ZZWFyXCIpXG5cbiAgdmVjdG9yX3VybHMgPC0gR0VUKHJlcXVlc3RfdXJsKSAlPiUgXG4gICAgY29udGVudChhcyA9IFwidGV4dFwiKSAlPiUgXG4gICAgc3RyX3NwbGl0KFwiXFxyXFxuXCIpICU+JSBcbiAgICBhc192ZWN0b3IoKSAlPiUgXG4gICAgaGVhZCgtMSkgI2xhc3QgdmFsdWUgZW1wdHk6IGRlbGV0ZVxuXG4gIGRhdGEgPC0gTlVMTFxuICBmb3IgKHVybCBpbiB2ZWN0b3JfdXJscykge1xuICAgIHRlbXAgPC0gdGVtcGZpbGUoKVxuICAgIGRvd25sb2FkLmZpbGUodXJsLCB0ZW1wKVxuICAgIGRhdGEgPC0gZGF0YSAlPiUgXG4gICAgICByYmluZChyZWFkX2Nzdih0ZW1wKSlcbiAgfVxuICByZXR1cm4oZGF0YSlcbn1cbmBgYCJ9 -->
+<pre class="r"><code>download_pollution &lt;- function(country = &quot;&quot;, city = &quot;&quot;, pollutant = &quot;&quot;, begin = &quot;&quot;, end = &quot;&quot;) {
+  request_url &lt;- str_c(&quot;https://fme.discomap.eea.europa.eu/fmedatastreaming/AirQualityDownload/AQData_Extract.fmw?CountryCode=&quot;,  country, &quot;&amp;CityName=&quot;, city, &quot;&amp;Pollutant=&quot;, pollutant, &quot;&amp;Year_from=&quot;, begin,&quot;&amp;Year_to=&quot;, end, &quot;&amp;Station=&amp;Samplingpoint=&amp;Source=E1a&amp;Output=TEXT&amp;UpdateDate=&amp;TimeCoverage=Year&quot;)
 
-url &lt;- str_c(&quot;https://fme.discomap.eea.europa.eu/fmedatastreaming/AirQualityDownload/AQData_Extract.fmw?CountryCode=&quot;,  country, &quot;&amp;CityName=&quot;, city, &quot;&amp;Pollutant=&quot;, pollutant, &quot;&amp;Year_from=&quot;, begin,&quot;&amp;Year_to=&quot;, end, &quot;&amp;Station=&amp;Samplingpoint=&amp;Source=E1a&amp;Output=TEXT&amp;UpdateDate=&amp;TimeCoverage=Year&quot;)
+  vector_urls &lt;- GET(request_url) %&gt;% 
+    content(as = &quot;text&quot;) %&gt;% 
+    str_split(&quot;\r\n&quot;) %&gt;% 
+    as_vector() %&gt;% 
+    head(-1) #last value empty: delete
 
-urls_paris &lt;- GET(url) %&gt;% 
-  content(as = &quot;text&quot;) %&gt;% 
-  str_split(&quot;\r\n&quot;) %&gt;% 
-  as_vector() %&gt;% 
-  head(-1) #last value empty: delete</code></pre>
+  data &lt;- NULL
+  for (url in vector_urls) {
+    temp &lt;- tempfile()
+    download.file(url, temp)
+    data &lt;- data %&gt;% 
+      rbind(read_csv(temp))
+  }
+  return(data)
+}</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>Then, access all the URLs and merge the outputs to get a unique data frame.</p>
+</div>
+<div id="download" class="section level2">
+<h2>Download</h2>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxud2hvbGVfZGF0YSA8LSBkb3dubG9hZF9wb2xsdXRpb24oY291bnRyeSA9IFwiRlJcIiwgY2l0eSA9IFwiUGFyaXNcIiwgcG9sbHV0YW50ID0gXCI1MDE4XCIsIGJlZ2luID0gMjAxMywgZW5kID0gMjAyMClcbmBgYCJ9 -->
+<pre class="r"><code>whole_data &lt;- download_pollution(country = &quot;FR&quot;, city = &quot;Paris&quot;, pollutant = &quot;5018&quot;, begin = 2013, end = 2020)</code></pre>
+<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
+</div>
+</div>
+<div id="cleaning-the-data" class="section level1">
+<h1>Cleaning the data</h1>
+<p>There are several units of measurement, I convert everything in <span class="math inline">\(\mu g/m^3\)</span>.</p>
+<p>For now, I assume that we only need a limited subset of variables (AirPollutant, AirQualityStation, Concentration, DatetimeBegin and DatetimeEnd)</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGF0YV9jbGVhbiA8LSB3aG9sZV9kYXRhICU+JSBcbiAgbXV0YXRlKFxuICAgIENvbmNlbnRyYXRpb24gPSBpZmVsc2UoVW5pdE9mTWVhc3VyZW1lbnQgPT0gXCJuZy9tM1wiLCBDb25jZW50cmF0aW9uKjEwMDAsIENvbmNlbnRyYXRpb24pLFxuICAgIERhdGV0aW1lQmVnaW4gPSBhc19kYXRldGltZShEYXRldGltZUJlZ2luKSxcbiAgICBEYXRldGltZUVuZCA9IGFzX2RhdGV0aW1lKERhdGV0aW1lRW5kKVxuICApICU+JSBcbiAgc2VsZWN0KFwiQWlyUG9sbHV0YW50XCIsIFwiQWlyUXVhbGl0eVN0YXRpb25cIiwgXCJDb25jZW50cmF0aW9uXCIsIFwiRGF0ZXRpbWVCZWdpblwiLCBcIkRhdGV0aW1lRW5kXCIpXG5gYGAifQ== -->
+<pre class="r"><code>data_clean &lt;- whole_data %&gt;% 
+  mutate(
+    Concentration = ifelse(UnitOfMeasurement == &quot;ng/m3&quot;, Concentration*1000, Concentration),
+    DatetimeBegin = as_datetime(DatetimeBegin),
+    DatetimeEnd = as_datetime(DatetimeEnd)
+  ) %&gt;% 
+  select(&quot;AirPollutant&quot;, &quot;AirQualityStation&quot;, &quot;Concentration&quot;, &quot;DatetimeBegin&quot;, &quot;DatetimeEnd&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+<div id="covariates" class="section level1">
+<h1>Covariates</h1>
 <!-- rnb-text-end -->
 </div>
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiRG93bmxvYWQgcG9sbHV0aW9uIGRhdGEiCm91dHB1dDogaHRtbF9ub3RlYm9vawotLS0KCiMgRGF0YSBkZXNjcmlwdGlvbiBhbmQgYWNjZXNzCgpUaGlzIGRvY3VtZW50IGNvbnRhaW5zIHRoZSBjb2RlIHVzZWQgdG8gZG93bmxvYWQgdGhlIGRhdGEgb24gYWlyIHBvbGx1dGlvbi4gVGhlIGRhdGEgY29tZXMgZnJvbSB0aGUgRXVyb3BlYW4gRW52aXJvbm1lbnQgYWdlbmN5IGFuZCBpcyBhY2Nlc3NpYmxlIHRocm91Z2ggdGhpcyBVUkw6IGh0dHBzOi8vZGlzY29tYXAuZWVhLmV1cm9wYS5ldS9tYXAvZm1lL0FpclF1YWxpdHlFeHBvcnQuaHRtLiBUaGUgd2ViIHBhZ2UgY29udGFpbnMgaW5mb3JtYXRpb24gb24gaG93IHRvIGRvd25sb2FkIHRoZSBkYXRhLiAKClRoZSBwcm9jZXNzIHRvIGFjY2VzcyB0aGUgZGF0YSBpcyBhcyBmb2xsb3dzOgoKLSBXcml0ZSBhIHNpbXBsZSByZXF1ZXN0IFVSTCB0YWtpbmcgdGhlIGZvcm06IGh0dHBzOi8vZm1lLmRpc2NvbWFwLmVlYS5ldXJvcGEuZXUvZm1lZGF0YXN0cmVhbWluZy9BaXJRdWFsaXR5RG93bmxvYWQvQVFEYXRhX0V4dHJhY3QuZm13P0NvdW50cnlDb2RlPUZSJkNpdHlOYW1lPSZQb2xsdXRhbnQ9NTAxOCZZZWFyX2Zyb209MjAyMCZZZWFyX3RvPTIwMjAmU3RhdGlvbj0mU2FtcGxpbmdwb2ludD0mU291cmNlPUUxYSZPdXRwdXQ9SFRNTCZVcGRhdGVEYXRlPSZUaW1lQ292ZXJhZ2U9WWVhci4gTm90ZSB0aGF0CnBhcmFtZXRlcnMgY2FuIGJlIGxlZnQgYmxhbmsgdG8gYWNjZXNzIGFsbCB0aGUgdmFsdWVzIGZvciB0aGlzIHBhcmFtZXRlciAoaGVyZSBgQ2l0eU5hbWVgIGlzIGxlZnQgYmxhbmsuIAotIFRoaXMgVVJMIGxlYWRzIHRvIHRoZSByaWdodCBVUkwgdG8gZ2V0IHRoZSBkYXRhICh5ZWFyIGJ5IHllYXIpCgojIFBhY2thZ2VzIGFuZCBzbyBvbgoKYGBge3Igc2V0dXAsIGluY2x1ZGU9RkFMU0UsIHJlc3VsdHM9J2hpZGUnLCB3YXJuaW5nPUZBTFNFfQpsaWJyYXJ5KGtuaXRyKQpvcHRzX2NodW5rJHNldChmaWcucGF0aCA9ICJpbWFnZXMvIiwKICAgICAgICAgICAgICAgY2FjaGUucGF0aCA9ICJjYWNoZS8iLAogICAgICAgICAgICAgICBjYWNoZSA9IEZBTFNFLAogICAgICAgICAgICAgICBlY2hvID0gVFJVRSwKICAgICAgICAgICAgICAgbWVzc2FnZSA9IEZBTFNFLAogICAgICAgICAgICAgICB3YXJuaW5nID0gRkFMU0UpICAKYGBgICAKCmBgYHtyfQpsaWJyYXJ5KHRpZHl2ZXJzZSkKbGlicmFyeShodHRyKQpgYGAKCiMgRXhhbXBsZSBmb3IgUGFyaXMKCkJlZm9yZSBwdXR0aW5nIGV2ZXJ5dGhpbmcgaW4gZnVuY3Rpb25zLCBJIHRyaWVkIG91dCBmb3Igb25lIGNpdHksIFBhcmlzLgoKRmlyc3QsIGdlbmVyYXRlIGEgcmVxdWVzdCBVUkwgd2l0aCBkZXNpcmVkIHBhcmFtZXRlciB2YWx1ZXMuIEl0IHdpbGwgcHJvdmlkZXMgYSBzZXQgb2YgVVJMcyB0byBhY2Nlc3MgdGhlIGRhdGEuIFdlIHN0b3JlIHRoZSBsaXN0IG9mIFVSTHMgaXQgaW4gYSB2ZWN0b3IuCgpgYGB7cn0KY291bnRyeSA8LSAiRlIiCmNpdHkgPC0gIlBhcmlzIgpwb2xsdXRhbnQgPC0gIiIKYmVnaW4gPC0gIjIwMTgiCmVuZCA8LSAiMjAyMCIKCnVybCA8LSBzdHJfYygiaHR0cHM6Ly9mbWUuZGlzY29tYXAuZWVhLmV1cm9wYS5ldS9mbWVkYXRhc3RyZWFtaW5nL0FpclF1YWxpdHlEb3dubG9hZC9BUURhdGFfRXh0cmFjdC5mbXc/Q291bnRyeUNvZGU9IiwgIGNvdW50cnksICImQ2l0eU5hbWU9IiwgY2l0eSwgIiZQb2xsdXRhbnQ9IiwgcG9sbHV0YW50LCAiJlllYXJfZnJvbT0iLCBiZWdpbiwiJlllYXJfdG89IiwgZW5kLCAiJlN0YXRpb249JlNhbXBsaW5ncG9pbnQ9JlNvdXJjZT1FMWEmT3V0cHV0PVRFWFQmVXBkYXRlRGF0ZT0mVGltZUNvdmVyYWdlPVllYXIiKQoKdXJsc19wYXJpcyA8LSBHRVQodXJsKSAlPiUgCiAgY29udGVudChhcyA9ICJ0ZXh0IikgJT4lIAogIHN0cl9zcGxpdCgiXHJcbiIpICU+JSAKICBhc192ZWN0b3IoKSAlPiUgCiAgaGVhZCgtMSkgI2xhc3QgdmFsdWUgZW1wdHk6IGRlbGV0ZQpgYGAKClRoZW4sIGFjY2VzcyBhbGwgdGhlIFVSTHMgYW5kIG1lcmdlIHRoZSBvdXRwdXRzIHRvIGdldCBhIHVuaXF1ZSBkYXRhIGZyYW1lLgoKYGBge3IgcmVzdWx0cyA9ICdoaWRlJ30KI29ubHkgY29uc2lkZXIgZmlyc3QgZGF0YSBzZXRzCnN1YnNldF91cmwgPC0gdXJsc19wYXJpcyAlPiUKICBoZWFkKDEwKQoKZGF0YSA8LSBOVUxMCmZvciAodXJsIGluIHN1YnNldF91cmwpIHsKICB0ZW1wIDwtIHRlbXBmaWxlKCkKICBkb3dubG9hZC5maWxlKHVybCwgdGVtcCkKICBkYXRhIDwtIGRhdGEgJT4lIAogICAgcmJpbmQocmVhZF9jc3YodGVtcCkpCn0KYGBgCgoKCgoKCgoKCg==</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiRG93bmxvYWQgcG9sbHV0aW9uIGRhdGEiCm91dHB1dDogaHRtbF9ub3RlYm9vawotLS0KCiMgRGF0YSBkZXNjcmlwdGlvbiBhbmQgYWNjZXNzCgpUaGlzIGRvY3VtZW50IGNvbnRhaW5zIHRoZSBjb2RlIHVzZWQgdG8gZG93bmxvYWQgdGhlIGRhdGEgb24gYWlyIHBvbGx1dGlvbi4gVGhlIGRhdGEgY29tZXMgZnJvbSB0aGUgRXVyb3BlYW4gRW52aXJvbm1lbnQgYWdlbmN5IGFuZCBpcyBhY2Nlc3NpYmxlIHRocm91Z2ggdGhpcyBVUkw6IGh0dHBzOi8vZGlzY29tYXAuZWVhLmV1cm9wYS5ldS9tYXAvZm1lL0FpclF1YWxpdHlFeHBvcnQuaHRtLiBUaGUgd2ViIHBhZ2UgY29udGFpbnMgaW5mb3JtYXRpb24gb24gaG93IHRvIGRvd25sb2FkIHRoZSBkYXRhLiAKClRoZSBwcm9jZXNzIHRvIGFjY2VzcyB0aGUgZGF0YSBpcyBhcyBmb2xsb3dzOgoKLSBXcml0ZSBhIHNpbXBsZSByZXF1ZXN0IFVSTCB0YWtpbmcgdGhlIGZvcm06IGh0dHBzOi8vZm1lLmRpc2NvbWFwLmVlYS5ldXJvcGEuZXUvZm1lZGF0YXN0cmVhbWluZy9BaXJRdWFsaXR5RG93bmxvYWQvQVFEYXRhX0V4dHJhY3QuZm13P0NvdW50cnlDb2RlPUZSJkNpdHlOYW1lPSZQb2xsdXRhbnQ9NTAxOCZZZWFyX2Zyb209MjAyMCZZZWFyX3RvPTIwMjAmU3RhdGlvbj0mU2FtcGxpbmdwb2ludD0mU291cmNlPUUxYSZPdXRwdXQ9SFRNTCZVcGRhdGVEYXRlPSZUaW1lQ292ZXJhZ2U9WWVhci4gTm90ZSB0aGF0CnBhcmFtZXRlcnMgY2FuIGJlIGxlZnQgYmxhbmsgdG8gYWNjZXNzIGFsbCB0aGUgdmFsdWVzIGZvciB0aGlzIHBhcmFtZXRlciAoaGVyZSBgQ2l0eU5hbWVgIGlzIGxlZnQgYmxhbmsuIAotIFRoaXMgVVJMIGxlYWRzIHRvIHRoZSByaWdodCBVUkwgdG8gZ2V0IHRoZSBkYXRhICh5ZWFyIGJ5IHllYXIpCgojIFBhY2thZ2VzIGFuZCBzbyBvbgoKYGBge3Igc2V0dXAsIGluY2x1ZGU9RkFMU0UsIHJlc3VsdHM9J2hpZGUnLCB3YXJuaW5nPUZBTFNFfQpsaWJyYXJ5KGtuaXRyKQpvcHRzX2NodW5rJHNldChmaWcucGF0aCA9ICJpbWFnZXMvIiwKICAgICAgICAgICAgICAgY2FjaGUucGF0aCA9ICJjYWNoZS8iLAogICAgICAgICAgICAgICBjYWNoZSA9IEZBTFNFLAogICAgICAgICAgICAgICBlY2hvID0gVFJVRSwKICAgICAgICAgICAgICAgbWVzc2FnZSA9IEZBTFNFLAogICAgICAgICAgICAgICB3YXJuaW5nID0gRkFMU0UpICAKYGBgICAKCmBgYHtyfQpsaWJyYXJ5KHRpZHl2ZXJzZSkKbGlicmFyeShodHRyKQpsaWJyYXJ5KGx1YnJpZGF0ZSkKYGBgCgojIERvd25sb2FkaW5nIHRoZSBkYXRhCgpGaXJzdCwgZ2VuZXJhdGUgYSByZXF1ZXN0IFVSTCB3aXRoIGRlc2lyZWQgcGFyYW1ldGVyIHZhbHVlcy4gSXQgd2lsbCBwcm92aWRlcyBhIHNldCBvZiBVUkxzIHRvIGFjY2VzcyB0aGUgZGF0YS4gVGhlbiwgc3RvcmUgdGhlIGxpc3Qgb2YgVVJMcyBpdCBpbiBhIHZlY3Rvci4gRmluYWxseSwgYWNjZXNzIGFsbCB0aGUgVVJMcyBhbmQgbWVyZ2UgdGhlIG91dHB1dHMgdG8gZ2V0IGEgdW5pcXVlIGRhdGEgZnJhbWUuCgojIyBGdW5jdGlvbgoKYGBge3J9CmRvd25sb2FkX3BvbGx1dGlvbiA8LSBmdW5jdGlvbihjb3VudHJ5ID0gIiIsIGNpdHkgPSAiIiwgcG9sbHV0YW50ID0gIiIsIGJlZ2luID0gIiIsIGVuZCA9ICIiKSB7CiAgcmVxdWVzdF91cmwgPC0gc3RyX2MoImh0dHBzOi8vZm1lLmRpc2NvbWFwLmVlYS5ldXJvcGEuZXUvZm1lZGF0YXN0cmVhbWluZy9BaXJRdWFsaXR5RG93bmxvYWQvQVFEYXRhX0V4dHJhY3QuZm13P0NvdW50cnlDb2RlPSIsICBjb3VudHJ5LCAiJkNpdHlOYW1lPSIsIGNpdHksICImUG9sbHV0YW50PSIsIHBvbGx1dGFudCwgIiZZZWFyX2Zyb209IiwgYmVnaW4sIiZZZWFyX3RvPSIsIGVuZCwgIiZTdGF0aW9uPSZTYW1wbGluZ3BvaW50PSZTb3VyY2U9RTFhJk91dHB1dD1URVhUJlVwZGF0ZURhdGU9JlRpbWVDb3ZlcmFnZT1ZZWFyIikKCiAgdmVjdG9yX3VybHMgPC0gR0VUKHJlcXVlc3RfdXJsKSAlPiUgCiAgICBjb250ZW50KGFzID0gInRleHQiKSAlPiUgCiAgICBzdHJfc3BsaXQoIlxyXG4iKSAlPiUgCiAgICBhc192ZWN0b3IoKSAlPiUgCiAgICBoZWFkKC0xKSAjbGFzdCB2YWx1ZSBlbXB0eTogZGVsZXRlCgogIGRhdGEgPC0gTlVMTAogIGZvciAodXJsIGluIHZlY3Rvcl91cmxzKSB7CiAgICB0ZW1wIDwtIHRlbXBmaWxlKCkKICAgIGRvd25sb2FkLmZpbGUodXJsLCB0ZW1wKQogICAgZGF0YSA8LSBkYXRhICU+JSAKICAgICAgcmJpbmQocmVhZF9jc3YodGVtcCkpCiAgfQogIHJldHVybihkYXRhKQp9CmBgYAoKIyMgRG93bmxvYWQKCmBgYHtyIG1lc3NhZ2U9RkFMU0V9Cndob2xlX2RhdGEgPC0gZG93bmxvYWRfcG9sbHV0aW9uKGNvdW50cnkgPSAiRlIiLCBjaXR5ID0gIlBhcmlzIiwgcG9sbHV0YW50ID0gIjUwMTgiLCBiZWdpbiA9IDIwMTMsIGVuZCA9IDIwMjApCmBgYAoKIyBDbGVhbmluZyB0aGUgZGF0YQoKVGhlcmUgYXJlIHNldmVyYWwgdW5pdHMgb2YgbWVhc3VyZW1lbnQsIEkgY29udmVydCBldmVyeXRoaW5nIGluICRcbXUgZy9tXjMkLgoKRm9yIG5vdywgSSBhc3N1bWUgdGhhdCB3ZSBvbmx5IG5lZWQgYSBsaW1pdGVkIHN1YnNldCBvZiB2YXJpYWJsZXMgKEFpclBvbGx1dGFudCwgQWlyUXVhbGl0eVN0YXRpb24sIENvbmNlbnRyYXRpb24sIERhdGV0aW1lQmVnaW4gYW5kIERhdGV0aW1lRW5kKQoKYGBge3J9CmRhdGFfY2xlYW4gPC0gd2hvbGVfZGF0YSAlPiUgCiAgbXV0YXRlKAogICAgQ29uY2VudHJhdGlvbiA9IGlmZWxzZShVbml0T2ZNZWFzdXJlbWVudCA9PSAibmcvbTMiLCBDb25jZW50cmF0aW9uKjEwMDAsIENvbmNlbnRyYXRpb24pLAogICAgRGF0ZXRpbWVCZWdpbiA9IGFzX2RhdGV0aW1lKERhdGV0aW1lQmVnaW4pLAogICAgRGF0ZXRpbWVFbmQgPSBhc19kYXRldGltZShEYXRldGltZUVuZCkKICApICU+JSAKICBzZWxlY3QoIkFpclBvbGx1dGFudCIsICJBaXJRdWFsaXR5U3RhdGlvbiIsICJDb25jZW50cmF0aW9uIiwgIkRhdGV0aW1lQmVnaW4iLCAiRGF0ZXRpbWVFbmQiKQpgYGAKCgojIENvdmFyaWF0ZXMKCgoKCgoK</div>
 
 
 
