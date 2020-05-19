@@ -82,8 +82,16 @@ download_pollution <- function(country = "", cities = "", pollutants = "", begin
 
 Note: I do not know if it would not be quicker to download the whole data set for France and to filter it out after with the cities and pollutants we want. That would avoid enable to get only one request url and not. But it would require to download a much larger number of datasets. To do that, no need to change the code, only put `cities = ""` and `pollutants = ""`.
 
-```{r message=FALSE}
-data_whole <- download_pollution(country = "FR", cities = c("Paris", "Marseille"), pollutants = "5018", begin = 2013, end = 2020)
+For now, we focus on:
+- Paris, Marseille, Lyon, Toulouse, Nice, Nantes 
+- PM10 (5), PM2.5 (6001), NOx (9), NO2 (8), O3 (7), SO2(1). Pollutant id in parenthesis, full list here: http://dd.eionet.europa.eu/vocabulary/aq/pollutant/view.
+
+```{r echo = T, results = 'hide'}
+# For one pollutant and two cities, just to test
+# data_whole <- download_pollution(country = "FR", cities = c("Paris", "Marseille"), pollutants = c(5018), begin = 2013, end = 2020)
+
+#all pollutants considered
+data_whole <- download_pollution(country = "FR", cities = c("Paris", "Marseille", "Lyon", "Toulouse", "Nice", "Nantes"), pollutants = c(1, 5, 7, 8, 9, 6001), begin = 2013, end = 2020)
 ```
 
 # Cleaning the data
@@ -109,7 +117,7 @@ data_clean <- data_whole %>%
 
 The metadata file is updated daily and can be access through the data website.
 
-```{r}
+```{r echo = T, results = 'hide'}
 temp <- tempfile()
 download.file("https://discomap.eea.europa.eu/map/fme/metadata/PanEuropean_metadata.csv", temp)
 metadata_whole <- read_delim(temp, "\t", escape_double = FALSE, trim_ws = TRUE)
