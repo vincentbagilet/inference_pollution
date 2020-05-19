@@ -88,17 +88,17 @@ For now, we focus on:
 
 ```{r echo = T, results = 'hide'}
 # For one pollutant and two cities, just to test
-# data_whole <- download_pollution(country = "FR", cities = c("Paris", "Marseille"), pollutants = c(5018), begin = 2013, end = 2020)
+data_whole <- download_pollution(country = "FR", cities = c("Paris", "Marseille"), pollutants = c(5018), begin = 2013, end = 2020)
 
 #all pollutants considered
-data_whole <- download_pollution(country = "FR", cities = c("Paris", "Marseille", "Lyon", "Toulouse", "Nice", "Nantes"), pollutants = c(1, 5, 7, 8, 9, 6001), begin = 2013, end = 2020)
+# data_whole <- download_pollution(country = "FR", cities = c("Paris", "Marseille", "Lyon", "Toulouse", "Nice", "Nantes"), pollutants = c(1, 5, 7, 8, 9, 6001), begin = 2013, end = 2020)
 ```
 
 # Cleaning the data
 
 There are several units of measurement, I convert everything in $\mu g/m^3$.
 
-For now, I assume that we only need a limited subset of variables (AirPollutant, AirQualityStation, Concentration, DatetimeBegin and DatetimeEnd)
+For now, I assume that we only need a limited subset of variables (AirPollutant, AirQualityStation, Concentration, DatetimeBegin, DatetimeEnd, Samplingpoint)
 
 ```{r}
 data_clean <- data_whole %>% 
@@ -107,7 +107,7 @@ data_clean <- data_whole %>%
     DatetimeBegin = as_datetime(DatetimeBegin),
     DatetimeEnd = as_datetime(DatetimeEnd)
   ) %>% 
-  select("AirPollutant", "AirQualityStation", "Concentration", "DatetimeBegin", "DatetimeEnd")
+  select(AirPollutant, AirQualityStation, Concentration, DatetimeBegin, DatetimeEnd, Samplingpoint)
 ```
 
 
@@ -126,13 +126,13 @@ metadata_whole <- read_delim(temp, "\t", escape_double = FALSE, trim_ws = TRUE)
 ## Cleaning covariates
 
 - For now, we are only working with France. 
-- I assume that we only need a couple of covariates (AirQualityStation, Longitude, Latitude, Altitude, AirQualityStationType). 
+- I assume that we only need a couple of covariates (AirQualityStation, Longitude, Latitude, Altitude, AirQualityStationType, Samplingpoint). 
 - I still need to look at why some variables change in time.
 
 ```{r}
 metadata_clean <- metadata_whole %>% 
   filter(Countrycode == "FR") %>% 
-  select(AirQualityStation, Longitude, Latitude, Altitude, AirQualityStationType)
+  select(AirQualityStation, Longitude, Latitude, Altitude, AirQualityStationType, Samplingpoint)
 ```
 
 # Merge and export
