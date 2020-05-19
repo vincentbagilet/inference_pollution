@@ -12,16 +12,6 @@ author: "Vincent Bagilet"
 date: "May 18, 2020"
 ---
 
-# Data description and access
-
-This document contains the code used to download the data on air pollution. The data comes from the European Environment agency and is accessible through this URL: https://discomap.eea.europa.eu/map/fme/AirQualityExport.htm. The web page contains information on how to download the data. 
-
-The process to access the data is as follows:
-
-- Write a simple request URL taking the form: https://fme.discomap.eea.europa.eu/fmedatastreaming/AirQualityDownload/AQData_Extract.fmw?CountryCode=FR&CityName=&Pollutant=5018&Year_from=2020&Year_to=2020&Station=&Samplingpoint=&Source=E1a&Output=HTML&UpdateDate=&TimeCoverage=Year. Note that
-parameters can be left blank to access all the values for this parameter (here `CityName` is left blank. 
-- This URL leads to the right URL to get the data (year by year)
-
 ```{r setup, include=FALSE, results='hide', warning=FALSE}
 library(knitr)
 opts_chunk$set(fig.path = "images/",
@@ -37,6 +27,16 @@ library(tidyverse)
 library(httr)
 library(lubridate)
 ```
+
+# Data description and access
+
+This document contains the code used to download the data on air pollution. The data comes from the European Environment agency and is accessible through this URL: https://discomap.eea.europa.eu/map/fme/AirQualityExport.htm. The web page contains information on how to download the data. 
+
+The process to access the data is as follows:
+
+- Write a simple request URL taking the form: https://fme.discomap.eea.europa.eu/fmedatastreaming/AirQualityDownload/AQData_Extract.fmw?CountryCode=FR&CityName=&Pollutant=5018&Year_from=2020&Year_to=2020&Station=&Samplingpoint=&Source=E1a&Output=HTML&UpdateDate=&TimeCoverage=Year. Note that
+parameters can be left blank to access all the values for this parameter (here `CityName` is left blank. 
+- This URL leads to the right URL to get the data (year by year)
 
 # Observational data
 
