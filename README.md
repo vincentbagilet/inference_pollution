@@ -1,7 +1,6 @@
-# Impact of lockdown on air pollution in France
+# Comparison of imputation methods for missing air pollution data
 
-Project studying the impact of the French Covid19 lockdown on air pollution. 
+This project aims at comparing the performance of different imputation methods for missing air pollution data. 
 
 This repository contains:
-- The [R code](R)
-- Vincent's [logbook](logbook)
+- An [analysis of missing data patterns in the dataset](R/scripts/missing_data_patterns.Rmd)
