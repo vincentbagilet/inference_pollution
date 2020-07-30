@@ -1,5 +1,5 @@
 ---
-title: "Download pollution data"
+title: "Analysis of missing data patterns"
 output: 
   html_notebook: 
     toc: yes
@@ -8,8 +8,8 @@ output:
   html_document:
     theme: simplex
     highlight: pygments
-author: "Vincent Bagilet"
-date: "May 18, 2020"
+author: "Vincent Bagilet, Léo Zabrocki"
+date: "July 30, 2020"
 ---
 
 ```{r setup, include=FALSE, results='hide', warning=FALSE}
@@ -24,91 +24,7 @@ opts_chunk$set(fig.path = "images/",
 
 ```{r include=FALSE}
 library(tidyverse)
-library(europollution)
-library(tictoc)
 ```
-
-# The `europollution` package
-
-To download the data from the European Environmental Association, I use the package I created, `europollution`. Its [website](https://vincentbagilet.github.io/europollution/) describes the data, how it is accessed and so on.
-
-# Download
-
-Note: I do not know if it would not be quicker to download the whole data set for France and to filter it out after with the cities and pollutants we want. That would avoid enable to get only one request url and not. But it would require to download a much larger number of datasets. To do that, no need to change the code, only put `cities = ""` and `pollutants = ""`.
-
-For now, we focus on:
-- Paris, Marseille, Lyon, Toulouse, Nice, Nantes 
-- PM10 (5), PM2.5 (6001), NOx (9), NO2 (8), O3 (7), SO2(1). Pollutant id in parenthesis, full list here: http://dd.eionet.europa.eu/vocabulary/aq/pollutant/view.
-
-```{r echo = T, results = 'hide'}
-data_downloaded <- ep_download(country = "FR", cities = c("Paris", "Marseille", "Lyon", "Toulouse", "Nice", "Nantes"), pollutants = c("PM10", "PM2.5", "NOX as NO2", "NO2", "O3", "SO2"), begin = 2013, end = 2020)
-
-save(data_downloaded, file = "../Outputs/data_downloaded.Rda")
-```
-
-# Cleaning the data
-
-To clean the data, I also use the `europollution` package.
-
-One may notice that almost all the variables used here are hourly
-
-```{r}
-data_downloaded %>% 
-  count(AveragingTime)
-```
-
-
-There are several units of measurement, I convert everything in $\mu g/m^3$.
-
-For now, I assume that we only need a limited subset of variables (AirPollutant, AirQualityStation, Concentration, DatetimeBegin, DatetimeEnd, Samplingpoint)
-
-```{r}
-data_clean <- data_whole %>% 
-  mutate(
-    Concentration = ifelse(UnitOfMeasurement == "ng/m3", Concentration*1000, Concentration),
-    DatetimeBegin = as_datetime(DatetimeBegin),
-    DatetimeEnd = as_datetime(DatetimeEnd)
-  ) %>% 
-  select(AirPollutant, AirQualityStation, Concentration, DatetimeBegin, DatetimeEnd, SamplingPoint)
-```
-
-
-# Covariates
-
-## Downloading covariates
-
-The metadata file is updated daily and can be access through the data website.
-
-```{r echo = T, results = 'hide'}
-temp <- tempfile()
-download.file("https://discomap.eea.europa.eu/map/fme/metadata/PanEuropean_metadata.csv", temp)
-metadata_whole <- read_delim(temp, "\t", escape_double = FALSE, trim_ws = TRUE)
-```
-
-## Cleaning covariates
-
-- For now, we are only working with France. 
-- I assume that we only need a couple of covariates (AirQualityStation, Longitude, Latitude, Altitude, AirQualityStationType, Samplingpoint). 
-- I still need to look at why some variables change in time.
-
-```{r}
-metadata_clean <- metadata_whole %>% 
-  filter(Countrycode == "FR") %>% 
-  select(AirQualityStation, Longitude, Latitude, Altitude, AirQualityStationType, Samplingpoint)
-```
-
-# Merge and export
-
-```{r}
-pollution_data <- data_clean %>% 
-  left_join(metadata_clean)
-
-save(pollution_data, file = "../Outputs/pollution_data.Rda")
-```
-
-
-
-
 
 
 
