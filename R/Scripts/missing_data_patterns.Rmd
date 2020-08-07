@@ -1,11 +1,12 @@
 ---
 title: "Analysis of missing data patterns"
 output: 
-  html_notebook: 
-    toc: no
+  html_document:
     theme: simplex
     highlight: pygments
-  html_document:
+    fig_width: 2
+  html_notebook: 
+    toc: no
     theme: simplex
     highlight: pygments
 author: "Vincent Bagilet, Léo Zabrocki"
@@ -30,7 +31,9 @@ library(lubridate)
 library(leaflet)
 
 theme_set(theme_minimal())
+```
 
+```{r include=FALSE}
 load("../Outputs/metadata.Rda")
 load("../Outputs/subsample_stations_ids.Rda")
 
@@ -45,9 +48,14 @@ wrangled_metadata <- metadata %>%
 load("../Outputs/subsample_PM10.Rda")
 
 data <- subsample_PM10 %>% 
+  filter(year(date) > 2012) %>% #I need to investigate why this is the case
   group_by(station_id, pollutant) %>% 
   mutate(
-    concentration = ifelse(minute(lead(date)) != 0 & is.na(concentration), lead(concentration), concentration)
+    concentration = ifelse(
+      minute(lead(date)) != 0 & is.na(concentration), 
+      lead(concentration), 
+      concentration
+    )
   ) %>% 
   ungroup() %>% 
   filter(minute(date) == 0) %>% #I need to fix this in europollution 
@@ -63,7 +71,6 @@ In this document, we analyse missing data patterns in the dataset. The dataset h
 In order to assess by guesswork the representativity of the subsample drawn, we look at the location of the station selected:
 
 ```{r}
-
 map_raster <- map_data("world")
 
 wrangled_metadata %>% 
@@ -86,29 +93,39 @@ color_in_subsample <- pal(wrangled_metadata$in_subsample)
 content <- paste("Station type:", wrangled_metadata$station_type, "<br/>",
                  "Station area:", wrangled_metadata$station_area, "<br/>")
 
-# wrangled_metadata %>% 
-#   select(station_id, longitude,latitude, in_subsample, station_area, station_type) %>% 
-#   distinct() %>% 
-#   leaflet() %>%
-#   addTiles() %>%    
-#   addProviderTiles("Esri.WorldGrayCanvas") %>%
-#   addCircles(col = color_in_subsample, popup = content, lng = ~longitude, lat = ~latitude) %>%
-#   addLegend(pal = pal, values = ~wrangled_metadata$in_subsample , title = "Station in sample")
+wrangled_metadata %>%
+  select(station_id, longitude,latitude, in_subsample, station_area, station_type) %>%
+  distinct() %>%
+  leaflet() %>%
+  addTiles() %>%
+  addProviderTiles("Esri.WorldGrayCanvas") %>%
+  addCircles(col = color_in_subsample, popup = content, lng = ~longitude, lat = ~latitude) %>%
+  addLegend(pal = pal, values = ~wrangled_metadata$in_subsample , title = "Station in sample")
 ```
 
-We also consider the number of stations per country
+We also consider the number of stations per country:
 
 ```{r}
 nb_station_country <- wrangled_metadata %>% 
   group_by(country_iso) %>% 
   summarise(
     nb_station_country = n(),
+    nb_station_country_subsample = sum(in_subsample),
     prop_in_country_whole = n()/nrow(wrangled_metadata),
     prop_in_country_subsample = sum(in_subsample)/sum(wrangled_metadata$in_subsample)
   )
 
 nb_station_country %>% 
-  kable(col.names = c("Country ISO", "Number of stations in country", "Proportion of stations located in this country", "Proportion of stations in the subsample located in this country"))
+  kable(col.names = c("Country ISO", "Number of stations in country", "Number of stations in subsample in country", "Proportion of stations located in this country", "Proportion of stations in the subsample located in this country"))
+
+nb_station_country %>% 
+  pivot_longer(starts_with("nb_station"), names_to = "in_sample", values_to = "number") %>% 
+  mutate(in_sample = str_sub(in_sample, 12, nchar(in_sample))) %>% 
+  ggplot() + 
+  geom_point(aes(x = country_iso, y = number, color = in_sample)) +
+  scale_color_brewer(palette = "Dark2") +
+  labs(title = "Number of stations by country in overall sample and subsample", x = "Country", y = "Number of stations", color = "Number in") + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
 nb_station_country %>% 
   pivot_longer(starts_with("prop_in"), names_to = "in_sample", values_to = "prop") %>% 
@@ -116,13 +133,34 @@ nb_station_country %>%
   ggplot() + 
   geom_point(aes(x = country_iso, y = prop, color = in_sample)) +
   scale_color_brewer(palette = "Dark2") +
-  labs(title = "Proportion of stations by country in overall sample and subsample", x = "Country", y = "Proportion of stations", color = "Proportion in") 
+  labs(title = "Proportion of stations by country in overall sample and subsample", x = "Country", y = "Proportion of stations", color = "Proportion in") + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 ```
+
 
 
 # Missing data patterns in the subsample
 
 Here, we investigate whether missing PM10 concentration data varies across different dimentions.
+
+```{r}
+# To do so, we will use the following function
+graph_missing_by <- function(df, variable_missing, grouping_var, facet_var = NA) {
+  graph <- df %>% 
+    group_by_(grouping_var, facet_var) %>%
+    summarise(share_missing = sum(is.na(.data[[variable_missing]]))/n()) %>%
+    arrange(share_missing) %>%
+    ggplot() +
+    # geom_point(aes(x = grouping_var, y = share_missing), color = "darkBlue") +
+    geom_col(aes(x = .data[[grouping_var]], y = share_missing), fill = "darkBlue") +
+    labs(title = paste("Share of missing", variable_missing,"data by", grouping_var), x = grouping_var, y = paste("Share of missing", variable_missing,"data")) +
+    ylim(0, 1) +
+    facet_wrap(facets = facet_var)
+  
+  return(graph)
+}
+```
+
 
 ## Across countries
 
@@ -134,7 +172,7 @@ The overall share of missing value is `r share_missing`.
 
 We can break this down by countries.
 
-```{r}
+```{r fig.height=4, fig.width=4}
 missing_share_country <- data %>% 
   group_by(country_iso) %>% 
   summarise(share_missing = sum(is.na(concentration))/n()) %>% 
@@ -145,25 +183,22 @@ missing_share_country %>%
 
 missing_share_country %>% 
   ggplot() + 
-  geom_point(aes(x = reorder(country_iso, share_missing), y = share_missing), color = "darkBlue") + 
-  labs(title = "Share of missing PM10 concentration data by country", x = "Country", y = "Share of missing PM10 concentration data") 
+  # geom_point(aes(x = reorder(country_iso, share_missing), y = share_missing), color = "darkBlue") + 
+  geom_col(aes(x = reorder(country_iso, share_missing), y = share_missing), fill = "darkBlue") + 
+  labs(title = "Share of missing PM10 concentration data by country", x = "Country", y = "Share of missing PM10 concentration data") +
+  coord_flip() 
 ```
 
 One can notice that the share of missing values varies drastically across countries. This can be due to the quality of monitoring of air pollution stations. This variation might also come from our data wrangling. We need to check that.
 
-## Across dates
+## Across dates and time
+
+Overall, we notice that, along the time dimension data almost seems to be missing at random appart from a decreasing trend in the proportion of missing data 
 
 ```{r}
-data %>% 
-  filter(year(date) > 2012) %>% #I need to investigate why I have data for 2012
-  mutate(grouping_var = year(date)) %>% 
-  group_by(grouping_var) %>% 
-  summarise(share_missing = sum(is.na(concentration))/n()) %>% 
-  arrange(share_missing) %>% 
-  ggplot() + 
-  geom_point(aes(x = grouping_var, y = share_missing), color = "darkBlue") + 
-  labs(title = "Share of missing PM10 concentration data by year", x = "Year", y = "Share of missing PM10 concentration data") +
-  ylim(0, 1)
+data %>%  
+  mutate(year = factor(year(date))) %>% 
+  graph_missing_by(variable_missing = "concentration", grouping_var = "year")
 ```
 
 One may notice that the share of missing data slightly decreased over time. This might be due to improvement in air measurement capacity.
@@ -184,54 +219,95 @@ data %>%
   ylim(0, 1)
 ```
 
-We now investigate whether the share of missing data varies across month of the year.
+Zooming in and looking at monthly data, we can see that this decreasing trend is somehow step wise, with some important decreases between December and January.
 
 ```{r}
-data %>% 
-  filter(year(date) > 2012) %>% #I need to investigate why I have data for 2012
-  mutate(grouping_var = month(date)) %>% 
-  group_by(grouping_var) %>% 
-  summarise(share_missing = sum(is.na(concentration))/n()) %>% 
-  arrange(share_missing) %>% 
-  ggplot() + 
-  geom_point(aes(x = grouping_var, y = share_missing), color = "darkBlue") + 
-  labs(title = "Share of missing PM10 concentration data by month", x = "Month", y = "Share of missing PM10 concentration data") +
-  ylim(0, 1)
-```
-
-```{r}
-data %>% 
-  filter(year(date) > 2012) %>% #I need to investigate why I have data for 2012
-  mutate(grouping_var = day(date)) %>% 
-  group_by(grouping_var) %>% 
-  summarise(share_missing = sum(is.na(concentration))/n()) %>% 
-  arrange(share_missing) %>% 
-  ggplot() + 
-  geom_point(aes(x = grouping_var, y = share_missing), color = "darkBlue") + 
-  labs(title = "Share of missing PM10 concentration data by day of the month", x= "Day of the month", y = "Share of missing PM10 concentration data") +
-  ylim(0, 1)
+data %>%  
+  mutate(year_month = paste(year(date), str_pad(month(date), 2, pad = 0))) %>% 
+  graph_missing_by(variable_missing = "concentration", grouping_var = "year_month") + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 ```
 
 
+We now investigate whether the share of missing data varies across month of the year, day of the month and day of the week. There does not seem to be huge variations.
+
+### Month
+
 ```{r}
-data %>% 
-  filter(year(date) > 2012) %>% #I need to investigate why I have data for 2012
-  mutate(grouping_var = wday(date)) %>% 
-  group_by(grouping_var) %>% 
-  summarise(share_missing = sum(is.na(concentration))/n()) %>% 
-  arrange(share_missing) %>% 
-  ggplot() + 
-  geom_point(aes(x = grouping_var, y = share_missing), color = "darkBlue") + 
-  labs(title = "Share of missing PM10 concentration data by day of the month", x = "Day of the week", y = "Share of missing PM10 concentration data") +
-  ylim(0, 1)
+data %>%
+  mutate(month = factor(month(date))) %>% 
+  graph_missing_by(variable_missing = "concentration", grouping_var = "month")
+
+data %>%  
+  mutate(
+    year = factor(year(date)), 
+    month = factor(month(date))
+  ) %>% 
+  graph_missing_by(variable_missing = "concentration", grouping_var = "month", facet_var = "year")
+```
+
+### Day of the month
+
+```{r}
+data %>%
+  mutate(day_of_month = factor(day(date))) %>% 
+  graph_missing_by(variable_missing = "concentration", grouping_var = "day_of_month")
+
+data %>%  
+  mutate(
+    year = factor(year(date)), 
+    day = factor(day(date))
+  ) %>% 
+  graph_missing_by(variable_missing = "concentration", grouping_var = "day_of_month", facet_var = "year")
+
+data %>%  
+  mutate(
+    month = factor(month(date)), 
+    day = factor(day(date))
+  ) %>% 
+  graph_missing_by(variable_missing = "concentration", grouping_var = "day_of_month", facet_var = "month")
+```
+
+### Day of the week
+
+```{r}
+data %>%
+  mutate(day_in_week = factor(wday(date))) %>% 
+  graph_missing_by(variable_missing = "concentration", grouping_var = "day_in_week")
+
+data %>%  
+  mutate(
+    year = factor(year(date)), 
+    day_in_week = factor(wday(date))
+  ) %>% 
+  graph_missing_by(variable_missing = "concentration", grouping_var = "day_in_week", facet_var = "year")
+
+data %>%  
+  mutate(
+    month = factor(month(date)), 
+    day_in_week = factor(wday(date))
+  ) %>% 
+  graph_missing_by(variable_missing = "concentration", grouping_var = "day_in_week", facet_var = "month")
 ```
 
 
-## Across time of the day
+### Hour of the day
+
+Now we investigate whether there are some variation in missingness patterns across time.
+
+```{r}
+data %>%
+  mutate(hour = factor(hour(date))) %>% 
+  graph_missing_by(variable_missing = "concentration", grouping_var = "hour")
+```
+
+One may notice that there is a lot less missing data around 11pm. This might be problematic and needs to be investigated.
 
 
+```{r}
+data %>%
+  mutate(hour = factor(hour(date))) %>% 
+  graph_missing_by(variable_missing = "concentration", grouping_var = "hour", facet_var = "country_iso")
+```
 
-
-
-
-
+This pattern seems to be widespread across countries, even though some countries do not seem to be affected.
