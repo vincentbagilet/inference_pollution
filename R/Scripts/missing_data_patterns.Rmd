@@ -4,7 +4,6 @@ output:
   html_document:
     theme: simplex
     highlight: pygments
-    fig_width: 2
   html_notebook: 
     toc: no
     theme: simplex
