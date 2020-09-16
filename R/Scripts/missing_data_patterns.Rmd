@@ -1,11 +1,11 @@
 ---
 title: "Analysis of missing data patterns"
 output: 
-  html_document:
-    theme: simplex
-    highlight: pygments
   html_notebook: 
     toc: no
+    theme: simplex
+    highlight: pygments
+  html_document:
     theme: simplex
     highlight: pygments
 author: "Vincent Bagilet, Léo Zabrocki"
@@ -69,7 +69,7 @@ In this document, we analyse missing data patterns in the dataset. The dataset h
 
 In order to assess by guesswork the representativity of the subsample drawn, we look at the location of the station selected:
 
-```{r}
+```{r echo=FALSE}
 map_raster <- map_data("world")
 
 wrangled_metadata %>% 
