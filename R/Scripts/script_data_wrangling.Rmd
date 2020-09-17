@@ -25,7 +25,7 @@ body {
 text-align: justify}
 </style>
 
-In this document, we took great care providing all steps and R codes required to build the data we use for our simulation exerices. We gather hourly data on air pollutants concentration, weather factors and calendar indicators for 17 major French cities over the 2013-2020 period. Should you have any questions or find errors, please do not hesitate to contact us at vpb2109@columbia.edu and leo.zabrocki@gmail.com.
+In this document, we took great care providing all steps and R codes required to build the data we use for our simulation exerices. We gather hourly data on air pollutants concentration, weather factors and calendar indicators for 17 major French cities over the 2013-2020 period. Should you have any questions or find errors, please do not hesitate to contact us at vincent.bagilet@columbia.edu and leo.zabrocki@gmail.com.
 
 
 # Required Packages
@@ -204,8 +204,8 @@ In this section, we wrangle the data into a nice and convinient format.
 
 ```{r}
 #To avoid rerunning all the code, we reload the data here
-metadata <- readRDS("~/Documents/Research/imputation_pollution/R/Inputs/metadata_air_pollution_stations.RDS") #I need to fix these links 
-raw_pollution_data <- readRDS("~/Documents/Research/imputation_pollution/R/Inputs/raw_air_pollution_data.RDS")
+metadata_pollution <- readRDS("../Inputs/metadata_air_pollution_stations.RDS")
+raw_pollution_data <- readRDS("../Inputs/raw_air_pollution_data.RDS")
 ```
 
 Our analysis focuses on 6 pollutants ($NO_2$, $NO_x$, $0_3$, $PM_{10}$, $PM_{2.5}$ and $SO_2$). We therefore filter out other pollutants. But first, we rename the variables in the dataset to work with more meaningful variable names. 
@@ -218,7 +218,7 @@ Some observations can be classified as "invalid due to other circumstances or [i
 The provided variable indicating averaging time (`summary`, renamed `averaging_time_id`) is not consistent with actual averaging time (`rangled_pollution_data %>% count(averaging_time, averaging_time_id)`). We therefore define a new variable, `averaging_time`, which measure this effective averaging time.
 
 
-```{r wrangle}
+```{r wrangling}
 wrangled_pollution_data <- raw_pollution_data %>% 
   rename(
     concentration = value,
@@ -239,5 +239,43 @@ wrangled_pollution_data <- raw_pollution_data %>%
   select(-unit, -validity, -averaging_time_id)
 ```
 
+### Cleaning air pollution data
 
+In this section, we clean the data so that each couple hourly-date*pollutant appears in the cleaned dataset.
+
+All observations for which the averaging time is equal to 1h have one of 2h and were measured between midnight and 2am. We **choose** to consider that, the value averaged over an hour are equal identical and equal to the value averaged over the two hours.
+
+We **assume** that the station is closed, or at least does not yet measure the concentration of a given pollutant, before the first concentration is recorded for this pollutant. Similarily, we assume that the station is closed for a pollutant after the last concentration is recorded.
+
+```{r cleaning}
+clean_pollution_data <- wrangled_pollution_data %>% 
+  group_by(site, pollutant) %>% 
+  complete(date = ymd_hms(seq(min(date), max(date), by = "hour"))) %>%
+  ungroup() 
+  # select(-date_end)
+
+```
+
+
+(Ongoing) Here I try to investigate why some observations have an averaging time of two hours. In addition, I noticed that some "date" appear twice for a given site*pollutant couple. These "duplicates" appear because, in these cases, concentration is measured using two different processes.
+
+```{r}
+clean_pollution_data %>% 
+  mutate(
+    date_long = ifelse(averaging_time > "4000s", date, NA)
+  ) %>%  
+  # arrange(site, pollutant, date_long) %>% 
+  group_by(site, pollutant) %>% 
+  filter(sum(!is.na(date_long), na.rm = TRUE) > 1) %>% 
+  tidyr::fill(date_long) %>% 
+  ungroup() %>% 
+  filter(date == date_long)
+
+# investigate "duplicate" dates
+wrangled_pollution_data %>% 
+  group_by(site, pollutant, date) %>% 
+  mutate(m = n()) %>% 
+  filter(m > 1) %>% 
+  view()
+```
 
