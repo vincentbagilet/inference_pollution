@@ -1,0 +1,339 @@
+---
+title: "Data Wrangling"
+description: |
+  Gathering hourly air pollution, weather and calendar data.
+author:
+  - name: Vincent Bagilet 
+    url: https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet
+    affiliation: Columbia University
+    affiliation_url: https://www.columbia.edu/
+  - name: Léo Zabrocki 
+    url: https://www.parisschoolofeconomics.eu/en/
+    affiliation: Paris School of Economics
+    affiliation_url: https://www.parisschoolofeconomics.eu/en/
+date: "`r Sys.Date()`"
+output: 
+  html_notebook: 
+    toc: no
+    theme: simplex
+    highlight: pygments
+  # distill::distill_article
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+In this document, we took great care providing all steps and R codes required to build the data we use for our simulation exerices. We gather hourly data on air pollutants concentration, weather factors and calendar indicators for 17 major French cities over the 2013-2020 period. Should you have any questions or find errors, please do not hesitate to contact us at vincent.bagilet@columbia.edu and leo.zabrocki@gmail.com.
+
+
+# Required Packages
+
+To reproduce exactly the `script_data_wrangling.hmtl` document, you first need to have installed:
+
+* the [R](https://www.r-project.org/) programming language on your computer 
+* [RStudio](https://rstudio.com/), an integrated development environment for R, which will allow you to knit the `script_data_wrangling.Rmd` file and interact with the R code chunks
+* the [R Markdown](https://rmarkdown.rstudio.com/) package
+* and the [Distill](https://rstudio.github.io/distill/) package which provides the template of this document. 
+
+Once everything is set up, we need to load the following packages:
+
+```{r, echo=TRUE, message=FALSE}
+# load required packages
+library(rmarkdown) # for creating the R Markdown document
+library(knitr) # for creating the R Markdown document
+library(here) # for files paths organization
+library(tidyverse) # for data manipulation and visualization
+library(data.table) # for loading heavy data
+library(httr) # for calling an api
+library(lubridate) # for manipulating date variables
+library(saqgetr) # for downloading air pollution data from the european environmental agency
+library(missRanger) # for missing values imputation
+library(kableExtra) # for table formatting
+library(Cairo) # for printing customed police of graphs
+library(beepr) # to set an alarm when long processin
+library(httr)
+```
+
+#  Air Pollution Data
+
+We must first download the hourly air pollution data of the 17 largest French cities for the 2013-2020. We used the [saqgetr](https://github.com/skgrange/saqgetr), an R package which allows us to retrieve the data collected by the European Environmental Agency. Each regional organization in charge of monitoring air pollution transmits its data to the agency. We provide belows the steps to obtain a clean dataset.
+
+### Getting & Filtering Monitoring Stations Metadata
+
+```{r, echo=TRUE}
+# we first retrieved monitoring stations metadata provided by the european environmental agency
+metadata_stations <- saqgetr::get_saq_sites()
+
+# we select the observations for france
+metadata_stations <- metadata_stations %>% 
+  filter(country == "france")
+```
+
+France appaers to have 1333 air pollution monitoring stations on its territory. After exploring the data, we noticed that 10 stations had several missing metadata variables: we decided to drop them [to be checked]:
+
+```{r, echo=TRUE}
+# we erase stations from which we do not have metadata such as the latitude
+metadata_stations <- metadata_stations %>%
+  filter(!is.na(latitude))
+```
+
+We also check that each station's localization was unique:
+
+```{r, echo=TRUE}
+# add the number of time a localization apppears
+metadata_stations <- metadata_stations %>% 
+  add_count(latitude, longitude)
+```
+
+Below is the resulting table with `n` the number of times a stations appears more than once:
+
+```{r, echo=TRUE}
+# table for the number of times a station
+# appears more than once
+metadata_stations %>%
+  filter(n>1) %>%
+  rmarkdown::paged_table(.)
+```
+Eight stations appear more than once: for the moment, we keep them.
+
+One issue with the metadata provided by the agency is that the cities of monitoring stations are not provided. We retrieve them with the Open Street Map (OSM) API. We first create a function to get each station's city from Open Street Map. This function retrieves the city in the adress provided by the OSM API response.
+
+```{r, echo=TRUE}
+# function to get station's city from OSM
+# it takes the response from the API as input
+# from the adress provided by the API, we get the city
+get_city_OSM <- function(OSM_response){
+  OSM_content <- content(OSM_response)
+  # first get the city
+  if (!is.null(OSM_content$features[[1]]$properties$address$city)){
+    OSM_content$features[[1]]$properties$address$city
+  # if there is no city in the adress, get the town
+  } else if (!is.null(OSM_content$features[[1]]$properties$address$town)){
+    OSM_content$features[[1]]$properties$address$town
+  # if the is no town in the adress, get the village
+  } else {
+    OSM_content$features[[1]]$properties$address$village
+  }
+}
+```
+
+
+We then map this function to each monitoring station and select stations located in the 17 cities of interest. As the code takes about 11 minutes to run, we do not run it in this document. You can retrieve the results of the function in the ``metadata_air_pollution_stations.RDS` file.
+
+```{r, eval = FALSE}
+# map the get_city_OSM function to the data
+metadata_stations <- metadata_stations %>%
+  # first, create the OSM url for each station
+  mutate(reverse_OSM = map2(latitude, longitude, ~ str_c("https://nominatim.openstreetmap.org/reverse?lat=", .x, "&lon=", .y , "&zoom=18&addressdetails=1&format=geojson"))) %>%
+  unnest(reverse_OSM) %>%
+  # get a response from the API
+  mutate(OSM_response = map(reverse_OSM, ~ httr::GET(.))) %>%
+  # check if there are any errors
+  mutate(error_dummy = map(OSM_response, ~httr::http_error(.))) %>%
+  # from the response, get the city
+  mutate(city = map(OSM_response, ~ get_city_OSM(.)))
+
+# select relevant variables and filter stations which belong to the 17 cities
+metadata_stations <- metadata_stations %>%
+  select(site:data_source, city) %>%
+  unnest(city) %>%
+  filter(city %in% c("Bordeaux", "Clermont-Ferrand", "Dijon", "Grenoble",
+                     "Le Havre", "Lille", "Lyon", "Marseille", "Montpellier", "Nancy", "Nantes",
+                     "Nice", "Paris", "Rennes", "Rouen", "Strasbourg", "Toulouse"))
+  
+# save the metadata
+saveRDS(metadata_stations, here::here("1.data", "1.raw_data", "1.pollution_data", "metadata_air_pollution_stations.RDS"))
+```
+
+### Downloading the Data
+
+We open the metadata of stations belonging to the 17 French cities: 
+
+```{r, echo = TRUE}
+metadata_stations <- readRDS(here::here("1.data", "1.raw_data", "1.pollution_data", "metadata_air_pollution_stations.RDS"))
+```
+
+Before downloading the air pollution data, we can further filter the relevant stations. Indeed, we only want to select stations which monitor pollutants at the hourly level. The `get_saq_processes()` function allows us to know the monotiring process of each station:
+
+```{r, echo = TRUE}
+# get metadata on the monitoring process
+data_processes <- get_saq_processes() %>%
+# filter sites from the 17 cities
+  filter(site %in% metadata_stations$site) %>%
+# filter sites that monitor at least one pollutant at the hourly level
+  filter(period == "hour") %>%
+# filter relevant pollutants
+  filter(variable %in% c("co", "no", "no2", "nox", "o3", "pm10", "pm2.5", "so2")) %>%
+# create a year variable to keep stations that monotired
+# pollutants during the period of interest
+  mutate(year = lubridate::year(date_end)) %>%
+  filter(year>2012)
+```
+
+We filter the relevant stations using the `data_processes`:
+
+```{r, echo = TRUE}
+metadata_stations <- metadata_stations %>%
+    filter(site %in% data_processes$site)
+
+
+marseille_metadata_stations <- metadata_stations %>%
+  filter(city == "Marseille")
+```
+
+We finally download the data: 
+
+```{r, echo = TRUE}
+start_time <- Sys.time()
+air_pollution_data <- get_saq_observations(
+  site = metadata_stations$site, 
+  start = 2013,
+  verbose = TRUE
+)
+end_time <- Sys.time()
+```
+
+
+```{r, echo = TRUE}
+saveRDS(air_pollution_data, here::here("1.data", "1.raw_data", "1.pollution_data", "raw_air_pollution_data.RDS"))
+```
+
+### Wrangling
+
+In this section, we wrangle the data into a nice and convinient format.
+
+```{r}
+#To avoid rerunning all the code, we reload the data here
+metadata_pollution <- readRDS("../Inputs/metadata_air_pollution_stations.RDS")
+raw_pollution_data <- readRDS("../Inputs/raw_air_pollution_data.RDS")
+```
+
+Our analysis focuses on 6 pollutants ($NO_2$, $NO$, $0_3$, $PM_{10}$, $PM_{2.5}$ and $SO_2$). We therefore filter out other pollutants. But first, we rename the variables in the dataset to work with more meaningful variable names. 
+
+All observations for the pollutants of interest are in the same unit, $\mu g/m^3$. We can therefore drop the `unit` column. 
+<!-- If we want to also consider other pollutants, we set all the observations to be in the same unit.  -->
+
+Some observations can be classified as "invalid due to other circumstances or [if] data is simply missing". It is described by the boolean variable `valid`. [As described by the EEA](http://dd.eionet.europa.eu/vocabulary/aq/observationvalidity/view), some values have been measured below the detection limit. In this case the observation is valid but the value reported is either the detection limit or half of it. For the stations studied here, all values measured below the detection limit is reported as the full detection limit (`raw_pollution_data %>% count(validity)`). Therefore, we create a boolean variable `detection_limit` taking the value `TRUE` if the detection limit is reached. 
+
+The provided variable indicating averaging time (`summary`, renamed `averaging_time_id`) is not consistent with actual averaging time (`rangled_pollution_data %>% count(averaging_time, averaging_time_id)`). We therefore define a new variable, `averaging_time`, which measure this effective averaging time.
+
+
+```{r wrangling}
+wrangled_pollution_data <- raw_pollution_data %>% 
+  rename(
+    concentration = value,
+    pollutant = variable,
+    averaging_time_id = summary
+  ) %>% 
+  filter(pollutant %in% c("o3", "pm10", "pm2.5", "no", "no2", "so2")) %>% 
+  mutate(
+    # concentration = case_when( 
+    #   unit == "ng.m-3" ~ concentration*1000,
+    #   unit == "mg.m-3" ~ concentration/1000,
+    #   unit == "ug.m-3" ~ concentration
+    # ),
+    detection_limit = ifelse(validity >= 2, TRUE, FALSE),
+    valid = ifelse(validity > 0, TRUE, FALSE),
+    averaging_time = as.duration(interval(date, date_end))
+  ) %>%
+  select(-unit, -validity, -averaging_time_id)
+```
+
+### Cleaning
+
+In this section, we clean the data so that each couple hourly-date*pollutant appears in the cleaned dataset.
+
+#### Description of issues and choices
+
+First of all, for some site x pollutant couples and for certain dates, the concentration was measured using two different processes:
+
+```{r}
+wrangled_pollution_data %>% 
+  arrange(site, pollutant, date) %>% 
+  group_by(site, pollutant, date, date_end) %>% 
+  mutate(m = n()) %>% 
+  filter(m > 1)
+```
+
+*For now*, we **choose** to average the data over the different processes (and therefore to drop any process information). 
+
+Then, some observations have an averaging time of 2h. All these observations were measured between midnight and 2am or between 11pm and 1am. In addition, for each observation with an averaging time of two hours, the dataset also contains the two corresponding observations with a one hour average:
+
+```{r}
+t <- clean_pollution_data %>% 
+  arrange(site, pollutant, date) %>% 
+  group_by(site, pollutant, date) %>% 
+  mutate(obs_given_date = n()) %>% 
+  ungroup() %>% 
+  mutate( #enables to also see the rows folling a 
+    next_row = ifelse(lag(obs_given_date) == 2, 1, 0),
+    total = obs_given_date + next_row
+  ) %>% 
+  filter(total > 1) 
+
+t %>% view()
+```
+
+
+We therefore **choose** to simple delete observations with an averaging time of 2h.
+
+In most cases, for a given site x pollutant couple, when there is no concentration recorded for a given date, there is no observation (no row corresponding to this date). We therefore want to add these rows so that it explicitely states that concentration is missing for these dates. 
+
+We **assume** that the station is closed, or at least does not yet measure the concentration of a given pollutant, before the first concentration is recorded for this pollutant. Similarily, we assume that the station is closed for a pollutant after the last concentration is recorded.
+
+#### Cleaning process
+
+```{r cleaning}
+clean_pollution_data <- wrangled_pollution_data %>% 
+  group_by(site, pollutant, date, date_end) %>% #remove duplicated processes
+  mutate(concentration = mean(concentration, na.rm = TRUE)) %>% 
+  select(-process) %>% 
+  distinct() %>% 
+  ungroup() %>% 
+  filter(averaging_time < "4000s") %>%  
+  group_by(site, pollutant) %>% #add missing observations (when no concentration)
+  complete(date = ymd_hms(seq(min(date), max(date), by = "hour"))) %>%
+  ungroup() %>% 
+  select(-date_end)
+
+saveRDS(clean_pollution_data, "../Outputs/clean_pollution_data.RDS")
+```
+
+# Calendar data
+
+### Data description
+
+The data comes from the following sources: 
+- https://www.data.gouv.fr/fr/datasets/vacances-scolaires-par-zones/
+- https://www.data.gouv.fr/fr/datasets/jours-feries-en-france/ 
+
+**Note**: on the pollution file, for each city, I need to add a variable `holiday_zone` before merging the `holidays` file.
+
+### Download the data
+
+```{r}
+# School holidays
+temp <- tempfile()
+download.file("https://raw.githubusercontent.com/AntoineAugusti/vacances-scolaires/master/data.csv", temp)
+school_holidays <- read_csv(temp) %>% 
+  select(date, vacances_zone_a, vacances_zone_b, vacances_zone_c)
+
+# Public holidays
+temp <- tempfile()
+download.file("https://www.data.gouv.fr/fr/datasets/r/6637991e-c4d8-4cd6-854e-ce33c5ab49d5", temp)
+public_holidays <- read_csv(temp) %>% 
+  select(date) %>% #zone == "metropole" for all observations
+  mutate(public_holiday = TRUE)
+
+# Merge 
+holidays <- school_holidays %>% 
+  full_join(public_holidays) %>% 
+  filter(year(date) >= 2013, year(date) < 2020) %>% 
+  pivot_longer(starts_with("vacances"), names_to = "holiday_zone", names_prefix = "vacances_zone_", values_to = "school_holiday")
+
+save(holidays, file = "../Outputs/holidays.Rda")
+```
+
+
