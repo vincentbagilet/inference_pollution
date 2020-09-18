@@ -28,6 +28,8 @@ library(mediocrethemes)
 library(maps)
 library(lubridate)
 library(leaflet)
+
+set_mediocre_all()
 ```
 
 ```{r include=FALSE}
