@@ -52,6 +52,7 @@ library(saqgetr) # for downloading air pollution data from the european environm
 library(missRanger) # for missing values imputation
 library(kableExtra) # for table formatting
 library(Cairo) # for printing customed police of graphs
+library(beepr) # to set an alarm when long processing
 ```
 
 #  Air Pollution Data
@@ -243,39 +244,60 @@ wrangled_pollution_data <- raw_pollution_data %>%
 
 In this section, we clean the data so that each couple hourly-date*pollutant appears in the cleaned dataset.
 
-All observations for which the averaging time is equal to 1h have one of 2h and were measured between midnight and 2am. We **choose** to consider that, the value averaged over an hour are equal identical and equal to the value averaged over the two hours.
+#### Description of issues and choices
+
+First of all, for some site x pollutant couples and for certain dates, the concentration was measured using two different processes:
+
+```{r}
+wrangled_pollution_data %>% 
+  arrange(site, pollutant, date) %>% 
+  group_by(site, pollutant, date, date_end) %>% 
+  mutate(m = n()) %>% 
+  filter(m > 1)
+```
+
+*For now*, we **choose** to average the data over the different processes (and therefore to drop any process information). 
+
+Then, some observations have an averaging time of 2h. All these observations were measured between midnight and 2am or between 11pm and 1am. In addition, for each observation with an averaging time of two hours, the dataset also contains the two corresponding observations with a one hour average:
+
+```{r}
+t <- clean_pollution_data %>% 
+  arrange(site, pollutant, date) %>% 
+  group_by(site, pollutant, date) %>% 
+  mutate(obs_given_date = n()) %>% 
+  ungroup() %>% 
+  mutate( #enables to also see the rows folling a 
+    next_row = ifelse(lag(obs_given_date) == 2, 1, 0),
+    total = obs_given_date + next_row
+  ) %>% 
+  filter(total > 1) 
+
+t %>% view()
+```
+
+
+We therefore **choose** to simple delete observations with an averaging time of 2h.
+
+In most cases, for a given site x pollutant couple, when there is no concentration recorded for a given date, there is no observation (no row corresponding to this date). We therefore want to add these rows so that it explicitely states that concentration is missing for these dates. 
 
 We **assume** that the station is closed, or at least does not yet measure the concentration of a given pollutant, before the first concentration is recorded for this pollutant. Similarily, we assume that the station is closed for a pollutant after the last concentration is recorded.
 
+#### Cleaning process
+
 ```{r cleaning}
 clean_pollution_data <- wrangled_pollution_data %>% 
-  group_by(site, pollutant) %>% 
-  complete(date = ymd_hms(seq(min(date), max(date), by = "hour"))) %>%
-  ungroup() 
-  # select(-date_end)
-
-```
-
-
-(Ongoing) Here I try to investigate why some observations have an averaging time of two hours. In addition, I noticed that some "date" appear twice for a given site*pollutant couple. These "duplicates" appear because, in these cases, concentration is measured using two different processes.
-
-```{r}
-clean_pollution_data %>% 
-  mutate(
-    date_long = ifelse(averaging_time > "4000s", date, NA)
-  ) %>%  
-  # arrange(site, pollutant, date_long) %>% 
-  group_by(site, pollutant) %>% 
-  filter(sum(!is.na(date_long), na.rm = TRUE) > 1) %>% 
-  tidyr::fill(date_long) %>% 
+  group_by(site, pollutant, date, date_end) %>% #remove duplicated processes
+  mutate(concentration = mean(concentration, na.rm = TRUE)) %>% 
+  select(-process) %>% 
+  distinct() %>% 
   ungroup() %>% 
-  filter(date == date_long)
+  filter(averaging_time < "4000s") %>%  
+  group_by(site, pollutant) %>% #add missing observations (when no concentration)
+  complete(date = ymd_hms(seq(min(date), max(date), by = "hour"))) %>%
+  ungroup() %>% 
+  select(-date_end)
 
-# investigate "duplicate" dates
-wrangled_pollution_data %>% 
-  group_by(site, pollutant, date) %>% 
-  mutate(m = n()) %>% 
-  filter(m > 1) %>% 
-  view()
+saveRDS(clean_pollution_data, "../Outputs/clean_pollution_data.RDS")
 ```
+
 
