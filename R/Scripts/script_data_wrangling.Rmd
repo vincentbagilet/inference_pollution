@@ -52,7 +52,8 @@ library(saqgetr) # for downloading air pollution data from the european environm
 library(missRanger) # for missing values imputation
 library(kableExtra) # for table formatting
 library(Cairo) # for printing customed police of graphs
-library(beepr) # to set an alarm when long processing
+library(beepr) # to set an alarm when long processin
+library(httr)
 ```
 
 #  Air Pollution Data
@@ -199,7 +200,7 @@ end_time <- Sys.time()
 saveRDS(air_pollution_data, here::here("1.data", "1.raw_data", "1.pollution_data", "raw_air_pollution_data.RDS"))
 ```
 
-### Wrangling air pollution data
+### Wrangling
 
 In this section, we wrangle the data into a nice and convinient format.
 
@@ -209,7 +210,7 @@ metadata_pollution <- readRDS("../Inputs/metadata_air_pollution_stations.RDS")
 raw_pollution_data <- readRDS("../Inputs/raw_air_pollution_data.RDS")
 ```
 
-Our analysis focuses on 6 pollutants ($NO_2$, $NO_x$, $0_3$, $PM_{10}$, $PM_{2.5}$ and $SO_2$). We therefore filter out other pollutants. But first, we rename the variables in the dataset to work with more meaningful variable names. 
+Our analysis focuses on 6 pollutants ($NO_2$, $NO$, $0_3$, $PM_{10}$, $PM_{2.5}$ and $SO_2$). We therefore filter out other pollutants. But first, we rename the variables in the dataset to work with more meaningful variable names. 
 
 All observations for the pollutants of interest are in the same unit, $\mu g/m^3$. We can therefore drop the `unit` column. 
 <!-- If we want to also consider other pollutants, we set all the observations to be in the same unit.  -->
@@ -240,7 +241,7 @@ wrangled_pollution_data <- raw_pollution_data %>%
   select(-unit, -validity, -averaging_time_id)
 ```
 
-### Cleaning air pollution data
+### Cleaning
 
 In this section, we clean the data so that each couple hourly-date*pollutant appears in the cleaned dataset.
 
@@ -298,6 +299,41 @@ clean_pollution_data <- wrangled_pollution_data %>%
   select(-date_end)
 
 saveRDS(clean_pollution_data, "../Outputs/clean_pollution_data.RDS")
+```
+
+# Calendar data
+
+### Data description
+
+The data comes from the following sources: 
+- https://www.data.gouv.fr/fr/datasets/vacances-scolaires-par-zones/
+- https://www.data.gouv.fr/fr/datasets/jours-feries-en-france/ 
+
+**Note**: on the pollution file, for each city, I need to add a variable `holiday_zone` before merging the `holidays` file.
+
+### Download the data
+
+```{r}
+# School holidays
+temp <- tempfile()
+download.file("https://raw.githubusercontent.com/AntoineAugusti/vacances-scolaires/master/data.csv", temp)
+school_holidays <- read_csv(temp) %>% 
+  select(date, vacances_zone_a, vacances_zone_b, vacances_zone_c)
+
+# Public holidays
+temp <- tempfile()
+download.file("https://www.data.gouv.fr/fr/datasets/r/6637991e-c4d8-4cd6-854e-ce33c5ab49d5", temp)
+public_holidays <- read_csv(temp) %>% 
+  select(date) %>% #zone == "metropole" for all observations
+  mutate(public_holiday = TRUE)
+
+# Merge 
+holidays <- school_holidays %>% 
+  full_join(public_holidays) %>% 
+  filter(year(date) >= 2013, year(date) < 2020) %>% 
+  pivot_longer(starts_with("vacances"), names_to = "holiday_zone", names_prefix = "vacances_zone_", values_to = "school_holiday")
+
+save(holidays, file = "../Outputs/holidays.Rda")
 ```
 
 
