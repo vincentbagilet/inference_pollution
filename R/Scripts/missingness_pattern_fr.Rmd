@@ -33,9 +33,9 @@ set_mediocre_all()
 ```
 
 ```{r include=FALSE}
-metadata_pollution <- readRDS("../Outputs/metadata_air_pollution_stations.RDS")
-data <- readRDS("../Outputs/clean_pollution_data.RDS")
-raw <- readRDS("../Outputs/raw_air_pollution_data.RDS")
+# metadata_pollution <- readRDS("../Outputs/metadata_air_pollution_stations.RDS")
+data <- readRDS("../Outputs/data_imputation.RDS")
+# raw <- readRDS("../Outputs/raw_air_pollution_data.RDS")
 ```
 
 In this document, we analyse missing data patterns in the dataset. In a first step, we focus on one pollutant only, PM10. The present document is build so that it can be easily modified and recomputed for other pollutants or another sample.
@@ -45,7 +45,7 @@ In this document, we analyse missing data patterns in the dataset. In a first st
 The stations considered are located in the 17 biggest largest in France:
 
 ```{r}
-metadata_pollution %>% 
+data %>% 
   count(city) %>% 
   kable(col.names = c("City", "Number of stations"))
 ```
@@ -71,8 +71,12 @@ hist_missing_by <- function(df, variable_missing, grouping_var, facet_var = NA) 
     # geom_point(aes(x = grouping_var, y = share_missing), color = "darkBlue") +
     geom_col(aes(x = .data[[grouping_var]], y = share_missing)) +
     labs(title = paste("Share of missing", variable_missing,"data by", grouping_var), x = grouping_var, y = paste("Share of missing", variable_missing,"data")) +
-    ylim(0, 1) +
+    ylim(0, 1) 
+  
+  if (!is.na(facet_var)) {
+    graph <- graph +
     facet_wrap(facets = facet_var)
+  } 
   
   # graph <- df %>% 
   #   mutate(missing = is.na(concentration)) %>% 
@@ -84,12 +88,31 @@ hist_missing_by <- function(df, variable_missing, grouping_var, facet_var = NA) 
   
   return(graph)
 }
+
+line_missing_by <- function(df, variable_missing, grouping_var, facet_var = NA) {
+  graph <- df %>% 
+    group_by_(grouping_var, facet_var) %>%
+    summarise(share_missing = sum(is.na(.data[[variable_missing]]))/n()) %>%
+    arrange(share_missing) %>%
+    ggplot() +
+    # geom_point(aes(x = grouping_var, y = share_missing), color = "darkBlue") +
+    geom_line(aes(x = .data[[grouping_var]], y = share_missing)) +
+    labs(title = paste("Share of missing", variable_missing,"data by", grouping_var), x = grouping_var, y = paste("Share of missing", variable_missing,"data")) +
+    ylim(0, 1) 
+  
+  if (!is.na(facet_var)) {
+    graph <- graph +
+    facet_wrap(facets = facet_var)
+  } 
+  
+  return(graph)
+}
 ```
 
 
 ## Across pollutants
 
-We can break this down by pollutant
+We can break this down by pollutant.
 
 ```{r fig.height=4, fig.width=4}
 missing_share_pollutant <- data %>% 
@@ -109,6 +132,19 @@ missing_share_pollutant %>%
 
 One can notice that the share of missing values varies across pollutants, up to about a factor two. This higlights the potential necessity of analysing missingness patterns independently across pollutants.
 
+## Across cities
+
+We look weather missingness patterns vary across cities.
+
+```{r}
+data %>%  
+  mutate(year = year(date)) %>% 
+  filter(year != 2014) %>% 
+  hist_missing_by(variable_missing = "concentration", grouping_var = "city") +
+  coord_flip()
+```
+
+
 ## Across dates and time
 
 Overall, we notice that, along the time dimension data almost seems to be missing at random appart from a decreasing trend in the proportion of missing data 
@@ -116,7 +152,7 @@ Overall, we notice that, along the time dimension data almost seems to be missin
 ```{r}
 data %>%  
   mutate(year = year(date)) %>% 
-  filter(year == 2016) %>% 
+  filter(year != 2014) %>% 
   hist_missing_by(variable_missing = "concentration", grouping_var = "year")
 ```
 
@@ -215,7 +251,7 @@ data %>%
   hist_missing_by(variable_missing = "concentration", grouping_var = "hour")
 ```
 
-One may notice that there is a lot less missing data around 11pm. This might be problematic and needs to be investigated.
+
 
 
 ```{r}
@@ -224,6 +260,52 @@ data %>%
   hist_missing_by(variable_missing = "concentration", grouping_var = "hour", facet_var = "pollutant")
 ```
 
-This pattern seems to be widespread across countries, even though some countries do not seem to be affected.
+
+## Across weather patterns
+
+### Temperature
+
+```{r}
+data %>%
+  line_missing_by(variable_missing = "concentration", grouping_var = "temperature")
+```
+
+### Wind
+
+```{r}
+data %>% 
+  line_missing_by(variable_missing = "concentration", grouping_var = "wind_speed")
+```
+
+```{r}
+data %>% 
+  line_missing_by(variable_missing = "concentration", grouping_var = "wind_speed_max")
+```
+
+```{r}
+data %>% 
+  line_missing_by(variable_missing = "concentration", grouping_var = "wind_direction") +
+  coord_polar()
+```
+
+
+```{r}
+data %>% 
+  line_missing_by(variable_missing = "concentration", grouping_var = "wind_direction_max") +
+  coord_polar()
+```
+
+### Rainfall
+
+```{r}
+data %>% 
+  line_missing_by(variable_missing = "concentration", grouping_var = "rainfall_height") 
+```
+
+```{r}
+data %>% 
+  line_missing_by(variable_missing = "concentration", grouping_var = "relative_humidity") 
+```
+
 
 
