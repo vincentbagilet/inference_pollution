@@ -76,12 +76,17 @@ The overall share of missing values is `r share_missing`.
 
 ```{r}
 # To do so, we will use the following function
-hist_missing_by <- function(df, grouping_var, variable_missing = "concentration", facet_var = NA, y_axis_to = 1) {
+hist_missing_by <- function(df, grouping_var, variable_missing = "concentration", bins = 10, facet_var = NA, y_axis_to = 1) {
   
   grouping_var_name <- str_replace_all(grouping_var, pattern = "_", replacement = " ")
   variable_missing_name <- str_replace_all(variable_missing, pattern = "_", replacement = " ")
   
+  if (!is.factor(df[[grouping_var]]) && !is.na(as.numeric(df[[grouping_var]]))) {
+    df[[grouping_var]] <- cut_interval(as.numeric(df[[grouping_var]]), bins)
+  } 
+  
   graph <- df %>% 
+    filter(!is.na(.data[[grouping_var]])) %>% 
     group_by_(grouping_var, facet_var) %>%
     summarise(share_missing = sum(is.na(.data[[variable_missing]]))/n()) %>%
     arrange(share_missing) %>%
@@ -115,7 +120,7 @@ hist_missing_by <- function(df, grouping_var, variable_missing = "concentration"
   return(graph)
 }
 
-line_missing_by <- function(df, variable_missing, grouping_var, facet_var = NA) {
+hist_missing_by <- function(df, variable_missing, grouping_var, facet_var = NA) {
   graph <- df %>% 
     group_by_(grouping_var, facet_var) %>%
     summarise(share_missing = sum(is.na(.data[[variable_missing]]))/n()) %>%
@@ -171,7 +176,7 @@ data %>%
 
 ```{r}
 data %>% 
-  line_missing_by(grouping_var = "elevation") 
+  hist_missing_by(grouping_var = "elevation") 
 ```
 
 ```{r}
@@ -301,31 +306,31 @@ data %>%
 
 ```{r}
 data %>%
-  line_missing_by(grouping_var = "temperature")
+  hist_missing_by(grouping_var = "temperature")
 ```
 
 ### Wind
 
 ```{r}
 data %>% 
-  line_missing_by(grouping_var = "wind_speed")
+  hist_missing_by(grouping_var = "wind_speed")
 ```
 
 ```{r}
 data %>% 
-  line_missing_by(grouping_var = "wind_speed_max")
+  hist_missing_by(grouping_var = "wind_speed_max")
 ```
 
 ```{r}
 data %>% 
-  line_missing_by(grouping_var = "wind_direction") +
+  hist_missing_by(grouping_var = "wind_direction", y_axis_to = 0.1) +
   coord_polar()
 ```
 
 
 ```{r}
 data %>% 
-  line_missing_by(grouping_var = "wind_direction_max") +
+  hist_missing_by(grouping_var = "wind_direction_max", y_axis_to = 0.1) +
   coord_polar()
 ```
 
@@ -333,48 +338,48 @@ data %>%
 
 ```{r}
 data %>% 
-  line_missing_by(grouping_var = "rainfall_height") 
+  hist_missing_by(grouping_var = "rainfall_height") 
 ```
 
 
 
 ```{r}
 data %>% 
-  line_missing_by(grouping_var = "rainfall_duration") 
+  hist_missing_by(grouping_var = "rainfall_duration") 
 ```
 
 ### Other weather variables
 
 ```{r}
 data %>% 
-  line_missing_by(grouping_var = "relative_humidity") 
+  hist_missing_by(grouping_var = "relative_humidity") 
 ```
 
 
 
 ```{r}
 data %>% 
-  line_missing_by(grouping_var = "sea_level_pressure") 
+  hist_missing_by(grouping_var = "sea_level_pressure") 
 ```
 
 
 ```{r}
 data %>% 
-  line_missing_by(grouping_var = "insolation_duration") 
-```
-
-
-
-```{r}
-data %>% 
-  line_missing_by(grouping_var = "global_radiation") 
+  hist_missing_by(grouping_var = "insolation_duration") 
 ```
 
 
 
 ```{r}
 data %>% 
-  line_missing_by(grouping_var = "uv_radiation") 
+  hist_missing_by(grouping_var = "global_radiation") 
+```
+
+
+
+```{r}
+data %>% 
+  hist_missing_by(grouping_var = "uv_radiation") 
 ```
 
 
