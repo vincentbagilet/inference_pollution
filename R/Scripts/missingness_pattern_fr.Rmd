@@ -1,16 +1,22 @@
 ---
 title: "Analysis of missing data patterns"
-output: 
-  html_notebook: 
-    toc: no
-    theme: simplex
-    highlight: pygments
-  html_document:
-    theme: simplex
-    highlight: pygments
-author: "Vincent Bagilet, Léo Zabrocki"
-date: "July 30, 2020"
+author:
+  - name: Vincent Bagilet 
+    url: https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet
+    affiliation: Columbia University
+    affiliation_url: https://www.columbia.edu/
+  - name: Léo Zabrocki 
+    url: https://www.parisschoolofeconomics.eu/en/
+    affiliation: Paris School of Economics
+    affiliation_url: https://www.parisschoolofeconomics.eu/en/
+date: "`r Sys.Date()`"
+output: distill::distill_article
 ---
+
+<style>
+body {
+text-align: justify}
+</style>
 
 ```{r setup, include=FALSE, results='hide', warning=FALSE}
 library(knitr)
@@ -50,7 +56,7 @@ data <- data_imputation %>%
   filter(!(year == 2019 & str_sub(pollutant, 1, 2) == "pm")) %>% 
   select(-year)
   
-# rm(data_imputation)
+rm(data_imputation)
 ```
 
 
@@ -75,8 +81,18 @@ share_missing <- sum(is.na(data$concentration))/nrow(data)
 The overall share of missing values is `r share_missing`.
 
 ```{r}
-# To do so, we will use the following function
-hist_missing_by <- function(df, grouping_var, variable_missing = "concentration", bins = 10, facet_var = NA, y_axis_to = 1) {
+#' Graphs describing the proportion of missing values in different groups
+#'
+#' Enables to plot the proportion of missing values by a number of 
+#'
+#' @param df A dataframe. Dataframe to analyse 
+#' @param grouping_var A string. Name of the variable, in \code{df}, for which the proportion of missing values needs to be displayed
+#' @param bins An integer. Number of bins to slice \code{grouping_var} in, if it is a continuous value.
+#' @param facet_var A string. Name of the variable, in \code{df}, by which to facet the initial graph
+#' @param y_axis_to An integer. Limit of the y axis
+#' @export
+#'
+hist_missing_by <- function(df, variable_missing = "concentration", grouping_var, bins = 10, facet_var = NA, y_axis_to = 1) {
   
   grouping_var_name <- str_replace_all(grouping_var, pattern = "_", replacement = " ")
   variable_missing_name <- str_replace_all(variable_missing, pattern = "_", replacement = " ")
@@ -92,6 +108,7 @@ hist_missing_by <- function(df, grouping_var, variable_missing = "concentration"
     arrange(share_missing) %>%
     ggplot() +
     # geom_point(aes(x = .data[[grouping_var]], y = share_missing)) +
+    # geom_line(aes(x = .data[[grouping_var]], y = share_missing)) +
     geom_col(aes(x = .data[[grouping_var]], y = share_missing)) +
     labs(
       title = paste("Share of missing", variable_missing_name,"data by", grouping_var_name),
@@ -104,33 +121,6 @@ hist_missing_by <- function(df, grouping_var, variable_missing = "concentration"
       ylim(0, y_axis_to) 
   }
    
-  if (!is.na(facet_var)) {
-    graph <- graph +
-    facet_wrap(facets = facet_var)
-  } 
-  
-  # graph <- df %>% 
-  #   mutate(missing = is.na(concentration)) %>% 
-  #   ggplot() + 
-  #   geom_bar(aes(x = .data[[grouping_var]], fill = missing), position = "fill") +
-  #   facet_wrap(facet_var) +
-  #   labs(title = paste("Share of missing", variable_missing,"data by", grouping_var), x = grouping_var, y = paste("Share of missing", variable_missing,"data")) +
-  #   scale_fill_brewer(palette = "Blues")
-  
-  return(graph)
-}
-
-hist_missing_by <- function(df, variable_missing, grouping_var, facet_var = NA) {
-  graph <- df %>% 
-    group_by_(grouping_var, facet_var) %>%
-    summarise(share_missing = sum(is.na(.data[[variable_missing]]))/n()) %>%
-    arrange(share_missing) %>%
-    ggplot() +
-    # geom_point(aes(x = grouping_var, y = share_missing), color = "darkBlue") +
-    geom_line(aes(x = .data[[grouping_var]], y = share_missing)) +
-    labs(title = paste("Share of missing", variable_missing,"data by", grouping_var), x = grouping_var, y = paste("Share of missing", variable_missing,"data")) +
-    ylim(0, 1) 
-  
   if (!is.na(facet_var)) {
     graph <- graph +
     facet_wrap(facets = facet_var)
@@ -382,13 +372,5 @@ data %>%
   hist_missing_by(grouping_var = "uv_radiation") 
 ```
 
-
-
-```{r}
-small %>% 
-  mutate(missing = is.na(concentration)) %>% 
-  ggplot() +
-  geom_bar(aes(x = ))
-```
 
 
