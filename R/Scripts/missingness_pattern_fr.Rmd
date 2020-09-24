@@ -33,24 +33,38 @@ set_mediocre_all()
 ```
 
 ```{r include=FALSE}
-# metadata_pollution <- readRDS("../Outputs/metadata_air_pollution_stations.RDS")
-data <- readRDS("../Outputs/data_imputation.RDS")
+metadata_pollution <- readRDS("../Outputs/clean_metadata_pollution.RDS")
+data_imputation <- readRDS("../Outputs/data_imputation.RDS")
 # raw <- readRDS("../Outputs/raw_air_pollution_data.RDS")
 ```
 
-In this document, we analyse missing data patterns in the dataset. In a first step, we focus on one pollutant only, PM10. The present document is build so that it can be easily modified and recomputed for other pollutants or another sample.
+In this document, we analyse missing data patterns in the dataset. 
+
+First of all, we noticed that there are some issues with the dataset and therefore, for now, restrict the dataset to get rid off these issues. In particular, we do not have any pollution data for 2014 nor for NO in 2015 and very few observations for PMs in 2019. These issue do not come from actual missing data but are due to issue with the package we used to access the pollution data. These data are available through the EEA interface.
+
+```{r}
+data <- data_imputation %>%  
+  mutate(year = lubridate::year(date)) %>% 
+  filter(year != 2014) %>% 
+  filter(!(year == 2015 & pollutant == "no")) %>% 
+  filter(!(year == 2019 & str_sub(pollutant, 1, 2) == "pm")) %>% 
+  select(-year)
+  
+# rm(data_imputation)
+```
+
 
 # Location of measurement stations
 
 The stations considered are located in the 17 biggest largest in France:
 
 ```{r}
-data %>% 
+metadata_pollution %>% 
   count(city) %>% 
   kable(col.names = c("City", "Number of stations"))
 ```
 
-# Missing data patterns in the subsample
+# Missing data patterns in the sample
 
 Here, we investigate whether missing pollutant concentration data varies across different dimentions. 
 
@@ -58,21 +72,33 @@ Here, we investigate whether missing pollutant concentration data varies across 
 share_missing <- sum(is.na(data$concentration))/nrow(data)
 ```
 
-The overall share of missing value is `r share_missing`.
+The overall share of missing values is `r share_missing`.
 
 ```{r}
 # To do so, we will use the following function
-hist_missing_by <- function(df, variable_missing, grouping_var, facet_var = NA) {
+hist_missing_by <- function(df, grouping_var, variable_missing = "concentration", facet_var = NA, y_axis_to = 1) {
+  
+  grouping_var_name <- str_replace_all(grouping_var, pattern = "_", replacement = " ")
+  variable_missing_name <- str_replace_all(variable_missing, pattern = "_", replacement = " ")
+  
   graph <- df %>% 
     group_by_(grouping_var, facet_var) %>%
     summarise(share_missing = sum(is.na(.data[[variable_missing]]))/n()) %>%
     arrange(share_missing) %>%
     ggplot() +
-    # geom_point(aes(x = grouping_var, y = share_missing), color = "darkBlue") +
+    # geom_point(aes(x = .data[[grouping_var]], y = share_missing)) +
     geom_col(aes(x = .data[[grouping_var]], y = share_missing)) +
-    labs(title = paste("Share of missing", variable_missing,"data by", grouping_var), x = grouping_var, y = paste("Share of missing", variable_missing,"data")) +
-    ylim(0, 1) 
+    labs(
+      title = paste("Share of missing", variable_missing_name,"data by", grouping_var_name),
+      x = str_to_sentence(grouping_var_name), 
+      y = paste("Share of missing", variable_missing_name,"data")
+    ) 
   
+  if (!is.null(y_axis_to)) {
+    graph <- graph + 
+      ylim(0, y_axis_to) 
+  }
+   
   if (!is.na(facet_var)) {
     graph <- graph +
     facet_wrap(facets = facet_var)
@@ -114,34 +140,43 @@ line_missing_by <- function(df, variable_missing, grouping_var, facet_var = NA) 
 
 We can break this down by pollutant.
 
-```{r fig.height=4, fig.width=4}
-missing_share_pollutant <- data %>% 
-  group_by(pollutant) %>% 
-  summarise(share_missing = sum(is.na(concentration))/n()) %>% 
-  arrange(share_missing)
-
-missing_share_pollutant %>% 
-  kable()
-
-missing_share_pollutant %>% 
-  ggplot() + 
-  # geom_point(aes(x = reorder(country_iso, share_missing), y = share_missing), color = "darkBlue") + 
-  geom_col(aes(x = reorder(pollutant, share_missing), y = share_missing)) + 
-  labs(title = "Share of missing PM10 concentration data by pollutant", x = "Pollutant", y = "Share of missing PM10 concentration data") 
+```{r}
+data %>%  
+  hist_missing_by(grouping_var = "pollutant") 
 ```
+
 
 One can notice that the share of missing values varies across pollutants, up to about a factor two. This higlights the potential necessity of analysing missingness patterns independently across pollutants.
 
-## Across cities
+## Across locations
 
 We look weather missingness patterns vary across cities.
 
 ```{r}
-data %>%  
-  mutate(year = year(date)) %>% 
-  filter(year != 2014) %>% 
-  hist_missing_by(variable_missing = "concentration", grouping_var = "city") +
+data %>% 
+  hist_missing_by(grouping_var = "city") +
   coord_flip()
+```
+
+```{r}
+data %>%  
+  hist_missing_by(grouping_var = "site_area") 
+```
+
+```{r}
+data %>%  
+  hist_missing_by(grouping_var = "site_type") 
+```
+
+
+```{r}
+data %>% 
+  line_missing_by(grouping_var = "elevation") 
+```
+
+```{r}
+data %>% 
+  hist_missing_by(grouping_var = "latitude") 
 ```
 
 
@@ -152,8 +187,7 @@ Overall, we notice that, along the time dimension data almost seems to be missin
 ```{r}
 data %>%  
   mutate(year = year(date)) %>% 
-  filter(year != 2014) %>% 
-  hist_missing_by(variable_missing = "concentration", grouping_var = "year")
+  hist_missing_by(grouping_var = "year") 
 ```
 
 We look at whether this variation comes more from some pollutants than others.
@@ -175,7 +209,7 @@ Zooming in and looking at monthly data, we can see that this decreasing trend is
 ```{r}
 data %>%  
   mutate(year_month = paste(year(date), str_pad(month(date), 2, pad = 0))) %>% 
-  hist_missing_by(variable_missing = "concentration", grouping_var = "year_month") 
+  hist_missing_by(grouping_var = "year_month") 
 ```
 
 
@@ -186,14 +220,14 @@ We now investigate whether the share of missing data varies across month of the 
 ```{r}
 data %>%
   mutate(month = factor(month(date))) %>% 
-  hist_missing_by(variable_missing = "concentration", grouping_var = "month")
+  hist_missing_by(grouping_var = "month")
 
 data %>%  
   mutate(
     year = factor(year(date)), 
     month = factor(month(date))
   ) %>% 
-  hist_missing_by(variable_missing = "concentration", grouping_var = "month", facet_var = "year")
+  hist_missing_by(grouping_var = "month", facet_var = "year")
 ```
 
 ### Day of the month
@@ -201,21 +235,21 @@ data %>%
 ```{r}
 data %>%
   mutate(day_of_month = factor(day(date))) %>% 
-  hist_missing_by(variable_missing = "concentration", grouping_var = "day_of_month")
+  hist_missing_by(grouping_var = "day_of_month")
 
 data %>%  
   mutate(
     year = factor(year(date)), 
     day_of_month = factor(day(date))
   ) %>% 
-  hist_missing_by(variable_missing = "concentration", grouping_var = "day_of_month", facet_var = "year")
+  hist_missing_by(grouping_var = "day_of_month", facet_var = "year")
 
 data %>%  
   mutate(
     month = factor(month(date)), 
     day_of_month = factor(day(date))
   ) %>% 
-  hist_missing_by(variable_missing = "concentration", grouping_var = "day_of_month", facet_var = "month")
+  hist_missing_by(grouping_var = "day_of_month", facet_var = "month")
 ```
 
 ### Day of the week
@@ -223,21 +257,21 @@ data %>%
 ```{r}
 data %>%
   mutate(day_in_week = factor(wday(date))) %>% 
-  hist_missing_by(variable_missing = "concentration", grouping_var = "day_in_week")
+  hist_missing_by(grouping_var = "day_in_week")
 
 data %>%  
   mutate(
     year = factor(year(date)), 
     day_in_week = factor(wday(date))
   ) %>% 
-  hist_missing_by(variable_missing = "concentration", grouping_var = "day_in_week", facet_var = "year")
+  hist_missing_by(grouping_var = "day_in_week", facet_var = "year")
 
 data %>%  
   mutate(
     month = factor(month(date)), 
     day_in_week = factor(wday(date))
   ) %>% 
-  hist_missing_by(variable_missing = "concentration", grouping_var = "day_in_week", facet_var = "month")
+  hist_missing_by(grouping_var = "day_in_week", facet_var = "month")
 ```
 
 
@@ -248,7 +282,7 @@ Now we investigate whether there are some variation in missingness patterns acro
 ```{r}
 data %>%
   mutate(hour = factor(hour(date))) %>% 
-  hist_missing_by(variable_missing = "concentration", grouping_var = "hour")
+  hist_missing_by(grouping_var = "hour")
 ```
 
 
@@ -257,7 +291,7 @@ data %>%
 ```{r}
 data %>%
   mutate(hour = factor(hour(date))) %>% 
-  hist_missing_by(variable_missing = "concentration", grouping_var = "hour", facet_var = "pollutant")
+  hist_missing_by(grouping_var = "hour", facet_var = "pollutant")
 ```
 
 
@@ -267,31 +301,31 @@ data %>%
 
 ```{r}
 data %>%
-  line_missing_by(variable_missing = "concentration", grouping_var = "temperature")
+  line_missing_by(grouping_var = "temperature")
 ```
 
 ### Wind
 
 ```{r}
 data %>% 
-  line_missing_by(variable_missing = "concentration", grouping_var = "wind_speed")
+  line_missing_by(grouping_var = "wind_speed")
 ```
 
 ```{r}
 data %>% 
-  line_missing_by(variable_missing = "concentration", grouping_var = "wind_speed_max")
+  line_missing_by(grouping_var = "wind_speed_max")
 ```
 
 ```{r}
 data %>% 
-  line_missing_by(variable_missing = "concentration", grouping_var = "wind_direction") +
+  line_missing_by(grouping_var = "wind_direction") +
   coord_polar()
 ```
 
 
 ```{r}
 data %>% 
-  line_missing_by(variable_missing = "concentration", grouping_var = "wind_direction_max") +
+  line_missing_by(grouping_var = "wind_direction_max") +
   coord_polar()
 ```
 
@@ -299,13 +333,57 @@ data %>%
 
 ```{r}
 data %>% 
-  line_missing_by(variable_missing = "concentration", grouping_var = "rainfall_height") 
+  line_missing_by(grouping_var = "rainfall_height") 
 ```
+
+
 
 ```{r}
 data %>% 
-  line_missing_by(variable_missing = "concentration", grouping_var = "relative_humidity") 
+  line_missing_by(grouping_var = "rainfall_duration") 
 ```
 
+### Other weather variables
+
+```{r}
+data %>% 
+  line_missing_by(grouping_var = "relative_humidity") 
+```
+
+
+
+```{r}
+data %>% 
+  line_missing_by(grouping_var = "sea_level_pressure") 
+```
+
+
+```{r}
+data %>% 
+  line_missing_by(grouping_var = "insolation_duration") 
+```
+
+
+
+```{r}
+data %>% 
+  line_missing_by(grouping_var = "global_radiation") 
+```
+
+
+
+```{r}
+data %>% 
+  line_missing_by(grouping_var = "uv_radiation") 
+```
+
+
+
+```{r}
+small %>% 
+  mutate(missing = is.na(concentration)) %>% 
+  ggplot() +
+  geom_bar(aes(x = ))
+```
 
 
