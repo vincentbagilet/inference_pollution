@@ -515,18 +515,32 @@ length_missing_data %>%
 
 ### Coorelation between missingness length and weather variables
 
+```{r}
+plot_evolution_length <- function(var) {
+  var_name <- str_replace_all(var, pattern = "_", replacement = " ")
+  
+  graph <- length_missing_data %>% 
+    ggplot() + 
+    geom_bin2d(aes(x = .data[[var]], y = .data[["length_period_missing"]])) +
+    scale_x_continuous(trans = 'log10') + 
+    labs(title = paste("Relationship between length of periods with missing data", var), subtitle = "One observation per date", x = str_to_sentence(var_name), y =  "Length of missing period (in hours)") 
+  
+  if (substr(var, 1, 8) == "wind_dir") {
+    graph <- graph +
+      coord_polar()
+  }
+    
+  return(graph)
+}
+```
 
 
 ```{r}
-length_period_data %>% 
-  count(length_missing) %>% 
-  mutate(n = n/length_missing) 
+weather_var <- data %>% 
+  select(rainfall_height:uv_radiation) %>% 
+  names()
 
-%>% 
-  ggplot() + 
-    geom_point(aes(x = )) +
-  
-  scale_x_continuous(trans = 'log10') +
+purrr::map(weather_var, plot_evolution_length)
 ```
 
 
