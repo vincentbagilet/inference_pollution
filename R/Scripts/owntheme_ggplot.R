@@ -31,5 +31,5 @@ mpg %>%
     geom_col() +
     theme_mediocre() +
     scale_mediocre_d() +
-    labs(title = "A very nice title", subtitle = "A desapointing subtitle")
+    labs(title = "A very nice title", subtitle = "A disapointing subtitle")
   
