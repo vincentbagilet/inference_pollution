@@ -10,17 +10,17 @@ author:
     affiliation: Paris School of Economics
     affiliation_url: https://www.parisschoolofeconomics.eu/en/
 date: "`r Sys.Date()`"
-output:
-  html_notebook:
-    toc: no
-    theme: simplex
-    highlight: pygments
-  html_document:
-    theme: simplex
-    highlight: pygments
+# output:
+#   html_notebook:
+#     toc: no
+#     theme: simplex
+#     highlight: pygments
+#   html_document:
+#     theme: simplex
+#     highlight: pygments
+# ---
+output: distill::distill_article
 ---
-<!-- output: distill::distill_article -->
-<!-- --- -->
 
 <style>
 body {
@@ -32,10 +32,10 @@ library(knitr)
 opts_chunk$set(fig.path = "images/",
                cache.path = "cache/",
                cache = FALSE,
-               echo = TRUE,
+               echo = TRUE, #set to false to hide code
                message = FALSE,
                warning = FALSE,
-               out.width = "70%",
+               out.width = "85%",
                dpi = 300,
                fig.align = "center")  
 ```  
@@ -187,7 +187,7 @@ It seems that most weather covariates are balanced between the two groups. Avera
 
 We can refine this analysis by looking separately across cities.
 
-```{r}
+```{r fig.height=4.5}
 data_clean_continuous <- data %>%
   select(elevation:elevation_weather_station, rainfall_height:school_holiday, missing, city)
 
@@ -275,7 +275,7 @@ hist_missing_by <- function(df, variable_missing = "concentration", grouping_var
   if (substr(grouping_var, 1, 8) == "wind_dir") {
     graph <- graph +
       coord_polar() + 
-      ylim(0, 0.1) 
+      ylim(0, y_axis_to/3) 
   }
   
   
