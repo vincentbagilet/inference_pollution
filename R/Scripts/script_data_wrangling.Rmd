@@ -140,8 +140,7 @@ metadata_stations <- metadata_stations %>%
   select(site:data_source, city) %>%
   unnest(city) %>%
   filter(city %in% c("Bordeaux", "Clermont-Ferrand", "Dijon", "Grenoble",
-                     "Le Havre", "Lille", "Lyon", "Marseille", "Montpellier", "Nancy", "Nantes",
-                     "Nice", "Paris", "Rennes", "Rouen", "Strasbourg", "Toulouse"))
+                     "Le Havre", "Lille", "Lyon", "Marseille", "Montpellier", "Nancy", "Nantes", "Nice", "Paris", "Rennes", "Rouen", "Strasbourg", "Toulouse"))
   
 # save the metadata
 saveRDS(metadata_stations, here::here("1.data", "1.raw_data", "1.pollution_data", "metadata_air_pollution_stations.RDS"))
@@ -468,7 +467,10 @@ clean_metadata_weather <- readRDS("../Outputs/clean_metadata_weather.RDS")
 clean_pollution_data <- readRDS("../Outputs/clean_pollution_data.RDS")
 clean_weather_data <- readRDS("../Outputs/clean_weather_data.RDS")
 holidays <- readRDS("../Outputs/holidays.RDS")
+```
 
+
+```{r}
 metadata_pollution <- clean_metadata_pollution %>% 
   select(-network:-data_source, -site_name, -opening_date, -closing_date) 
 
@@ -480,8 +482,8 @@ data_imputation <- clean_pollution_data %>%
   select(date, city, pollutant, concentration, everything()) %>% 
   mutate(date_day = lubridate::date(date)) %>% 
   mutate(
-    holiday_zone = ifelse(city %in% c("Caen", "Clermont", "Grenoble", "Lyon", "Montpellier", "Nancy", "Metz", "Nantes", "Rennes", "Toulouse"), "a",
-                  ifelse(city %in% c("Aix", "Marseille", "Amiens", "Besancon", "Dijon", "Lille", "Limoges", "Nice", "Orleans", "Tours", "Poitiers", "Reims", "Rouen", "Strasbourg"), "b", 
+    holiday_zone = ifelse(city %in% c("Caen", "Clermont-Ferrand", "Grenoble", "Lyon", "Montpellier", "Nancy", "Metz", "Nantes", "Rennes", "Toulouse"), "a",
+                  ifelse(city %in% c("Aix", "Marseille", "Amiens", "Besancon", "Dijon", "Lille", "Limoges", "Le Havre", "Nice", "Orleans", "Tours", "Poitiers", "Reims", "Rouen", "Strasbourg"), "b", 
                   ifelse(city %in% c("Bordeaux", "Creteil", "Paris", "Versailles"), "c", NA)))
   ) %>% 
   left_join(holidays, by = c("date_day", "holiday_zone")) %>% 
