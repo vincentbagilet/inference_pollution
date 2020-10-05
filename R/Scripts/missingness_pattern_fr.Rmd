@@ -10,17 +10,17 @@ author:
     affiliation: Paris School of Economics
     affiliation_url: https://www.parisschoolofeconomics.eu/en/
 date: "`r Sys.Date()`"
-# output:
-#   html_notebook:
-#     toc: no
-#     theme: simplex
-#     highlight: pygments
-#   html_document:
-#     theme: simplex
-#     highlight: pygments
-# ---
-output: distill::distill_article
+output:
+  html_notebook:
+    toc: no
+    theme: simplex
+    highlight: pygments
+  html_document:
+    theme: simplex
+    highlight: pygments
 ---
+<!-- # output: distill::distill_article -->
+<!-- # --- -->
 
 <style>
 body {
@@ -32,7 +32,7 @@ library(knitr)
 opts_chunk$set(fig.path = "images/",
                cache.path = "cache/",
                cache = FALSE,
-               echo = TRUE, #set to false to hide code
+               echo = FALSE, #set to false to hide code
                message = FALSE,
                warning = FALSE,
                out.width = "85%",
@@ -77,21 +77,29 @@ rm(data_imputation)
 ```
 
 
-# Share of missing data in covariates
+# Proportion of missing data in covariates
 
-```{r}
-data %>% 
+```{r fig.height = 3, fig.width=4}
+table_prop_missing_covar <- data %>% 
   select(-(pollutant:averaging_time), -concentration, -(year:hour)) %>% 
   distinct() %>% 
   summarise_all(function(x) {sum(is.na(x), na.rm = TRUE)/n()}) %>% 
   pivot_longer(everything(), names_to = "variable_name", values_to = "prop_missing") %>%
-  mutate(variable_name = str_replace_all(variable_name, pattern = "_", replacement = " ") %>% str_to_sentence()) %>% 
+  mutate(variable_name = str_replace_all(variable_name, pattern = "_", replacement = " ") %>% str_to_sentence()) 
+
+table_prop_missing_covar %>% 
+  ggplot(aes(x = prop_missing, y = variable_name)) +
+  geom_col() +
+  labs(title = "Proportion of missing data by covariate", x = "Proportion of missing data", y = "")
+
+table_prop_missing_covar %>% 
   kable(col.names = c("Variable", "Proportion of missing values"))
 ```
 
+
 In order to understand these previous results, we break down the analysis by year and represent the results in a graph, for readability.
 
-```{r}
+```{r fig.height = 4, fig.width=4}
 covar_missing_year <- data %>% 
   # slice(1:10000) %>%
   select(-(pollutant:averaging_time), -concentration, -(month:hour)) %>% 
@@ -103,9 +111,8 @@ covar_missing_year <- data %>%
 
 covar_missing_year %>%
   ggplot() +
-  geom_col(aes(x = variable_name,  y = prop_missing, fill = year), position = "dodge") +
-  coord_flip() +
-  labs(title = "Proportion of missing data by covariate", subtitle = "By year", y = "Proportion of missing data", x = "")
+  geom_col(aes(y = variable_name,  x = prop_missing, fill = year), position = "dodge") +
+  labs(title = "Proportion of missing data by covariate", subtitle = "By year", x = "Proportion of missing data", y = "")
 ```
 
 In complete case analyses, observations for which any variable is missing are dropped. One may therefore wonder what is the share of dropped observations in a complete case analysis. We only consider variables which are potentially relevant. We also drop the UV radiation variable due to its large share of missingness.
@@ -187,7 +194,7 @@ It seems that most weather covariates are balanced between the two groups. Avera
 
 We can refine this analysis by looking separately across cities.
 
-```{r fig.height=4.5}
+```{r fig.height = 5, fig.width=4}
 data_clean_continuous <- data %>%
   select(elevation:elevation_weather_station, rainfall_height:school_holiday, missing, city)
 
@@ -463,7 +470,7 @@ In this section, we explore the length of periods with missing observations. Thi
 
 First, we explore the length of missing observations by looking at the displaying, in an heatmat, for each couple station*date, whether concentration data is missing. We break this down into years for readibility. 
 
-```{r heatmap}
+```{r heatmap, fig.height = 8, fig.width=4}
 heatmap_missingness <- function(df, y) {
   
   graph <- df %>% 
@@ -476,7 +483,10 @@ heatmap_missingness <- function(df, y) {
     # theme_minimal() +
     facet_wrap(~ pollutant) +
     scale_fill_manual(values = c("#580E3C", "#FAB737")) +
-    theme(panel.grid.major.y = element_blank()) +
+    theme(
+      panel.grid.major.y = element_blank(), 
+      axis.text.x = element_text(angle = 45, hjust = 1)
+    ) +
     labs(title = paste("Intervals with missing concentration data pollutant in", y, sep = " "), x = "Date", y =  "Air pollution station")
     
   return(graph)
@@ -534,7 +544,7 @@ graph_distrib_length <- function(df, density, bins_adjust) {
     graph <- graph +
     scale_x_continuous(trans = 'log10') +
     facet_wrap(~pollutant) +
-    labs(title = "Repartition of the length of periods of missing data", subtitle = paste("Comparison across pollutants - One observation per", per, sep = " "), x = "Number of consecutive hours of missing data") 
+    labs(title = "Repartition of the length of missingness periods", subtitle = paste("Comparison across pollutants - One observation per", per, sep = " "), x = "Number of consecutive hours of missing data") 
     
     return(graph)
 }
@@ -585,7 +595,7 @@ plot_evolution_length <- function(df, var, per) {
     geom_bin2d() +
     # geom_point(alpha = 0.1) +
     scale_y_continuous(trans = 'log10') +
-    labs(title = paste("Relationship between length of periods with missing data", var_name), subtitle = paste("One observation per", per), x = str_to_sentence(var_name), y =  "Length of missing period (in hours)") 
+    labs(title = paste("Relationship between length of missingness periods and", var_name), subtitle = paste("One observation per", per), x = str_to_sentence(var_name), y =  "Length of missing period (in hours)") 
   
   if (substr(var, 1, 8) == "wind_dir") {
     graph <- graph +
@@ -597,7 +607,7 @@ plot_evolution_length <- function(df, var, per) {
 ```
 
 
-```{r}
+```{r fig.height = 3.5, fig.width=4}
 purrr::map(covariates_weather, plot_evolution_length, df = length_missing_data, per = "date")
 ```
 
