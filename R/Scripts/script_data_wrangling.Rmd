@@ -275,7 +275,7 @@ wrangled_pollution_data %>%
 Then, some observations have an averaging time of 2h. All these observations were measured between midnight and 2am or between 11pm and 1am. In addition, for each observation with an averaging time of two hours, the dataset also contains the two corresponding observations with a one hour average:
 
 ```{r}
-t <- clean_pollution_data %>% 
+t <- wrangled_pollution_data %>% 
   arrange(site, pollutant, date) %>% 
   group_by(site, pollutant, date) %>% 
   mutate(obs_given_date = n()) %>% 
