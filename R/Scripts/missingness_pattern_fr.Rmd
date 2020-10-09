@@ -44,7 +44,7 @@ opts_chunk$set(fig.path = "images/",
 library(tidyverse)
 library(mediocrethemes)
 library(lubridate)
-# library(leaflet)
+library(leaflet)
 
 set_mediocre_all()
 ```
@@ -140,6 +140,24 @@ metadata_pollution %>%
   count(city) %>% 
   kable(col.names = c("City", "Number of stations"))
 ```
+
+```{r}
+content <- paste("City:", metadata_pollution$city, "<br/>",
+                 "Station area:", metadata_pollution$site_area, "<br/>")
+pal <- colorFactor("Dark2", domain = metadata_pollution$site_type) 
+color_in_subsample <- pal(metadata_pollution$site_type)
+
+metadata_pollution %>%
+  select(site, longitude,latitude, site_area, site_type, city) %>%
+  distinct() %>%
+  leaflet() %>%
+  addTiles() %>%
+  addProviderTiles("Esri.WorldGrayCanvas") %>%
+  addCircles(popup = content, lng = ~longitude, lat = ~latitude) %>%
+  addCircles(col = color_in_subsample, popup = content, lng = ~longitude, lat = ~latitude) %>%
+  addLegend(pal = pal, values = ~metadata_pollution$site_type , title = "Station type")
+```
+
 
 # Missing data patterns in air pollution data
 
