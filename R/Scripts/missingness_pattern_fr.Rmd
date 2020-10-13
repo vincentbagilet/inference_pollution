@@ -55,7 +55,7 @@ data_imputation <- readRDS("../Outputs/data_imputation.RDS")
 # raw <- readRDS("../Outputs/raw_air_pollution_data.RDS")
 ```
 
-In this document, we analyse missing data patterns in the dataset. 
+In this document, we carry out a first analysis of missing data patterns in the dataset. Graphs and figures displayed in this document are purely informative and not intended for publication in their current state. Most graph are produced using loops and therefore display standard and uniform settings. Some fine tuning should be performd to produce specific graphs to be published.
 
 First of all, we noticed that there are some issues with the dataset and therefore, for now, we restrict the dataset to observations not subject to these issues. In particular, we do not have any pollution data for 2014 nor for NO in 2015 and very few observations for PMs in 2019. These issue do not come from actual missing data but are due to issue with the package we used to access the pollution data. These data are available through the EEA interface.
 
@@ -69,9 +69,9 @@ data <- data_imputation %>%
     hour = as.factor(hour(date)),
     missing = is.na(concentration)
   ) %>% 
-  filter(year != 2014) %>% 
-  filter(!(year == 2015 & pollutant == "no")) %>% 
-  filter(!(year == 2019 & str_sub(pollutant, 1, 2) == "pm")) 
+  filter(year != 2012) %>% 
+  filter(!(year %in% c(2008:2010, 2014, 2015, 2019, 2020) & pollutant == "no")) %>% 
+  filter(!(year %in% c(2008:2010, 2019) & str_sub(pollutant, 1, 2) == "pm")) 
   
 rm(data_imputation)
 ```
@@ -143,7 +143,10 @@ metadata_pollution %>%
 
 ```{r}
 content <- paste("City:", metadata_pollution$city, "<br/>",
-                 "Station area:", metadata_pollution$site_area, "<br/>")
+                 "Station area:", metadata_pollution$site_area, "<br/>",
+                 "Opening date:", metadata_pollution$opening_date, "<br/>",
+                 "Closing date:", metadata_pollution$closing_date, "<br/>",
+                 "Elevation:", metadata_pollution$elevation, "<br/>")
 pal <- colorFactor("Dark2", domain = metadata_pollution$site_type) 
 color_in_subsample <- pal(metadata_pollution$site_type)
 
@@ -247,6 +250,26 @@ data_abs_difference %>%
   labs(title = "Covariate balance" , x = "Standardized Mean Differences", y = "")
 
 ```
+
+### Distribution of covariates
+
+It might also be interesting to see whether covariates have a similar distribution for observations where data is missing and when it is not.
+
+```{r}
+graph_desity_covariate <- function(df, covar) {
+  df %>% 
+  ggplot() + 
+  geom_density(aes(x = .data[[covar]], fill = missing), alpha = 0.25) +
+    labs(title = paste("Distribution of", covar), subtitle = "Comparison beween dates with missing and non missing concentrations", y = "Density", x = str_to_sentence(str_replace_all(covar, pattern = "_", replacement = " "))) 
+}
+
+continuous_var_names <- data %>% 
+  select(elevation:elevation_weather_station, rainfall_height:school_holiday, missing) %>% 
+  names()
+  
+map(continuous_var_names, graph_desity_covariate, df = data)
+```
+
 
 ## Evolution of the share of missing values with the values of covariates
 
@@ -510,10 +533,12 @@ heatmap_missingness <- function(df, y) {
   return(graph)
 }
 
-purrr::map(c(2013, 2015:2019), heatmap_missingness, df = data)
+purrr::map(c(2008:2011, 2013:2019), heatmap_missingness, df = data)
 ```
 
 Then, we look at the length of periods with missing data. First, we can either count each the number of periods with a given length (*eg* 3 periods have a length of missing data of 5 hours) or count the number of dates belonging to periods with a given length (considering the same example, 15 dates belong to a period of missing data of length 5 hours). We denote the former case "One observation per period" and the later "One observation per date".
+
+We might be interested in looking at the length of missing periods for different pollutants. The method to measure concentration varies across pollutants and reasons for missing data may depend on the method. Particulate matter is measured with filters which can become cluttered. This could lead to rather long missing periods, with the necessary time to clean the filter. Gaseous pollutants are measured using optical methods and thus not subject to cluttered filters. 
 
 ```{r}
 #give each missingness period an id (row_number of the first missing observation)
