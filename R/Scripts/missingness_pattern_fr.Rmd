@@ -264,10 +264,30 @@ graph_desity_covariate <- function(df, covar) {
 }
 
 continuous_var_names <- data %>% 
-  select(elevation:elevation_weather_station, rainfall_height:school_holiday, missing) %>% 
+  select(rainfall_height:uv_radiation) %>% 
   names()
   
 map(continuous_var_names, graph_desity_covariate, df = data)
+```
+
+```{r}
+graph_hist_covariate <- function(df, covar) {
+  covar_name <- str_replace_all(covar, pattern = "_", replacement = " ")
+  
+  data %>% 
+  count(missing, .data[[covar]]) %>% 
+  group_by(missing) %>% 
+  mutate(prop = n/sum(n)) %>% 
+  ggplot() +
+  geom_col(aes(x = .data[[covar]], y = prop, fill = missing), position = "dodge") +
+    labs(title = paste("Distribution of", covar_name), subtitle = "Comparison beween dates with missing and non missing concentrations", y = paste("Proportion in", covar_name), x = str_to_sentence(covar_name)) 
+}
+
+discrete_var_names <- data %>% 
+  select(site_type, site_area, holiday_zone:hour) %>% 
+  names()
+
+map(discrete_var_names, graph_hist_covariate, df = data)
 ```
 
 
