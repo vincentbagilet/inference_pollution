@@ -36,7 +36,7 @@ opts_chunk$set(fig.path = "images/",
                message = FALSE,
                warning = FALSE,
                out.width = "85%",
-               dpi = 300,
+               dpi = 200,
                fig.align = "center")  
 ```  
 
@@ -69,9 +69,13 @@ data <- data_imputation %>%
     hour = as.factor(hour(date)),
     missing = is.na(concentration)
   ) %>% 
-  filter(year != 2012) %>% 
-  filter(!(year %in% c(2008:2010, 2014, 2015, 2019, 2020) & pollutant == "no")) %>% 
-  filter(!(year %in% c(2008:2010, 2019) & str_sub(pollutant, 1, 2) == "pm")) 
+  filter(year != 2014) %>% 
+  filter(!(year == 2015 & pollutant == "no")) %>% 
+  filter(!(year == 2019 & str_sub(pollutant, 1, 2) == "pm")) 
+# For "new" dataset
+  # filter(year != 2012) %>%  
+  # filter(!(year %in% c(2008:2010, 2014, 2015, 2019, 2020) & pollutant == "no")) %>% 
+  # filter(!(year %in% c(2008:2010, 2019) & str_sub(pollutant, 1, 2) == "pm")) 
   
 rm(data_imputation)
 ```
@@ -256,38 +260,92 @@ data_abs_difference %>%
 It might also be interesting to see whether covariates have a similar distribution for observations where data is missing and when it is not.
 
 ```{r}
-graph_desity_covariate <- function(df, covar) {
-  df %>% 
+graph_desity_covariate <- function(df, covar, facet_var = NA) {
+  covar_name <- str_replace_all(covar, pattern = "_", replacement = " ")
+  
+  graph <- df %>% 
   ggplot() + 
   geom_density(aes(x = .data[[covar]], fill = missing), alpha = 0.25) +
-    labs(title = paste("Distribution of", covar), subtitle = "Comparison beween dates with missing and non missing concentrations", y = "Density", x = str_to_sentence(str_replace_all(covar, pattern = "_", replacement = " "))) 
+    labs(title = paste("Distribution of", covar_name), subtitle = "Comparison between dates with missing and non missing concentrations", y = "Density", x = str_to_sentence(covar_name)) 
+  
+  if (!is.na(facet_var)) {
+    graph <- graph +
+      facet_wrap(facets = facet_var)
+  } 
+  
+  return(graph)
 }
 
 continuous_var_names <- data %>% 
   select(rainfall_height:uv_radiation) %>% 
   names()
   
-map(continuous_var_names, graph_desity_covariate, df = data)
+map(continuous_var_names, graph_desity_covariate, df = data, facet_var = NA)
 ```
 
 ```{r}
-graph_hist_covariate <- function(df, covar) {
+graph_hist_covariate <- function(df, covar, facet_var = NA) {
   covar_name <- str_replace_all(covar, pattern = "_", replacement = " ")
   
-  data %>% 
-  count(missing, .data[[covar]]) %>% 
-  group_by(missing) %>% 
-  mutate(prop = n/sum(n)) %>% 
-  ggplot() +
-  geom_col(aes(x = .data[[covar]], y = prop, fill = missing), position = "dodge") +
-    labs(title = paste("Distribution of", covar_name), subtitle = "Comparison beween dates with missing and non missing concentrations", y = paste("Proportion in", covar_name), x = str_to_sentence(covar_name)) 
+  graph <- df %>% 
+    group_by_("missing", covar, facet_var) %>% 
+    summarise(n = n()) %>% 
+    group_by_("missing", facet_var) %>% 
+    mutate(prop = n/sum(n)) %>% 
+    ggplot() +
+    geom_col(aes(x = .data[[covar]], y = prop, fill = missing), position = "dodge") +
+      labs(title = paste("Distribution of", covar_name), subtitle = "Comparison between dates with missing and non missing concentrations", y = paste("Proportion in", covar_name), x = str_to_sentence(covar_name)) 
+  
+  if (!is.na(facet_var)) {
+    graph <- graph +
+    facet_wrap(facets = facet_var)
+  } 
+  
+  return(graph)
 }
 
 discrete_var_names <- data %>% 
   select(site_type, site_area, holiday_zone:hour) %>% 
   names()
 
-map(discrete_var_names, graph_hist_covariate, df = data)
+map(discrete_var_names, graph_hist_covariate, df = data, facet_var = NA)
+```
+
+One may also be interested in looking at these distributions by pollutant.
+
+```{r}
+map(continuous_var_names, graph_desity_covariate, df = data, facet_var = "pollutant")
+
+map(discrete_var_names, graph_hist_covariate, df = data, facet_var = "pollutant")
+```
+
+
+### Last value before missing
+
+If data is missing due to external factors, what matters might be the value of these external factor when the data started missing, *ie* potentially when the sensor first became defective. As a consequence, we look into the distribution of the covariates for the last value before a missing concentration observation.
+
+```{r}
+first_missing <- data %>% 
+  group_by(site, pollutant) %>% 
+  arrange(date) %>% 
+  mutate(
+    first_missing = ifelse(lag(missing) == FALSE & missing == TRUE, TRUE, FALSE),
+  ) %>% 
+  filter(first_missing | !missing) %>% 
+  fill(concentration)
+  
+map(c("concentration", continuous_var_names), graph_desity_covariate, df = first_missing, facet_var = NA)
+map(c("concentration", continuous_var_names), graph_desity_covariate, df = first_missing, facet_var = "pollutant")
+
+
+map(discrete_var_names, graph_hist_covariate, df = first_missing, facet_var = NA)
+map(discrete_var_names, graph_hist_covariate, df = first_missing, facet_var = "pollutant")
+```
+
+For concentration, we carry the last value forward in order to see whether missing concentration data is associated with different concentration values, just before the data is missing as compared to when concentration data is not missing. We also filter out high concentration values in order to see the distribution more clearly.
+
+```{r fig.asp = 3}
+graph_desity_covariate(df = filter(first_missing, concentration < 100) ,covar = "concentration") + facet_wrap(~ pollutant, ncol = 1)
 ```
 
 
@@ -428,7 +486,7 @@ purrr::map(covariates_weather, hist_missing_by, df = data, variable_missing = "c
 
 ### Only consider first missing value
 
-If data is missing due to external factors, what matters might be the value of these external factor when the data started missing, *ie* potentially when the sensor first became defective. As a consequence, we plot the same graphs as before but only considering hours were the data started missing, not considering later and consecutive missing observations.
+We plot the same graphs as before but only considering hours were the data started missing, not considering later and consecutive missing observations.
 
 As compared to the full sample, the share of missing data decreases since we discarded many observations with missing values (every observation which was not the first observation of their period of missing data). Hence, the share of missing data is not informative in itself, only potential differences in this share across "grouping variables".
 
@@ -553,7 +611,9 @@ heatmap_missingness <- function(df, y) {
   return(graph)
 }
 
-purrr::map(c(2008:2011, 2013:2019), heatmap_missingness, df = data)
+purrr::map(c(2013, 2015:2019), heatmap_missingness, df = data)
+# For "new" dataset
+# purrr::map(c(2008:2011, 2013:2019), heatmap_missingness, df = data)
 ```
 
 Then, we look at the length of periods with missing data. First, we can either count each the number of periods with a given length (*eg* 3 periods have a length of missing data of 5 hours) or count the number of dates belonging to periods with a given length (considering the same example, 15 dates belong to a period of missing data of length 5 hours). We denote the former case "One observation per period" and the later "One observation per date".
@@ -685,8 +745,5 @@ weather_length_data <- length_missing_data %>%
 
 purrr::map(covariates_weather, plot_evolution_length, df = weather_length_data, per = "period")
 ```
-
-
-
 
 
