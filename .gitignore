@@ -41,3 +41,6 @@ vignettes/*.pdf
 # Data
 R/Inputs
 R/Outputs
+
+# Images
+R/Scripts/images
