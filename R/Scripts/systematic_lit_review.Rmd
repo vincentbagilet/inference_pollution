@@ -1,0 +1,69 @@
+---
+title: "Systematic literature review"
+subtitle: "Missing data in studies of health effects of air pollution"
+output: 
+  html_notebook: 
+    toc: yes
+    theme: simplex
+    highlight: pygments
+  html_document:
+    theme: simplex
+    highlight: pygments
+author: "Vincent Bagilet, Léo Zabrocki"
+date: "October 30, 2020"
+---
+
+```{r setup, include=FALSE, results='hide', warning=FALSE}
+library(knitr)
+opts_chunk$set(fig.path = "images/",
+               cache.path = "cache/",
+               cache = FALSE,
+               echo = TRUE,
+               message = FALSE,
+               warning = FALSE)  
+```  
+
+```{r include=FALSE}
+library(tidyverse)
+library(fulltext)
+```
+
+## Purpose of the document
+
+In the present document, we aim to conduct a systematic review of the literature on health effects of air pollution. We carry out an extremely simple text mining analysis of this literature in order to have a sense of the proportion of articles studying health effects of air pollution data taking the issue of missing data into account.
+
+## Retreiving article texts
+
+To carry out this analysis, we use the [`fulltext`](https://books.ropensci.org/fulltext/) package to get the full text of each article whose title contains the words "air pollution" and "health". This set of articles might be too restrictive and we may want to broaden our scope later. 
+
+To begin with, we focus on articles published on Scopus (one needs to register to get an API key).
+
+
+```{r}
+#set folder to store downloads
+cache_options_set(full_path = "/Users/vincentbagilet/Documents/fulltext")
+
+#ft_search() to run a search
+search <- ft_search("air pollution health", from = "scopus", limit = 3)
+
+#retreive the full text
+search$plos$data$id %>% 
+  ft_get(progress = TRUE) 
+
+#put text into a table format
+with_text <- ft_table() #searches for documents in the cache directory 
+
+with_text %>% 
+  mutate(
+    contains_missing = str_detect(text, pattern = "missing")
+  )
+
+#I need to pipe all this of course but I am just recording this so that I do not forget
+```
+
+Once we have accessed files
+
+
+
+
+
