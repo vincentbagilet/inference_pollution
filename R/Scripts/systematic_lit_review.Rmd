@@ -36,33 +36,62 @@ In the present document, we aim to conduct a systematic review of the literature
 
 To carry out this analysis, we use the [`fulltext`](https://books.ropensci.org/fulltext/) package to get the full text of each article whose title contains the words "air pollution" and "health". This set of articles might be too restrictive and we may want to broaden our scope later. 
 
-To begin with, we focus on articles published on Scopus (one needs to register to get an API key).
+To begin with, we focus on articles published on Scopus and Pubmed. To access Scopus API, one needs to register to get an API key (stored in the .Renviron) for Elsevier and a Crossref TDM API key. Note that downloading of full texts may not work if one is not connected directly to their institution internet network. Pubmed articles are accessed via Entrez. An API key enables to increase the number of requests per seconds from 3 to 10. More information on authentification is available on [the `fulltext` manual](https://books.ropensci.org/fulltext/authentication.html).
+
+### Set of articles to consider
+
+First of all, we need to clearly define the set of articles we want to consider in this analysis. Our baseline search querry is: `"air pollution" AND ("emergency" OR "mortality") AND ("particulate matter" OR ozone OR "nitrogen dioxyde" OR "sulfur dioxyde")`. This returns about 57000 articles (without accounting for duplicates in between journals). This number being rather large, we want to narrow it down. To focus on the epidemiological literature, we add the query term `poisson`. To get causal analyses, we add the term `causal`. It returns `r search$entrez$found + search$scopus$found` articles.
 
 
 ```{r}
 #set folder to store downloads
 cache_options_set(full_path = "/Users/vincentbagilet/Documents/fulltext")
+# cache_options_set(full_path = "/Volumes/VincentSSD/Research_data/air_pollution/lit_review")
+
+query <- 'TITLE(("air pollution"  OR  "air quality") AND ("emergency" OR "mortality" OR "health")) AND ("particulate matter" OR ozone OR "nitrogen dioxide" OR "sulfur dioxide") AND (poisson OR causal)'
 
 #ft_search() to run a search
-search <- ft_search("air pollution health", from = "scopus", limit = 3)
+search <- ft_search(query, from = c("scopus", "entrez"), limit = 2)
+# search <- ft_search("test", limit = 100, from = "scopus")
 
-#retreive the full text
-search$plos$data$id %>% 
-  ft_get(progress = TRUE) 
+metadata_scopus <- search$scopus$data %>% 
+  as_tibble() %>%  
+  rename_all(function(x) str_remove_all(names(.), "prism:|dc:")) %>% 
+  rename_all(function(x) str_replace_all(names(.), "-", "_"))
 
-#put text into a table format
-with_text <- ft_table() #searches for documents in the cache directory 
+metadata_entrez <- search$entrez$data %>% 
+  as_tibble() %>% 
+  rename(id = uid)
 
-with_text %>% 
-  mutate(
-    contains_missing = str_detect(text, pattern = "missing")
-  )
+#download the full texts and store them in an xml format in the cache directory
+metadata_scopus$doi %>% 
+  ft_get(progress = TRUE)
 
-#I need to pipe all this of course but I am just recording this so that I do not forget
+metadata_entrez$doi %>% 
+  ft_get(from = "entrez", progress = TRUE)
 ```
 
-Once we have accessed files
+Once we have downloaded all the files, we can put them into a table format, before analysing them.
 
+```{r}
+#put text into a table format
+article_texts <- ft_table() %>% #searches for documents in the cache directory 
+  select(-paths) 
+
+saveRDS(article_texts, "../Outputs/article_texts.RDS")
+```
+
+To analyse the texts, we first start by simply exploring the proportion of articles mentioning the words "missing" and "power".
+
+```{r}
+readRDS("../Outputs/article_texts.RDS")
+
+article_texts %>% 
+  summarise(
+    contains_missing = sum(str_detect(text, pattern = "\\bmissing"))/n(), #could put a vector with various terms
+    contains_power = sum(str_detect(text, pattern = "\\bpower\\b"))/n() #statistical power
+  ) 
+```
 
 
 
