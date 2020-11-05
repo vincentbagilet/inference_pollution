@@ -206,7 +206,7 @@ In this section, we wrangle the data into a nice and convinient format.
 ```{r}
 #To avoid rerunning all the code, we reload the data here
 raw_metadata_pollution <- readRDS("../Inputs/metadata_air_pollution_stations.RDS")
-raw_pollution_data <- readRDS("../Inputs/raw_air_pollution_data.RDS")
+raw_pollution_data <- readRDS("../Inputs/raw_air_pollution_data_2008_2020.RDS")
 ```
 
 Our analysis focuses on 6 pollutants ($NO_2$, $NO$, $0_3$, $PM_{10}$, $PM_{2.5}$ and $SO_2$). We therefore filter out other pollutants. But first, we rename the variables in the dataset to work with more meaningful variable names. 
@@ -343,7 +343,7 @@ public_holidays <- read_csv(temp) %>%
 # Merge 
 holidays <- school_holidays %>% 
   full_join(public_holidays, by = "date") %>% 
-  filter(year(date) >= 2013, year(date) < 2020) %>% 
+  filter(year(date) >= 2013) %>% #, year(date) < 2020
   pivot_longer(starts_with("vacances"), names_to = "holiday_zone", names_prefix = "vacances_zone_", values_to = "school_holiday") %>% 
   mutate(
     public_holiday = ifelse(is.na(public_holiday), FALSE, public_holiday),
@@ -434,7 +434,7 @@ saveRDS(clean_weather_data, "../Outputs/clean_weather_data.RDS")
 Same goes for the metadata.
 
 ```{r}
-clean_metadata_weather <- metadata_weather_raw %>% 
+clean_metadata_weather <- raw_metadata_weather %>% 
   select(-starts_with("Remove")) %>% 
   rename(
     "weather_station_id" = "POSTE",
@@ -475,6 +475,7 @@ metadata_pollution <- clean_metadata_pollution %>%
   select(-network:-data_source, -site_name, -opening_date, -closing_date) 
 
 data_imputation <- clean_pollution_data %>% 
+  filter(year(date) >= 2013) %>% 
   left_join(metadata_pollution, by = "site") %>% 
   left_join(clean_metadata_weather, by = "city") %>% 
   left_join(clean_weather_data, by = c("date", "weather_station_id")) %>% # distinct to remove when error with Toulouse fixed
