@@ -54,6 +54,7 @@ library(kableExtra) # for table formatting
 library(Cairo) # for printing customed police of graphs
 library(beepr) # to set an alarm when long processing
 library(readr) # to read csv files
+library(openair) # to average wind hourly data to daily
 ```
 
 #  Air Pollution Data
@@ -478,7 +479,7 @@ data_imputation <- clean_pollution_data %>%
   filter(year(date) >= 2013) %>% 
   left_join(metadata_pollution, by = "site") %>% 
   left_join(clean_metadata_weather, by = "city") %>% 
-  left_join(clean_weather_data, by = c("date", "weather_station_id")) %>% # distinct to remove when error with Toulouse fixed
+  left_join(clean_weather_data, by = c("date", "weather_station_id")) %>% 
   select(-weather_station_id) %>% 
   select(date, city, pollutant, concentration, everything()) %>% 
   mutate(date_day = lubridate::date(date)) %>% 
@@ -493,5 +494,48 @@ data_imputation <- clean_pollution_data %>%
 saveRDS(data_imputation, "../Outputs/data_imputation.RDS")
 ```
 
+# Averaging by day and city
+
+The mortality and admission data we have access to is at the day x city level. Our weather and pollution data is at a hourly frequency. Pollution data is even at the pollution station level but we need data at the city level. In usual studies of health effects of air pollution, researchers usualy only consider background air pollution stations and average pollution values across stations and hours of a day. We use the same method.
+
+```{r}
+clean_metadata_pollution <- readRDS("../Outputs/clean_metadata_pollution.RDS")
+clean_metadata_weather <- readRDS("../Outputs/clean_metadata_weather.RDS")
+clean_pollution_data <- readRDS("../Outputs/clean_pollution_data.RDS")
+clean_weather_data <- readRDS("../Outputs/clean_weather_data.RDS")
+holidays <- readRDS("../Outputs/holidays.RDS")
+```
+
+When averaging hourly weather data to daily one, one needs to be careful that they should not simply average wind speed and wind direction values (cf [a technical note by Grange](https://www.researchgate.net/profile/Stuart_Grange2/publication/262766424_Technical_note_Averaging_wind_speeds_and_directions/links/54f6184f0cf27d8ed71d5bd4.pdf)). Therefore, we use the function `openair::timeAverage` to average them. 
+
+
+```{r}
+data_imputation <- readRDS("../Outputs/data_imputation.RDS")
+```
+
+```{r}
+data_daily <- data_imputation %>%  
+  filter(site_type == "background") %>% 
+  select(-site:-site_area, -wind_speed_max, -wind_direction_max) %>% 
+  rename(
+    ws = wind_speed,
+    wd = wind_direction
+  ) %>%
+  openair::timeAverage(type = c("city", "holiday_zone", "pollutant")) %>%
+  rename(
+    wind_speed = ws,
+    wind_direction = wd
+  ) %>% 
+  ungroup() %>% 
+  mutate(
+    pollutant = as.character(pollutant),
+    city = as.character(city),
+    date = date(date), 
+    public_holiday = as.logical(public_holiday),
+    school_holiday = as.logical(school_holiday)
+  )
+
+saveRDS(data_daily, "../Outputs/data_daily.RDS")
+```
 
 
