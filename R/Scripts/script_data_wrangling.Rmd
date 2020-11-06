@@ -447,7 +447,7 @@ clean_metadata_weather <- raw_metadata_weather %>%
   mutate(
     elevation_weather_station = as.double(elevation_weather_station),
     city = str_to_sentence(city),
-    city = recode(city, "Marignane" = "Marseille", "Octeville" = "Le Havre")
+    city = recode(city, "Marignane" = "Marseille", "Octeville" = "Le Havre", "Clermont" = "Clermont-Ferrand")
   )
 
 saveRDS(clean_metadata_weather, "../Outputs/clean_metadata_weather.RDS")
@@ -489,7 +489,8 @@ data_imputation <- clean_pollution_data %>%
                   ifelse(city %in% c("Bordeaux", "Creteil", "Paris", "Versailles"), "c", NA)))
   ) %>% 
   left_join(holidays, by = c("date_day", "holiday_zone")) %>% 
-  select(-date_day)
+  select(-date_day) %>%   
+  filter(date(date) < "2020-09-01") #only have weather observation up to this date
 
 saveRDS(data_imputation, "../Outputs/data_imputation.RDS")
 ```
@@ -508,7 +509,6 @@ holidays <- readRDS("../Outputs/holidays.RDS")
 
 When averaging hourly weather data to daily one, one needs to be careful that they should not simply average wind speed and wind direction values (cf [a technical note by Grange](https://www.researchgate.net/profile/Stuart_Grange2/publication/262766424_Technical_note_Averaging_wind_speeds_and_directions/links/54f6184f0cf27d8ed71d5bd4.pdf)). Therefore, we use the function `openair::timeAverage` to average them. 
 
-
 ```{r}
 data_imputation <- readRDS("../Outputs/data_imputation.RDS")
 ```
@@ -521,7 +521,7 @@ data_daily <- data_imputation %>%
     ws = wind_speed,
     wd = wind_direction
   ) %>%
-  openair::timeAverage(type = c("city", "holiday_zone", "pollutant")) %>%
+  openair::timeAverage(type = c("city", "pollutant")) %>%
   rename(
     wind_speed = ws,
     wind_direction = wd
@@ -532,8 +532,14 @@ data_daily <- data_imputation %>%
     city = as.character(city),
     date = date(date), 
     public_holiday = as.logical(public_holiday),
-    school_holiday = as.logical(school_holiday)
-  )
+    school_holiday = as.logical(school_holiday),
+    site = city,
+    concentration = ifelse(is.nan(concentration), NA, concentration),
+    holiday_zone = ifelse(city %in% c("Caen", "Clermont-Ferrand", "Grenoble", "Lyon", "Montpellier", "Nancy", "Metz", "Nantes", "Rennes", "Toulouse"), "a",
+                  ifelse(city %in% c("Aix", "Marseille", "Amiens", "Besancon", "Dijon", "Lille", "Limoges", "Le Havre", "Nice", "Orleans", "Tours", "Poitiers", "Reims", "Rouen", "Strasbourg"), "b", 
+                  ifelse(city %in% c("Bordeaux", "Creteil", "Paris", "Versailles"), "c", NA)))
+  ) %>% 
+  select(date, city, pollutant, concentration, site, everything()) #to have the same order of variables in both data sets
 
 saveRDS(data_daily, "../Outputs/data_daily.RDS")
 ```
