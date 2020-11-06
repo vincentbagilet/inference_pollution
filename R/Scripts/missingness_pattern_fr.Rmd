@@ -1,5 +1,5 @@
 ---
-title: "Analysis of missing data patterns (in hourly data set)"
+title: "Analysis of missing data patterns (in daily data set)"
 author:
   - name: Vincent Bagilet 
     url: https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet
@@ -52,13 +52,13 @@ set_mediocre_all()
 ```{r include=FALSE}
 metadata_pollution <- readRDS("../Outputs/clean_metadata_pollution.RDS")
 # raw <- readRDS("../Outputs/raw_air_pollution_data.RDS")
-hourly_daily <- "hourly"
+hourly_daily <- "daily" #Also need to hide/show section simultaneous missingness
 
 if (hourly_daily == "hourly") {
-  data_imputation <- readRDS("../Outputs/data_imputation.RDS") %>% 
+  data_load <- readRDS("../Outputs/data_imputation.RDS") %>% 
     mutate(hour = as.factor(hour(date)))
 } else {
-  data_imputation <- readRDS("../Outputs/data_imputation.RDS") %>% 
+  data_load <- readRDS("../Outputs/data_daily.RDS") %>% 
     mutate(site = city)
 }
 ```
@@ -68,7 +68,7 @@ In this document, we carry out a first analysis of missing data patterns in the 
 First of all, we noticed that there are some issues with the data set and therefore, for now, we restrict the data set to observations not subject to these issues. In particular, we do not have pollution data for NO in 2014, 2015, 2019 and 2020 and very few observations for PMs in 2019. These issue do not come from actual missing data but are due to issue with the package we used to access the pollution data. These data are available through the EEA interface.
 
 ```{r}
-data <- data_imputation %>%  
+data <- data_load %>%  
   mutate(
     year = as.factor(year(date)),
     month = as.factor(month(date)),
@@ -85,7 +85,7 @@ data <- data_imputation %>%
   filter(!(year %in% c(2008:2010, 2019) & str_sub(pollutant, 1, 2) == "pm")) %>% 
   select(-DIR) 
   
-rm(data_imputation)
+rm(data_load)
 ```
 
 
@@ -94,8 +94,19 @@ rm(data_imputation)
 We fist analyse the proportion of missing observations for each covariate.
 
 ```{r fig.asp = 0.8}
+if (hourly_daily == "hourly") {
+  names_prop <- data %>%
+    select(-(pollutant:averaging_time), concentration, -(month:hour), -date, -missing) %>% 
+    names()
+} else {
+  names_prop <- data %>%
+    select(-(pollutant:site), concentration, -(month:day_in_week), -date, -missing) %>% 
+    names()
+}
+
 table_prop_missing_covar <- data %>% 
-  select(-(pollutant:averaging_time), -concentration, -(year:hour)) %>% 
+  select(all_of(c(names_prop, "year"))) %>% 
+  select(-year) %>% 
   distinct() %>% 
   summarise_all(function(x) {sum(is.na(x), na.rm = TRUE)/n()}) %>% 
   pivot_longer(everything(), names_to = "variable_name", values_to = "prop_missing") %>%
@@ -104,9 +115,10 @@ table_prop_missing_covar <- data %>%
 table_prop_missing_covar %>% 
   ggplot(aes(x = prop_missing, y = variable_name)) +
   geom_col() +
-  labs(title = "Proportion of missing data by covariate", x = "Proportion of missing data", y = "")
+  labs(title = "Proportion of missing data by covariate", x = "Proportion of missing data", y = "") 
 
 table_prop_missing_covar %>% 
+  arrange(variable_name) %>% 
   kable(col.names = c("Variable", "Proportion of missing values"))
 ```
 
@@ -114,11 +126,9 @@ In order to understand these previous results, we break down the analysis by yea
 
 ```{r fig.asp = 1.1}
 covar_missing_year <- data %>% 
-  # slice(1:10000) %>%
-  select(-(pollutant:averaging_time), -concentration, -(month:hour)) %>% 
+  select(all_of(names_prop)) %>% 
   distinct() %>% 
   group_by(year) %>% 
-  # mutate_all(is.na) %>% 
   summarise_all(function(x) {sum(is.na(x), na.rm = TRUE)/n()}) %>%
   pivot_longer(2:last_col(), names_to = "variable_name", values_to = "prop_missing")
 
@@ -131,8 +141,18 @@ covar_missing_year %>%
 In complete case analyses, observations for which any variable is missing are dropped. One may therefore wonder what is the share of dropped observations in a complete case analysis. We only consider variables which are potentially relevant. We also drop the UV radiation variable due to its large share of missingness.
 
 ```{r include=FALSE}
+if (hourly_daily == "hourly") {
+  names_any <- data %>%
+    select(elevation:public_holiday, -latitude_weather_station, -longitude_weather_station, -uv_radiation) %>% 
+    names()
+} else {
+  names_any <- data %>%
+    select(elevation_weather_station:public_holiday, -latitude_weather_station, -longitude_weather_station, -uv_radiation) %>% 
+    names()
+}
+
 any_missing_cov <- data %>% 
-  select(elevation:public_holiday, -latitude_weather_station, -longitude_weather_station, -uv_radiation) %>% 
+  select(all_of(names_any)) %>% 
   mutate_all(is.na) %>% 
   transmute(any_missing = (rowSums(.) > 0)) %>% 
   .$any_missing
@@ -191,31 +211,21 @@ In this section, we investigate whether the share of missing values varies with 
 
 
 ```{r}
-#' Graphs describing the proportion of missing values in different groups
-#'
-#' Enables to plot the proportion of missing values by a number of 
-#'
-#' @param df A dataframe. Dataframe to analyse 
-#' @param grouping_var A string. Name of the variable, in \code{df}, for which the proportion of missing values needs to be displayed
-#' @param bins An integer. Number of bins to slice \code{grouping_var} in, if it is a continuous value.
-#' @param facet_var A string. Name of the variable, in \code{df}, by which to facet the initial graph
-#' @param y_axis_to An integer. Limit of the y axis
-#' @export
-#'
 hist_missing_by <- function(df, variable_missing = "concentration", grouping_var, bins = 15, facet_var = NA, fill_var = NA, y_axis_to = 0.3) {
   
   grouping_var_name <- str_replace_all(grouping_var, pattern = "_", replacement = " ")
   variable_missing_name <- str_replace_all(variable_missing, pattern = "_", replacement = " ")
   facet_var_name <- str_replace_all(facet_var, pattern = "_", replacement = " ")
   
-  if (!is.factor(df[[grouping_var]]) && !is.logical(df[[grouping_var]])  && !is.na(as.numeric(df[[grouping_var]]))) {
+  #create bins
+  if (!is.factor(df[[grouping_var]]) && !is.logical(df[[grouping_var]])  && is.numeric(df[[grouping_var]])) {
     df[[grouping_var]] <- cut_interval(as.numeric(df[[grouping_var]]), bins)
   } 
   
   graph <- df %>% 
     filter(!is.na(.data[[grouping_var]])) %>% 
     group_by_(grouping_var, facet_var, fill_var) %>%
-    summarise(share_missing = sum(is.na(.data[[variable_missing]]))/n()) %>%
+    summarise(share_missing = sum(is.na(.data[[variable_missing]]))/n(), .groups = "drop_last") %>%
     arrange(share_missing) %>%
     ggplot(aes(x = .data[[grouping_var]], y = share_missing)) +
     geom_col(aes_string(fill = ifelse(!is.na(fill_var), fill_var, "NULL")), position = "dodge") +
@@ -238,8 +248,8 @@ hist_missing_by <- function(df, variable_missing = "concentration", grouping_var
   
   if (substr(grouping_var, 1, 8) == "wind_dir") {
     graph <- graph +
-      coord_polar() + 
-      ylim(0, y_axis_to/3) 
+      coord_polar() +
+      ylim(0, y_axis_to/3)
   }
   
   if (y_axis_to <= 0.1) { #works but not a "nice" condition
@@ -269,7 +279,7 @@ One can notice that the share of missing values varies across pollutants, up to 
 data %>% 
     filter(!is.na(pollutant)) %>% 
     group_by(pollutant) %>%
-    summarise(share_missing = sum(missing)/n()) %>% 
+    summarise(share_missing = sum(missing)/n(), .groups = "drop_last") %>% 
     kable(col.names = c("Pollutant", "Proportion missing values"))
 ```
 
@@ -374,12 +384,11 @@ if (hourly_daily == "hourly") {
     names()
 } else {
   covariate_names <- data %>% 
-    select(city, pollutant, elevation_weather_station, rainfall_height:day_in_week) %>%
+    select(city, pollutant, rainfall_height:day_in_week, -wind_direction, -wind_direction_max) %>%
     names()
 }
 
-
-purrr::map(covariate_names, hist_missing_by, df = data_first_missing, variable_missing = "concentration", bins = 10, facet_var = NA, y_axis_to = 0.05)
+purrr::map(covariate_names, hist_missing_by, df = data_first_missing, variable_missing = "concentration", bins = 10, facet_var = NA, y_axis_to = if (hourly_daily == "hourly") {0.05} else {0.02})
 ```
 
 ## Balance between missing and non missing observations
@@ -404,7 +413,7 @@ data_abs_difference <- data_clean_continuous %>%
   pivot_longer(cols = -c(missing), names_to = "variable", values_to = "average") %>%
   arrange(variable) %>%
   group_by(variable) %>%
-  summarise(abs_difference = abs(average[2] - average[1]))
+  summarise(abs_difference = abs(average[2] - average[1]), .groups = "drop_last")
 
 # we compute the standard deviation of the non-missing variables
 data_sd <- data_clean_continuous %>%
@@ -448,7 +457,7 @@ data_abs_difference <- data_clean_continuous %>%
   pivot_longer(cols = -c(city, missing), names_to = "variable", values_to = "average") %>%
   arrange(city, variable) %>%
   group_by(city, variable) %>%
-  summarise(abs_difference = abs(average[2] - average[1]))
+  summarise(abs_difference = abs(average[2] - average[1]), .groups = "drop_last")
 
 # we compute the standard deviation of the non-missing variables
 data_sd <- data_clean_continuous %>%
@@ -516,8 +525,9 @@ graph_hist_covariate <- function(df, covar, facet_var = NA) {
   covar_name <- str_replace_all(covar, pattern = "_", replacement = " ")
   
   graph <- df %>% 
+    filter(!is.na(covar)) %>% 
     group_by_("missing", covar, facet_var) %>% 
-    summarise(n = n()) %>% 
+    summarise(n = n(), .groups = "drop_last") %>% 
     group_by_("missing", facet_var) %>% 
     mutate(prop = n/sum(n)) %>% 
     ggplot() +
@@ -531,7 +541,9 @@ graph_hist_covariate <- function(df, covar, facet_var = NA) {
   
   return(graph)
 }
+```
 
+```{r}
 if (hourly_daily == "hourly") {
   discrete_var_names <- data %>% 
     select(site_type, site_area, holiday_zone:hour) %>% 
@@ -566,7 +578,8 @@ first_missing <- data %>%
     first_missing = ifelse(lag(missing) == FALSE & missing == TRUE, TRUE, FALSE),
   ) %>% 
   filter(first_missing | !missing) %>% 
-  fill(concentration)
+  fill(concentration) %>% 
+  ungroup()
   
 map(c("concentration", continuous_var_names), graph_density_covariate, df = first_missing, facet_var = NA)
 # map(c("concentration", continuous_var_names), graph_density_covariate, df = first_missing, facet_var = "pollutant")
@@ -582,83 +595,77 @@ For concentration, we carry the last value forward in order to see whether missi
 graph_density_covariate(df = filter(first_missing, concentration < 100) ,covar = "concentration") + facet_wrap(~ pollutant, ncol = 1)
 ```
 
+<!-- ## Simultaneous missingness -->
 
+<!-- In this section, we analyse whether some patterns of simultaneous missingness appear in the data. We wonder whether, for a given station, data is simultaneously missing for several pollutants or whether, for a given city, data is simultaneously missing for several stations.  -->
 
+<!-- ### Across pollutants -->
 
-## Simultaneous missingness
+<!-- We investigate whether, in a given station, when one pollutant is missing, other pollutants are also missing. Such a missingness pattern could arise if sensors for different pollutants function jointly.  -->
 
-In this section, we analyse whether some patterns of simultaneous missingness appear in the data. We wonder whether, for a given station, data is simultaneously missing for several pollutants or whether, for a given city, data is simultaneously missing for several stations. 
+<!-- We count the number of pollutants which are simultaneously missing for every station*date couple. Note that this analysis does not consider that an observation is missing when a given station is closed for a pollutant. -->
 
-### Across pollutants
+<!-- ```{r} -->
+<!-- data %>%  -->
+<!--   group_by(date, site) %>%  -->
+<!--   summarise(nb_missing = sum(missing), .groups = "drop_last") %>%  -->
+<!--   ungroup() %>%  -->
+<!--   count(nb_missing) %>%  -->
+<!--   mutate(prop = n/sum(n)) %>%  -->
+<!--   kable(col.names = c("Number of pollutants with missing concentration data", "Number of dates", "Proportion")) -->
+<!-- ``` -->
 
-We investigate whether, in a given station, when one pollutant is missing, other pollutants are also missing. Such a missingness pattern could arise if sensors for different pollutants function jointly. 
+<!-- We could also investigate whether this pattern varies with various weather variables. -->
 
-We count the number of pollutants which are simultaneously missing for every station*date couple. Note that this analysis does not consider that an observation is missing when a given station is closed for a pollutant.
+<!-- Now, part of the stations do not measure values for all pollutants. Thus, it is interesting to compute the proportion of pollutants measured by station for which data is missing. -->
 
-```{r}
-data %>% 
-  group_by(date, site) %>% 
-  summarise(nb_missing = sum(missing)) %>% 
-  ungroup() %>% 
-  count(nb_missing) %>% 
-  mutate(prop = n/sum(n)) %>% 
-  kable(col.names = c("Number of pollutants with missing concentration data", "Number of dates", "Proportion"))
-```
+<!-- ```{r} -->
+<!-- data %>%  -->
+<!--   # mutate(one = 1) %>%  -->
+<!--   group_by(date, site) %>%  -->
+<!--   summarise(share_missing = sum(missing)/n(), .groups = "drop_last") %>%  -->
+<!--   ungroup() %>%  -->
+<!--   count(share_missing) %>%  -->
+<!--   mutate( -->
+<!--     prop = n/sum(n), -->
+<!--     prop_if_missing = ifelse(share_missing != 0, n/(sum(n) - n[1]), NA) -->
+<!--   ) %>%  -->
+<!--   kable(col.names = c("Share of pollutants measured in the station for which concentration data is missing", "Number of dates", "Proportion", "Proportion among dates with missing observations"), caption = "In all stations") -->
+<!-- ``` -->
 
-We could also investigate whether this pattern varies with various weather variables.
+<!-- Since for analyses studying the link between air pollution and health have a particular focus on background station, we carry out the same analysis for these stations. -->
 
-Now, part of the stations do not measure values for all pollutants. Thus, it is interesting to compute the proportion of pollutants measured by station for which data is missing.
+<!-- ```{r} -->
+<!-- data %>%  -->
+<!--   filter(site_type == "background") %>%  -->
+<!--   group_by(date, site) %>%  -->
+<!--   summarise(share_missing = sum(missing)/n(), .groups = "drop_last") %>%  -->
+<!--   ungroup() %>%  -->
+<!--   count(share_missing) %>%  -->
+<!--   mutate( -->
+<!--     prop = n/sum(n), -->
+<!--     prop_if_missing = ifelse(share_missing != 0, n/(sum(n) - n[1]), NA) -->
+<!--   ) %>%  -->
+<!--   kable(col.names = c("Share of pollutants measured in the station for which concentration data is missing", "Number of dates", "Proportion", "Proportion among dates with missing observations"), caption = "Only in background stations") -->
+<!-- ``` -->
 
-```{r}
-data %>% 
-  # mutate(one = 1) %>% 
-  group_by(date, site) %>% 
-  summarise(share_missing = sum(missing)/n()) %>% 
-  ungroup() %>% 
-  count(share_missing) %>% 
-  mutate(
-    prop = n/sum(n),
-    prop_if_missing = ifelse(share_missing != 0, n/(sum(n) - n[1]), NA)
-  ) %>% 
-  kable(col.names = c("Share of pollutants measured in the station for which concentration data is missing", "Number of dates", "Proportion", "Proportion among dates with missing observations"), caption = "In all stations")
-```
+<!-- ### Across stations in a city -->
 
-Since for analyses studying the link between air pollution and health have a particular focus on background station, we carry out the same analysis for these stations.
+<!-- Ultimately, analyses studying health effects of air pollution often only use one measure of concentration per city and per date. In most cases, there are several air pollution measurement stations per city. To get a unique measure of air pollution for a given city, the common practice consists in averaging pollutants concentrations from all background stations in this city. We may wonder to what extent concentration data is simultaneously missing in several stations of a given city. We therefore compute the average proportion of stations per city in which data missing. -->
 
-```{r}
-data %>% 
-  filter(site_type == "background") %>% 
-  group_by(date, site) %>% 
-  summarise(share_missing = sum(missing)/n()) %>% 
-  ungroup() %>% 
-  count(share_missing) %>% 
-  mutate(
-    prop = n/sum(n),
-    prop_if_missing = ifelse(share_missing != 0, n/(sum(n) - n[1]), NA)
-  ) %>% 
-  kable(col.names = c("Share of pollutants measured in the station for which concentration data is missing", "Number of dates", "Proportion", "Proportion among dates with missing observations"), caption = "Only in background stations")
-```
-
-### Across stations in a city
-
-Ultimately, analyses studying health effects of air pollution often only use one measure of concentration per city and per date. In most cases, there are several air pollution measurement stations per city. To get a unique measure of air pollution for a given city, the common practice consists in averaging pollutants concentrations from all background stations in this city. We may wonder to what extent concentration data is simultaneously missing in several stations of a given city. We therefore compute the average proportion of stations per city in which data missing.
-
-```{r}
-data %>% 
-  filter(site_type == "background") %>%
-  group_by(date, pollutant, city) %>% 
-  summarise(share_missing = sum(missing)/n()) %>% 
-  ungroup() %>% 
-  count(share_missing) %>% 
-  mutate(
-    prop = n/sum(n),
-    prop_if_missing = ifelse(share_missing != 0, n/(sum(n) - n[1]), NA)
-  ) %>% 
-  kable(col.names = c("Share of stations in a city for which concentration data is missing", "Number of dates", "Proportion", "Proportion among dates with missing observations"), caption = "Only in background stations")
-```
-
-
-
+<!-- ```{r} -->
+<!-- data %>%  -->
+<!--   filter(site_type == "background") %>% -->
+<!--   group_by(date, pollutant, city) %>%  -->
+<!--   summarise(share_missing = sum(missing)/n(), .groups = "drop_last") %>%  -->
+<!--   ungroup() %>%  -->
+<!--   count(share_missing) %>%  -->
+<!--   mutate( -->
+<!--     prop = n/sum(n), -->
+<!--     prop_if_missing = ifelse(share_missing != 0, n/(sum(n) - n[1]), NA) -->
+<!--   ) %>%  -->
+<!--   kable(col.names = c("Share of stations in a city for which concentration data is missing", "Number of dates", "Proportion", "Proportion among dates with missing observations"), caption = "Only in background stations") -->
+<!-- ``` -->
 
 ## Length of periods with missing observations
 
@@ -666,7 +673,7 @@ In this section, we explore the length of periods with missing observations. Thi
 
 First, we explore the length of missing observations by looking at the displaying, in an heatmap, for each couple `r if (hourly_daily == "hourly") {"station"} else {"city"}`*date, whether concentration data is missing. We break this down into years for readability. 
 
-```{r heatmap, fig.asp = if (hourly_daily == "hourly") {2.4} else {0.7}}
+```{r heatmap, fig.asp = if (hourly_daily == "hourly") {2.4} else {1.2}}
 heatmap_missingness <- function(df, y) {
   
   graph <- df %>% 
@@ -693,7 +700,7 @@ purrr::map(c(2013:2019), heatmap_missingness, df = data)
 # purrr::map(c(2008:2011, 2013:2019), heatmap_missingness, df = data)
 ```
 
-Then, we look at the length of periods with missing data. First, we can either count each the number of periods with a given length (*eg* 3 periods have a length of missing data of 5 hours) or count the number of dates belonging to periods with a given length (considering the same example, 15 dates belong to a period of missing data of length 5 hours). We denote the former case "One observation per period" and the later "One observation per date".
+Then, we look at the length of periods with missing data. First, we can either count each the number of periods with a given length (*eg* 3 periods have a length of missing data of 5 hours/days) or count the number of dates belonging to periods with a given length (considering the same example, 15 dates belong to a period of missing data of length 5 hours/days). We denote the former case "One observation per period" and the later "One observation per date".
 
 We might be interested in looking at the length of missing periods for different pollutants. The method to measure concentration varies across pollutants and reasons for missing data may depend on the method. Particulate matter is measured with filters which can become cluttered. This could lead to rather long missing periods, with the necessary time to clean the filter. Gaseous pollutants are measured using optical methods and thus not subject to cluttered filters. 
 
@@ -744,7 +751,7 @@ graph_distrib_length <- function(df, density, bins_adjust) {
     graph <- graph +
     scale_x_continuous(trans = 'log10') +
     facet_wrap(~pollutant) +
-    labs(title = "Distribution of the length of missingness periods", subtitle = paste("Comparison across pollutants - One observation per", per, sep = " "), x = "Number of consecutive hours of missing data") 
+    labs(title = "Distribution of the length of missingness periods", subtitle = paste("Comparison across pollutants - One observation per", per, sep = " "), x = paste("Number of consecutive", if (hourly_daily == "hourly") {"hours"} else {"days"}, "of missing data", sep = " ")) 
     
     return(graph)
 }
@@ -753,33 +760,35 @@ graph_distrib_length <- function(df, density, bins_adjust) {
 ```{r}
 graph_distrib_length(length_missing_one_per_period, density = FALSE, bins_adjust = 20)
 
-graph_distrib_length(length_missing_one_per_period, density = TRUE, bins_adjust = 4)
+if (hourly_daily == "hourly") {
+  graph_distrib_length(length_missing_one_per_period, density = TRUE, bins_adjust = 4)
+} else {
+  graph_distrib_length(length_missing_one_per_period, density = TRUE, bins_adjust = 2)
+}
 ```
 
-As previously, we look at the distributions considering one observation per missing period and one observation per date. This later case naturally changes greatly the distribution; for instance one series of missing data of 1000 hours is only accounted for once in the former case but 1000 times in the later.
+As previously, we look at the distributions considering one observation per missing period and one observation per date. This later case naturally changes greatly the distribution; for instance one series of missing data of 100 hours/days is only accounted for once in the former case but 100 times in the later.
 
 ```{r}
-graph_distrib_length(length_missing_data, density = FALSE, bins_adjust = 20)
+  graph_distrib_length(length_missing_one_per_period, density = FALSE, bins_adjust = 20)
 
-graph_distrib_length(length_missing_data, density = TRUE, bins_adjust = 2)
-```
-
-We also look at the number of periods of missing data longer and shorter than a day.
-
-```{r}
-length_missing_one_per_period %>% 
-  mutate(missing_longer_day = ifelse(length_period_missing > 24, TRUE, FALSE)) %>% 
-  ggplot() +
-  geom_histogram(aes(x = missing_longer_day), stat = "count") + 
-  labs(title = "Number of periods with missing data longer/shorter than a day", subtitle = "One observation per period", x = "Missing period longer than a day", y =  "Count") 
+  graph_distrib_length(length_missing_one_per_period, density = TRUE, bins_adjust = 2)
 ```
 
 ```{r}
-length_missing_data %>% 
-  mutate(missing_longer_day = ifelse(length_period_missing > 24, TRUE, FALSE)) %>% 
-  ggplot() +
-  geom_histogram(aes(x = missing_longer_day), stat = "count") + 
-  labs(title = "Number of periods with missing data longer/shorter than a day", subtitle = "One observation per date", x = "Missing period longer than a day", y =  "Count") 
+if (hourly_daily == "hourly") {
+  length_missing_one_per_period %>% 
+    mutate(missing_longer_day = ifelse(length_period_missing > 24, TRUE, FALSE)) %>% 
+    ggplot() +
+    geom_histogram(aes(x = missing_longer_day), stat = "count") + 
+    labs(title = "Number of periods with missing data longer/shorter than a day", subtitle = "One observation per period", x = "Missing period longer than a day", y =  "Count") 
+  
+  length_missing_data %>% 
+    mutate(missing_longer_day = ifelse(length_period_missing > 24, TRUE, FALSE)) %>% 
+    ggplot() +
+    geom_histogram(aes(x = missing_longer_day), stat = "count") + 
+    labs(title = "Number of periods with missing data longer/shorter than a day", subtitle = "One observation per date", x = "Missing period longer than a day", y =  "Count") 
+}
 ```
 
 ### Correlation between missingness length and weather variables
@@ -795,7 +804,7 @@ plot_evolution_length <- function(df, var, per) {
     geom_bin2d() +
     # geom_point(alpha = 0.1) +
     scale_y_continuous(trans = 'log10') +
-    labs(title = paste("Relationship between length of missingness periods and", var_name), subtitle = paste("One observation per", per), x = str_to_sentence(var_name), y =  "Length of missing period (in hours)") 
+    labs(title = paste("Relationship between length of missingness periods and", var_name), subtitle = paste("One observation per", per), x = str_to_sentence(var_name), y =  paste("Length of missing period (in ", if (hourly_daily == "hourly") {"hours"} else {"days"}, ")", sep = "")) 
   
   if (substr(var, 1, 8) == "wind_dir") {
     graph <- graph +
