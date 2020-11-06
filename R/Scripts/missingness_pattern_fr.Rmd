@@ -160,9 +160,11 @@ any_missing_cov <- data %>%
 prop_covar_missing <- sum(any_missing_cov)/length(any_missing_cov)
 
 prop_total_missing <- sum(any_missing_cov + data$missing)/length(any_missing_cov)
+
+prop_covar_missing <- sum(any_missing_cov)/length(any_missing_cov)
 ```
 
-Carrying out a complete case analysis would lead to drop `r prop_total_missing*100`% of the observations. Only considering missing covariates (and not missingness in concentration data) would lead to drop `r prop_covar_missing*100`% of the observations.
+Carrying out a complete case analysis would lead to drop `r prop_total_missing*100`% of the observations. However, one may notice that also dropping insolation duration, global radiations and rainfall duration lead the limiting factor to be concentration data.
 
 # Location of measurement stations
 
@@ -384,7 +386,7 @@ if (hourly_daily == "hourly") {
     names()
 } else {
   covariate_names <- data %>% 
-    select(city, pollutant, rainfall_height:day_in_week, -wind_direction, -wind_direction_max) %>%
+    select(city, pollutant, rainfall_height:day_in_week, -wind_direction) %>%
     names()
 }
 
@@ -770,9 +772,13 @@ if (hourly_daily == "hourly") {
 As previously, we look at the distributions considering one observation per missing period and one observation per date. This later case naturally changes greatly the distribution; for instance one series of missing data of 100 hours/days is only accounted for once in the former case but 100 times in the later.
 
 ```{r}
-  graph_distrib_length(length_missing_one_per_period, density = FALSE, bins_adjust = 20)
+  graph_distrib_length(length_missing_data, density = FALSE, bins_adjust = 10)
 
-  graph_distrib_length(length_missing_one_per_period, density = TRUE, bins_adjust = 2)
+if (hourly_daily == "hourly") {
+  graph_distrib_length(length_missing_data, density = TRUE, bins_adjust = 2)
+} else {
+  graph_distrib_length(length_missing_data, density = TRUE, bins_adjust = 1)
+}
 ```
 
 ```{r}
