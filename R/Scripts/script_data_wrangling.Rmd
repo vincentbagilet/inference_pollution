@@ -499,15 +499,7 @@ saveRDS(data_imputation, "../Outputs/data_imputation.RDS")
 
 The mortality and admission data we have access to is at the day x city level. Our weather and pollution data is at a hourly frequency. Pollution data is even at the pollution station level but we need data at the city level. In usual studies of health effects of air pollution, researchers usualy only consider background air pollution stations and average pollution values across stations and hours of a day. We use the same method.
 
-```{r}
-clean_metadata_pollution <- readRDS("../Outputs/clean_metadata_pollution.RDS")
-clean_metadata_weather <- readRDS("../Outputs/clean_metadata_weather.RDS")
-clean_pollution_data <- readRDS("../Outputs/clean_pollution_data.RDS")
-clean_weather_data <- readRDS("../Outputs/clean_weather_data.RDS")
-holidays <- readRDS("../Outputs/holidays.RDS")
-```
-
-When averaging hourly weather data to daily one, one needs to be careful that they should not simply average wind speed and wind direction values (cf [a technical note by Grange](https://www.researchgate.net/profile/Stuart_Grange2/publication/262766424_Technical_note_Averaging_wind_speeds_and_directions/links/54f6184f0cf27d8ed71d5bd4.pdf)). Therefore, we use the function `openair::timeAverage` to average them. 
+When averaging hourly weather data to daily one, one needs to be careful that they should not simply average wind speed and wind direction values (cf [a technical note by Grange](https://www.researchgate.net/profile/Stuart_Grange2/publication/262766424_Technical_note_Averaging_wind_speeds_and_directions/links/54f6184f0cf27d8ed71d5bd4.pdf)). Therefore, we use the function `openair::timeAverage` to average all variables. 
 
 ```{r}
 data_imputation <- readRDS("../Outputs/data_imputation.RDS")
@@ -516,11 +508,11 @@ data_imputation <- readRDS("../Outputs/data_imputation.RDS")
 ```{r}
 data_daily <- data_imputation %>%  
   filter(site_type == "background") %>% 
-  select(-site:-site_area, -wind_speed_max, -wind_direction_max) %>% 
+  select(-site:-site_area, -wind_speed_max, -wind_direction_max, -holiday_zone) %>% 
   rename(
     ws = wind_speed,
     wd = wind_direction
-  ) %>%
+  ) %>% #need to rename these for timeAverage
   openair::timeAverage(type = c("city", "pollutant")) %>%
   rename(
     wind_speed = ws,
@@ -537,11 +529,25 @@ data_daily <- data_imputation %>%
     concentration = ifelse(is.nan(concentration), NA, concentration),
     holiday_zone = ifelse(city %in% c("Caen", "Clermont-Ferrand", "Grenoble", "Lyon", "Montpellier", "Nancy", "Metz", "Nantes", "Rennes", "Toulouse"), "a",
                   ifelse(city %in% c("Aix", "Marseille", "Amiens", "Besancon", "Dijon", "Lille", "Limoges", "Le Havre", "Nice", "Orleans", "Tours", "Poitiers", "Reims", "Rouen", "Strasbourg"), "b", 
-                  ifelse(city %in% c("Bordeaux", "Creteil", "Paris", "Versailles"), "c", NA)))
+                  ifelse(city %in% c("Bordeaux", "Creteil", "Paris", "Versailles"), "c", NA))) #read this because timeAverage does not work well with categorical variables
   ) %>% 
-  select(date, city, pollutant, concentration, site, everything()) #to have the same order of variables in both data sets
+  select(date, city, pollutant, concentration, site, everything()) %>%  #to have the same order of variables in both data sets
+  filter(!is.na(elevation_weather_station)) #if want to drop dates*pollutant*city where no station open in the city
 
 saveRDS(data_daily, "../Outputs/data_daily.RDS")
 ```
+
+Note that for some cities x pollutants (*eg* SO2 in Nancy), for a given period, there are no stations open and therefore no measurements. Illustration of the issue:
+
+```{r}
+data_imputation %>% 
+  filter(city == "Nancy") %>% 
+  group_by(site, pollutant) %>%  
+  filter(pollutant == "so2") %>% 
+  summarise(mi = min(date), ma = max(date), .groups = "drop")
+```
+One can either consider that the data for this city x period is missing (and fill the corresponding rows with `NA` for concentration) or remove completely the corresponding observations. This affects the share of missing concentration values. We choose the later solution, assuming that the data is not actually missing for these observations.
+
+
 
 
