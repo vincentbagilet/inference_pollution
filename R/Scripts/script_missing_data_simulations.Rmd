@@ -1,0 +1,288 @@
+---
+title: "Missing Data Simulation Exercise"
+description: |
+  Marseille Data 2008-2018.
+author:
+  - name: Vincent Bagilet 
+    url: https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet
+    affiliation: Columbia University
+    affiliation_url: https://www.columbia.edu/
+  - name: Léo Zabrocki 
+    url: https://www.parisschoolofeconomics.eu/en/
+    affiliation: Paris School of Economics
+    affiliation_url: https://www.parisschoolofeconomics.eu/en/
+date: "`r Sys.Date()`"
+output: distill::distill_article
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+In this document, we carry out a simulation exercise to understand how realistic patterns of missing data could affect the bias and precision of a standard analysis of the short-term effects of air pollution on health. We use here data from Marseille over the 2008-2018 period.
+
+
+# Loading and Formatting Data
+
+We load the packages:
+
+```{r, echo=TRUE, message = FALSE, warning = FALSE}
+library(tidyverse) # for data manipulation and visualisation
+```
+
+We open the data:
+
+```{r, echo=TRUE, message = FALSE, warning = FALSE}
+data <- readRDS("C:/Users/Leo/Dropbox/phd_thesis/project_air_pollution_lockdown/missing_data_simulations/data_marseille_daily_2008_2018.rds"))
+```
+
+We transform some calendar variables as factors:
+
+```{r, echo=TRUE, message = FALSE, warning = FALSE}
+data <- data %>%
+  mutate_at(vars(year, holidays_dummy, bank_day_dummy), ~ as.factor(.))
+```
+
+We select the relevant period as emergency admissions data are available from 2010:
+
+```{r, echo=TRUE, message = FALSE, warning = FALSE}
+data <- data %>%
+  filter(!(year %in% c("2008", "2009")))
+```
+
+We create wind direction categories:
+
+```{r, echo=TRUE, message = FALSE, warning = FALSE}
+data <- data %>%
+  mutate(wind_direction_categories = cut(wind_direction, breaks = seq(0, 360, by  = 90), include.lowest = TRUE) %>%
+  recode(., "[0,90]" = "North-East", "(90,180]" = "South-East", "(180,270]" = "South-West", "(270,360]" = "North-West"))
+```
+
+We create the one-day lag for wind speed and wind direction:
+
+```{r, echo=TRUE, message = FALSE, warning = FALSE}
+data <- data %>%
+  mutate(wind_speed_lag_1 = lag(wind_speed),
+         wind_direction_categories_lag_1 = lag(wind_direction_categories))
+```
+
+We create a rainfall dummy:
+
+```{r, echo=TRUE, message = FALSE, warning = FALSE}
+data <- data %>%
+  mutate(rainfall_dummy = ifelse(rainfall_height>0, "True", "False"))
+```
+
+We also need to compute the the average mean over the current and previous days for continuous dependent variables
+
+```{r, echo=TRUE, message = FALSE, warning = FALSE}
+data <- data %>%
+  mutate_at(vars(mean_no2_agregate, mean_o3_l, mean_pm10_agregate, mean_pm25_l, temperature_average, humidity_average), list("01" = ~ zoo::rollmean(., k = 2, align = "right", fill = NA)))
+```
+
+We then scale the new pollutant measures:
+
+```{r, echo=TRUE, message = FALSE, warning = FALSE}
+data <- data %>%
+  mutate_at(vars(mean_no2_agregate_01:humidity_average_01), ~ scale(.))
+```
+
+
+```{r, echo=TRUE, message = FALSE, warning = FALSE}
+# nest the data by pollutant
+data_nested <- data %>%
+  pivot_longer(cols = c(mean_no2_agregate_01:mean_pm25_l_01), names_to = "pollutant", values_to = "concentration") %>%
+  group_by(pollutant) %>%
+  nest()
+```
+
+# Running the Standard Model
+
+We can now run a very simple model to measure the effect of each pollutant on emergency admissions:
+
+```{r, echo=TRUE, message = FALSE, warning = FALSE}
+# run the model for each pollutant
+data_true_estimates <- data_nested %>%
+  mutate(simple_model = map(data, ~  lm(emergency_cv_r ~ concentration + 
+                                          temperature_average_01 + I(temperature_average_01^2) +
+                                          humidity_average_01 +
+                                          rainfall_dummy +
+                                          wind_speed + wind_speed_lag_1 + 
+                                          wind_direction_categories + wind_direction_categories_lag_1 +
+                                          weekday + holidays_dummy + bank_day_dummy + month*year, data =.)))
+
+# get the estimate and standard error for concentration
+data_true_estimates <- data_true_estimates %>%
+  select(-data) %>%
+  mutate(simple_model = map(simple_model, ~ broom::tidy(.))) %>%
+  unnest(simple_model) %>%
+  filter(term == "concentration") %>%
+  mutate(missing_proportion = 0) %>%
+  select(pollutant, missing_proportion, term, estimate, std.error)
+```
+
+We print below the "true" estimates and standard error:
+
+```{r, echo=TRUE, message = FALSE, warning = FALSE}
+# print results
+data_true_estimates
+```
+
+# Simulations With Random Missing Values
+
+Below we erase pollutants' concentrations completely at random. We drop observatiosn for the following proportions : 1%, 5% and 10%. We run 1000 simulations for each proportion. Below is the required code:
+
+```{r, echo=TRUE, message = FALSE, warning = FALSE}
+# we first add the variable with the proportion of data we will drop
+data_nested <- data_nested %>%
+  crossing(missing_proportion = c(0.01, 0.05, 0.1))
+
+
+data_nested <- data_nested %>%
+  filter(pollutant == "mean_no2_agregate_01")
+
+# we define a function to randomly drop observations
+random_missing_function <- function(data, missing_proportion){
+estimate_se <- data %>%
+  sample_frac(., 1-missing_proportion) %>%
+  lm(emergency_cv_r ~ concentration + temperature_average_01 + I(temperature_average_01^2) +
+                                    humidity_average_01 +
+                                    rainfall_dummy +
+                                    wind_speed + wind_speed_lag_1 + 
+                                    wind_direction_categories + wind_direction_categories_lag_1 +
+                                    weekday + holidays_dummy + bank_day_dummy + month*year, data =.) %>%
+  broom::tidy(.) %>%
+  filter(term == "concentration") %>%
+  select(term, estimate, std.error)
+
+return(estimate_se)
+}
+
+# we run 1000 simulations per missing proportion and for each pollutant
+data_nested <- data_nested %>%
+  mutate(simulations_results = map2(data, missing_proportion, ~ rerun(100, random_missing_function(.x, .y))))
+
+data_nested <- data_nested %>%
+  mutate(simulations_results = map(simulations_results, ~ bind_rows(.)))
+
+data_nested <- data_nested %>%
+  select(-data)
+```
+
+
+
+```{R, echo=TRUE, message = FALSE, warning = FALSE}
+data_true_estimates_no2 <- data_true_estimates %>%
+  filter(pollutant == "mean_no2_agregate_01")
+
+data_simulations_results <- data_nested %>%
+  unnest(simulations_results) %>%
+  mutate(missing_proportion = as.factor(missing_proportion))
+
+
+data_simulations_results_means <- data_simulations_results %>%
+  group_by(missing_proportion) %>%
+  summarise(estimate = mean(estimate),
+         std.error = mean(std.error))
+```
+
+```{R, echo=TRUE, message = FALSE, warning = FALSE, layout="l-body-outset", fig.width=20, fig.height=10, dev = "CairoPNG"}
+graph <- ggplot(data_simulations_results, aes(x = estimate)) +
+  geom_density(color = "black", fill = "#2a9d8f", alpha = 0.6) +
+  geom_vline(xintercept = data_true_estimates_no2$estimate, color = "#e76f51") +
+  facet_wrap(~ as.factor(missing_proportion)) +
+  xlab("Estimates") + ylab("Density") +
+  customed_theme
+
+graph
+
+#ggsave(graph, filename = here::here("graph.pdf"), width = 30, height = 15, units = "cm", device = cairo_pdf)
+```
+
+
+
+```{R, echo=TRUE, message = FALSE, warning = FALSE, layout="l-body-outset", fig.width=20, fig.height=10, dev = "CairoPNG"}
+graph <- ggplot(data_simulations_results, aes(x = std.error)) +
+  geom_density(color = "black", fill = "#2a9d8f", alpha = 0.6) +
+  geom_vline(xintercept = data_true_estimates_no2$std.error, color = "#e76f51") +
+  facet_wrap(~ as.factor(missing_proportion)) +
+  xlab("Standard Errors") + ylab("Density") +
+  customed_theme
+
+graph
+
+#ggsave(graph, filename = here::here("graph.pdf"), width = 30, height = 15, units = "cm", device = cairo_pdf)
+```
+
+
+```{R, eval = FALSE, echo=TRUE, message = FALSE, warning = FALSE, layout="l-body-outset", fig.width=20, fig.height=10, dev = "CairoPNG"}
+essai <- data_simulations_results_means %>%
+  ungroup() %>%
+  bind_rows(., data_true_estimates_no2) %>%
+  mutate(missing_proportion = as.factor(missing_proportion))
+
+interval_95 <- -qnorm((1-0.95)/2)
+interval_99 <- -qnorm((1-0.99)/2)
+
+# compute lower and upper bound of each interval
+essai <- essai %>%
+  mutate(ci_lower_95 = estimate - std.error*interval_95,
+         ci_upper_95 = estimate + std.error*interval_95,
+         ci_lower_99 = estimate - std.error*interval_99,
+         ci_upper_99 = estimate + std.error*interval_99)
+  
+ggplot(essai, aes(x = missing_proportion, y = estimate)) +
+  geom_hline(yintercept = 0, color="#e76f51", lty = 2, lwd = 1) +
+  geom_pointrange(aes(x = missing_proportion, y = estimate, ymin = ci_lower_99,
+                      ymax = ci_upper_99), colour="#2a9d8f", lwd = 0.4) +
+  geom_pointrange(aes(x = missing_proportion, y = estimate, ymin = ci_lower_95,
+                      ymax = ci_upper_95), colour="#2a9d8f", lwd = 0.8) +
+  ylab("") + xlab("") +
+  customed_theme
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
