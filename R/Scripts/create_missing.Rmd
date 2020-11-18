@@ -1,0 +1,241 @@
+---
+title: "Creation of missing observations"
+author:
+  - name: Vincent Bagilet 
+    url: https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet
+    affiliation: Columbia University
+    affiliation_url: https://www.columbia.edu/
+  - name: Léo Zabrocki 
+    url: https://www.parisschoolofeconomics.eu/en/
+    affiliation: Paris School of Economics
+    affiliation_url: https://www.parisschoolofeconomics.eu/en/
+date: "`r Sys.Date()`"
+# output:
+#   html_notebook:
+#     toc: no
+#     theme: simplex
+#     highlight: pygments
+#   html_document:
+#     theme: simplex
+#     highlight: pygments
+# ---
+output: distill::distill_article
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+```{r setup, include=FALSE, results='hide', warning=FALSE}
+library(knitr)
+opts_chunk$set(fig.path = "images/",
+               cache.path = "cache/",
+               cache = FALSE,
+               echo = TRUE, #set to false to hide code
+               message = FALSE,
+               warning = FALSE,
+               out.width = "85%",
+               dpi = 200,
+               fig.align = "center")  
+```  
+
+```{r include=FALSE}
+library(tidyverse)
+library(lubridate)
+```
+
+```{r include=FALSE}
+data_daily <- readRDS("../Outputs/data_daily.RDS") %>% 
+  mutate(missing = is.na(concentration))
+```
+
+In this document, we build functions to create missingness patterns. We also apply them to our daily data set, to illustrate. We chose the option to create a logical variable `missing_crea` instead of deleting the observations to offer the possibility to keep the observation but to solely make the concentration missing (with a simple `mutate(concentration = ifelse(missing_crea, NA, concentration)`).
+
+# Data missing completely at random
+
+Here, we just create randomly missing observations.
+
+```{r}
+random_sample <- function(n, prop) {
+  missing <- rep(FALSE, n)
+  missing[sample(1:n, n*prop)] <- TRUE
+  return(missing)
+}
+
+CAR <- data_daily %>% 
+  mutate(missing_crea = random_sample(n(), 0.1)) 
+```
+
+We could also determine whether a distribution is missing or not by drawing from a Bernoulli distribution.
+
+```{r}
+CAR_bern <- data_daily %>% 
+  mutate(missing_crea = rbernoulli(n(), p = 0.1)) 
+```
+
+The first method is slightly better because it returns a proportion of missing data slightly closest to the proportion required (this difference may be more important for small samples): 
+
+```{r}
+CAR %>% 
+  count(missing_crea) %>% 
+  mutate(prop = n/sum(n)) %>% 
+  kable()
+
+CAR_bern %>% 
+  count(missing_crea) %>% 
+  mutate(prop = n/sum(n))%>% 
+  kable()
+```
+
+
+# Accounting for length of missingness periods
+
+When data is missing, it is often missing for several days in a row. We want to model this.
+
+## A unique length
+
+Here, we consider a unique length of missingness (`length_period`). To do so, we create a function. It randomly selects dates for which data is missing and set the #`length_period` following periods to also be missing. Note that this function may create longer periods of missingness than what specified in `length_period` if the random selection selects to observations which are away from less than the value of `length_period`. The lowest the proportion of missing data, the less likely this will happen.
+
+```{r}
+unique_missing_length <- function(prop_missing, length_period) {
+  draw <- random_sample(n(), prop_missing/length_period)*length_period
+  # draw <- rbernoulli(n(), p = prop_missing/length_period)*length_period
+  out <- draw
+  
+  for (i in seq_along(draw)) {
+    if(draw[i] > 0) {
+      for (k in 1:draw[i]) {
+          out[i + k - 1] <- draw[i]
+      }
+    }
+  }
+  
+  missing <- (out > 0)
+  
+  return(missing[1:length(draw)])
+}
+```
+
+Example of implementation:
+
+```{r}
+one_length <- data_daily %>%  
+  group_by(city, pollutant) %>%
+  mutate(missing_crea = unique_missing_length(0.1, 4)) %>% 
+  ungroup()
+```
+
+## Various lengths
+
+In the real data set, the length of missingness periods varies. We want to account for this. We first investigate the length of missing periods (per city-pollutant and per pollutant).
+
+```{r}
+#copied/pasted from missingness_pattern_fr.Rmd
+#computes the length of missingness periods
+length_missing_data <- data_daily %>% 
+  mutate(row_id = row_number()) %>% 
+  group_by(city, pollutant) %>%
+  arrange(date) %>% 
+  mutate(
+    missing_period_id = ifelse(missing == TRUE & lag(missing) == FALSE, row_id, NA)
+  ) %>%
+  # filter(missing == TRUE) %>%
+  fill(missing_period_id) %>% 
+  ungroup() %>% 
+  select(-row_id) %>% 
+  arrange(missing_period_id) %>% 
+  group_by(missing_period_id, pollutant) %>% 
+  mutate(length_period_missing = n()) %>% 
+  ungroup()
+
+#summarises the length of missingness periods by city-pollutant
+length_per_city_poll <- length_missing_data %>% 
+  group_by(city, pollutant) %>% 
+  count(length_period_missing) %>% 
+  mutate(
+    n = n/length_period_missing, 
+    prop = n/sum(n)
+  ) %>% 
+  select(-n) %>% 
+  nest() %>%
+  rename(length_prop = data) %>% 
+  ungroup()
+
+#summarises the length of missingness periods by pollutant
+length_per_poll <- length_missing_data %>% 
+  group_by(pollutant) %>% 
+  count(length_period_missing) %>% 
+  mutate(
+    n = n/length_period_missing, 
+    prop = n/sum(n)
+  ) %>% 
+  select(-n) %>% 
+  nest() %>%
+  rename(length_prop = data) %>% 
+  ungroup()
+```
+
+Then, we create our function. The idea is that, for each length of missing period, it creates the demanded set of periods, independently from already existing missing observations. This can lead some periods to be overlaying each other. Again, the lowest the proportion of missing data, the less likely this will happen.
+
+Note that, if necessary, I can modify the function to limit this.
+
+```{r}
+various_missing_length <- function(prop_missing, df_prop) {
+  missing <- rep(0, n())
+  df_prop_uniq <- df_prop[[1]]
+  
+  for (i in 1:nrow(df_prop_uniq)){
+    missing <- missing +
+      unique_missing_length(prop_missing*df_prop_uniq[[i, "prop"]],
+                            df_prop_uniq[[i, "length_period_missing"]])
+  }
+  out <- (missing > 0)
+  return(out)
+}
+```
+
+Examples: 
+
+```{r}
+missing_per_city_poll <- data_daily %>% 
+  left_join(length_per_city_poll, by = c("city", "pollutant")) %>% 
+  select(date, city, pollutant, length_prop) %>% 
+  group_by(city, pollutant) %>% 
+  mutate(missing_crea = various_missing_length(0.2, length_prop)) %>% 
+  select(-length_prop) %>% 
+  ungroup()
+
+missing_per_poll <- data_daily %>% 
+  left_join(length_per_poll, by = "pollutant") %>% 
+  select(date, pollutant, length_prop) %>% 
+  group_by(pollutant) %>% 
+  mutate(missing_crea = various_missing_length(0.1, length_prop)) %>% 
+  select(-length_prop) %>% 
+  ungroup()
+```
+
+Note that, in `missing_per_city_poll`, the proportion of missing data is often lower than required, probably because some "long" periods of missingness are interrupted by the end of the series. (To be verified)
+
+# One observation every 6 days
+
+To reproduce the US sampling process, we consider only one observation every six day. To do so, we group the data by groups of 6 days and only consider the first observation of each group. To avoid considering the same day for each city-pollutant, we offset the groups by a random number.
+
+```{r}
+one_obs_per_6 <- data_daily %>% 
+  group_by(city, pollutant) %>% 
+  mutate(rand = sample(1:6, 1)) %>% 
+  ungroup() %>% 
+  mutate(six_days_period = (as.integer(date) + rand) %/% 6) %>% 
+  group_by(city, pollutant, six_days_period) %>% 
+  mutate(
+    id_period = (as.integer(date) + rand) %% 6,
+    missing_crea = !(id_period == 1)
+  ) %>% 
+  ungroup() %>% 
+  select(-six_days_period, -id_period) 
+```
+
+
+
+
