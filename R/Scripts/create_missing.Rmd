@@ -237,5 +237,31 @@ one_obs_per_6 <- data_daily %>%
 ```
 
 
+# Correlation with covariates
+
+In order to create the most realistic pattern of missingness, we want to estimate the probability of missingness as a function of the other covariates.
+
+```{r}
+mod <- glm(data = data_daily, 
+          missing ~ rainfall_height + rainfall_duration, family = binomial(link = "probit"))
+```
+
+
+```{r}
+pred <- predict(mod, type="response")
+
+t <- data_daily %>% 
+  filter(!is.na(rainfall_height) & !is.na(rainfall_duration) & !is.na(missing)) %>% 
+  mutate(missing_crea = rbernoulli(length(pred), p = pred))
+```
+
+
+
+
+
+
+
+
+
 
 
