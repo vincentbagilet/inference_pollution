@@ -131,7 +131,7 @@ When data is missing, it is often missing for several days in a row. We want to 
 Here, we consider a unique length of missingness (`length_period`). To do so, we create a function. It randomly selects dates for which data is missing and set the #`length_period` following periods to also be missing. Note that this function may create longer periods of missingness than what specified in `length_period` if the random selection selects to observations which are away from less than the value of `length_period`. The lowest the proportion of missing data, the less likely this will happen.
 
 ```{r}
-unique_missing_length <- function(prop_missing, length_period) {
+crea_unique_length <- function(prop_missing, length_period) {
   draw <- random_sample(n(), prop_missing/length_period)*length_period
   # draw <- rbernoulli(n(), p = prop_missing/length_period)*length_period
   out <- draw
@@ -155,7 +155,7 @@ Example of implementation:
 ```{r}
 one_length <- data_daily %>%  
   group_by(city, pollutant) %>%
-  mutate(missing_crea = unique_missing_length(0.2, 4)) %>% 
+  mutate(missing_crea = crea_unique_length(0.2, 4)) %>% 
   ungroup()
 ```
 
@@ -219,7 +219,7 @@ Then, we create our function. The idea is that, for each length of missing perio
 Note that, if necessary, I can modify the function to limit this.
 
 ```{r}
-various_missing_length <- function(prop_missing, df_prop) {
+crea_various_length <- function(prop_missing, df_prop) {
   missing <- rep(0, n())
   df_prop_uniq <- df_prop[[1]]
   null_list <- sapply(df_prop, is_list)
@@ -227,7 +227,7 @@ various_missing_length <- function(prop_missing, df_prop) {
   if(null_list[1]) {#to avoid issue when df_prop is a NULL list (due to merging)
     for (i in rev(1:nrow(df_prop_uniq))){
       missing <- missing +
-        unique_missing_length(prop_missing*df_prop_uniq[[i, "prop"]],
+        crea_unique_length(prop_missing*df_prop_uniq[[i, "prop"]],
                           df_prop_uniq[[i, "length_period_missing"]])
     }
     out <- (missing > 0)
@@ -246,7 +246,7 @@ missing_per_city_poll <- data_daily %>%
   left_join(length_per_city_poll, by = c("city", "pollutant")) %>% 
   select(date, city, pollutant, length_prop) %>% 
   group_by(city, pollutant) %>% 
-  mutate(missing_crea = various_missing_length(0.1, length_prop)) %>% 
+  mutate(missing_crea = crea_various_length(0.1, length_prop)) %>% 
   select(-length_prop) %>% 
   ungroup()
 
@@ -254,7 +254,7 @@ missing_per_poll <- data_daily %>%
   left_join(length_per_poll, by = "pollutant") %>% 
   select(date, pollutant, length_prop) %>% 
   group_by(pollutant) %>% 
-  mutate(missing_crea = various_missing_length(0.1, length_prop)) %>% 
+  mutate(missing_crea = crea_various_length(0.1, length_prop)) %>% 
   select(-length_prop) %>% 
   ungroup()
 ```

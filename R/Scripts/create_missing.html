@@ -2517,13 +2517,13 @@ text-align: justify}
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">FALSE</td>
-<td style="text-align: right;">194147</td>
-<td style="text-align: right;">0.8994825</td>
+<td style="text-align: right;">194397</td>
+<td style="text-align: right;">0.9006407</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">TRUE</td>
-<td style="text-align: right;">21696</td>
-<td style="text-align: right;">0.1005175</td>
+<td style="text-align: right;">21446</td>
+<td style="text-align: right;">0.0993593</td>
 </tr>
 </tbody>
 </table>
@@ -2555,7 +2555,7 @@ text-align: justify}
 <p>Here, we consider a unique length of missingness (<code>length_period</code>). To do so, we create a function. It randomly selects dates for which data is missing and set the #<code>length_period</code> following periods to also be missing. Note that this function may create longer periods of missingness than what specified in <code>length_period</code> if the random selection selects to observations which are away from less than the value of <code>length_period</code>. The lowest the proportion of missing data, the less likely this will happen.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre><code><span class="va">unique_missing_length</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">prop_missing</span>, <span class="va">length_period</span><span class="op">)</span> <span class="op">{</span>
+<pre><code><span class="va">crea_unique_length</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">prop_missing</span>, <span class="va">length_period</span><span class="op">)</span> <span class="op">{</span>
   <span class="va">draw</span> <span class="op">&lt;-</span> <span class="fu">random_sample</span><span class="op">(</span><span class="fu">n</span><span class="op">(</span><span class="op">)</span>, <span class="va">prop_missing</span><span class="op">/</span><span class="va">length_period</span><span class="op">)</span><span class="op">*</span><span class="va">length_period</span>
   <span class="co"># draw &lt;- rbernoulli(n(), p = prop_missing/length_period)*length_period</span>
   <span class="va">out</span> <span class="op">&lt;-</span> <span class="va">draw</span>
@@ -2580,7 +2580,7 @@ text-align: justify}
 <div class="sourceCode">
 <pre><code><span class="va">one_length</span> <span class="op">&lt;-</span> <span class="va">data_daily</span> <span class="op">%&gt;%</span>  
   <span class="fu">group_by</span><span class="op">(</span><span class="va">city</span>, <span class="va">pollutant</span><span class="op">)</span> <span class="op">%&gt;%</span>
-  <span class="fu">mutate</span><span class="op">(</span>missing_crea <span class="op">=</span> <span class="fu">unique_missing_length</span><span class="op">(</span><span class="fl">0.2</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">mutate</span><span class="op">(</span>missing_crea <span class="op">=</span> <span class="fu">crea_unique_length</span><span class="op">(</span><span class="fl">0.2</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
   <span class="fu">ungroup</span><span class="op">(</span><span class="op">)</span>
 </code></pre>
 </div>
@@ -2644,7 +2644,7 @@ text-align: justify}
 <p>Note that, if necessary, I can modify the function to limit this.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre><code><span class="va">various_missing_length</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">prop_missing</span>, <span class="va">df_prop</span><span class="op">)</span> <span class="op">{</span>
+<pre><code><span class="va">crea_various_length</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">prop_missing</span>, <span class="va">df_prop</span><span class="op">)</span> <span class="op">{</span>
   <span class="va">missing</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu">n</span><span class="op">(</span><span class="op">)</span><span class="op">)</span>
   <span class="va">df_prop_uniq</span> <span class="op">&lt;-</span> <span class="va">df_prop</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>
   <span class="va">null_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="va">df_prop</span>, <span class="va">is_list</span><span class="op">)</span>
@@ -2652,7 +2652,7 @@ text-align: justify}
   <span class="kw">if</span><span class="op">(</span><span class="va">null_list</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span> <span class="op">{</span><span class="co">#to avoid issue when df_prop is a NULL list (due to merging)</span>
     <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/rev.html">rev</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">df_prop_uniq</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">{</span>
       <span class="va">missing</span> <span class="op">&lt;-</span> <span class="va">missing</span> <span class="op">+</span>
-        <span class="fu">unique_missing_length</span><span class="op">(</span><span class="va">prop_missing</span><span class="op">*</span><span class="va">df_prop_uniq</span><span class="op">[[</span><span class="va">i</span>, <span class="st">&quot;prop&quot;</span><span class="op">]</span><span class="op">]</span>,
+        <span class="fu">crea_unique_length</span><span class="op">(</span><span class="va">prop_missing</span><span class="op">*</span><span class="va">df_prop_uniq</span><span class="op">[[</span><span class="va">i</span>, <span class="st">&quot;prop&quot;</span><span class="op">]</span><span class="op">]</span>,
                           <span class="va">df_prop_uniq</span><span class="op">[[</span><span class="va">i</span>, <span class="st">&quot;length_period_missing&quot;</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>
     <span class="op">}</span>
     <span class="va">out</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">missing</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span>
@@ -2672,7 +2672,7 @@ text-align: justify}
   <span class="fu">left_join</span><span class="op">(</span><span class="va">length_per_city_poll</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">&quot;city&quot;</span>, <span class="st">&quot;pollutant&quot;</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
   <span class="fu">select</span><span class="op">(</span><span class="va">date</span>, <span class="va">city</span>, <span class="va">pollutant</span>, <span class="va">length_prop</span><span class="op">)</span> <span class="op">%&gt;%</span> 
   <span class="fu">group_by</span><span class="op">(</span><span class="va">city</span>, <span class="va">pollutant</span><span class="op">)</span> <span class="op">%&gt;%</span> 
-  <span class="fu">mutate</span><span class="op">(</span>missing_crea <span class="op">=</span> <span class="fu">various_missing_length</span><span class="op">(</span><span class="fl">0.1</span>, <span class="va">length_prop</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">mutate</span><span class="op">(</span>missing_crea <span class="op">=</span> <span class="fu">crea_various_length</span><span class="op">(</span><span class="fl">0.1</span>, <span class="va">length_prop</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
   <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">length_prop</span><span class="op">)</span> <span class="op">%&gt;%</span> 
   <span class="fu">ungroup</span><span class="op">(</span><span class="op">)</span>
 
@@ -2680,7 +2680,7 @@ text-align: justify}
   <span class="fu">left_join</span><span class="op">(</span><span class="va">length_per_poll</span>, by <span class="op">=</span> <span class="st">&quot;pollutant&quot;</span><span class="op">)</span> <span class="op">%&gt;%</span> 
   <span class="fu">select</span><span class="op">(</span><span class="va">date</span>, <span class="va">pollutant</span>, <span class="va">length_prop</span><span class="op">)</span> <span class="op">%&gt;%</span> 
   <span class="fu">group_by</span><span class="op">(</span><span class="va">pollutant</span><span class="op">)</span> <span class="op">%&gt;%</span> 
-  <span class="fu">mutate</span><span class="op">(</span>missing_crea <span class="op">=</span> <span class="fu">various_missing_length</span><span class="op">(</span><span class="fl">0.1</span>, <span class="va">length_prop</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">mutate</span><span class="op">(</span>missing_crea <span class="op">=</span> <span class="fu">crea_various_length</span><span class="op">(</span><span class="fl">0.1</span>, <span class="va">length_prop</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
   <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">length_prop</span><span class="op">)</span> <span class="op">%&gt;%</span> 
   <span class="fu">ungroup</span><span class="op">(</span><span class="op">)</span>
 </code></pre>
