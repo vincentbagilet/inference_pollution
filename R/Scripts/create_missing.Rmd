@@ -183,7 +183,8 @@ length_missing_data <- data_daily %>%
   mutate(
     length_period_missing = ifelse(missing_period_id == "m", 0, n())
   ) %>% 
-  ungroup()
+  ungroup() %>% 
+  arrange(city, pollutant, date)
 
 #summarises the length of missingness periods by city-pollutant
 length_per_city_poll <- length_missing_data %>% 
@@ -284,21 +285,64 @@ one_obs_per_6 <- data_daily %>%
 
 In order to create the most realistic pattern of missingness, we want to estimate the probability of missingness as a function of the other covariates.
 
+## Definition covariates
+
+Due to their large share of missing values, we do not consider `uv_radiation`, `insolation_duration` nor `global_radiation` as covariates. Thus, we consider the following covariates:
+
 ```{r}
-mod <- glm(data = data_daily, 
-          missing ~ rainfall_height + rainfall_duration, family = binomial(link = "probit"))
+covar_weather <- data_daily %>% 
+  select(rainfall_height:relative_humidity) %>% 
+  names()
+
+covar_date <- data_daily %>% 
+  select(public_holiday:day_in_week) %>% 
+  names()
+
+covar_weather
+covar_date
 ```
 
+We also consider lagged and squared values of the weather variables.
 
 ```{r}
-pred <- predict(mod, type="response")
+identity_weather <- str_c(covar_weather, collapse = " + ")
+lagged_weather <- str_c("lag(", covar_weather, ")", collapse = " + ")
+squared_weather <- str_c("I(", covar_weather, "^2)", collapse = " + ")
+identity_date <- str_c(covar_date, " + month*year", collapse = " + ")
 
-t <- data_daily %>% 
-  filter(!is.na(rainfall_height) & !is.na(rainfall_duration) & !is.na(missing)) %>% 
+covar <- str_c(identity_weather, lagged_weather, squared_weather, identity_date, sep = " + ")
+```
+
+## Estimation
+
+```{r}
+mod <- glm(data = data_daily, 
+           as.formula(str_c("missing ~ ", covar)),
+           family = binomial(link = "probit"))
+```
+
+Once we have estimated the model, we can predict whether an observation will be missing or not and thus create a "false" missingness observations.
+
+```{r}
+pred <- predict(mod, type = "response")
+
+missing_covariate <- mod$model %>% 
+  as.tibble() %>% 
   mutate(missing_crea = rbernoulli(length(pred), p = pred))
 ```
 
+## Evaluation performance
 
+We then quickly look into the performance of our prediction procedure.
+
+```{r}
+missing_covariate %>% 
+  count(missing_crea, missing) %>% 
+  mutate(prop = n/sum(n)) %>% 
+  kable()
+```
+
+The performance could probably be improved.
 
 
 

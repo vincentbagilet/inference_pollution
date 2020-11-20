@@ -2517,13 +2517,13 @@ text-align: justify}
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">FALSE</td>
-<td style="text-align: right;">194397</td>
-<td style="text-align: right;">0.9006407</td>
+<td style="text-align: right;">194081</td>
+<td style="text-align: right;">0.8991767</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">TRUE</td>
-<td style="text-align: right;">21446</td>
-<td style="text-align: right;">0.0993593</td>
+<td style="text-align: right;">21762</td>
+<td style="text-align: right;">0.1008233</td>
 </tr>
 </tbody>
 </table>
@@ -2608,7 +2608,8 @@ text-align: justify}
   <span class="fu">mutate</span><span class="op">(</span>
     length_period_missing <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">missing_period_id</span> <span class="op">==</span> <span class="st">&quot;m&quot;</span>, <span class="fl">0</span>, <span class="fu">n</span><span class="op">(</span><span class="op">)</span><span class="op">)</span>
   <span class="op">)</span> <span class="op">%&gt;%</span> 
-  <span class="fu">ungroup</span><span class="op">(</span><span class="op">)</span>
+  <span class="fu">ungroup</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">arrange</span><span class="op">(</span><span class="va">city</span>, <span class="va">pollutant</span>, <span class="va">date</span><span class="op">)</span>
 
 <span class="co">#summarises the length of missingness periods by city-pollutant</span>
 <span class="va">length_per_city_poll</span> <span class="op">&lt;-</span> <span class="va">length_missing_data</span> <span class="op">%&gt;%</span> 
@@ -2708,24 +2709,113 @@ text-align: justify}
 </div>
 <h1 id="correlation-with-covariates">Correlation with covariates</h1>
 <p>In order to create the most realistic pattern of missingness, we want to estimate the probability of missingness as a function of the other covariates.</p>
+<h2 id="definition-covariates">Definition covariates</h2>
+<p>Due to their large share of missing values, we do not consider <code>uv_radiation</code>, <code>insolation_duration</code> nor <code>global_radiation</code> as covariates. Thus, we consider the following covariates:</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre><code><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html">glm</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">data_daily</span>, 
-          <span class="va">missing</span> <span class="op">~</span> <span class="va">rainfall_height</span> <span class="op">+</span> <span class="va">rainfall_duration</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html">binomial</a></span><span class="op">(</span>link <span class="op">=</span> <span class="st">&quot;probit&quot;</span><span class="op">)</span><span class="op">)</span>
+<pre><code><span class="va">covar_weather</span> <span class="op">&lt;-</span> <span class="va">data_daily</span> <span class="op">%&gt;%</span> 
+  <span class="fu">select</span><span class="op">(</span><span class="va">rainfall_height</span><span class="op">:</span><span class="va">relative_humidity</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="op">)</span>
+
+<span class="va">covar_date</span> <span class="op">&lt;-</span> <span class="va">data_daily</span> <span class="op">%&gt;%</span> 
+  <span class="fu">select</span><span class="op">(</span><span class="va">public_holiday</span><span class="op">:</span><span class="va">day_in_week</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="op">)</span>
+
+<span class="va">covar_weather</span>
+</code></pre>
+</div>
+<pre><code>[1] &quot;rainfall_height&quot;    &quot;rainfall_duration&quot;  &quot;temperature&quot;       
+[4] &quot;sea_level_pressure&quot; &quot;wind_speed&quot;         &quot;wind_direction&quot;    
+[7] &quot;relative_humidity&quot; </code></pre>
+<div class="sourceCode">
+<pre><code><span class="va">covar_date</span>
+</code></pre>
+</div>
+<pre><code>[1] &quot;public_holiday&quot; &quot;school_holiday&quot; &quot;holiday_zone&quot;  
+[4] &quot;year&quot;           &quot;month&quot;          &quot;day_of_month&quot;  
+[7] &quot;day_in_week&quot;   </code></pre>
+</div>
+<p>We also consider lagged and squared values of the weather variables.</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre><code><span class="va">identity_weather</span> <span class="op">&lt;-</span> <span class="fu">str_c</span><span class="op">(</span><span class="va">covar_weather</span>, collapse <span class="op">=</span> <span class="st">&quot; + &quot;</span><span class="op">)</span>
+<span class="va">lagged_weather</span> <span class="op">&lt;-</span> <span class="fu">str_c</span><span class="op">(</span><span class="st">&quot;lag(&quot;</span>, <span class="va">covar_weather</span>, <span class="st">&quot;)&quot;</span>, collapse <span class="op">=</span> <span class="st">&quot; + &quot;</span><span class="op">)</span>
+<span class="va">squared_weather</span> <span class="op">&lt;-</span> <span class="fu">str_c</span><span class="op">(</span><span class="st">&quot;I(&quot;</span>, <span class="va">covar_weather</span>, <span class="st">&quot;^2)&quot;</span>, collapse <span class="op">=</span> <span class="st">&quot; + &quot;</span><span class="op">)</span>
+<span class="va">identity_date</span> <span class="op">&lt;-</span> <span class="fu">str_c</span><span class="op">(</span><span class="va">covar_date</span>, <span class="st">&quot; + month*year&quot;</span>, collapse <span class="op">=</span> <span class="st">&quot; + &quot;</span><span class="op">)</span>
+
+<span class="va">covar</span> <span class="op">&lt;-</span> <span class="fu">str_c</span><span class="op">(</span><span class="va">identity_weather</span>, <span class="va">lagged_weather</span>, <span class="va">squared_weather</span>, <span class="va">identity_date</span>, sep <span class="op">=</span> <span class="st">&quot; + &quot;</span><span class="op">)</span>
 </code></pre>
 </div>
 </div>
+<h2 id="estimation">Estimation</h2>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre><code><span class="va">pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span><span class="op">(</span><span class="va">mod</span>, type<span class="op">=</span><span class="st">&quot;response&quot;</span><span class="op">)</span>
+<pre><code><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html">glm</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">data_daily</span>, 
+           <span class="fu"><a href="https://rdrr.io/r/stats/formula.html">as.formula</a></span><span class="op">(</span><span class="fu">str_c</span><span class="op">(</span><span class="st">&quot;missing ~ &quot;</span>, <span class="va">covar</span><span class="op">)</span><span class="op">)</span>,
+           family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html">binomial</a></span><span class="op">(</span>link <span class="op">=</span> <span class="st">&quot;probit&quot;</span><span class="op">)</span><span class="op">)</span>
+</code></pre>
+</div>
+</div>
+<p>Once we have estimated the model, we can predict whether an observation will be missing or not and thus create a “false” missingness observations.</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre><code><span class="va">pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span><span class="op">(</span><span class="va">mod</span>, type <span class="op">=</span> <span class="st">&quot;response&quot;</span><span class="op">)</span>
 
-<span class="va">t</span> <span class="op">&lt;-</span> <span class="va">data_daily</span> <span class="op">%&gt;%</span> 
-  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">rainfall_height</span><span class="op">)</span> <span class="op">&amp;</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">rainfall_duration</span><span class="op">)</span> <span class="op">&amp;</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">missing</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+<span class="va">missing_covariate</span> <span class="op">&lt;-</span> <span class="va">mod</span><span class="op">$</span><span class="va">model</span> <span class="op">%&gt;%</span> 
+  <span class="fu">as.tibble</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> 
   <span class="fu">mutate</span><span class="op">(</span>missing_crea <span class="op">=</span> <span class="fu">rbernoulli</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">pred</span><span class="op">)</span>, p <span class="op">=</span> <span class="va">pred</span><span class="op">)</span><span class="op">)</span>
 </code></pre>
 </div>
 </div>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
+<h2 id="evaluation-performance">Evaluation performance</h2>
+<p>We then quickly look into the performance of our prediction procedure.</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre><code><span class="va">missing_covariate</span> <span class="op">%&gt;%</span> 
+  <span class="fu">count</span><span class="op">(</span><span class="va">missing_crea</span>, <span class="va">missing</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">mutate</span><span class="op">(</span>prop <span class="op">=</span> <span class="va">n</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">kable</span><span class="op">(</span><span class="op">)</span>
+</code></pre>
+</div>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">missing_crea</th>
+<th style="text-align: left;">missing</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">prop</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">191107</td>
+<td style="text-align: right;">0.9558982</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: left;">TRUE</td>
+<td style="text-align: right;">4270</td>
+<td style="text-align: right;">0.0213581</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">TRUE</td>
+<td style="text-align: left;">FALSE</td>
+<td style="text-align: right;">4334</td>
+<td style="text-align: right;">0.0216782</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">TRUE</td>
+<td style="text-align: left;">TRUE</td>
+<td style="text-align: right;">213</td>
+<td style="text-align: right;">0.0010654</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The performance could probably be improved.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
 <!--radix_placeholder_article_footer-->
 <!--/radix_placeholder_article_footer-->
 </div>
