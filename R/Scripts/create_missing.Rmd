@@ -46,8 +46,23 @@ library(lubridate)
 ```
 
 ```{r include=FALSE}
+#data wrangling copied/pasted from missingness_pattern_fr.Rmd
 data_daily <- readRDS("../Outputs/data_daily.RDS") %>% 
-  mutate(missing = is.na(concentration))
+  mutate(
+    year = as.factor(year(date)),
+    month = as.factor(month(date)),
+    day_of_month = as.factor(day(date)),
+    day_in_week = as.factor(wday(date)),
+    missing = is.na(concentration)
+  ) %>% 
+  # filter(year != 2014) %>% 
+  # filter(!(year == 2015 & pollutant == "no")) %>% 
+  # filter(!(year == 2019 & str_sub(pollutant, 1, 2) == "pm")) 
+# For "new" long dataset (including 2008-2012)
+  filter(year != 2012) %>%
+  filter(!(year %in% c(2008:2010, 2014, 2015, 2019, 2020) & pollutant == "no")) %>%
+  filter(!(year %in% c(2008:2010, 2019) & str_sub(pollutant, 1, 2) == "pm")) %>% 
+  select(-DIR) 
 ```
 
 In this document, we build functions to create missingness patterns. We also apply them to our daily data set, to illustrate. We chose the option to create a logical variable `missing_crea` instead of deleting the observations to offer the possibility to keep the observation but to solely make the concentration missing (with a simple `mutate(concentration = ifelse(missing_crea, NA, concentration)`).
@@ -88,6 +103,24 @@ CAR_bern %>%
   kable()
 ```
 
+To check the performance of our methods, we create a simple function which verifies the proportion of missing values.
+
+```{r}
+prop_missing <- function (df, var = "missing_crea") {
+  p <- df %>% 
+    count(.data[[var]]) %>% 
+    mutate(prop = n/sum(n))
+  
+  return(p)
+} 
+```
+
+To directly drop the observations, we could have used the following code:
+
+```{r}
+CAR_drop <- data_daily %>% 
+  slice_sample(prop = 1 - 0.1)
+```
 
 # Accounting for length of missingness periods
 
@@ -122,7 +155,7 @@ Example of implementation:
 ```{r}
 one_length <- data_daily %>%  
   group_by(city, pollutant) %>%
-  mutate(missing_crea = unique_missing_length(0.1, 4)) %>% 
+  mutate(missing_crea = unique_missing_length(0.2, 4)) %>% 
   ungroup()
 ```
 
@@ -135,10 +168,11 @@ In the real data set, the length of missingness periods varies. We want to accou
 #computes the length of missingness periods
 length_missing_data <- data_daily %>% 
   mutate(row_id = row_number()) %>% 
-  group_by(city, pollutant) %>%
+  group_by(site, pollutant) %>%
   arrange(date) %>% 
   mutate(
-    missing_period_id = ifelse(missing == TRUE & lag(missing) == FALSE, row_id, NA)
+    missing_period_id = ifelse(missing == TRUE & lag(missing) == FALSE, row_id, NA), 
+    missing_period_id = ifelse(missing == FALSE, "m", missing_period_id)
   ) %>%
   # filter(missing == TRUE) %>%
   fill(missing_period_id) %>% 
@@ -146,11 +180,14 @@ length_missing_data <- data_daily %>%
   select(-row_id) %>% 
   arrange(missing_period_id) %>% 
   group_by(missing_period_id, pollutant) %>% 
-  mutate(length_period_missing = n()) %>% 
+  mutate(
+    length_period_missing = ifelse(missing_period_id == "m", 0, n())
+  ) %>% 
   ungroup()
 
 #summarises the length of missingness periods by city-pollutant
 length_per_city_poll <- length_missing_data %>% 
+  filter(length_period_missing > 0) %>% 
   group_by(city, pollutant) %>% 
   count(length_period_missing) %>% 
   mutate(
@@ -164,6 +201,7 @@ length_per_city_poll <- length_missing_data %>%
 
 #summarises the length of missingness periods by pollutant
 length_per_poll <- length_missing_data %>% 
+  filter(length_period_missing > 0) %>% 
   group_by(pollutant) %>% 
   count(length_period_missing) %>% 
   mutate(
@@ -184,13 +222,19 @@ Note that, if necessary, I can modify the function to limit this.
 various_missing_length <- function(prop_missing, df_prop) {
   missing <- rep(0, n())
   df_prop_uniq <- df_prop[[1]]
+  null_list <- sapply(df_prop, is_list)
   
-  for (i in 1:nrow(df_prop_uniq)){
-    missing <- missing +
-      unique_missing_length(prop_missing*df_prop_uniq[[i, "prop"]],
-                            df_prop_uniq[[i, "length_period_missing"]])
+  if(null_list[1]) {#to avoid issue when df_prop is a NULL list (due to merging)
+    for (i in rev(1:nrow(df_prop_uniq))){
+      missing <- missing +
+        unique_missing_length(prop_missing*df_prop_uniq[[i, "prop"]],
+                          df_prop_uniq[[i, "length_period_missing"]])
+    }
+    out <- (missing > 0)
+  } else {
+    out <- rep(FALSE, n())
   }
-  out <- (missing > 0)
+  
   return(out)
 }
 ```
@@ -202,7 +246,7 @@ missing_per_city_poll <- data_daily %>%
   left_join(length_per_city_poll, by = c("city", "pollutant")) %>% 
   select(date, city, pollutant, length_prop) %>% 
   group_by(city, pollutant) %>% 
-  mutate(missing_crea = various_missing_length(0.2, length_prop)) %>% 
+  mutate(missing_crea = various_missing_length(0.1, length_prop)) %>% 
   select(-length_prop) %>% 
   ungroup()
 
@@ -235,7 +279,6 @@ one_obs_per_6 <- data_daily %>%
   ungroup() %>% 
   select(-six_days_period, -id_period) 
 ```
-
 
 # Correlation with covariates
 
