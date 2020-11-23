@@ -10,7 +10,7 @@ output:
     theme: simplex
     highlight: pygments
 author: "Vincent Bagilet, Léo Zabrocki"
-date: "October 30, 2020"
+date: "`r Sys.Date()`"
 ---
 
 ```{r setup, include=FALSE, results='hide', warning=FALSE}
@@ -18,44 +18,50 @@ library(knitr)
 opts_chunk$set(fig.path = "images/",
                cache.path = "cache/",
                cache = FALSE,
-               echo = TRUE,
+               echo = TRUE, #set to false to hide code
                message = FALSE,
-               warning = FALSE)  
+               warning = FALSE,
+               out.width = "85%",
+               dpi = 200,
+               fig.align = "center")  
 ```  
 
 ```{r include=FALSE}
 library(tidyverse)
 library(fulltext)
+library(tidytext)
+library(xml2)
+library(XML)
+library(rentrez)
 ```
 
-## Purpose of the document
+# Purpose of the document
 
 In the present document, we aim to conduct a systematic review of the literature on health effects of air pollution. We carry out an extremely simple text mining analysis of this literature in order to have a sense of the proportion of articles studying health effects of air pollution data taking the issue of missing data into account.
 
-## Retreiving article texts
+# Retreiving article texts
 
 To carry out this analysis, we use the [`fulltext`](https://books.ropensci.org/fulltext/) package to get the full text of each article whose title contains the words "air pollution" and "health". This set of articles might be too restrictive and we may want to broaden our scope later. 
 
 To begin with, we focus on articles published on Scopus and Pubmed. To access Scopus API, one needs to register to get an API key (stored in the .Renviron) for Elsevier and a Crossref TDM API key. Note that downloading of full texts may not work if one is not connected directly to their institution internet network. Pubmed articles are accessed via Entrez. An API key enables to increase the number of requests per seconds from 3 to 10. More information on authentification is available on [the `fulltext` manual](https://books.ropensci.org/fulltext/authentication.html).
 
-### Set of articles to consider
+## Set of articles to consider
 
-First of all, we need to clearly define the set of articles we want to consider in this analysis. Our baseline search querry is: `"air pollution" AND ("emergency" OR "mortality") AND ("particulate matter" OR ozone OR "nitrogen dioxyde" OR "sulfur dioxyde")`. This returns about 57000 articles (without accounting for duplicates in between journals). This number being rather large, we want to narrow it down. To focus on the epidemiological literature, we add the query term `poisson`. To get causal analyses, we add the term `causal`. It returns `r search$entrez$found + search$scopus$found` articles.
-
+First of all, we need to clearly define the set of articles we want to consider in this analysis. Our baseline search query is: `"air pollution" AND ("emergency" OR "mortality") AND ("particulate matter" OR ozone OR "nitrogen dioxyde" OR "sulfur dioxyde")`. This returns about 57000 articles (without accounting for duplicates in between journals). This number being rather large, we want to narrow it down. To focus on the epidemiological literature, we add the query term `poisson`. To get causal analyses, we add the term `causal`. 
 
 ```{r}
 #set folder to store downloads
 cache_options_set(full_path = "/Users/vincentbagilet/Documents/fulltext")
-# cache_options_set(full_path = "/Volumes/VincentSSD/Research_data/air_pollution/lit_review")
+# cache_options_set(full_path = "/Volumes/VincentSSD/Research_data/air_pollution/lit_review/full_texts")
 
-query <- 'TITLE(("air pollution"  OR  "air quality") AND ("emergency" OR "mortality" OR "health")) AND ("particulate matter" OR ozone OR "nitrogen dioxide" OR "sulfur dioxide") AND (poisson OR causal)'
+query <- 'TITLE(("air pollution"  OR "air quality" OR "particulate matter" OR ozone OR "nitrogen dioxide" OR "sulfur dioxide") AND ("emergency" OR "mortality")) AND ("particulate matter" OR ozone OR "nitrogen dioxide" OR "sulfur dioxide")'# AND (poisson OR causal)'
 
-#ft_search() to run a search
-search <- ft_search(query, from = c("scopus", "entrez"), limit = 2)
+#Run a search
+search <- ft_search(query, from = c("scopus", "entrez"), limit = 10)
 # search <- ft_search("test", limit = 100, from = "scopus")
 
 metadata_scopus <- search$scopus$data %>% 
-  as_tibble() %>%  
+  as_tibble() %>% 
   rename_all(function(x) str_remove_all(names(.), "prism:|dc:")) %>% 
   rename_all(function(x) str_replace_all(names(.), "-", "_"))
 
@@ -63,20 +69,109 @@ metadata_entrez <- search$entrez$data %>%
   as_tibble() %>% 
   rename(id = uid)
 
-#download the full texts and store them in an xml format in the cache directory
+metadata_scopus_short <- metadata_scopus %>% 
+  select(doi, title, creator, publicationName, pubmed_id) %>% 
+  rename(
+    authors = creator,
+    journal = publicationName
+  ) %>% 
+  mutate(
+    pubmed_id = ifelse(!str_detect(pubmed_id, "[0-9]{7}"), NA, pubmed_id)
+  )
+
+metadata_entrez_short <- metadata_entrez %>% 
+  select(doi, title, authors, fulljournalname, pmid) %>% 
+  rename(
+    journal = fulljournalname,
+    pubmed_id = pmid
+  ) %>% 
+  mutate(
+    pubmed_id = ifelse(!str_detect(pubmed_id, "[0-9]{7}"), NA, pubmed_id)
+  )
+
+metadata_short <- metadata_scopus_short %>% 
+  rbind(metadata_entrez_short)
+```
+
+Our search returns `r search$entrez$found + search$scopus$found` articles. The metadata from different sources having different shapes, we only select a few relevant columns to build an overall metadata set.
+
+## Retreiving abstracts
+
+First, we focus on the abstracts and download them. 
+
+There is no `fulltext` function to access abstracts from Entrez. Therefore, using the DOI, we get the abstracts from Semantic Scholar. We also access Scopus abstracts from Semantic Scholar since, due to my IP address being located outside of Columbia, I cannot access the texts and abstracts from Scopus.
+
+In Semantic Scholar, there is a rate limit of 100 articles per 5 min or 20 articles per minute. We therefore need to pause the system to be able to download everything.
+
+
+```{r}
+# opts_scopus <- list(key = Sys.getenv('ELSEVIER_SCOPUS_KEY'))
+
+# abstracts_scopus <- metadata_scopus$doi %>% 
+#   ft_abstract(from = "scopus", scopusopts = opts_scopus) 
+
+get_abstracts <- function(doi) {
+  vect_doi <- unique(doi)
+  number_periods <- (length(vect_doi) - 1) %/% 20
+  abs <- NULL
+
+  message(str_c("Total downloading time: ", number_periods, "min"))
+  
+  for (i in 0:number_periods) {
+    
+    doi_period <- vect_doi[(20*i+1):(20*(i+1))]
+    doi_period <- doi_period[!is.na(doi_period)]
+    
+    abs_period <- doi_period %>% 
+      ft_abstract(from = "semanticscholar") %>% 
+      .$semanticscholar %>% 
+      as_tibble() %>% 
+      unnest(cols = everything()) %>% 
+      pivot_longer(everything(), names_to = "doi", values_to = "abstract") %>% 
+      filter(doi != abstract)
+    
+    abs <- abs %>% 
+      rbind(abs_period)
+    
+    if (i < number_periods & number_periods != 0) {
+      message(str_c("Remaining time: ", number_periods - i, "min"))
+      Sys.sleep(61)
+    }
+  } 
+  
+  return(abs)
+}
+
+abstracts <- metadata_short$doi %>% 
+  get_abstracts() %>% 
+  left_join(metadata_short, by = "doi") 
+  # distinct(title)
+
+saveRDS(abstracts, "../Outputs/abstracts.RDS")
+```
+
+We get abstracts for `r nrow(abstracts)*100/length(unique(c(metadata_scopus$doi, metadata_entrez$doi)))`% of the articles corresponding to our search terms.
+
+## Full texts
+
+We then download the full texts (using the `ft_get` functions). The full texts are stored in an xml format in the cache directory. Note that due to my IP address being located outside of Columbia, I cannot access the texts from Scopus.
+
+```{r}
 metadata_scopus$doi %>% 
   ft_get(progress = TRUE)
 
 metadata_entrez$doi %>% 
-  ft_get(from = "entrez", progress = TRUE)
+  ft_get(from = "entrez", progress = TRUE, type = "pdf")
 ```
 
-Once we have downloaded all the files, we can put them into a table format, before analysing them.
+
+Once we have downloaded all the files, we can put them into a table format, before analyzing them.
 
 ```{r}
 #put text into a table format
 article_texts <- ft_table() %>% #searches for documents in the cache directory 
-  select(-paths) 
+  select(-paths, -ids_norm) %>% 
+  .$text 
 
 saveRDS(article_texts, "../Outputs/article_texts.RDS")
 ```
@@ -93,6 +188,44 @@ article_texts %>%
   ) 
 ```
 
+# Test with rentrez package
+
+```{r}
+querry_entrez <- "((air pollution[TITL]  OR air quality[TITL] OR particulate matter[TITL] OR ozone[TITL] OR nitrogen dioxide[TITL] OR sulfur dioxide[TITL]) AND (emergency[TITL] OR mortality[TITL])) AND (particulate matter[TIAB] OR ozone[TIAB] OR nitrogen dioxide[TIAB] OR sulfur dioxide[TIAB])"
+
+rentrez_search <- entrez_search(db = "pubmed", term = querry_entrez)
+rentrez_ids <- rentrez_search$ids[1:3] %>% as.numeric()
+
+rentrez_texts <- entrez_fetch(db = "pubmed", id = rentrez_ids, rettype = "xml")
+
+t <- rentrez_texts %>%
+  xmlParse() %>%
+  xmlToList()  
+
+retrieve_abstract <- function(lis) {
+  df <- lis$MedlineCitation$Article$Abstract %>% 
+  map_df(., data.frame) %>% 
+  as.tibble() %>% 
+  distinct() 
+  
+  # %>% 
+  # filter(!is.na(text)) %>% 
+  # select(-3)
+  
+  return(df)
+}
+
+out <- map_df(t, retrieve_abstract)
+
+r <- t$PubmedArticle$MedlineCitation$Article$Abstract %>% 
+  map_df(., data.frame) %>% 
+  as.tibble() %>% 
+  distinct() %>% 
+  filter(!is.na(text)) %>% 
+  select(-3)
+
+t$PubmedArticle$MedlineCitation$Article
+```
 
 
 

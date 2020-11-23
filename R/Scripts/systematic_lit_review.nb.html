@@ -11,7 +11,7 @@
 
 <meta name="author" content="Vincent Bagilet, Léo Zabrocki" />
 
-<meta name="date" content="2020-10-30" />
+<meta name="date" content="2020-11-23" />
 
 <title>Systematic literature review</title>
 
@@ -1492,26 +1492,26 @@ window.initializeCodeFolding = function(show) {
   var currentIndex = 1;
 
   // select all R code blocks
-  var rCodeBlocks = $('pre.r, pre.python, pre.bash, pre.sql, pre.cpp, pre.stan, pre.julia');
+  var rCodeBlocks = $('pre.r, pre.python, pre.bash, pre.sql, pre.cpp, pre.stan, pre.julia, pre.foldable');
   rCodeBlocks.each(function() {
 
     // create a collapsable div to wrap the code in
     var div = $('<div class="collapse r-code-collapse"></div>');
-    if (show || $(this)[0].classList.contains('fold-show'))
-      div.addClass('in');
+    var showThis = (show || $(this).hasClass('fold-show')) && !$(this).hasClass('fold-hide');
+    if (showThis) div.addClass('in');
     var id = 'rcode-643E0F36' + currentIndex++;
     div.attr('id', id);
     $(this).before(div);
     $(this).detach().appendTo(div);
 
     // add a show code button right above
-    var showCodeText = $('<span>' + (show ? 'Hide' : 'Code') + '</span>');
+    var showCodeText = $('<span>' + (showThis ? 'Hide' : 'Code') + '</span>');
     var showCodeButton = $('<button type="button" class="btn btn-default btn-xs code-folding-btn pull-right"></button>');
     showCodeButton.append(showCodeText);
     showCodeButton
         .attr('data-toggle', 'collapse')
         .attr('data-target', '#' + id)
-        .attr('aria-expanded', show)
+        .attr('aria-expanded', showThis)
         .attr('aria-controls', id);
 
     var buttonRow = $('<div class="row"></div>');
@@ -1546,13 +1546,77 @@ window.initializeSourceEmbed = function(filename) {
   });
 };
 </script>
+<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
+// v0.0.1
+// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
+
+document.addEventListener('DOMContentLoaded', function() {
+  const codeList = document.getElementsByClassName("sourceCode");
+  for (var i = 0; i < codeList.length; i++) {
+    var linkList = codeList[i].getElementsByTagName('a');
+    for (var j = 0; j < linkList.length; j++) {
+      if (linkList[j].innerHTML === "") {
+        linkList[j].setAttribute('aria-hidden', 'true');
+      }
+    }
+  }
+});
+</script>
+<style type="text/css">
+a.anchor-section {margin-left: 10px; visibility: hidden; color: inherit;}
+a.anchor-section::before {content: '#';}
+.hasAnchor:hover a.anchor-section {visibility: visible;}
+</style>
+<script>// Anchor sections v1.0 written by Atsushi Yasumoto on Oct 3rd, 2020.
+document.addEventListener('DOMContentLoaded', function() {
+  // Do nothing if AnchorJS is used
+  if (typeof window.anchors === 'object' && anchors.hasOwnProperty('hasAnchorJSLink')) {
+    return;
+  }
+
+  const h = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
+
+  // Do nothing if sections are already anchored
+  if (Array.from(h).some(x => x.classList.contains('hasAnchor'))) {
+    return null;
+  }
+
+  // Use section id when pandoc runs with --section-divs
+  const section_id = function(x) {
+    return ((x.classList.contains('section') || (x.tagName === 'SECTION'))
+            ? x.id : '');
+  };
+
+  // Add anchors
+  h.forEach(function(x) {
+    const id = x.id || section_id(x.parentElement);
+    if (id === '') {
+      return null;
+    }
+    let anchor = document.createElement('a');
+    anchor.href = '#' + id;
+    anchor.classList = ['anchor-section'];
+    x.classList.add('hasAnchor');
+    x.appendChild(anchor);
+  });
+});
+</script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
 
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css" data-origin="pandoc">
-a.sourceLine { display: inline-block; line-height: 1.25; }
-a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
-a.sourceLine:empty { height: 1.2em; }
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode { white-space: pre; position: relative; }
 div.sourceCode { margin: 1em 0; }
@@ -1562,14 +1626,16 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 code.sourceCode { white-space: pre-wrap; }
-a.sourceLine { text-indent: -1em; padding-left: 1em; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
-pre.numberSource a.sourceLine
-  { position: relative; left: -4em; }
-pre.numberSource a.sourceLine::before
-  { content: attr(data-line-number);
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
     position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; pointer-events: all; display: inline-block;
+    border: none; display: inline-block;
     -webkit-touch-callout: none; -webkit-user-select: none;
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
@@ -1578,9 +1644,9 @@ pre.numberSource a.sourceLine::before
   }
 pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
 div.sourceCode
-  {  }
+  {   }
 @media screen {
-a.sourceLine::before { text-decoration: underline; }
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; font-weight: bold; } /* Alert */
 code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
@@ -1828,7 +1894,7 @@ summary {
 <h1 class="title toc-ignore">Systematic literature review</h1>
 <h3 class="subtitle">Missing data in studies of health effects of air pollution</h3>
 <h4 class="author">Vincent Bagilet, Léo Zabrocki</h4>
-<h4 class="date">October 30, 2020</h4>
+<h4 class="date">2020-11-23</h4>
 
 </div>
 
@@ -1837,7 +1903,10 @@ summary {
 <li><a href="#purpose-of-the-document">Purpose of the document</a></li>
 <li><a href="#retreiving-article-texts">Retreiving article texts</a><ul>
 <li><a href="#set-of-articles-to-consider">Set of articles to consider</a></li>
+<li><a href="#retreiving-abstracts">Retreiving abstracts</a></li>
+<li><a href="#full-texts">Full texts</a></li>
 </ul></li>
+<li><a href="#test-with-rentrez-package">Test with rentrez package</a></li>
 </ul>
 </div>
 
@@ -1846,67 +1915,138 @@ summary {
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-text-begin -->
-<div id="purpose-of-the-document" class="section level2">
-<h2>Purpose of the document</h2>
+<div id="purpose-of-the-document" class="section level1">
+<h1>Purpose of the document</h1>
 <p>In the present document, we aim to conduct a systematic review of the literature on health effects of air pollution. We carry out an extremely simple text mining analysis of this literature in order to have a sense of the proportion of articles studying health effects of air pollution data taking the issue of missing data into account.</p>
 </div>
-<div id="retreiving-article-texts" class="section level2">
-<h2>Retreiving article texts</h2>
+<div id="retreiving-article-texts" class="section level1">
+<h1>Retreiving article texts</h1>
 <p>To carry out this analysis, we use the <a href="https://books.ropensci.org/fulltext/"><code>fulltext</code></a> package to get the full text of each article whose title contains the words “air pollution” and “health”. This set of articles might be too restrictive and we may want to broaden our scope later.</p>
 <p>To begin with, we focus on articles published on Scopus and Pubmed. To access Scopus API, one needs to register to get an API key (stored in the .Renviron) for Elsevier and a Crossref TDM API key. Note that downloading of full texts may not work if one is not connected directly to their institution internet network. Pubmed articles are accessed via Entrez. An API key enables to increase the number of requests per seconds from 3 to 10. More information on authentification is available on <a href="https://books.ropensci.org/fulltext/authentication.html">the <code>fulltext</code> manual</a>.</p>
-<div id="set-of-articles-to-consider" class="section level3">
-<h3>Set of articles to consider</h3>
-<p>First of all, we need to clearly define the set of articles we want to consider in this analysis. Our baseline search querry is: <code>&quot;air pollution&quot; AND (&quot;emergency&quot; OR &quot;mortality&quot;) AND (&quot;particulate matter&quot; OR ozone OR &quot;nitrogen dioxyde&quot; OR &quot;sulfur dioxyde&quot;)</code>. This returns about 57000 articles (without accounting for duplicates in between journals). This number being rather large, we want to narrow it down. To focus on the epidemiological literature, we add the query term <code>poisson</code>. To get causal analyses, we add the term <code>causal</code>. It returns 795 articles.</p>
+<div id="set-of-articles-to-consider" class="section level2">
+<h2>Set of articles to consider</h2>
+<p>First of all, we need to clearly define the set of articles we want to consider in this analysis. Our baseline search query is: <code>&quot;air pollution&quot; AND (&quot;emergency&quot; OR &quot;mortality&quot;) AND (&quot;particulate matter&quot; OR ozone OR &quot;nitrogen dioxyde&quot; OR &quot;sulfur dioxyde&quot;)</code>. This returns about 57000 articles (without accounting for duplicates in between journals). This number being rather large, we want to narrow it down. To focus on the epidemiological literature, we add the query term <code>poisson</code>. To get causal analyses, we add the term <code>causal</code>.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubWV0YWRhdGFfZW50cmV6JGRvaSAlPiUgXG4gIGZ0X2dldChmcm9tID0gXCJlbnRyZXpcIiwgcHJvZ3Jlc3MgPSBUUlVFKVxuXG5gYGAifQ== -->
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1">metadata_entrez<span class="op">$</span>doi <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="st">  </span><span class="kw">ft_get</span>(<span class="dt">from =</span> <span class="st">&quot;entrez&quot;</span>, <span class="dt">progress =</span> <span class="ot">TRUE</span>)</a></code></pre></div>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI1J1biBhIHNlYXJjaFxuc2VhcmNoIDwtIGZ0X3NlYXJjaChxdWVyeSwgZnJvbSA9IGMoXCJzY29wdXNcIiwgXCJlbnRyZXpcIiksIGxpbWl0ID0gMTYyMClcblxuYGBgIn0= -->
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="co">#Run a search</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a>search &lt;-<span class="st"> </span><span class="kw">ft_search</span>(query, <span class="dt">from =</span> <span class="kw">c</span>(<span class="st">&quot;scopus&quot;</span>, <span class="st">&quot;entrez&quot;</span>), <span class="dt">limit =</span> <span class="dv">1620</span>)</span></code></pre></div>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiXG4gIHwgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcbiAgfCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgICAwJVxuICB8ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXG4gIHw9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB8ICA1MCVcbiAgfCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFxuICB8PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09fCAxMDAlXG48ZnVsbHRleHQgdGV4dD5cbltEb2NzXSAyIFxuW1NvdXJjZV0gZXh0IC0gL1VzZXJzL3ZpbmNlbnRiYWdpbGV0L0RvY3VtZW50cy9mdWxsdGV4dCBcbltJRHNdIDc1MDM0NjUgNzQ5MTQzMyAuLi4gXG4ifQ== -->
-<pre><code>
-  |                                                                     
-  |                                                               |   0%
-  |                                                                     
-  |================================                               |  50%
-  |                                                                     
-  |===============================================================| 100%
-&lt;fulltext text&gt;
-[Docs] 2 
-[Source] ext - /Users/vincentbagilet/Documents/fulltext 
-[IDs] 7503465 7491433 ... </code></pre>
+<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3IgaW4gZW50cmV6X2NoZWNrKHJlc3BvbnNlKSA6IFxuICBIVFRQIGZhaWx1cmUgNDE0LCB0aGUgcmVxdWVzdCBpcyB0b28gbGFyZ2UuIEZvciBsYXJnZSByZXF1ZXN0cywgdHJ5IHVzaW5nIHdlYiBoaXN0b3J5IGFzIGRlc2NyaWJlZCBpbiB0aGUgcmVudHJleiB0dXRvcmlhbFxuIn0= -->
+<pre><code>Error in entrez_check(response) : 
+  HTTP failure 414, the request is too large. For large requests, try using web history as described in the rentrez tutorial</code></pre>
 <!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>Once we have downloaded all the files, we can put them into a table format, before analysing them.</p>
+<p>Our search returns 2601 articles. The metadata from different sources having different shapes, we only select a few relevant columns to build an overall metadata set.</p>
+</div>
+<div id="retreiving-abstracts" class="section level2">
+<h2>Retreiving abstracts</h2>
+<p>First, we focus on the abstracts and download them.</p>
+<p>There is no <code>fulltext</code> function to access abstracts from Entrez. Therefore, using the DOI, we get the abstracts from Semantic Scholar. We also access Scopus abstracts from Semantic Scholar since, due to my IP address being located outside of Columbia, I cannot access the texts and abstracts from Scopus.</p>
+<p>In Semantic Scholar, there is a rate limit of 100 articles per 5 min or 20 articles per minute. We therefore need to pause the system to be able to download everything.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI3B1dCB0ZXh0IGludG8gYSB0YWJsZSBmb3JtYXRcbmFydGljbGVfdGV4dHMgPC0gZnRfdGFibGUoKSAlPiUgI3NlYXJjaGVzIGZvciBkb2N1bWVudHMgaW4gdGhlIGNhY2hlIGRpcmVjdG9yeSBcbiAgc2VsZWN0KC1wYXRocykgXG5cbnNhdmVSRFMoYXJ0aWNsZV90ZXh0cywgXCIuLi9PdXRwdXRzL2FydGljbGVfdGV4dHMuUkRTXCIpXG5gYGAifQ== -->
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="co">#put text into a table format</span></a>
-<a class="sourceLine" id="cb3-2" data-line-number="2">article_texts &lt;-<span class="st"> </span><span class="kw">ft_table</span>() <span class="op">%&gt;%</span><span class="st"> </span><span class="co">#searches for documents in the cache directory </span></a>
-<a class="sourceLine" id="cb3-3" data-line-number="3"><span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>paths) </a>
-<a class="sourceLine" id="cb3-4" data-line-number="4"></a>
-<a class="sourceLine" id="cb3-5" data-line-number="5"><span class="kw">saveRDS</span>(article_texts, <span class="st">&quot;../Outputs/article_texts.RDS&quot;</span>)</a></code></pre></div>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYWJzdHJhY3RzIDwtIG1ldGFkYXRhX3Nob3J0JGRvaVsxOjJdICU+JSBcbiAgZ2V0X2Fic3RyYWN0cygpIFxuXG5gYGAifQ== -->
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>abstracts &lt;-<span class="st"> </span>metadata_short<span class="op">$</span>doi[<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>] <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="st">  </span><span class="kw">get_abstracts</span>() </span></code></pre></div>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3IgaW4gZ2V0X2Fic3RyYWN0cyguKSA6IG9iamVjdCAncGInIG5vdCBmb3VuZFxuIn0= -->
+<pre><code>Error in get_abstracts(.) : object &#39;pb&#39; not found</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>We get abstracts for 10% of the articles corresponding to our search terms.</p>
+</div>
+<div id="full-texts" class="section level2">
+<h2>Full texts</h2>
+<p>We then download the full texts (using the <code>ft_get</code> functions). The full texts are stored in an xml format in the cache directory. Note that due to my IP address being located outside of Columbia, I cannot access the texts from Scopus.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubWV0YWRhdGFfc2NvcHVzJGRvaSAlPiUgXG4gIGZ0X2dldChwcm9ncmVzcyA9IFRSVUUpXG5cbm1ldGFkYXRhX2VudHJleiRkb2kgJT4lIFxuICBmdF9nZXQoZnJvbSA9IFwiZW50cmV6XCIsIHByb2dyZXNzID0gVFJVRSwgdHlwZSA9IFwicGRmXCIpXG5gYGAifQ== -->
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>metadata_scopus<span class="op">$</span>doi <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="st">  </span><span class="kw">ft_get</span>(<span class="dt">progress =</span> <span class="ot">TRUE</span>)</span>
+<span id="cb5-3"><a href="#cb5-3"></a></span>
+<span id="cb5-4"><a href="#cb5-4"></a>metadata_entrez<span class="op">$</span>doi <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb5-5"><a href="#cb5-5"></a><span class="st">  </span><span class="kw">ft_get</span>(<span class="dt">from =</span> <span class="st">&quot;entrez&quot;</span>, <span class="dt">progress =</span> <span class="ot">TRUE</span>, <span class="dt">type =</span> <span class="st">&quot;pdf&quot;</span>)</span></code></pre></div>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Once we have downloaded all the files, we can put them into a table format, before analyzing them.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI3B1dCB0ZXh0IGludG8gYSB0YWJsZSBmb3JtYXRcbmFydGljbGVfdGV4dHMgPC0gZnRfdGFibGUoKSAlPiUgI3NlYXJjaGVzIGZvciBkb2N1bWVudHMgaW4gdGhlIGNhY2hlIGRpcmVjdG9yeSBcbiAgc2VsZWN0KC1wYXRocywgLWlkc19ub3JtKSAlPiUgXG4gIC4kdGV4dCBcblxuc2F2ZVJEUyhhcnRpY2xlX3RleHRzLCBcIi4uL091dHB1dHMvYXJ0aWNsZV90ZXh0cy5SRFNcIilcbmBgYCJ9 -->
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="co">#put text into a table format</span></span>
+<span id="cb6-2"><a href="#cb6-2"></a>article_texts &lt;-<span class="st"> </span><span class="kw">ft_table</span>() <span class="op">%&gt;%</span><span class="st"> </span><span class="co">#searches for documents in the cache directory </span></span>
+<span id="cb6-3"><a href="#cb6-3"></a><span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>paths, <span class="op">-</span>ids_norm) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb6-4"><a href="#cb6-4"></a><span class="st">  </span>.<span class="op">$</span>text </span>
+<span id="cb6-5"><a href="#cb6-5"></a></span>
+<span id="cb6-6"><a href="#cb6-6"></a><span class="kw">saveRDS</span>(article_texts, <span class="st">&quot;../Outputs/article_texts.RDS&quot;</span>)</span></code></pre></div>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>To analyse the texts, we first start by simply exploring the proportion of articles mentioning the words “missing” and “power”.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-frame-begin eyJtZXRhZGF0YSI6eyJjbGFzc2VzIjpbInRibF9kZiIsInRibCIsImRhdGEuZnJhbWUiXSwibmNvbCI6MiwibnJvdyI6MX0sInJkZiI6Ikg0c0lBQUFBQUFBQUEzVlJRVTdETUJCMG5LU2xxVm9xOFk2a0VseTRjVUU4QUZHcE4yUmNON0ZJN01oMkZZNThrdSswckowNFNvM1lnN003MmRueGVGK2Y5dy9aUGtNSXhTaWVZUlNua0tKMDkvYVNQeUtVWUNnaWxLQ0YvWDVCMHgwa0ZseGI0T2xuNStKdmZVVk1CV21ZaG1UanlEMjRvVklZd29WK2I3aldYSlFEdmg3eFZuWk1CYU1XU25hRkg3ZXk0NzdodUVDRW1yUW0ybXQ2TURzUVE0cWpBajVVNTRBeWw2M2hVZ0FKVzVkTFMzQy8rNWdPbWxGQ0s3YWRkRVJCUjZRQ1lNNGJVaks5RGVEYms3QjJEam10VHVJenZ3OUUvOHRYRTFtZjQ5NFB2Z3dTeS9FcDdHWDlFN2lpYUltcEJpUmh0SkxlRnhNbEY3NzM1c2pMYVdkYWt3OVdleit3QXcyT2ZOa1JKU1piaEQyNU5SV3Q0c0o0Y1VCMVlhUWg5WGdkV1h2RWJRU2Rmd0dxMkl1Y2tnSUFBQT09In0= -->
-<div data-pagedtable="false">
-<script data-pagedtable-source type="application/json">
-{"columns":[{"label":["contains_missing"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["contains_power"],"name":[2],"type":["dbl"],"align":["right"]}],"data":[{"1":"0.3333333","2":"0.3333333"}],"options":{"columns":{"min":{},"max":[10],"total":[2]},"rows":{"min":[10],"max":[10],"total":[1]},"pages":{}}}
-  </script>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucmVhZFJEUyhcIi4uL091dHB1dHMvYXJ0aWNsZV90ZXh0cy5SRFNcIilcblxuYXJ0aWNsZV90ZXh0cyAlPiUgXG4gIHN1bW1hcmlzZShcbiAgICBjb250YWluc19taXNzaW5nID0gc3VtKHN0cl9kZXRlY3QodGV4dCwgcGF0dGVybiA9IFwiXFxcXGJtaXNzaW5nXCIpKS9uKCksICNjb3VsZCBwdXQgYSB2ZWN0b3Igd2l0aCB2YXJpb3VzIHRlcm1zXG4gICAgY29udGFpbnNfcG93ZXIgPSBzdW0oc3RyX2RldGVjdCh0ZXh0LCBwYXR0ZXJuID0gXCJcXFxcYnBvd2VyXFxcXGJcIikpL24oKSAjc3RhdGlzdGljYWwgcG93ZXJcbiAgKSBcbmBgYCJ9 -->
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">readRDS</span>(<span class="st">&quot;../Outputs/article_texts.RDS&quot;</span>)</span>
+<span id="cb7-2"><a href="#cb7-2"></a></span>
+<span id="cb7-3"><a href="#cb7-3"></a>article_texts <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb7-4"><a href="#cb7-4"></a><span class="st">  </span><span class="kw">summarise</span>(</span>
+<span id="cb7-5"><a href="#cb7-5"></a>    <span class="dt">contains_missing =</span> <span class="kw">sum</span>(<span class="kw">str_detect</span>(text, <span class="dt">pattern =</span> <span class="st">&quot;</span><span class="ch">\\</span><span class="st">bmissing&quot;</span>))<span class="op">/</span><span class="kw">n</span>(), <span class="co">#could put a vector with various terms</span></span>
+<span id="cb7-6"><a href="#cb7-6"></a>    <span class="dt">contains_power =</span> <span class="kw">sum</span>(<span class="kw">str_detect</span>(text, <span class="dt">pattern =</span> <span class="st">&quot;</span><span class="ch">\\</span><span class="st">bpower</span><span class="ch">\\</span><span class="st">b&quot;</span>))<span class="op">/</span><span class="kw">n</span>() <span class="co">#statistical power</span></span>
+<span id="cb7-7"><a href="#cb7-7"></a>  ) </span></code></pre></div>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
 </div>
-<!-- rnb-frame-end -->
+</div>
+<div id="test-with-rentrez-package" class="section level1">
+<h1>Test with rentrez package</h1>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucXVlcnJ5X2VudHJleiA8LSBcIigoYWlyIHBvbGx1dGlvbltUSVRMXSAgT1IgYWlyIHF1YWxpdHlbVElUTF0gT1IgcGFydGljdWxhdGUgbWF0dGVyW1RJVExdIE9SIG96b25lW1RJVExdIE9SIG5pdHJvZ2VuIGRpb3hpZGVbVElUTF0gT1Igc3VsZnVyIGRpb3hpZGVbVElUTF0pIEFORCAoZW1lcmdlbmN5W1RJVExdIE9SIG1vcnRhbGl0eVtUSVRMXSkpIEFORCAocGFydGljdWxhdGUgbWF0dGVyW1RJQUJdIE9SIG96b25lW1RJQUJdIE9SIG5pdHJvZ2VuIGRpb3hpZGVbVElBQl0gT1Igc3VsZnVyIGRpb3hpZGVbVElBQl0pXCJcblxucmVudHJlel9zZWFyY2ggPC0gZW50cmV6X3NlYXJjaChkYiA9IFwicHVibWVkXCIsIHRlcm0gPSBxdWVycnlfZW50cmV6KVxucmVudHJlel9pZHMgPC0gcmVudHJlel9zZWFyY2gkaWRzWzE6M10gJT4lIGFzLm51bWVyaWMoKVxuXG5yZW50cmV6X3RleHRzIDwtIGVudHJlel9mZXRjaChkYiA9IFwicHVibWVkXCIsIGlkID0gcmVudHJlel9pZHMsIHJldHR5cGUgPSBcInhtbFwiKVxuXG50IDwtIHJlbnRyZXpfdGV4dHMgJT4lXG4gIHhtbFBhcnNlKCkgJT4lXG4gIHhtbFRvTGlzdCgpICBcblxucmV0cmlldmVfYWJzdHJhY3QgPC0gZnVuY3Rpb24obGlzKSB7XG4gIGRmIDwtIGxpcyRNZWRsaW5lQ2l0YXRpb24kQXJ0aWNsZSRBYnN0cmFjdCAlPiUgXG4gIG1hcF9kZiguLCBkYXRhLmZyYW1lKSAlPiUgXG4gIGFzLnRpYmJsZSgpICU+JSBcbiAgZGlzdGluY3QoKSBcbiAgXG4gICMgJT4lIFxuICAjIGZpbHRlcighaXMubmEodGV4dCkpICU+JSBcbiAgIyBzZWxlY3QoLTMpXG4gIFxuICByZXR1cm4oZGYpXG59XG5cbm91dCA8LSBtYXBfZGYodCwgcmV0cmlldmVfYWJzdHJhY3QpXG5cbnIgPC0gdCRQdWJtZWRBcnRpY2xlJE1lZGxpbmVDaXRhdGlvbiRBcnRpY2xlJEFic3RyYWN0ICU+JSBcbiAgbWFwX2RmKC4sIGRhdGEuZnJhbWUpICU+JSBcbiAgYXMudGliYmxlKCkgJT4lIFxuICBkaXN0aW5jdCgpICU+JSBcbiAgZmlsdGVyKCFpcy5uYSh0ZXh0KSkgJT4lIFxuICBzZWxlY3QoLTMpXG5cbnQkUHVibWVkQXJ0aWNsZSRNZWRsaW5lQ2l0YXRpb24kQXJ0aWNsZVxuYGBgIn0= -->
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>querry_entrez &lt;-<span class="st"> &quot;((air pollution[TITL]  OR air quality[TITL] OR particulate matter[TITL] OR ozone[TITL] OR nitrogen dioxide[TITL] OR sulfur dioxide[TITL]) AND (emergency[TITL] OR mortality[TITL])) AND (particulate matter[TIAB] OR ozone[TIAB] OR nitrogen dioxide[TIAB] OR sulfur dioxide[TIAB])&quot;</span></span>
+<span id="cb8-2"><a href="#cb8-2"></a></span>
+<span id="cb8-3"><a href="#cb8-3"></a>rentrez_search &lt;-<span class="st"> </span><span class="kw">entrez_search</span>(<span class="dt">db =</span> <span class="st">&quot;pubmed&quot;</span>, <span class="dt">term =</span> querry_entrez)</span>
+<span id="cb8-4"><a href="#cb8-4"></a>rentrez_ids &lt;-<span class="st"> </span>rentrez_search<span class="op">$</span>ids[<span class="dv">1</span><span class="op">:</span><span class="dv">3</span>] <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">as.numeric</span>()</span>
+<span id="cb8-5"><a href="#cb8-5"></a></span>
+<span id="cb8-6"><a href="#cb8-6"></a>rentrez_texts &lt;-<span class="st"> </span><span class="kw">entrez_fetch</span>(<span class="dt">db =</span> <span class="st">&quot;pubmed&quot;</span>, <span class="dt">id =</span> rentrez_ids, <span class="dt">rettype =</span> <span class="st">&quot;xml&quot;</span>)</span>
+<span id="cb8-7"><a href="#cb8-7"></a></span>
+<span id="cb8-8"><a href="#cb8-8"></a>t &lt;-<span class="st"> </span>rentrez_texts <span class="op">%&gt;%</span></span>
+<span id="cb8-9"><a href="#cb8-9"></a><span class="st">  </span><span class="kw">xmlParse</span>() <span class="op">%&gt;%</span></span>
+<span id="cb8-10"><a href="#cb8-10"></a><span class="st">  </span><span class="kw">xmlToList</span>()  </span>
+<span id="cb8-11"><a href="#cb8-11"></a></span>
+<span id="cb8-12"><a href="#cb8-12"></a>retrieve_abstract &lt;-<span class="st"> </span><span class="cf">function</span>(lis) {</span>
+<span id="cb8-13"><a href="#cb8-13"></a>  df &lt;-<span class="st"> </span>lis<span class="op">$</span>MedlineCitation<span class="op">$</span>Article<span class="op">$</span>Abstract <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb8-14"><a href="#cb8-14"></a><span class="st">  </span><span class="kw">map_df</span>(., data.frame) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb8-15"><a href="#cb8-15"></a><span class="st">  </span><span class="kw">as.tibble</span>() <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb8-16"><a href="#cb8-16"></a><span class="st">  </span><span class="kw">distinct</span>() </span>
+<span id="cb8-17"><a href="#cb8-17"></a>  </span>
+<span id="cb8-18"><a href="#cb8-18"></a>  <span class="co"># %&gt;% </span></span>
+<span id="cb8-19"><a href="#cb8-19"></a>  <span class="co"># filter(!is.na(text)) %&gt;% </span></span>
+<span id="cb8-20"><a href="#cb8-20"></a>  <span class="co"># select(-3)</span></span>
+<span id="cb8-21"><a href="#cb8-21"></a>  </span>
+<span id="cb8-22"><a href="#cb8-22"></a>  <span class="kw">return</span>(df)</span>
+<span id="cb8-23"><a href="#cb8-23"></a>}</span>
+<span id="cb8-24"><a href="#cb8-24"></a></span>
+<span id="cb8-25"><a href="#cb8-25"></a>out &lt;-<span class="st"> </span><span class="kw">map_df</span>(t, retrieve_abstract)</span>
+<span id="cb8-26"><a href="#cb8-26"></a></span>
+<span id="cb8-27"><a href="#cb8-27"></a>r &lt;-<span class="st"> </span>t<span class="op">$</span>PubmedArticle<span class="op">$</span>MedlineCitation<span class="op">$</span>Article<span class="op">$</span>Abstract <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb8-28"><a href="#cb8-28"></a><span class="st">  </span><span class="kw">map_df</span>(., data.frame) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb8-29"><a href="#cb8-29"></a><span class="st">  </span><span class="kw">as.tibble</span>() <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb8-30"><a href="#cb8-30"></a><span class="st">  </span><span class="kw">distinct</span>() <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb8-31"><a href="#cb8-31"></a><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(text)) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb8-32"><a href="#cb8-32"></a><span class="st">  </span><span class="kw">select</span>(<span class="op">-</span><span class="dv">3</span>)</span>
+<span id="cb8-33"><a href="#cb8-33"></a></span>
+<span id="cb8-34"><a href="#cb8-34"></a>t<span class="op">$</span>PubmedArticle<span class="op">$</span>MedlineCitation<span class="op">$</span>Article</span></code></pre></div>
+<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 </div>
-</div>
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiU3lzdGVtYXRpYyBsaXRlcmF0dXJlIHJldmlldyIKc3VidGl0bGU6ICJNaXNzaW5nIGRhdGEgaW4gc3R1ZGllcyBvZiBoZWFsdGggZWZmZWN0cyBvZiBhaXIgcG9sbHV0aW9uIgpvdXRwdXQ6IAogIGh0bWxfbm90ZWJvb2s6IAogICAgdG9jOiB5ZXMKICAgIHRoZW1lOiBzaW1wbGV4CiAgICBoaWdobGlnaHQ6IHB5Z21lbnRzCiAgaHRtbF9kb2N1bWVudDoKICAgIHRoZW1lOiBzaW1wbGV4CiAgICBoaWdobGlnaHQ6IHB5Z21lbnRzCmF1dGhvcjogIlZpbmNlbnQgQmFnaWxldCwgTMOpbyBaYWJyb2NraSIKZGF0ZTogIk9jdG9iZXIgMzAsIDIwMjAiCi0tLQoKYGBge3Igc2V0dXAsIGluY2x1ZGU9RkFMU0UsIHJlc3VsdHM9J2hpZGUnLCB3YXJuaW5nPUZBTFNFfQpsaWJyYXJ5KGtuaXRyKQpvcHRzX2NodW5rJHNldChmaWcucGF0aCA9ICJpbWFnZXMvIiwKICAgICAgICAgICAgICAgY2FjaGUucGF0aCA9ICJjYWNoZS8iLAogICAgICAgICAgICAgICBjYWNoZSA9IEZBTFNFLAogICAgICAgICAgICAgICBlY2hvID0gVFJVRSwKICAgICAgICAgICAgICAgbWVzc2FnZSA9IEZBTFNFLAogICAgICAgICAgICAgICB3YXJuaW5nID0gRkFMU0UpICAKYGBgICAKCmBgYHtyIGluY2x1ZGU9RkFMU0V9CmxpYnJhcnkodGlkeXZlcnNlKQpsaWJyYXJ5KGZ1bGx0ZXh0KQpgYGAKCiMjIFB1cnBvc2Ugb2YgdGhlIGRvY3VtZW50CgpJbiB0aGUgcHJlc2VudCBkb2N1bWVudCwgd2UgYWltIHRvIGNvbmR1Y3QgYSBzeXN0ZW1hdGljIHJldmlldyBvZiB0aGUgbGl0ZXJhdHVyZSBvbiBoZWFsdGggZWZmZWN0cyBvZiBhaXIgcG9sbHV0aW9uLiBXZSBjYXJyeSBvdXQgYW4gZXh0cmVtZWx5IHNpbXBsZSB0ZXh0IG1pbmluZyBhbmFseXNpcyBvZiB0aGlzIGxpdGVyYXR1cmUgaW4gb3JkZXIgdG8gaGF2ZSBhIHNlbnNlIG9mIHRoZSBwcm9wb3J0aW9uIG9mIGFydGljbGVzIHN0dWR5aW5nIGhlYWx0aCBlZmZlY3RzIG9mIGFpciBwb2xsdXRpb24gZGF0YSB0YWtpbmcgdGhlIGlzc3VlIG9mIG1pc3NpbmcgZGF0YSBpbnRvIGFjY291bnQuCgojIyBSZXRyZWl2aW5nIGFydGljbGUgdGV4dHMKClRvIGNhcnJ5IG91dCB0aGlzIGFuYWx5c2lzLCB3ZSB1c2UgdGhlIFtgZnVsbHRleHRgXShodHRwczovL2Jvb2tzLnJvcGVuc2NpLm9yZy9mdWxsdGV4dC8pIHBhY2thZ2UgdG8gZ2V0IHRoZSBmdWxsIHRleHQgb2YgZWFjaCBhcnRpY2xlIHdob3NlIHRpdGxlIGNvbnRhaW5zIHRoZSB3b3JkcyAiYWlyIHBvbGx1dGlvbiIgYW5kICJoZWFsdGgiLiBUaGlzIHNldCBvZiBhcnRpY2xlcyBtaWdodCBiZSB0b28gcmVzdHJpY3RpdmUgYW5kIHdlIG1heSB3YW50IHRvIGJyb2FkZW4gb3VyIHNjb3BlIGxhdGVyLiAKClRvIGJlZ2luIHdpdGgsIHdlIGZvY3VzIG9uIGFydGljbGVzIHB1Ymxpc2hlZCBvbiBTY29wdXMgYW5kIFB1Ym1lZC4gVG8gYWNjZXNzIFNjb3B1cyBBUEksIG9uZSBuZWVkcyB0byByZWdpc3RlciB0byBnZXQgYW4gQVBJIGtleSAoc3RvcmVkIGluIHRoZSAuUmVudmlyb24pIGZvciBFbHNldmllciBhbmQgYSBDcm9zc3JlZiBURE0gQVBJIGtleS4gTm90ZSB0aGF0IGRvd25sb2FkaW5nIG9mIGZ1bGwgdGV4dHMgbWF5IG5vdCB3b3JrIGlmIG9uZSBpcyBub3QgY29ubmVjdGVkIGRpcmVjdGx5IHRvIHRoZWlyIGluc3RpdHV0aW9uIGludGVybmV0IG5ldHdvcmsuIFB1Ym1lZCBhcnRpY2xlcyBhcmUgYWNjZXNzZWQgdmlhIEVudHJlei4gQW4gQVBJIGtleSBlbmFibGVzIHRvIGluY3JlYXNlIHRoZSBudW1iZXIgb2YgcmVxdWVzdHMgcGVyIHNlY29uZHMgZnJvbSAzIHRvIDEwLiBNb3JlIGluZm9ybWF0aW9uIG9uIGF1dGhlbnRpZmljYXRpb24gaXMgYXZhaWxhYmxlIG9uIFt0aGUgYGZ1bGx0ZXh0YCBtYW51YWxdKGh0dHBzOi8vYm9va3Mucm9wZW5zY2kub3JnL2Z1bGx0ZXh0L2F1dGhlbnRpY2F0aW9uLmh0bWwpLgoKIyMjIFNldCBvZiBhcnRpY2xlcyB0byBjb25zaWRlcgoKRmlyc3Qgb2YgYWxsLCB3ZSBuZWVkIHRvIGNsZWFybHkgZGVmaW5lIHRoZSBzZXQgb2YgYXJ0aWNsZXMgd2Ugd2FudCB0byBjb25zaWRlciBpbiB0aGlzIGFuYWx5c2lzLiBPdXIgYmFzZWxpbmUgc2VhcmNoIHF1ZXJyeSBpczogYCJhaXIgcG9sbHV0aW9uIiBBTkQgKCJlbWVyZ2VuY3kiIE9SICJtb3J0YWxpdHkiKSBBTkQgKCJwYXJ0aWN1bGF0ZSBtYXR0ZXIiIE9SIG96b25lIE9SICJuaXRyb2dlbiBkaW94eWRlIiBPUiAic3VsZnVyIGRpb3h5ZGUiKWAuIFRoaXMgcmV0dXJucyBhYm91dCA1NzAwMCBhcnRpY2xlcyAod2l0aG91dCBhY2NvdW50aW5nIGZvciBkdXBsaWNhdGVzIGluIGJldHdlZW4gam91cm5hbHMpLiBUaGlzIG51bWJlciBiZWluZyByYXRoZXIgbGFyZ2UsIHdlIHdhbnQgdG8gbmFycm93IGl0IGRvd24uIFRvIGZvY3VzIG9uIHRoZSBlcGlkZW1pb2xvZ2ljYWwgbGl0ZXJhdHVyZSwgd2UgYWRkIHRoZSBxdWVyeSB0ZXJtIGBwb2lzc29uYC4gVG8gZ2V0IGNhdXNhbCBhbmFseXNlcywgd2UgYWRkIHRoZSB0ZXJtIGBjYXVzYWxgLiBJdCByZXR1cm5zIGByIHNlYXJjaCRlbnRyZXokZm91bmQgKyBzZWFyY2gkc2NvcHVzJGZvdW5kYCBhcnRpY2xlcy4KCgpgYGB7cn0KI3NldCBmb2xkZXIgdG8gc3RvcmUgZG93bmxvYWRzCmNhY2hlX29wdGlvbnNfc2V0KGZ1bGxfcGF0aCA9ICIvVXNlcnMvdmluY2VudGJhZ2lsZXQvRG9jdW1lbnRzL2Z1bGx0ZXh0IikKIyBjYWNoZV9vcHRpb25zX3NldChmdWxsX3BhdGggPSAiL1ZvbHVtZXMvVmluY2VudFNTRC9SZXNlYXJjaF9kYXRhL2Fpcl9wb2xsdXRpb24vbGl0X3JldmlldyIpCgpxdWVyeSA8LSAnVElUTEUoKCJhaXIgcG9sbHV0aW9uIiAgT1IgICJhaXIgcXVhbGl0eSIpIEFORCAoImVtZXJnZW5jeSIgT1IgIm1vcnRhbGl0eSIgT1IgImhlYWx0aCIpKSBBTkQgKCJwYXJ0aWN1bGF0ZSBtYXR0ZXIiIE9SIG96b25lIE9SICJuaXRyb2dlbiBkaW94aWRlIiBPUiAic3VsZnVyIGRpb3hpZGUiKSBBTkQgKHBvaXNzb24gT1IgY2F1c2FsKScKCiNmdF9zZWFyY2goKSB0byBydW4gYSBzZWFyY2gKc2VhcmNoIDwtIGZ0X3NlYXJjaChxdWVyeSwgZnJvbSA9IGMoInNjb3B1cyIsICJlbnRyZXoiKSwgbGltaXQgPSAyKQojIHNlYXJjaCA8LSBmdF9zZWFyY2goInRlc3QiLCBsaW1pdCA9IDEwMCwgZnJvbSA9ICJzY29wdXMiKQoKbWV0YWRhdGFfc2NvcHVzIDwtIHNlYXJjaCRzY29wdXMkZGF0YSAlPiUgCiAgYXNfdGliYmxlKCkgJT4lICAKICByZW5hbWVfYWxsKGZ1bmN0aW9uKHgpIHN0cl9yZW1vdmVfYWxsKG5hbWVzKC4pLCAicHJpc206fGRjOiIpKSAlPiUgCiAgcmVuYW1lX2FsbChmdW5jdGlvbih4KSBzdHJfcmVwbGFjZV9hbGwobmFtZXMoLiksICItIiwgIl8iKSkKCm1ldGFkYXRhX2VudHJleiA8LSBzZWFyY2gkZW50cmV6JGRhdGEgJT4lIAogIGFzX3RpYmJsZSgpICU+JSAKICByZW5hbWUoaWQgPSB1aWQpCgojZG93bmxvYWQgdGhlIGZ1bGwgdGV4dHMgYW5kIHN0b3JlIHRoZW0gaW4gYW4geG1sIGZvcm1hdCBpbiB0aGUgY2FjaGUgZGlyZWN0b3J5Cm1ldGFkYXRhX3Njb3B1cyRkb2kgJT4lIAogIGZ0X2dldChwcm9ncmVzcyA9IFRSVUUpCgptZXRhZGF0YV9lbnRyZXokZG9pICU+JSAKICBmdF9nZXQoZnJvbSA9ICJlbnRyZXoiLCBwcm9ncmVzcyA9IFRSVUUpCmBgYAoKT25jZSB3ZSBoYXZlIGRvd25sb2FkZWQgYWxsIHRoZSBmaWxlcywgd2UgY2FuIHB1dCB0aGVtIGludG8gYSB0YWJsZSBmb3JtYXQsIGJlZm9yZSBhbmFseXNpbmcgdGhlbS4KCmBgYHtyfQojcHV0IHRleHQgaW50byBhIHRhYmxlIGZvcm1hdAphcnRpY2xlX3RleHRzIDwtIGZ0X3RhYmxlKCkgJT4lICNzZWFyY2hlcyBmb3IgZG9jdW1lbnRzIGluIHRoZSBjYWNoZSBkaXJlY3RvcnkgCiAgc2VsZWN0KC1wYXRocykgCgpzYXZlUkRTKGFydGljbGVfdGV4dHMsICIuLi9PdXRwdXRzL2FydGljbGVfdGV4dHMuUkRTIikKYGBgCgpUbyBhbmFseXNlIHRoZSB0ZXh0cywgd2UgZmlyc3Qgc3RhcnQgYnkgc2ltcGx5IGV4cGxvcmluZyB0aGUgcHJvcG9ydGlvbiBvZiBhcnRpY2xlcyBtZW50aW9uaW5nIHRoZSB3b3JkcyAibWlzc2luZyIgYW5kICJwb3dlciIuCgpgYGB7cn0KcmVhZFJEUygiLi4vT3V0cHV0cy9hcnRpY2xlX3RleHRzLlJEUyIpCgphcnRpY2xlX3RleHRzICU+JSAKICBzdW1tYXJpc2UoCiAgICBjb250YWluc19taXNzaW5nID0gc3VtKHN0cl9kZXRlY3QodGV4dCwgcGF0dGVybiA9ICJcXGJtaXNzaW5nIikpL24oKSwgI2NvdWxkIHB1dCBhIHZlY3RvciB3aXRoIHZhcmlvdXMgdGVybXMKICAgIGNvbnRhaW5zX3Bvd2VyID0gc3VtKHN0cl9kZXRlY3QodGV4dCwgcGF0dGVybiA9ICJcXGJwb3dlclxcYiIpKS9uKCkgI3N0YXRpc3RpY2FsIHBvd2VyCiAgKSAKYGBgCgoKCgo=</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiU3lzdGVtYXRpYyBsaXRlcmF0dXJlIHJldmlldyIKc3VidGl0bGU6ICJNaXNzaW5nIGRhdGEgaW4gc3R1ZGllcyBvZiBoZWFsdGggZWZmZWN0cyBvZiBhaXIgcG9sbHV0aW9uIgpvdXRwdXQ6IAogIGh0bWxfbm90ZWJvb2s6IAogICAgdG9jOiB5ZXMKICAgIHRoZW1lOiBzaW1wbGV4CiAgICBoaWdobGlnaHQ6IHB5Z21lbnRzCiAgaHRtbF9kb2N1bWVudDoKICAgIHRoZW1lOiBzaW1wbGV4CiAgICBoaWdobGlnaHQ6IHB5Z21lbnRzCmF1dGhvcjogIlZpbmNlbnQgQmFnaWxldCwgTMOpbyBaYWJyb2NraSIKZGF0ZTogImByIFN5cy5EYXRlKClgIgotLS0KCmBgYHtyIHNldHVwLCBpbmNsdWRlPUZBTFNFLCByZXN1bHRzPSdoaWRlJywgd2FybmluZz1GQUxTRX0KbGlicmFyeShrbml0cikKb3B0c19jaHVuayRzZXQoZmlnLnBhdGggPSAiaW1hZ2VzLyIsCiAgICAgICAgICAgICAgIGNhY2hlLnBhdGggPSAiY2FjaGUvIiwKICAgICAgICAgICAgICAgY2FjaGUgPSBGQUxTRSwKICAgICAgICAgICAgICAgZWNobyA9IFRSVUUsICNzZXQgdG8gZmFsc2UgdG8gaGlkZSBjb2RlCiAgICAgICAgICAgICAgIG1lc3NhZ2UgPSBGQUxTRSwKICAgICAgICAgICAgICAgd2FybmluZyA9IEZBTFNFLAogICAgICAgICAgICAgICBvdXQud2lkdGggPSAiODUlIiwKICAgICAgICAgICAgICAgZHBpID0gMjAwLAogICAgICAgICAgICAgICBmaWcuYWxpZ24gPSAiY2VudGVyIikgIApgYGAgIAoKYGBge3IgaW5jbHVkZT1GQUxTRX0KbGlicmFyeSh0aWR5dmVyc2UpCmxpYnJhcnkoZnVsbHRleHQpCmxpYnJhcnkodGlkeXRleHQpCmxpYnJhcnkoeG1sMikKbGlicmFyeShYTUwpCmxpYnJhcnkocmVudHJleikKYGBgCgojIFB1cnBvc2Ugb2YgdGhlIGRvY3VtZW50CgpJbiB0aGUgcHJlc2VudCBkb2N1bWVudCwgd2UgYWltIHRvIGNvbmR1Y3QgYSBzeXN0ZW1hdGljIHJldmlldyBvZiB0aGUgbGl0ZXJhdHVyZSBvbiBoZWFsdGggZWZmZWN0cyBvZiBhaXIgcG9sbHV0aW9uLiBXZSBjYXJyeSBvdXQgYW4gZXh0cmVtZWx5IHNpbXBsZSB0ZXh0IG1pbmluZyBhbmFseXNpcyBvZiB0aGlzIGxpdGVyYXR1cmUgaW4gb3JkZXIgdG8gaGF2ZSBhIHNlbnNlIG9mIHRoZSBwcm9wb3J0aW9uIG9mIGFydGljbGVzIHN0dWR5aW5nIGhlYWx0aCBlZmZlY3RzIG9mIGFpciBwb2xsdXRpb24gZGF0YSB0YWtpbmcgdGhlIGlzc3VlIG9mIG1pc3NpbmcgZGF0YSBpbnRvIGFjY291bnQuCgojIFJldHJlaXZpbmcgYXJ0aWNsZSB0ZXh0cwoKVG8gY2Fycnkgb3V0IHRoaXMgYW5hbHlzaXMsIHdlIHVzZSB0aGUgW2BmdWxsdGV4dGBdKGh0dHBzOi8vYm9va3Mucm9wZW5zY2kub3JnL2Z1bGx0ZXh0LykgcGFja2FnZSB0byBnZXQgdGhlIGZ1bGwgdGV4dCBvZiBlYWNoIGFydGljbGUgd2hvc2UgdGl0bGUgY29udGFpbnMgdGhlIHdvcmRzICJhaXIgcG9sbHV0aW9uIiBhbmQgImhlYWx0aCIuIFRoaXMgc2V0IG9mIGFydGljbGVzIG1pZ2h0IGJlIHRvbyByZXN0cmljdGl2ZSBhbmQgd2UgbWF5IHdhbnQgdG8gYnJvYWRlbiBvdXIgc2NvcGUgbGF0ZXIuIAoKVG8gYmVnaW4gd2l0aCwgd2UgZm9jdXMgb24gYXJ0aWNsZXMgcHVibGlzaGVkIG9uIFNjb3B1cyBhbmQgUHVibWVkLiBUbyBhY2Nlc3MgU2NvcHVzIEFQSSwgb25lIG5lZWRzIHRvIHJlZ2lzdGVyIHRvIGdldCBhbiBBUEkga2V5IChzdG9yZWQgaW4gdGhlIC5SZW52aXJvbikgZm9yIEVsc2V2aWVyIGFuZCBhIENyb3NzcmVmIFRETSBBUEkga2V5LiBOb3RlIHRoYXQgZG93bmxvYWRpbmcgb2YgZnVsbCB0ZXh0cyBtYXkgbm90IHdvcmsgaWYgb25lIGlzIG5vdCBjb25uZWN0ZWQgZGlyZWN0bHkgdG8gdGhlaXIgaW5zdGl0dXRpb24gaW50ZXJuZXQgbmV0d29yay4gUHVibWVkIGFydGljbGVzIGFyZSBhY2Nlc3NlZCB2aWEgRW50cmV6LiBBbiBBUEkga2V5IGVuYWJsZXMgdG8gaW5jcmVhc2UgdGhlIG51bWJlciBvZiByZXF1ZXN0cyBwZXIgc2Vjb25kcyBmcm9tIDMgdG8gMTAuIE1vcmUgaW5mb3JtYXRpb24gb24gYXV0aGVudGlmaWNhdGlvbiBpcyBhdmFpbGFibGUgb24gW3RoZSBgZnVsbHRleHRgIG1hbnVhbF0oaHR0cHM6Ly9ib29rcy5yb3BlbnNjaS5vcmcvZnVsbHRleHQvYXV0aGVudGljYXRpb24uaHRtbCkuCgojIyBTZXQgb2YgYXJ0aWNsZXMgdG8gY29uc2lkZXIKCkZpcnN0IG9mIGFsbCwgd2UgbmVlZCB0byBjbGVhcmx5IGRlZmluZSB0aGUgc2V0IG9mIGFydGljbGVzIHdlIHdhbnQgdG8gY29uc2lkZXIgaW4gdGhpcyBhbmFseXNpcy4gT3VyIGJhc2VsaW5lIHNlYXJjaCBxdWVyeSBpczogYCJhaXIgcG9sbHV0aW9uIiBBTkQgKCJlbWVyZ2VuY3kiIE9SICJtb3J0YWxpdHkiKSBBTkQgKCJwYXJ0aWN1bGF0ZSBtYXR0ZXIiIE9SIG96b25lIE9SICJuaXRyb2dlbiBkaW94eWRlIiBPUiAic3VsZnVyIGRpb3h5ZGUiKWAuIFRoaXMgcmV0dXJucyBhYm91dCA1NzAwMCBhcnRpY2xlcyAod2l0aG91dCBhY2NvdW50aW5nIGZvciBkdXBsaWNhdGVzIGluIGJldHdlZW4gam91cm5hbHMpLiBUaGlzIG51bWJlciBiZWluZyByYXRoZXIgbGFyZ2UsIHdlIHdhbnQgdG8gbmFycm93IGl0IGRvd24uIFRvIGZvY3VzIG9uIHRoZSBlcGlkZW1pb2xvZ2ljYWwgbGl0ZXJhdHVyZSwgd2UgYWRkIHRoZSBxdWVyeSB0ZXJtIGBwb2lzc29uYC4gVG8gZ2V0IGNhdXNhbCBhbmFseXNlcywgd2UgYWRkIHRoZSB0ZXJtIGBjYXVzYWxgLiAKCmBgYHtyfQojc2V0IGZvbGRlciB0byBzdG9yZSBkb3dubG9hZHMKY2FjaGVfb3B0aW9uc19zZXQoZnVsbF9wYXRoID0gIi9Vc2Vycy92aW5jZW50YmFnaWxldC9Eb2N1bWVudHMvZnVsbHRleHQiKQojIGNhY2hlX29wdGlvbnNfc2V0KGZ1bGxfcGF0aCA9ICIvVm9sdW1lcy9WaW5jZW50U1NEL1Jlc2VhcmNoX2RhdGEvYWlyX3BvbGx1dGlvbi9saXRfcmV2aWV3L2Z1bGxfdGV4dHMiKQoKcXVlcnkgPC0gJ1RJVExFKCgiYWlyIHBvbGx1dGlvbiIgIE9SICJhaXIgcXVhbGl0eSIgT1IgInBhcnRpY3VsYXRlIG1hdHRlciIgT1Igb3pvbmUgT1IgIm5pdHJvZ2VuIGRpb3hpZGUiIE9SICJzdWxmdXIgZGlveGlkZSIpIEFORCAoImVtZXJnZW5jeSIgT1IgIm1vcnRhbGl0eSIpKSBBTkQgKCJwYXJ0aWN1bGF0ZSBtYXR0ZXIiIE9SIG96b25lIE9SICJuaXRyb2dlbiBkaW94aWRlIiBPUiAic3VsZnVyIGRpb3hpZGUiKScjIEFORCAocG9pc3NvbiBPUiBjYXVzYWwpJwoKI1J1biBhIHNlYXJjaApzZWFyY2ggPC0gZnRfc2VhcmNoKHF1ZXJ5LCBmcm9tID0gYygic2NvcHVzIiwgImVudHJleiIpLCBsaW1pdCA9IDEwKQojIHNlYXJjaCA8LSBmdF9zZWFyY2goInRlc3QiLCBsaW1pdCA9IDEwMCwgZnJvbSA9ICJzY29wdXMiKQoKbWV0YWRhdGFfc2NvcHVzIDwtIHNlYXJjaCRzY29wdXMkZGF0YSAlPiUgCiAgYXNfdGliYmxlKCkgJT4lIAogIHJlbmFtZV9hbGwoZnVuY3Rpb24oeCkgc3RyX3JlbW92ZV9hbGwobmFtZXMoLiksICJwcmlzbTp8ZGM6IikpICU+JSAKICByZW5hbWVfYWxsKGZ1bmN0aW9uKHgpIHN0cl9yZXBsYWNlX2FsbChuYW1lcyguKSwgIi0iLCAiXyIpKQoKbWV0YWRhdGFfZW50cmV6IDwtIHNlYXJjaCRlbnRyZXokZGF0YSAlPiUgCiAgYXNfdGliYmxlKCkgJT4lIAogIHJlbmFtZShpZCA9IHVpZCkKCm1ldGFkYXRhX3Njb3B1c19zaG9ydCA8LSBtZXRhZGF0YV9zY29wdXMgJT4lIAogIHNlbGVjdChkb2ksIHRpdGxlLCBjcmVhdG9yLCBwdWJsaWNhdGlvbk5hbWUsIHB1Ym1lZF9pZCkgJT4lIAogIHJlbmFtZSgKICAgIGF1dGhvcnMgPSBjcmVhdG9yLAogICAgam91cm5hbCA9IHB1YmxpY2F0aW9uTmFtZQogICkgJT4lIAogIG11dGF0ZSgKICAgIHB1Ym1lZF9pZCA9IGlmZWxzZSghc3RyX2RldGVjdChwdWJtZWRfaWQsICJbMC05XXs3fSIpLCBOQSwgcHVibWVkX2lkKQogICkKCm1ldGFkYXRhX2VudHJlel9zaG9ydCA8LSBtZXRhZGF0YV9lbnRyZXogJT4lIAogIHNlbGVjdChkb2ksIHRpdGxlLCBhdXRob3JzLCBmdWxsam91cm5hbG5hbWUsIHBtaWQpICU+JSAKICByZW5hbWUoCiAgICBqb3VybmFsID0gZnVsbGpvdXJuYWxuYW1lLAogICAgcHVibWVkX2lkID0gcG1pZAogICkgJT4lIAogIG11dGF0ZSgKICAgIHB1Ym1lZF9pZCA9IGlmZWxzZSghc3RyX2RldGVjdChwdWJtZWRfaWQsICJbMC05XXs3fSIpLCBOQSwgcHVibWVkX2lkKQogICkKCm1ldGFkYXRhX3Nob3J0IDwtIG1ldGFkYXRhX3Njb3B1c19zaG9ydCAlPiUgCiAgcmJpbmQobWV0YWRhdGFfZW50cmV6X3Nob3J0KQpgYGAKCk91ciBzZWFyY2ggcmV0dXJucyBgciBzZWFyY2gkZW50cmV6JGZvdW5kICsgc2VhcmNoJHNjb3B1cyRmb3VuZGAgYXJ0aWNsZXMuIFRoZSBtZXRhZGF0YSBmcm9tIGRpZmZlcmVudCBzb3VyY2VzIGhhdmluZyBkaWZmZXJlbnQgc2hhcGVzLCB3ZSBvbmx5IHNlbGVjdCBhIGZldyByZWxldmFudCBjb2x1bW5zIHRvIGJ1aWxkIGFuIG92ZXJhbGwgbWV0YWRhdGEgc2V0LgoKIyMgUmV0cmVpdmluZyBhYnN0cmFjdHMKCkZpcnN0LCB3ZSBmb2N1cyBvbiB0aGUgYWJzdHJhY3RzIGFuZCBkb3dubG9hZCB0aGVtLiAKClRoZXJlIGlzIG5vIGBmdWxsdGV4dGAgZnVuY3Rpb24gdG8gYWNjZXNzIGFic3RyYWN0cyBmcm9tIEVudHJlei4gVGhlcmVmb3JlLCB1c2luZyB0aGUgRE9JLCB3ZSBnZXQgdGhlIGFic3RyYWN0cyBmcm9tIFNlbWFudGljIFNjaG9sYXIuIFdlIGFsc28gYWNjZXNzIFNjb3B1cyBhYnN0cmFjdHMgZnJvbSBTZW1hbnRpYyBTY2hvbGFyIHNpbmNlLCBkdWUgdG8gbXkgSVAgYWRkcmVzcyBiZWluZyBsb2NhdGVkIG91dHNpZGUgb2YgQ29sdW1iaWEsIEkgY2Fubm90IGFjY2VzcyB0aGUgdGV4dHMgYW5kIGFic3RyYWN0cyBmcm9tIFNjb3B1cy4KCkluIFNlbWFudGljIFNjaG9sYXIsIHRoZXJlIGlzIGEgcmF0ZSBsaW1pdCBvZiAxMDAgYXJ0aWNsZXMgcGVyIDUgbWluIG9yIDIwIGFydGljbGVzIHBlciBtaW51dGUuIFdlIHRoZXJlZm9yZSBuZWVkIHRvIHBhdXNlIHRoZSBzeXN0ZW0gdG8gYmUgYWJsZSB0byBkb3dubG9hZCBldmVyeXRoaW5nLgoKCmBgYHtyfQojIG9wdHNfc2NvcHVzIDwtIGxpc3Qoa2V5ID0gU3lzLmdldGVudignRUxTRVZJRVJfU0NPUFVTX0tFWScpKQoKIyBhYnN0cmFjdHNfc2NvcHVzIDwtIG1ldGFkYXRhX3Njb3B1cyRkb2kgJT4lIAojICAgZnRfYWJzdHJhY3QoZnJvbSA9ICJzY29wdXMiLCBzY29wdXNvcHRzID0gb3B0c19zY29wdXMpIAoKZ2V0X2Fic3RyYWN0cyA8LSBmdW5jdGlvbihkb2kpIHsKICB2ZWN0X2RvaSA8LSB1bmlxdWUoZG9pKQogIG51bWJlcl9wZXJpb2RzIDwtIChsZW5ndGgodmVjdF9kb2kpIC0gMSkgJS8lIDIwCiAgYWJzIDwtIE5VTEwKCiAgbWVzc2FnZShzdHJfYygiVG90YWwgZG93bmxvYWRpbmcgdGltZTogIiwgbnVtYmVyX3BlcmlvZHMsICJtaW4iKSkKICAKICBmb3IgKGkgaW4gMDpudW1iZXJfcGVyaW9kcykgewogICAgCiAgICBkb2lfcGVyaW9kIDwtIHZlY3RfZG9pWygyMCppKzEpOigyMCooaSsxKSldCiAgICBkb2lfcGVyaW9kIDwtIGRvaV9wZXJpb2RbIWlzLm5hKGRvaV9wZXJpb2QpXQogICAgCiAgICBhYnNfcGVyaW9kIDwtIGRvaV9wZXJpb2QgJT4lIAogICAgICBmdF9hYnN0cmFjdChmcm9tID0gInNlbWFudGljc2Nob2xhciIpICU+JSAKICAgICAgLiRzZW1hbnRpY3NjaG9sYXIgJT4lIAogICAgICBhc190aWJibGUoKSAlPiUgCiAgICAgIHVubmVzdChjb2xzID0gZXZlcnl0aGluZygpKSAlPiUgCiAgICAgIHBpdm90X2xvbmdlcihldmVyeXRoaW5nKCksIG5hbWVzX3RvID0gImRvaSIsIHZhbHVlc190byA9ICJhYnN0cmFjdCIpICU+JSAKICAgICAgZmlsdGVyKGRvaSAhPSBhYnN0cmFjdCkKICAgIAogICAgYWJzIDwtIGFicyAlPiUgCiAgICAgIHJiaW5kKGFic19wZXJpb2QpCiAgICAKICAgIGlmIChpIDwgbnVtYmVyX3BlcmlvZHMgJiBudW1iZXJfcGVyaW9kcyAhPSAwKSB7CiAgICAgIG1lc3NhZ2Uoc3RyX2MoIlJlbWFpbmluZyB0aW1lOiAiLCBudW1iZXJfcGVyaW9kcyAtIGksICJtaW4iKSkKICAgICAgU3lzLnNsZWVwKDYxKQogICAgfQogIH0gCiAgCiAgcmV0dXJuKGFicykKfQoKYWJzdHJhY3RzIDwtIG1ldGFkYXRhX3Nob3J0JGRvaSAlPiUgCiAgZ2V0X2Fic3RyYWN0cygpICU+JSAKICBsZWZ0X2pvaW4obWV0YWRhdGFfc2hvcnQsIGJ5ID0gImRvaSIpIAogICMgZGlzdGluY3QodGl0bGUpCgpzYXZlUkRTKGFic3RyYWN0cywgIi4uL091dHB1dHMvYWJzdHJhY3RzLlJEUyIpCmBgYAoKV2UgZ2V0IGFic3RyYWN0cyBmb3IgYHIgbnJvdyhhYnN0cmFjdHMpKjEwMC9sZW5ndGgodW5pcXVlKGMobWV0YWRhdGFfc2NvcHVzJGRvaSwgbWV0YWRhdGFfZW50cmV6JGRvaSkpKWAlIG9mIHRoZSBhcnRpY2xlcyBjb3JyZXNwb25kaW5nIHRvIG91ciBzZWFyY2ggdGVybXMuCgojIyBGdWxsIHRleHRzCgpXZSB0aGVuIGRvd25sb2FkIHRoZSBmdWxsIHRleHRzICh1c2luZyB0aGUgYGZ0X2dldGAgZnVuY3Rpb25zKS4gVGhlIGZ1bGwgdGV4dHMgYXJlIHN0b3JlZCBpbiBhbiB4bWwgZm9ybWF0IGluIHRoZSBjYWNoZSBkaXJlY3RvcnkuIE5vdGUgdGhhdCBkdWUgdG8gbXkgSVAgYWRkcmVzcyBiZWluZyBsb2NhdGVkIG91dHNpZGUgb2YgQ29sdW1iaWEsIEkgY2Fubm90IGFjY2VzcyB0aGUgdGV4dHMgZnJvbSBTY29wdXMuCgpgYGB7cn0KbWV0YWRhdGFfc2NvcHVzJGRvaSAlPiUgCiAgZnRfZ2V0KHByb2dyZXNzID0gVFJVRSkKCm1ldGFkYXRhX2VudHJleiRkb2kgJT4lIAogIGZ0X2dldChmcm9tID0gImVudHJleiIsIHByb2dyZXNzID0gVFJVRSwgdHlwZSA9ICJwZGYiKQpgYGAKCgpPbmNlIHdlIGhhdmUgZG93bmxvYWRlZCBhbGwgdGhlIGZpbGVzLCB3ZSBjYW4gcHV0IHRoZW0gaW50byBhIHRhYmxlIGZvcm1hdCwgYmVmb3JlIGFuYWx5emluZyB0aGVtLgoKYGBge3J9CiNwdXQgdGV4dCBpbnRvIGEgdGFibGUgZm9ybWF0CmFydGljbGVfdGV4dHMgPC0gZnRfdGFibGUoKSAlPiUgI3NlYXJjaGVzIGZvciBkb2N1bWVudHMgaW4gdGhlIGNhY2hlIGRpcmVjdG9yeSAKICBzZWxlY3QoLXBhdGhzLCAtaWRzX25vcm0pICU+JSAKICAuJHRleHQgCgpzYXZlUkRTKGFydGljbGVfdGV4dHMsICIuLi9PdXRwdXRzL2FydGljbGVfdGV4dHMuUkRTIikKYGBgCgpUbyBhbmFseXNlIHRoZSB0ZXh0cywgd2UgZmlyc3Qgc3RhcnQgYnkgc2ltcGx5IGV4cGxvcmluZyB0aGUgcHJvcG9ydGlvbiBvZiBhcnRpY2xlcyBtZW50aW9uaW5nIHRoZSB3b3JkcyAibWlzc2luZyIgYW5kICJwb3dlciIuCgpgYGB7cn0KcmVhZFJEUygiLi4vT3V0cHV0cy9hcnRpY2xlX3RleHRzLlJEUyIpCgphcnRpY2xlX3RleHRzICU+JSAKICBzdW1tYXJpc2UoCiAgICBjb250YWluc19taXNzaW5nID0gc3VtKHN0cl9kZXRlY3QodGV4dCwgcGF0dGVybiA9ICJcXGJtaXNzaW5nIikpL24oKSwgI2NvdWxkIHB1dCBhIHZlY3RvciB3aXRoIHZhcmlvdXMgdGVybXMKICAgIGNvbnRhaW5zX3Bvd2VyID0gc3VtKHN0cl9kZXRlY3QodGV4dCwgcGF0dGVybiA9ICJcXGJwb3dlclxcYiIpKS9uKCkgI3N0YXRpc3RpY2FsIHBvd2VyCiAgKSAKYGBgCgojIFRlc3Qgd2l0aCByZW50cmV6IHBhY2thZ2UKCmBgYHtyfQpxdWVycnlfZW50cmV6IDwtICIoKGFpciBwb2xsdXRpb25bVElUTF0gIE9SIGFpciBxdWFsaXR5W1RJVExdIE9SIHBhcnRpY3VsYXRlIG1hdHRlcltUSVRMXSBPUiBvem9uZVtUSVRMXSBPUiBuaXRyb2dlbiBkaW94aWRlW1RJVExdIE9SIHN1bGZ1ciBkaW94aWRlW1RJVExdKSBBTkQgKGVtZXJnZW5jeVtUSVRMXSBPUiBtb3J0YWxpdHlbVElUTF0pKSBBTkQgKHBhcnRpY3VsYXRlIG1hdHRlcltUSUFCXSBPUiBvem9uZVtUSUFCXSBPUiBuaXRyb2dlbiBkaW94aWRlW1RJQUJdIE9SIHN1bGZ1ciBkaW94aWRlW1RJQUJdKSIKCnJlbnRyZXpfc2VhcmNoIDwtIGVudHJlel9zZWFyY2goZGIgPSAicHVibWVkIiwgdGVybSA9IHF1ZXJyeV9lbnRyZXopCnJlbnRyZXpfaWRzIDwtIHJlbnRyZXpfc2VhcmNoJGlkc1sxOjNdICU+JSBhcy5udW1lcmljKCkKCnJlbnRyZXpfdGV4dHMgPC0gZW50cmV6X2ZldGNoKGRiID0gInB1Ym1lZCIsIGlkID0gcmVudHJlel9pZHMsIHJldHR5cGUgPSAieG1sIikKCnQgPC0gcmVudHJlel90ZXh0cyAlPiUKICB4bWxQYXJzZSgpICU+JQogIHhtbFRvTGlzdCgpICAKCnJldHJpZXZlX2Fic3RyYWN0IDwtIGZ1bmN0aW9uKGxpcykgewogIGRmIDwtIGxpcyRNZWRsaW5lQ2l0YXRpb24kQXJ0aWNsZSRBYnN0cmFjdCAlPiUgCiAgbWFwX2RmKC4sIGRhdGEuZnJhbWUpICU+JSAKICBhcy50aWJibGUoKSAlPiUgCiAgZGlzdGluY3QoKSAKICAKICAjICU+JSAKICAjIGZpbHRlcighaXMubmEodGV4dCkpICU+JSAKICAjIHNlbGVjdCgtMykKICAKICByZXR1cm4oZGYpCn0KCm91dCA8LSBtYXBfZGYodCwgcmV0cmlldmVfYWJzdHJhY3QpCgpyIDwtIHQkUHVibWVkQXJ0aWNsZSRNZWRsaW5lQ2l0YXRpb24kQXJ0aWNsZSRBYnN0cmFjdCAlPiUgCiAgbWFwX2RmKC4sIGRhdGEuZnJhbWUpICU+JSAKICBhcy50aWJibGUoKSAlPiUgCiAgZGlzdGluY3QoKSAlPiUgCiAgZmlsdGVyKCFpcy5uYSh0ZXh0KSkgJT4lIAogIHNlbGVjdCgtMykKCnQkUHVibWVkQXJ0aWNsZSRNZWRsaW5lQ2l0YXRpb24kQXJ0aWNsZQpgYGAKCgoK</div>
 
 
 
@@ -1916,7 +2056,7 @@ summary {
 
 // add bootstrap table styles to pandoc tables
 function bootstrapStylePandocTables() {
-  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
 }
 $(document).ready(function () {
   bootstrapStylePandocTables();
