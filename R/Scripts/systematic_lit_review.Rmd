@@ -30,9 +30,7 @@ opts_chunk$set(fig.path = "images/",
 library(tidyverse)
 library(fulltext)
 library(tidytext)
-library(xml2)
-library(XML)
-library(rentrez)
+library(wordcloud)
 ```
 
 # Purpose of the document
@@ -57,7 +55,7 @@ cache_options_set(full_path = "/Users/vincentbagilet/Documents/fulltext")
 query <- 'TITLE(("air pollution"  OR "air quality" OR "particulate matter" OR ozone OR "nitrogen dioxide" OR "sulfur dioxide") AND ("emergency" OR "mortality")) AND ("particulate matter" OR ozone OR "nitrogen dioxide" OR "sulfur dioxide")'# AND (poisson OR causal)'
 
 #Run a search
-search <- ft_search(query, from = c("scopus", "entrez"), limit = 10)
+search <- ft_search(query, from = c("scopus", "entrez"), limit = 200)
 # search <- ft_search("test", limit = 100, from = "scopus")
 
 metadata_scopus <- search$scopus$data %>% 
@@ -144,13 +142,11 @@ get_abstracts <- function(doi) {
 
 abstracts <- metadata_short$doi %>% 
   get_abstracts() %>% 
-  left_join(metadata_short, by = "doi") 
-  # distinct(title)
+  left_join(metadata_short, by = "doi") %>% 
+  distinct(title)
 
 saveRDS(abstracts, "../Outputs/abstracts.RDS")
 ```
-
-We get abstracts for `r nrow(abstracts)*100/length(unique(c(metadata_scopus$doi, metadata_entrez$doi)))`% of the articles corresponding to our search terms.
 
 ## Full texts
 
@@ -164,7 +160,6 @@ metadata_entrez$doi %>%
   ft_get(from = "entrez", progress = TRUE, type = "pdf")
 ```
 
-
 Once we have downloaded all the files, we can put them into a table format, before analyzing them.
 
 ```{r}
@@ -175,6 +170,78 @@ article_texts <- ft_table() %>% #searches for documents in the cache directory
 
 saveRDS(article_texts, "../Outputs/article_texts.RDS")
 ```
+
+# Analysis
+
+## Abstracts analysis
+
+First, we briefly explore the main themes of the articles.
+
+```{r}
+readRDS("../Outputs/abstracts.RDS")
+
+abstracts %>%
+  unnest_tokens(word, abstract, to_lower = TRUE) %>% 
+  anti_join(tidytext::stop_words) %>%
+  count(word) %>%
+  with(wordcloud::wordcloud(word, n, max.words = 100, random.color = TRUE))
+```
+
+Then we want to extract the effects, odds ratio and associated confidence intervals in the abstracts. To do so, first, in each abstract we identify sentences containing "CI" or "confidence interval". Then, to identify the effect, OR and CI, we proceed as follows:
+
+- Effect: any number following the words "with " or "with a ". The idea behind that is that effect are almost always described as "associated with a x increase in" or similar sentences.
+- OR: we retrieve digits following "OR" by less than 4 characters (to account for ":", "=" or parentheses for instance)
+- Confidence intervals: we retrieve digits following "CI" by less than 4 characters. We also get upper bound of the interval by allowing for the presence of spaces, commas or dashes in between sequences of digits.
+
+
+```{r}
+analysed_abstracts <- abstracts %>% 
+  mutate(
+    contains_CI = str_detect(abstract, pattern = "\\bCI\\b"),
+    contains_ED = str_detect(abstract, pattern = "\\bED\\b")
+  )
+
+
+abstracts_CI <- abstracts %>% 
+  unnest_tokens(sentence, abstract, token = "sentences", to_lower = FALSE, drop = FALSE) %>% 
+  mutate(
+    contains_CI = str_detect(sentence, pattern = "(\\bCI\\b|\\b(c|C)onfidence (i|I)nterval\\b)")
+  ) %>% 
+  filter(contains_CI) %>%
+  mutate(
+    # effect_with = str_extract_all(sentence, "(?<=\\b(with a |with ))[\\d.]+"),
+    effect = str_extract_all(sentence, "[−\\d.-]+(?=[^\\d.]{0,4}(95%|\\bCI|\\b(c|C)onfidence (i|I)nterval\\b))(?<!\\b95)"),
+    CI = str_extract_all(sentence, "(?<=(95%|\\bCI\\b|\\b(c|C)onfidence (i|I)nterval\\b)[^\\d.]{0,4})[−\\d.-]+[\\s,-–]{0,3}[−\\d.-]+")
+    # OR = str_extract_all(sentence, "(?<=\\bOR.{0,4})[\\d.]+")
+  ) 
+
+#In effect_OR, could replace [^\\d.] by [\\s:;,\\(\\[%] to be more precise
+
+#previous version
+# %>%
+#   mutate(
+#     effect = str_extract_all(sentence, "(?<=\\b(with a |with ))[\\d.]+"),
+#     bound_CI = str_extract_all(sentence, "(?<=\\bCI.{0,4})[−\\d.-]+[\\s,-–]{0,3}[−\\d.-]+"),
+#     OR = str_extract_all(sentence, "(?<=\\bOR.{0,4})[\\d.]+")
+#   )
+```
+
+Once the effects and CI are identified, some wrangling is necessary in order to get the data into a usable format.
+
+```{r}
+abstract_CI_clean <- abstracts_CI %>% 
+  unnest(effect, CI) %>% 
+  separate(CI, into = c("low_CI", "up_CI"), "([\\s,]+)|(?<!^)[-–]") %>% 
+  mutate(across(c("effect", "low_CI", "up_CI"), .fns = as.numeric)) %>% 
+  mutate(
+    low_CI = ifelse(is.na(up_CI), NA, low_CI),
+    up_CI = ifelse(is.na(low_CI), NA, up_CI),
+    pb_or_not_significant = (effect <= low_CI | effect >= up_CI)
+  )
+```
+
+
+## Full texts analysis
 
 To analyse the texts, we first start by simply exploring the proportion of articles mentioning the words "missing" and "power".
 
@@ -194,7 +261,7 @@ article_texts %>%
 querry_entrez <- "((air pollution[TITL]  OR air quality[TITL] OR particulate matter[TITL] OR ozone[TITL] OR nitrogen dioxide[TITL] OR sulfur dioxide[TITL]) AND (emergency[TITL] OR mortality[TITL])) AND (particulate matter[TIAB] OR ozone[TIAB] OR nitrogen dioxide[TIAB] OR sulfur dioxide[TIAB])"
 
 rentrez_search <- entrez_search(db = "pubmed", term = querry_entrez)
-rentrez_ids <- rentrez_search$ids[1:3] %>% as.numeric()
+rentrez_ids <- rentrez_search$ids %>% as.numeric()
 
 rentrez_texts <- entrez_fetch(db = "pubmed", id = rentrez_ids, rettype = "xml")
 
@@ -226,6 +293,7 @@ r <- t$PubmedArticle$MedlineCitation$Article$Abstract %>%
 
 t$PubmedArticle$MedlineCitation$Article
 ```
+
 
 
 
