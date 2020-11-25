@@ -31,6 +31,10 @@ library(tidyverse)
 library(fulltext)
 library(tidytext)
 library(wordcloud)
+library(retrodesign)
+library(mediocrethemes)
+
+set_mediocre_all()
 ```
 
 # Purpose of the document
@@ -55,15 +59,17 @@ cache_options_set(full_path = "/Users/vincentbagilet/Documents/fulltext")
 query <- 'TITLE(("air pollution"  OR "air quality" OR "particulate matter" OR ozone OR "nitrogen dioxide" OR "sulfur dioxide") AND ("emergency" OR "mortality")) AND ("particulate matter" OR ozone OR "nitrogen dioxide" OR "sulfur dioxide")'# AND (poisson OR causal)'
 
 #Run a search
-search <- ft_search(query, from = c("scopus", "entrez"), limit = 200)
-# search <- ft_search("test", limit = 100, from = "scopus")
+# search <- ft_search(query, from = c("scopus", "entrez"), limit = 300)
+search <- ft_search(query, from = "scopus", limit = 2000)
+search_entrez <- ft_search(query, from = "entrez", limit = 300)
+
 
 metadata_scopus <- search$scopus$data %>% 
   as_tibble() %>% 
   rename_all(function(x) str_remove_all(names(.), "prism:|dc:")) %>% 
   rename_all(function(x) str_replace_all(names(.), "-", "_"))
 
-metadata_entrez <- search$entrez$data %>% 
+metadata_entrez <- search_entrez$entrez$data %>% #search$entrez$data 
   as_tibble() %>% 
   rename(id = uid)
 
@@ -88,7 +94,8 @@ metadata_entrez_short <- metadata_entrez %>%
   )
 
 metadata_short <- metadata_scopus_short %>% 
-  rbind(metadata_entrez_short)
+  rbind(metadata_entrez_short) %>% 
+  filter(!is.na(doi))
 ```
 
 Our search returns `r search$entrez$found + search$scopus$found` articles. The metadata from different sources having different shapes, we only select a few relevant columns to build an overall metadata set.
@@ -111,7 +118,8 @@ In Semantic Scholar, there is a rate limit of 100 articles per 5 min or 20 artic
 get_abstracts <- function(doi) {
   vect_doi <- unique(doi)
   number_periods <- (length(vect_doi) - 1) %/% 20
-  abs <- NULL
+  # abs <- NULL
+  abs_ls <- NULL
 
   message(str_c("Total downloading time: ", number_periods, "min"))
   
@@ -120,30 +128,47 @@ get_abstracts <- function(doi) {
     doi_period <- vect_doi[(20*i+1):(20*(i+1))]
     doi_period <- doi_period[!is.na(doi_period)]
     
-    abs_period <- doi_period %>% 
-      ft_abstract(from = "semanticscholar") %>% 
-      .$semanticscholar %>% 
-      as_tibble() %>% 
-      unnest(cols = everything()) %>% 
-      pivot_longer(everything(), names_to = "doi", values_to = "abstract") %>% 
-      filter(doi != abstract)
+    abs_ls[[i + 1]] <- doi_period %>% 
+      ft_abstract(from = "semanticscholar") %>%
+      .$semanticscholar 
     
-    abs <- abs %>% 
-      rbind(abs_period)
+    # abs_period <- doi_period %>% 
+    #   ft_abstract(from = "semanticscholar") %>% 
+    #   .$semanticscholar %>% 
+    #   as_tibble() %>% 
+    #   unnest(cols = everything()) %>% 
+    #   pivot_longer(everything(), names_to = "doi", values_to = "abstract") %>% 
+    #   filter(doi != abstract)
+    # 
+    # abs <- abs %>% 
+    #   rbind(abs_period)
     
     if (i < number_periods & number_periods != 0) {
       message(str_c("Remaining time: ", number_periods - i, "min"))
-      Sys.sleep(61)
+      Sys.sleep(63)
     }
   } 
   
-  return(abs)
+  return(abs_ls)
 }
 
-abstracts <- metadata_short$doi %>% 
-  get_abstracts() %>% 
-  left_join(metadata_short, by = "doi") %>% 
-  distinct(title)
+abstracts_f <- metadata_short$doi[1:40] %>% #[c(1:50, 1700:1750)] 
+  get_abstracts() 
+
+abstracts_loop <- NULL
+for (i in seq_along(abstracts_f)) {
+  new_abstracts <- abstracts_f[[i]] %>%
+    as_tibble() %>% 
+    unnest(cols = everything()) %>%
+    pivot_longer(everything(), names_to = "doi", values_to = "abstract") %>%
+    filter(doi != abstract)
+  
+  abstracts_loop <- abstracts_loop %>% 
+    rbind(new_abstracts)
+}
+abstracts <- abstracts_loop %>% 
+    left_join(metadata_short, by = "doi") %>% 
+    distinct(title, .keep_all = TRUE)
 
 saveRDS(abstracts, "../Outputs/abstracts.RDS")
 ```
@@ -178,7 +203,7 @@ saveRDS(article_texts, "../Outputs/article_texts.RDS")
 First, we briefly explore the main themes of the articles.
 
 ```{r}
-readRDS("../Outputs/abstracts.RDS")
+abstracts <- readRDS("../Outputs/abstracts.RDS")
 
 abstracts %>%
   unnest_tokens(word, abstract, to_lower = TRUE) %>% 
@@ -187,32 +212,28 @@ abstracts %>%
   with(wordcloud::wordcloud(word, n, max.words = 100, random.color = TRUE))
 ```
 
-Then we want to extract the effects, odds ratio and associated confidence intervals in the abstracts. To do so, first, in each abstract we identify sentences containing "CI" or "confidence interval". Then, to identify the effect, OR and CI, we proceed as follows:
+### Retreiving effects and confidence interavals
 
-- Effect: any number following the words "with " or "with a ". The idea behind that is that effect are almost always described as "associated with a x increase in" or similar sentences.
-- OR: we retrieve digits following "OR" by less than 4 characters (to account for ":", "=" or parentheses for instance)
-- Confidence intervals: we retrieve digits following "CI" by less than 4 characters. We also get upper bound of the interval by allowing for the presence of spaces, commas or dashes in between sequences of digits.
+Then we want to extract the effects, odds ratio and associated confidence intervals in the abstracts. To identify the effect and CI we proceed as follows:
 
+<!-- - Effect: any number following the words "with " or "with a ". The idea behind that is that effect are almost always described as "associated with a x increase in" or similar sentences. -->
+<!-- - OR: we retrieve digits following "OR" by less than 4 characters (to account for ":", "=" or parentheses for instance) -->
+<!-- - Confidence intervals: we retrieve digits following "CI" by less than 4 characters. We also get upper bound of the interval by allowing for the presence of spaces, commas or dashes in between sequences of digits. -->
+
+- Effect: any number preceding by less than 4 characters a string describing a confidence interval ("95%", "CI", "confidence interval", excluding 95%)
+- CI: any number following by less than 4 characters a similar string describing a confidence interval.
 
 ```{r}
-analysed_abstracts <- abstracts %>% 
-  mutate(
-    contains_CI = str_detect(abstract, pattern = "\\bCI\\b"),
-    contains_ED = str_detect(abstract, pattern = "\\bED\\b")
-  )
-
-
-abstracts_CI <- abstracts %>% 
+effects_CI <- abstracts %>% 
+  select(doi, abstract) %>% 
   unnest_tokens(sentence, abstract, token = "sentences", to_lower = FALSE, drop = FALSE) %>% 
+  # mutate(
+  #   contains_CI = str_detect(sentence, "(95%|\\bCI|\\b(c|C)onfidence (i|I)nterval\\b)")
+  # ) %>% 
+  # filter(contains_CI) %>% 
   mutate(
-    contains_CI = str_detect(sentence, pattern = "(\\bCI\\b|\\b(c|C)onfidence (i|I)nterval\\b)")
-  ) %>% 
-  filter(contains_CI) %>%
-  mutate(
-    # effect_with = str_extract_all(sentence, "(?<=\\b(with a |with ))[\\d.]+"),
     effect = str_extract_all(sentence, "[−\\d.-]+(?=[^\\d.]{0,4}(95%|\\bCI|\\b(c|C)onfidence (i|I)nterval\\b))(?<!\\b95)"),
     CI = str_extract_all(sentence, "(?<=(95%|\\bCI\\b|\\b(c|C)onfidence (i|I)nterval\\b)[^\\d.]{0,4})[−\\d.-]+[\\s,-–]{0,3}[−\\d.-]+")
-    # OR = str_extract_all(sentence, "(?<=\\bOR.{0,4})[\\d.]+")
   ) 
 
 #In effect_OR, could replace [^\\d.] by [\\s:;,\\(\\[%] to be more precise
@@ -226,18 +247,87 @@ abstracts_CI <- abstracts %>%
 #   )
 ```
 
+Note that, we could add something to detect CI and effects which are as "18.9% (-8.7, 54.7)", *ie* when "CI" is not repeated.
+
 Once the effects and CI are identified, some wrangling is necessary in order to get the data into a usable format.
 
 ```{r}
-abstract_CI_clean <- abstracts_CI %>% 
-  unnest(effect, CI) %>% 
+effects_CI_clean <- effects_CI %>% 
+  unnest(effect, CI, keep_empty = TRUE) %>% 
   separate(CI, into = c("low_CI", "up_CI"), "([\\s,]+)|(?<!^)[-–]") %>% 
   mutate(across(c("effect", "low_CI", "up_CI"), .fns = as.numeric)) %>% 
   mutate(
     low_CI = ifelse(is.na(up_CI), NA, low_CI),
     up_CI = ifelse(is.na(low_CI), NA, up_CI),
+    effect = ifelse(is.na(low_CI), NA, effect),
     pb_or_not_significant = (effect <= low_CI | effect >= up_CI)
-  )
+  ) %>% 
+  select(-sentence, -abstract) %>% 
+  filter(!is.na(effect))
+
+articles_effect <- abstracts %>% 
+  left_join(effects_CI_clean, by = "doi")
+
+articles_effect %>% 
+  group_by(doi) %>% 
+  summarise(has_effect = mean(effect, na.rm = TRUE)) %>% 
+  count(!is.nan(has_effect))
+```
+
+### Power analysis
+
+In this section, we implement robustness tests in order to compute the power, type M and type S error in the studied articles. To do so, we use the package `retrodesign` and suppose that the true effect is a fraction of the measured effect. To use the `retro_design()` function, we first need to compute the standard error of the estimate. Probably due to rounding effect, we often do not get the same value for the standard error if we compute it using the upper or the lower bound of the CI. Thus, we average across the two values obtained.
+
+```{r}
+articles_retro <- articles_effect %>% 
+  mutate(
+    se_up = (up_CI - effect)/1.96,
+    se_low = (low_CI - effect)/(-1.96),
+    se = (se_up + se_low)/2
+  ) %>% 
+  select(-se_low, -se_up) %>% 
+  filter(!is.na(effect)) %>% 
+  mutate(
+    retro_0.1 = as.tibble(retro_design(effect*0.1, se)),
+    retro_0.5 = as.tibble(retro_design(effect*0.5, se)),
+    # retro_0.67 = as_tibble(retro_design(effect*0.67, se)),
+    retro_0.75 = as_tibble(retro_design(effect*0.75, se)) 
+  ) %>% 
+  pivot_longer(
+    starts_with("retro"), 
+    names_to = "prop_true_effect", 
+    values_to = "computed"
+  ) %>% 
+  mutate(
+    power = computed$power,
+    typeS = computed$typeS,
+    typeM = computed$typeM,
+    prop_true_effect = as.numeric(str_sub(prop_true_effect, 7, nchar(prop_true_effect)))
+  ) %>% 
+  select(-computed)
+```
+
+Then, we quickly explore the results. First, we look at the distribution of power, type M and type S error across simulation and for different size of true effect
+
+```{r}
+articles_retro %>% 
+  ggplot(aes(x = power)) + 
+  geom_histogram(bins = 10) +
+  facet_wrap(~ prop_true_effect) +
+  labs(title = "Distribution of power in retrodesign simulations", subtitle = "If the size of true effect was a fraction of the measured effect")
+  # geom_density()
+
+articles_retro %>% 
+  ggplot(aes(x = typeM)) + 
+  geom_histogram(bins = 10) +
+  facet_wrap(~ prop_true_effect) +
+  labs(title = "Distribution of type M error in retrodesign simulations", subtitle = "If the size of true effect was a fraction of the measured effect")
+
+articles_retro %>% 
+  ggplot(aes(x = typeS)) + 
+  geom_histogram(bins = 10) +
+  facet_wrap(~ prop_true_effect) +
+  labs(title = "Distribution of type S error in retrodesign simulations", subtitle = "If the size of true effect was a fraction of the measured effect")
 ```
 
 
@@ -260,7 +350,7 @@ article_texts %>%
 ```{r}
 querry_entrez <- "((air pollution[TITL]  OR air quality[TITL] OR particulate matter[TITL] OR ozone[TITL] OR nitrogen dioxide[TITL] OR sulfur dioxide[TITL]) AND (emergency[TITL] OR mortality[TITL])) AND (particulate matter[TIAB] OR ozone[TIAB] OR nitrogen dioxide[TIAB] OR sulfur dioxide[TIAB])"
 
-rentrez_search <- entrez_search(db = "pubmed", term = querry_entrez)
+rentrez_search <- entrez_search(db = "pubmed", term = querry_entrez, use_history = TRUE)
 rentrez_ids <- rentrez_search$ids %>% as.numeric()
 
 rentrez_texts <- entrez_fetch(db = "pubmed", id = rentrez_ids, rettype = "xml")
