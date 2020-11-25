@@ -271,7 +271,9 @@ articles_effect <- abstracts %>%
 articles_effect %>% 
   group_by(doi) %>% 
   summarise(has_effect = mean(effect, na.rm = TRUE)) %>% 
-  count(!is.nan(has_effect))
+  count(ret = !is.nan(has_effect)) %>% 
+  mutate(ret = ifelse(ret, "Yes", "No")) %>% 
+  kable(col.names = c("Effect retreived", "Number of articles"))
 ```
 
 ### Power analysis
@@ -288,10 +290,13 @@ articles_retro <- articles_effect %>%
   select(-se_low, -se_up) %>% 
   filter(!is.na(effect)) %>% 
   mutate(
+    retro_0.01 = as.tibble(retro_design(effect*0.01, se)),
+    # retro_0.05 = as.tibble(retro_design(effect*0.05, se)),
     retro_0.1 = as.tibble(retro_design(effect*0.1, se)),
     retro_0.5 = as.tibble(retro_design(effect*0.5, se)),
-    # retro_0.67 = as_tibble(retro_design(effect*0.67, se)),
-    retro_0.75 = as_tibble(retro_design(effect*0.75, se)) 
+    retro_0.67 = as_tibble(retro_design(effect*0.67, se)),
+    retro_0.75 = as_tibble(retro_design(effect*0.75, se)),
+    retro_0.9 = as_tibble(retro_design(effect*0.9, se)) 
   ) %>% 
   pivot_longer(
     starts_with("retro"), 
@@ -328,6 +333,33 @@ articles_retro %>%
   geom_histogram(bins = 10) +
   facet_wrap(~ prop_true_effect) +
   labs(title = "Distribution of type S error in retrodesign simulations", subtitle = "If the size of true effect was a fraction of the measured effect")
+
+articles_retro %>% 
+  ggplot() +
+  geom_point(aes(x = power, y = typeM)) +
+  facet_wrap(~ prop_true_effect) +
+  labs(title = "Link between type M and power in retrodesign simulations", subtitle = "If the size of true effect was a fraction of the measured effect", x = "Power", y = "Type M")
+
+articles_retro %>% 
+  ggplot() +
+  geom_point(aes(x = power, y = typeS)) +
+  facet_wrap(~ prop_true_effect) +
+  labs(title = "Link between type S and power in retrodesign simulations", subtitle = "If the size of true effect was a fraction of the measured effect", x = "Power", y = "Type S")
+
+articles_retro %>% 
+  filter(typeM < Inf) %>% 
+  group_by(prop_true_effect) %>% 
+  summarise(typeM = mean(typeM, na.rm = TRUE)) %>% 
+  ggplot() +
+  geom_point(aes(x = prop_true_effect, y = typeM)) +
+  labs(title = "Link between type M and 'true effect' in retrodesign simulations", x = "True effect as a proportion of the measured effect", y = "Type M")
+
+articles_retro %>% 
+  group_by(prop_true_effect) %>% 
+  summarise(typeS = mean(typeS, na.rm = TRUE)) %>% 
+  ggplot() +
+  geom_point(aes(x = prop_true_effect, y = typeS)) +
+  labs(title = "Link between type S and 'true effect' in retrodesign simulations", x = "True effect as a proportion of the measured effect", y = "Type S")
 ```
 
 
