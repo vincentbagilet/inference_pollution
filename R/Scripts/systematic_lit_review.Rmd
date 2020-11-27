@@ -44,6 +44,7 @@ library(lubridate)
 library(DT)
 
 set_mediocre_all()
+set.seed(12)
 ```
 
 # Purpose of the document
@@ -70,15 +71,17 @@ cache_options_set(full_path = "/Users/vincentbagilet/Documents/fulltext")
 
 query <- 'TITLE(("air pollution"  OR "air quality" OR "particulate matter" OR ozone OR "nitrogen dioxide" OR "sulfur dioxide") AND ("emergency" OR "mortality") AND NOT ("long term" or "long-term")) AND ("particulate matter" OR ozone OR "nitrogen dioxide" OR "sulfur dioxide")'# AND (poisson OR causal)'
 
-#Run a search
+opts_entrez <- list(use_history = TRUE)
+
+Run a search
 # search <- ft_search(query, from = c("scopus", "entrez"), limit = 50)
 search <- ft_search(query, from = "scopus", limit = 2000)
-search_entrez <- ft_search(query, from = "entrez", limit = 300)
+search_entrez <- ft_search(query, from = "entrez", limit = 600, entrezopts = opts_entrez)
 ```
 
 Then, we retrieve the related metadata. The metadata from different sources having different shapes, we only select a few relevant columns to build an overall metadata set.
 
-```{r}
+```{r eval = FALSE}
 metadata_scopus <- search$scopus$data %>% 
   as_tibble() %>% 
   rename_all(function(x) str_remove_all(names(.), "prism:|dc:")) %>% 
@@ -134,20 +137,14 @@ First, we focus on the abstracts and download them.
 
 There is no `fulltext` function to access abstracts from Entrez. Therefore, using the DOI, we get the abstracts from Semantic Scholar. We also access Scopus abstracts from Semantic Scholar since, due to my IP address being located outside of Columbia, I cannot access the texts and abstracts from Scopus.
 
-In Semantic Scholar, there is a rate limit of 100 articles per 5 min or 20 articles per minute. We therefore need to pause the system to be able to download everything.
+In Semantic Scholar, there is a rate limit of 100 articles per 5 min or 20 articles per minute. We therefore need to pause the system to be able to download everything. In addition, there are some problems with some DOIs and thus need to use tryCatch to record where these errors are, to be able to handle them later.
 
 
 ```{r eval = FALSE}
-# opts_scopus <- list(key = Sys.getenv('ELSEVIER_SCOPUS_KEY'))
-
-# abstracts_scopus <- metadata_scopus$doi %>% 
-#   ft_abstract(from = "scopus", scopusopts = opts_scopus) 
-
 get_abstracts <- function(doi) {
   vect_doi <- unique(doi)
   number_periods <- (length(vect_doi) - 1) %/% 20
-  # abs <- NULL
-  abs_ls <- NULL
+  abs <- NULL
 
   message(str_c("Total downloading time: ", number_periods, "min"))
   
@@ -156,49 +153,44 @@ get_abstracts <- function(doi) {
     doi_period <- vect_doi[(20*i+1):(20*(i+1))]
     doi_period <- doi_period[!is.na(doi_period)]
     
-    abs_ls[[i + 1]] <- doi_period %>% 
-      ft_abstract(from = "semanticscholar") %>%
-      .$semanticscholar 
+    skip_to_next <- FALSE #to handle issues, using tryCatch
     
-    # abs_period <- doi_period %>% 
-    #   ft_abstract(from = "semanticscholar") %>% 
-    #   .$semanticscholar %>% 
-    #   as_tibble() %>% 
-    #   unnest(cols = everything()) %>% 
-    #   pivot_longer(everything(), names_to = "doi", values_to = "abstract") %>% 
-    #   filter(doi != abstract)
-    # 
-    # abs <- abs %>% 
-    #   rbind(abs_period)
+    possible_error <- tryCatch(
+      abs_period <- doi_period %>%
+        ft_abstract(from = "semanticscholar") %>%
+        .$semanticscholar %>%
+        as_tibble() %>%
+        unnest(cols = everything()) %>%
+        pivot_longer(everything(), names_to = "doi", values_to = "abstract") %>%
+        filter(doi != abstract),
+      error = function(e) e
+    )
+    
+    if (inherits(possible_error, "error")) {
+      print(i)
+      # err_indices <- c(err_indices, i)
+      next
+    } else {
+       abs <- abs %>%
+        rbind(abs_period)
+    }
     
     if (i < number_periods & number_periods != 0) {
-      message(str_c("Remaining time: ", number_periods - i, "min"))
+      message(str_c("Remaining time: ", (number_periods - i), "min"))
       Sys.sleep(63)
     }
   } 
   
-  return(abs_ls)
+  return(abs)
 }
 
-abstracts_f <- metadata_lit_review$doi %>% #[c(1:50, 1700:1750)] 
-  get_abstracts() 
-
-abstracts_loop <- NULL
-for (i in seq_along(abstracts_f)) {
-  new_abstracts <- abstracts_f[[i]] %>%
-    as_tibble() %>% 
-    unnest(cols = everything()) %>%
-    pivot_longer(everything(), names_to = "doi", values_to = "abstract") %>%
-    filter(doi != abstract)
+abstracts_t <- metadata_lit_review$doi %>% 
+  get_abstracts()  %>% 
+  left_join(metadata_lit_review, by = "doi") %>%
+  distinct(title, .keep_all = TRUE)
   
-  abstracts_loop <- abstracts_loop %>% 
-    rbind(new_abstracts)
-}
-abstracts <- abstracts_loop %>% 
-    left_join(metadata_lit_review, by = "doi") %>% 
-    distinct(title, .keep_all = TRUE)
 
-saveRDS(abstracts, "../Outputs/abstracts.RDS")
+# saveRDS(abstracts, "../Outputs/abstracts.RDS")
 ```
 
 Based on the abstracts, we can briefly explore the main themes of the articles.
@@ -208,7 +200,7 @@ abstracts <- readRDS("../Outputs/abstracts.RDS")
 
 abstracts %>%
   unnest_tokens(word, abstract, to_lower = TRUE) %>% 
-  anti_join(tidytext::stop_words) %>%
+  anti_join(tidytext::stop_words, by = "word") %>%
   count(word) %>%
   with(wordcloud::wordcloud(word, n, max.words = 100, random.color = TRUE))
 ```
@@ -226,7 +218,6 @@ Then we want to extract the effects, odds ratio and associated confidence interv
 
 
 ```{r}
-
 effects_CI <- abstracts %>% 
   mutate(
     abstract = str_replace_all(abstract, "·", ".")
@@ -240,10 +231,7 @@ effects_CI <- abstracts %>%
   mutate(
     CI = str_extract_all(sentence, "((?<=(95%|\\bCI\\b|\\b(c|C)onfidence (i|I)nterval\\b)[^\\d\\.]{0,4})[-−]?[\\d\\.]{1,7}[–\\s:;,%-to]{1,4}[-−]?[\\d\\.]{1,5})|(?<=(\\(|\\[))[\\d-]{1,4}\\.?\\d{0,5}[–\\s:;,%-to]{1,4}[\\d-]{1,4}\\.?\\d{0,5}(?=[\\)\\];])"),
     effect = str_extract_all(sentence, "[-−]?[\\d\\.]{1,7}(?=[^\\d.]{0,7}([^\\.\\d]\\b95%|\\bCI|\\b(c|C)onfidence (i|I)nterval\\b))(?<!\\b95)|[-−]?[\\d\\.]{1,7}(?=%?\\s?(\\(|\\[)[\\d-]{1,4}\\.?\\d{0,5}[–\\s:;,%-to]{1,4}[\\d-]{1,4}\\.?\\d{0,5}[\\)\\];])(?<![^\\.\\d]95)")
-    # p_value = str_extract_all(sentence, "(?<=\\b(p|P|p-value|p value)\\s?)[=<]\\s?[\\d.]+"),
-    # n_obs = str_extract_all(sentence, "(?<=(\\bn = ))[\\d,]{1,8}|[\\d,]{1,8}(?=(\\sobservations))")
   ) 
-
 
 
 #In effect_OR, could replace [^\\d.] by [\\s:;,\\(\\[%] to be more precise
@@ -257,12 +245,24 @@ effects_CI <- abstracts %>%
 #   )
 ```
 
-Note that, we could add something to detect CI and effects which are as "18.9% (-8.7, 54.7)", *ie* when "CI" is not repeated.
+Here are examples of the confidence intervals detected using this method:
+
+```{r}
+random_sentences <- sample(1:length(effects_CI$sentence), 5)
+str_view_all(effects_CI$sentence[random_sentences], "((?<=(95%|\\bCI\\b|\\b(c|C)onfidence (i|I)nterval\\b)[^\\d\\.]{0,4})[-−]?[\\d\\.]{1,7}[–\\s:;,%-to]{1,4}[-−]?[\\d\\.]{1,5})|(?<=(\\(|\\[))[\\d-]{1,4}\\.?\\d{0,5}[–\\s:;,%-to]{1,4}[\\d-]{1,4}\\.?\\d{0,5}(?=[\\)\\];])")
+```
+
+The corresponding detected effects are:
+
+```{r}
+str_view_all(effects_CI$sentence[random_sentences], "[-−]?[\\d\\.]{1,7}(?=[^\\d.]{0,7}([^\\.\\d]\\b95%|\\bCI|\\b(c|C)onfidence (i|I)nterval\\b))(?<!\\b95)|[-−]?[\\d\\.]{1,7}(?=%?\\s?(\\(|\\[)[\\d-]{1,4}\\.?\\d{0,5}[–\\s:;,%-to]{1,4}[\\d-]{1,4}\\.?\\d{0,5}[\\)\\];])(?<![^\\.\\d]95)")
+```
 
 Once the effects and CI are identified, some wrangling is necessary in order to get the data into a usable format.
 
 ```{r}
 effects_CI_clean <- effects_CI %>% 
+  filter(lengths(effect) == lengths(CI)) %>% 
   unnest(c(effect, CI), keep_empty = TRUE) %>% 
   separate(CI, into = c("low_CI", "up_CI"), "([\\s,]+)|(?<!^)[-–]") %>% 
   mutate(across(c("effect", "low_CI", "up_CI"), .fns = as.numeric)) %>% 
@@ -286,19 +286,28 @@ articles_effect %>%
   kable(col.names = c("Effect retreived", "Number of articles"))
 ```
 
-## Retreiving the study period
+## Retreiving additional information
 
-It might also be interesting to information about the study period. To do so, we also use regex.
+It might also be interesting to information about the study period, the number of observations or p-values. We also use regex to recover these information.
 
 ```{r}
 month_regex <- "\\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|(Nov|Dec)(?:ember)?)"
 date_regex <- str_c("(",month_regex, "\\s){0,1}(19|20)\\d{2}")
 
-abstracts_date <- abstracts %>% 
+abstracts_more_info <- abstracts %>% 
+  mutate(
+    abstract = str_replace_all(abstract, "·", ".")
+  ) %>% 
+  select(doi, abstract) %>%
   mutate(
     dates_obs = str_extract_all(abstract, str_c(date_regex, "( to |\\s?—\\s?|\\s?-\\s?| and )", date_regex))
   ) %>% 
-  separate(dates_obs, into = c("begin_obs", "end_obs"), "( to |\\s?—\\s?|\\s?-\\s?| and )") 
+  unnest(dates_obs, keep_empty = TRUE) %>%
+  separate(dates_obs, into = c("begin_obs", "end_obs"), "( to |\\s?—\\s?|\\s?-\\s?| and )") %>% 
+  mutate(
+    p_value = str_extract_all(abstract, "(?<=\\b(p|P|p-value|p value)\\s?)[=<]\\s?[\\d.]+"),
+    n_obs = str_extract_all(abstract, "(?<=(\\bn\\s?= ))[\\d,]{1,10}|[\\d,]{1,8}(?=(\\sobservations))")
+  )
 ```
 
 
@@ -354,7 +363,8 @@ articles_retro %>%
   ggplot(aes(x = typeM)) + 
   geom_histogram(bins = 10) +
   facet_wrap(~ prop_true_effect) +
-  labs(title = "Distribution of type M error in retrodesign simulations", subtitle = "If the size of true effect was a fraction of the measured effect")
+  labs(title = "Distribution of type M error in retrodesign simulations", subtitle = "If the size of true effect was a fraction of the measured effect") +
+  scale_x_continuous(trans='log10')
 
 articles_retro %>% 
   ggplot(aes(x = typeS)) + 
@@ -476,16 +486,16 @@ article_texts %>%
 
 <!-- t <- rentrez_texts %>% -->
 <!--   xmlParse() %>% -->
-<!--   xmlToList()   -->
+<!--   xmlToList() -->
 
 <!-- retrieve_abstract <- function(lis) { -->
-<!--   df <- lis$MedlineCitation$Article$Abstract %>%  -->
-<!--   map_df(., data.frame) %>%  -->
-<!--   as.tibble() %>%  -->
-<!--   distinct()  -->
+<!--   df <- lis$MedlineCitation$Article$Abstract %>% -->
+<!--   map_df(., data.frame) %>% -->
+<!--   as.tibble() %>% -->
+<!--   distinct() -->
 
-<!--   # %>%  -->
-<!--   # filter(!is.na(text)) %>%  -->
+<!--   # %>% -->
+<!--   # filter(!is.na(text)) %>% -->
 <!--   # select(-3) -->
 
 <!--   return(df) -->
@@ -493,11 +503,11 @@ article_texts %>%
 
 <!-- out <- map_df(t, retrieve_abstract) -->
 
-<!-- r <- t$PubmedArticle$MedlineCitation$Article$Abstract %>%  -->
-<!--   map_df(., data.frame) %>%  -->
-<!--   as.tibble() %>%  -->
-<!--   distinct() %>%  -->
-<!--   filter(!is.na(text)) %>%  -->
+<!-- r <- t$PubmedArticle$MedlineCitation$Article$Abstract %>% -->
+<!--   map_df(., data.frame) %>% -->
+<!--   as.tibble() %>% -->
+<!--   distinct() %>% -->
+<!--   filter(!is.na(text)) %>% -->
 <!--   select(-3) -->
 
 <!-- t$PubmedArticle$MedlineCitation$Article -->
