@@ -25,7 +25,7 @@ library(knitr)
 opts_chunk$set(fig.path = "images/",
                cache.path = "cache/",
                cache = FALSE,
-               echo = TRUE, #set to false to hide code
+               echo = FALSE, #set to false to hide code
                message = FALSE,
                warning = FALSE,
                out.width = "85%",
@@ -44,7 +44,7 @@ library(lubridate)
 library(DT)
 
 set_mediocre_all()
-set.seed(12)
+set.seed(1)
 ```
 
 # Purpose of the document
@@ -248,7 +248,7 @@ effects_CI <- abstracts %>%
 Here are examples of the confidence intervals detected using this method:
 
 ```{r}
-random_sentences <- sample(1:length(effects_CI$sentence), 5)
+random_sentences <- sample(1:length(effects_CI$sentence), 3)
 str_view_all(effects_CI$sentence[random_sentences], "((?<=(95%|\\bCI\\b|\\b(c|C)onfidence (i|I)nterval\\b)[^\\d\\.]{0,4})[-−]?[\\d\\.]{1,7}[–\\s:;,%-to]{1,4}[-−]?[\\d\\.]{1,5})|(?<=(\\(|\\[))[\\d-]{1,4}\\.?\\d{0,5}[–\\s:;,%-to]{1,4}[\\d-]{1,4}\\.?\\d{0,5}(?=[\\)\\];])")
 ```
 
@@ -349,7 +349,25 @@ articles_retro <- articles_effect %>%
 
 ## Results and graphs
 
-Then, we quickly explore the results. First, we look at the distribution of power, type M and type S error across simulation and for different size of true effect
+Then, we quickly explore the results. First, we compute the average and median power, type M and type S errors.
+
+```{r}
+articles_retro %>% 
+  filter(typeM < Inf) %>% 
+  group_by(prop_true_effect) %>% 
+  summarise(
+    mean_power = mean(power, na.rm = TRUE),
+    mean_typeM = mean(typeM, na.rm = TRUE),
+    mean_typeS = mean(typeS, na.rm = TRUE),
+    median_power = median(power, na.rm = TRUE),
+    median_typeM = median(typeM, na.rm = TRUE),
+    median_typeS = median(typeS, na.rm = TRUE)
+  ) %>% 
+  kable()
+```
+
+
+Then, we look at the distribution of power, type M and type S error across simulation and for different size of true effect.
 
 ```{r}
 articles_retro %>% 
