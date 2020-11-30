@@ -1800,6 +1800,19 @@ summary {
 <ul>
 <li><a href="#genesis-of-the-project">Genesis of the project</a></li>
 <li><a href="#main-questions-and-motivation">Main questions and motivation</a></li>
+<li><a href="#usual-power-in-air-pollution-studies">Usual power in air pollution studies</a><ul>
+<li><a href="#definitions">Definitions</a></li>
+<li><a href="#motivation">Motivation</a></li>
+<li><a href="#method">Method</a></li>
+<li><a href="#results">Results</a></li>
+</ul></li>
+<li><a href="#performance-of-different-methods">Performance of different methods</a><ul>
+<li><a href="#motivation-1">Motivation</a></li>
+<li><a href="#method-1">Method</a></li>
+</ul></li>
+<li><a href="#impact-of-missing-values">Impact of missing values</a><ul>
+<li><a href="#motivation-2">Motivation</a></li>
+</ul></li>
 </ul>
 </div>
 
@@ -1846,18 +1859,101 @@ summary {
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <ul>
-<li>I skip the motivation section for the sake of time</li>
+<li>I skip the motivation overall section for the sake of time</li>
 </ul>
 <p>???</p>
 <ul>
 <li><p>The questions we will focus on will also depend on our results: it might be the case that missing data is not a problem for instance. In this case we would not focus on this</p></li>
-<li><p>You know why understanding the health effects of air pollution is an important question</p></li>
+<li><p>You know why understanding the health effects of air pollution is an important question. However, I will discuss why each subquestion matters</p></li>
+<li><p>In this presentation, I tackle each question somehow separately</p></li>
 </ul>
 <hr />
+</div>
+<div id="usual-power-in-air-pollution-studies" class="section level1">
+<h1>Usual power in air pollution studies</h1>
+<div id="definitions" class="section level2">
+<h2>Definitions</h2>
+<ul>
+<li><p><strong>Power</strong>: probability of finding an effect when there is actually one</p></li>
+<li><p>Power can be low when effects are small and/or variance of the estimates is large (<em>eg</em> small sample size)</p></li>
+<li><p>Type M and type S errors:</p></li>
+</ul>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<hr />
+</div>
+<div id="motivation" class="section level2">
+<h2>Motivation</h2>
+<ul>
+<li><p>Ioannidis et al (2017) showed that studies in economics are massively under-powered: median statistical power of 18%</p></li>
+<li><p>Is there a similar issue in studies of health effects of air pollution?</p></li>
+<li><p>Health effects of air pollution are often tiny, making them difficult to detect</p></li>
+<li><p>Low power is associated with high rates of type M and S error</p></li>
+</ul>
+<hr />
+</div>
+<div id="method" class="section level2">
+<h2>Method</h2>
+<ul>
+<li><p>Follow Ioannidis and retrieve point estimates and s.e. of estimates</p></li>
+<li><p>Compute power, type M and type S errors using the package <code>retrodesign</code></p></li>
+<li><p>Literature review of causal studies: yield a set of <span class="math inline">\(\sim\)</span> 30 studies</p></li>
+<li><p>Systematic literature review for other studies: for now, we retrieved about 1000 estimates</p></li>
+</ul>
+</div>
+<div id="results" class="section level2">
+<h2>Results</h2>
+<ul>
+<li></li>
+<li></li>
+</ul>
+<hr />
+</div>
+</div>
+<div id="performance-of-different-methods" class="section level1">
+<h1>Performance of different methods</h1>
+<div id="motivation-1" class="section level2">
+<h2>Motivation</h2>
+<ul>
+<li><p>Epidemiologists often use very simple models, with small sample size: is it enough to recover the true effects?</p></li>
+<li><p>Are more fancy techniques an overkill?</p></li>
+<li><p>Some methods can perform better than other in some contexts but less well in others</p></li>
+<li><p>Want to compare: Poisson generalized additive model, IV, DiD, event study, RD</p></li>
+</ul>
+<p>???</p>
+<ul>
+<li>Keep in mind that this is also a way for us to play around with many estimation strategies and to build some methodological knowledge</li>
+</ul>
+<hr />
+</div>
+<div id="method-1" class="section level2">
+<h2>Method</h2>
+<ul>
+<li>For the sake of the example, let’s focus on a simple Poisson generalized additive model:</li>
+</ul>
+<p><span class="math display">\[h_{ct} = \alpha + \beta_{c}p_{ct} + \boldsymbol{W_{ct}&#39;\delta} +  \boldsymbol{C_{ct}&#39;\gamma} + \epsilon_{ct}\]</span> - Actual data and fake data</p>
+<ul>
+<li>We est</li>
+</ul>
+<hr />
+</div>
+</div>
+<div id="impact-of-missing-values" class="section level1">
+<h1>Impact of missing values</h1>
+<div id="motivation-2" class="section level2">
+<h2>Motivation</h2>
+<ul>
+<li><p>Air pollution data sets always display missing observations: not always clear how to handle them</p></li>
+<li><p>Missing data can create bias and decrease precision, especially if large amounts of data are missing</p></li>
+<li><p>We will be able to motivate it better (or dismotivate it) when we have more results</p></li>
+</ul>
 <!-- rnb-text-end -->
 </div>
+</div>
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiQW5hbHlzaXMgb2Ygc3R1ZGllcyBvbiB0aGUgc2hvcnQgdGVybSBoZWFsdGggZWZmZWN0cyBvZiBhaXIgcG9sbHV0aW9uIgphdXRob3I6ICJWaW5jZW50IEJhZ2lsZXQgLSBMZW8gWmFicm9ja2kiCmRhdGU6ICJOb3ZlbWJlciAzMCwgMjAyMCIKb3V0cHV0OgogIHhhcmluZ2FuOjptb29uX3JlYWRlcjoKICAgIGxpYl9kaXI6IGxpYnMKICAgIGNzczogeGFyaW5nYW4tdGhlbWVyLmNzcwogICAgbmF0dXJlOgogICAgICBjb3VudEluY3JlbWVudGFsU2xpZGVzOiBubwogICAgICBoaWdobGlnaHRMaW5lczogeWVzCiAgICAgIGhpZ2hsaWdodFN0eWxlOiBnaXRodWIKICBnaXRodWJfZG9jdW1lbnQ6IGRlZmF1bHQKICBpb3NsaWRlc19wcmVzZW50YXRpb246CiAgICBoaWdobGlnaHQ6IHB5Z21lbnRzCiAgaHRtbF9ub3RlYm9vazoKICAgIGhpZ2hsaWdodDogcHlnbWVudHMKICAgIHRoZW1lOiBzaW1wbGV4CiAgICB0b2M6IHllcwogIHNsaWR5X3ByZXNlbnRhdGlvbjoKICAgIGhpZ2hsaWdodDogcHlnbWVudHMKICBiZWFtZXJfcHJlc2VudGF0aW9uOgogICAgaGlnaGxpZ2h0OiBweWdtZW50cwogICAgdGhlbWU6IFZCX0JlYW1lcgogIGh0bWxfZG9jdW1lbnQ6CiAgICBoaWdobGlnaHQ6IHB5Z21lbnRzCiAgICB0aGVtZTogc2ltcGxleAogIHBkZl9kb2N1bWVudDoKICAgIGluY2x1ZGVzOgogICAgICBpbl9oZWFkZXI6IFZCX21hcmtkb3duLnN0eQogICAga2VlcF90ZXg6IHllcwpzdWJ0aXRsZTogIkNyYWIgbGFiIHByZXNlbnRhdGlvbiIKLS0tCgpgYGB7ciB4YXJpbmdhbi10aGVtZXIsIGluY2x1ZGUgPSBGQUxTRX0KbGlicmFyeSh4YXJpbmdhbnRoZW1lcikKbW9ub19saWdodCgKICBiYXNlX2NvbG9yID0gIiMxQjI3NTQiLAogIGhlYWRlcl9mb250X2dvb2dsZSA9IGdvb2dsZV9mb250KCJMYXRvIiwgIjQwMCIpLAogIHRleHRfZm9udF9nb29nbGUgICA9IGdvb2dsZV9mb250KCJSYWxld2F5IiwgIjMwMCIsICIzMDBpIiksCiAgaGVhZGVyX2ZvbnRfd2VpZ2h0ID0gImJvbGQiLAogIHRleHRfYm9sZF9jb2xvciA9ICIjQjY3RjEwIiwKICB0ZXh0X2ZvbnRfc2l6ZSA9ICIyNHB4IiwKICBoZWFkZXJfaDFfZm9udF9zaXplID0gIjQ1cHgiLAogIGhlYWRlcl9oMl9mb250X3NpemUgPSAiMzVweCIsCiAgaGVhZGVyX2gzX2ZvbnRfc2l6ZSA9ICIyNXB4IgopCmBgYAoKIyBHZW5lc2lzIG9mIHRoZSBwcm9qZWN0CgotLQoKYGBge3IgZWNobz1GQUxTRSwgb3V0LndpZHRoPSA1MDAsIGZpZy5hbGlnbj0iY2VudGVyIn0gCmtuaXRyOjppbmNsdWRlX2dyYXBoaWNzKCJpbWFnZXMvYm9vay5naWYiKQpgYGAKCi0tCgpgYGB7ciBlY2hvPUZBTFNFLCBvdXQud2lkdGg9IDgwMCwgZmlnLmFsaWduPSJjZW50ZXIifSAKa25pdHI6OmluY2x1ZGVfZ3JhcGhpY3MoImltYWdlcy9nZW5lc2lzX2dyYXBoLnBuZyIpCmBgYAoKPz8/CgotIFdoaWxlIEzDqW8gd2FzIHdvcmtpbmcgb24gc2V2ZXJhbCBwcm9qZWN0cyBvbiBzaG9ydCB0ZXJtIGhlYWx0aCBlZmZlY3RzIG9mIGFpciBwb2xsdXRpb24gc29tZSBxdWVzdGlvbnMgYXJvc2U6CgogIC0gSG93IGRvIGRpZmZlcmVudCBtZXRob2RzIGNvbXBhcmUgaW4gdGVybXMgb2YgZXN0aW1hdGlvbiBvZiB0aGVzZSBlZmZlY3RzPwogIAogIC0gSG93IHNob3VsZCB3ZSBoYW5kbGUgbWlzc2luZyBkYXRhIGluIHN1Y2ggc3R1ZGllcz8KICAKLSBTdGFydGluZyBmcm9tIHRoZXJlLCBpdCBsZWQgdG8gYWRkaXRpb25hbCBxdWVzdGlvbnMKCiAgLSBBcmUgbWlzc2luZyBkYXRhIGFuIGFjdHVhbCBwcm9ibGVtPwogIAogIC0gV2hhdCBpcyB0aGUgdXN1YWwgcG93ZXIgaW4gc3VjaCBzdHVkaWVzPyBEb2VzIGl0IHZhcmllcyB3aXRoIGVzdGltYXRpb24gbWV0aG9kcz8KCi0gVmVyeSBtZXRob2RvbG9naWNhbCBwcm9qZWN0OiB3ZSBhcmUgaW50ZXJlc3RlZCBpbiBsZWFybmluZyBhIGxvdCBvZiBtZXRob2RzCgotLS0KCiMgTWFpbiBxdWVzdGlvbnMgYW5kIG1vdGl2YXRpb24KCi0gV2hhdCBpcyB0aGUgdXN1YWwgKipwb3dlcioqIGluIHN0dWRpZXMgb2Ygc2hvcnQtdGVybSBoZWFsdGggZWZmZWN0cyBvZiBhaXIgcG9sbHV0aW9uPwogIAotIEhvdyBkbyAqKmRpZmZlcmVudCBpZGVudGlmaWNhdGlvbiBzdHJhdGVnaWVzKiogcGVyZm9ybSB0byBlc3RpbWF0ZSB0aGVzZSBlZmZlY3RzPwogIAotIFdoYXQgaXMgdGhlIGltcGFjdCBvZiAqKm1pc3NpbmcgZGF0YSoqIG9uIHRoZXNlIGVzdGltYXRlcz8gCgpgYGB7ciBlY2hvPUZBTFNFLCBvdXQud2lkdGg9IDM1MCwgZmlnLmFsaWduPSJjZW50ZXIifSAKa25pdHI6OmluY2x1ZGVfZ3JhcGhpY3MoImltYWdlcy9wb2xsdXRpb25fcGFyaXMuanBnIikKYGBgCiAgCi0gSSBza2lwIHRoZSBtb3RpdmF0aW9uIHNlY3Rpb24gZm9yIHRoZSBzYWtlIG9mIHRpbWUKCj8/PwoKLSBUaGUgcXVlc3Rpb25zIHdlIHdpbGwgZm9jdXMgb24gd2lsbCBhbHNvIGRlcGVuZCBvbiBvdXIgcmVzdWx0czogaXQgbWlnaHQgYmUgdGhlIGNhc2UgdGhhdCBtaXNzaW5nIGRhdGEgaXMgbm90IGEgcHJvYmxlbSBmb3IgaW5zdGFuY2UuIEluIHRoaXMgY2FzZSB3ZSB3b3VsZCBub3QgZm9jdXMgb24gdGhpcwoKLSBZb3Uga25vdyB3aHkgdW5kZXJzdGFuZGluZyB0aGUgaGVhbHRoIGVmZmVjdHMgb2YgYWlyIHBvbGx1dGlvbiBpcyBhbiBpbXBvcnRhbnQgcXVlc3Rpb24KCi0tLQoKCgoKCgoK</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiQW5hbHlzaXMgb2Ygc3R1ZGllcyBvbiB0aGUgc2hvcnQgdGVybSBoZWFsdGggZWZmZWN0cyBvZiBhaXIgcG9sbHV0aW9uIgphdXRob3I6ICJWaW5jZW50IEJhZ2lsZXQgLSBMZW8gWmFicm9ja2kiCmRhdGU6ICJOb3ZlbWJlciAzMCwgMjAyMCIKb3V0cHV0OgogIHhhcmluZ2FuOjptb29uX3JlYWRlcjoKICAgIGxpYl9kaXI6IGxpYnMKICAgIGNzczogeGFyaW5nYW4tdGhlbWVyLmNzcwogICAgbmF0dXJlOgogICAgICBjb3VudEluY3JlbWVudGFsU2xpZGVzOiBubwogICAgICBoaWdobGlnaHRMaW5lczogeWVzCiAgICAgIGhpZ2hsaWdodFN0eWxlOiBnaXRodWIKICBnaXRodWJfZG9jdW1lbnQ6IGRlZmF1bHQKICBpb3NsaWRlc19wcmVzZW50YXRpb246CiAgICBoaWdobGlnaHQ6IHB5Z21lbnRzCiAgaHRtbF9ub3RlYm9vazoKICAgIGhpZ2hsaWdodDogcHlnbWVudHMKICAgIHRoZW1lOiBzaW1wbGV4CiAgICB0b2M6IHllcwogIHNsaWR5X3ByZXNlbnRhdGlvbjoKICAgIGhpZ2hsaWdodDogcHlnbWVudHMKICBiZWFtZXJfcHJlc2VudGF0aW9uOgogICAgaGlnaGxpZ2h0OiBweWdtZW50cwogICAgdGhlbWU6IFZCX0JlYW1lcgogIGh0bWxfZG9jdW1lbnQ6CiAgICBoaWdobGlnaHQ6IHB5Z21lbnRzCiAgICB0aGVtZTogc2ltcGxleAogIHBkZl9kb2N1bWVudDoKICAgIGluY2x1ZGVzOgogICAgICBpbl9oZWFkZXI6IFZCX21hcmtkb3duLnN0eQogICAga2VlcF90ZXg6IHllcwpzdWJ0aXRsZTogIkNyYWIgbGFiIHByZXNlbnRhdGlvbiIKLS0tCgpgYGB7ciB4YXJpbmdhbi10aGVtZXIsIGluY2x1ZGUgPSBGQUxTRX0KbGlicmFyeSh4YXJpbmdhbnRoZW1lcikKbW9ub19saWdodCgKICBiYXNlX2NvbG9yID0gIiMxQjI3NTQiLAogIGhlYWRlcl9mb250X2dvb2dsZSA9IGdvb2dsZV9mb250KCJMYXRvIiwgIjQwMCIpLAogIHRleHRfZm9udF9nb29nbGUgICA9IGdvb2dsZV9mb250KCJSYWxld2F5IiwgIjMwMCIsICIzMDBpIiksCiAgaGVhZGVyX2ZvbnRfd2VpZ2h0ID0gImJvbGQiLAogIHRleHRfYm9sZF9jb2xvciA9ICIjQjY3RjEwIiwKICB0ZXh0X2ZvbnRfc2l6ZSA9ICIyNHB4IiwKICBoZWFkZXJfaDFfZm9udF9zaXplID0gIjQ1cHgiLAogIGhlYWRlcl9oMl9mb250X3NpemUgPSAiMzVweCIsCiAgaGVhZGVyX2gzX2ZvbnRfc2l6ZSA9ICIyNXB4IgopCmBgYAoKIyBHZW5lc2lzIG9mIHRoZSBwcm9qZWN0CgotLQoKYGBge3IgZWNobz1GQUxTRSwgb3V0LndpZHRoPSA1MDAsIGZpZy5hbGlnbj0iY2VudGVyIn0gCmtuaXRyOjppbmNsdWRlX2dyYXBoaWNzKCJpbWFnZXMvYm9vay5naWYiKQpgYGAKCi0tCgpgYGB7ciBlY2hvPUZBTFNFLCBvdXQud2lkdGg9IDgwMCwgZmlnLmFsaWduPSJjZW50ZXIifSAKa25pdHI6OmluY2x1ZGVfZ3JhcGhpY3MoImltYWdlcy9nZW5lc2lzX2dyYXBoLnBuZyIpCmBgYAoKPz8/CgotIFdoaWxlIEzDqW8gd2FzIHdvcmtpbmcgb24gc2V2ZXJhbCBwcm9qZWN0cyBvbiBzaG9ydCB0ZXJtIGhlYWx0aCBlZmZlY3RzIG9mIGFpciBwb2xsdXRpb24gc29tZSBxdWVzdGlvbnMgYXJvc2U6CgogIC0gSG93IGRvIGRpZmZlcmVudCBtZXRob2RzIGNvbXBhcmUgaW4gdGVybXMgb2YgZXN0aW1hdGlvbiBvZiB0aGVzZSBlZmZlY3RzPwogIAogIC0gSG93IHNob3VsZCB3ZSBoYW5kbGUgbWlzc2luZyBkYXRhIGluIHN1Y2ggc3R1ZGllcz8KICAKLSBTdGFydGluZyBmcm9tIHRoZXJlLCBpdCBsZWQgdG8gYWRkaXRpb25hbCBxdWVzdGlvbnMKCiAgLSBBcmUgbWlzc2luZyBkYXRhIGFuIGFjdHVhbCBwcm9ibGVtPwogIAogIC0gV2hhdCBpcyB0aGUgdXN1YWwgcG93ZXIgaW4gc3VjaCBzdHVkaWVzPyBEb2VzIGl0IHZhcmllcyB3aXRoIGVzdGltYXRpb24gbWV0aG9kcz8KCi0gVmVyeSBtZXRob2RvbG9naWNhbCBwcm9qZWN0OiB3ZSBhcmUgaW50ZXJlc3RlZCBpbiBsZWFybmluZyBhIGxvdCBvZiBtZXRob2RzCgotLS0KCiMgTWFpbiBxdWVzdGlvbnMgYW5kIG1vdGl2YXRpb24KCi0gV2hhdCBpcyB0aGUgdXN1YWwgKipwb3dlcioqIGluIHN0dWRpZXMgb2Ygc2hvcnQtdGVybSBoZWFsdGggZWZmZWN0cyBvZiBhaXIgcG9sbHV0aW9uPwogIAotIEhvdyBkbyAqKmRpZmZlcmVudCBpZGVudGlmaWNhdGlvbiBzdHJhdGVnaWVzKiogcGVyZm9ybSB0byBlc3RpbWF0ZSB0aGVzZSBlZmZlY3RzPwogIAotIFdoYXQgaXMgdGhlIGltcGFjdCBvZiAqKm1pc3NpbmcgZGF0YSoqIG9uIHRoZXNlIGVzdGltYXRlcz8gCgpgYGB7ciBlY2hvPUZBTFNFLCBvdXQud2lkdGg9IDM1MCwgZmlnLmFsaWduPSJjZW50ZXIifSAKa25pdHI6OmluY2x1ZGVfZ3JhcGhpY3MoImltYWdlcy9wb2xsdXRpb25fcGFyaXMuanBnIikKYGBgCiAgCi0gSSBza2lwIHRoZSBtb3RpdmF0aW9uIG92ZXJhbGwgc2VjdGlvbiBmb3IgdGhlIHNha2Ugb2YgdGltZQoKPz8/CgotIFRoZSBxdWVzdGlvbnMgd2Ugd2lsbCBmb2N1cyBvbiB3aWxsIGFsc28gZGVwZW5kIG9uIG91ciByZXN1bHRzOiBpdCBtaWdodCBiZSB0aGUgY2FzZSB0aGF0IG1pc3NpbmcgZGF0YSBpcyBub3QgYSBwcm9ibGVtIGZvciBpbnN0YW5jZS4gSW4gdGhpcyBjYXNlIHdlIHdvdWxkIG5vdCBmb2N1cyBvbiB0aGlzCgotIFlvdSBrbm93IHdoeSB1bmRlcnN0YW5kaW5nIHRoZSBoZWFsdGggZWZmZWN0cyBvZiBhaXIgcG9sbHV0aW9uIGlzIGFuIGltcG9ydGFudCBxdWVzdGlvbi4gSG93ZXZlciwgSSB3aWxsIGRpc2N1c3Mgd2h5IGVhY2ggc3VicXVlc3Rpb24gbWF0dGVycwoKLSBJbiB0aGlzIHByZXNlbnRhdGlvbiwgSSB0YWNrbGUgZWFjaCBxdWVzdGlvbiBzb21laG93IHNlcGFyYXRlbHkKCi0tLQoKIyBVc3VhbCBwb3dlciBpbiBhaXIgcG9sbHV0aW9uIHN0dWRpZXMKCiMjIERlZmluaXRpb25zCgotICoqUG93ZXIqKjogcHJvYmFiaWxpdHkgb2YgZmluZGluZyBhbiBlZmZlY3Qgd2hlbiB0aGVyZSBpcyBhY3R1YWxseSBvbmUKCi0gUG93ZXIgY2FuIGJlIGxvdyB3aGVuIGVmZmVjdHMgYXJlIHNtYWxsIGFuZC9vciB2YXJpYW5jZSBvZiB0aGUgZXN0aW1hdGVzIGlzIGxhcmdlICgqZWcqIHNtYWxsIHNhbXBsZSBzaXplKQoKLSBUeXBlIE0gYW5kIHR5cGUgUyBlcnJvcnM6CgpgYGB7ciBlY2hvPUZBTFNFLCBvdXQud2lkdGg9IDI1MCwgZmlnLmFsaWduPSJjZW50ZXIifSAKa25pdHI6OmluY2x1ZGVfZ3JhcGhpY3MoImltYWdlcy90eXBlTVMucG5nIikKYGBgCgotLS0KCiMjIE1vdGl2YXRpb24KCi0gSW9hbm5pZGlzIGV0IGFsICgyMDE3KSBzaG93ZWQgdGhhdCBzdHVkaWVzIGluIGVjb25vbWljcyBhcmUgbWFzc2l2ZWx5IHVuZGVyLXBvd2VyZWQ6IG1lZGlhbiBzdGF0aXN0aWNhbCBwb3dlciBvZiAxOCUKCi0gSXMgdGhlcmUgYSBzaW1pbGFyIGlzc3VlIGluIHN0dWRpZXMgb2YgaGVhbHRoIGVmZmVjdHMgb2YgYWlyIHBvbGx1dGlvbj8KCi0gSGVhbHRoIGVmZmVjdHMgb2YgYWlyIHBvbGx1dGlvbiBhcmUgb2Z0ZW4gdGlueSwgbWFraW5nIHRoZW0gZGlmZmljdWx0IHRvIGRldGVjdAoKLSBMb3cgcG93ZXIgaXMgYXNzb2NpYXRlZCB3aXRoIGhpZ2ggcmF0ZXMgb2YgdHlwZSBNIGFuZCBTIGVycm9yCgotLS0KCiMjIE1ldGhvZAoKLSBGb2xsb3cgSW9hbm5pZGlzIGFuZCByZXRyaWV2ZSBwb2ludCBlc3RpbWF0ZXMgYW5kIHMuZS4gb2YgZXN0aW1hdGVzCgotIENvbXB1dGUgcG93ZXIsIHR5cGUgTSBhbmQgdHlwZSBTIGVycm9ycyB1c2luZyB0aGUgcGFja2FnZSBgcmV0cm9kZXNpZ25gCgotIExpdGVyYXR1cmUgcmV2aWV3IG9mIGNhdXNhbCBzdHVkaWVzOiB5aWVsZCBhIHNldCBvZiAkXHNpbSQgMzAgc3R1ZGllcwoKLSBTeXN0ZW1hdGljIGxpdGVyYXR1cmUgcmV2aWV3IGZvciBvdGhlciBzdHVkaWVzOiBmb3Igbm93LCB3ZSByZXRyaWV2ZWQgYWJvdXQgMTAwMCBlc3RpbWF0ZXMKCgojIyBSZXN1bHRzCgotIAoKLSAKCi0tLQoKIyBQZXJmb3JtYW5jZSBvZiBkaWZmZXJlbnQgbWV0aG9kcwoKIyMgTW90aXZhdGlvbgoKLSBFcGlkZW1pb2xvZ2lzdHMgb2Z0ZW4gdXNlIHZlcnkgc2ltcGxlIG1vZGVscywgd2l0aCBzbWFsbCBzYW1wbGUgc2l6ZTogaXMgaXQgZW5vdWdoIHRvIHJlY292ZXIgdGhlIHRydWUgZWZmZWN0cz8gCgotIEFyZSBtb3JlIGZhbmN5IHRlY2huaXF1ZXMgYW4gb3ZlcmtpbGw/CgotIFNvbWUgbWV0aG9kcyBjYW4gcGVyZm9ybSBiZXR0ZXIgdGhhbiBvdGhlciBpbiBzb21lIGNvbnRleHRzIGJ1dCBsZXNzIHdlbGwgaW4gb3RoZXJzCgotIFdhbnQgdG8gY29tcGFyZTogUG9pc3NvbiBnZW5lcmFsaXplZCBhZGRpdGl2ZSBtb2RlbCwgSVYsIERpRCwgZXZlbnQgc3R1ZHksIFJECgo/Pz8KCi0gS2VlcCBpbiBtaW5kIHRoYXQgdGhpcyBpcyBhbHNvIGEgd2F5IGZvciB1cyB0byBwbGF5IGFyb3VuZCB3aXRoIG1hbnkgZXN0aW1hdGlvbiBzdHJhdGVnaWVzIGFuZCB0byBidWlsZCBzb21lIG1ldGhvZG9sb2dpY2FsIGtub3dsZWRnZQoKLS0tCgojIyBNZXRob2QKCi0gRm9yIHRoZSBzYWtlIG9mIHRoZSBleGFtcGxlLCBsZXQncyBmb2N1cyBvbiBhIHNpbXBsZSBQb2lzc29uIGdlbmVyYWxpemVkIGFkZGl0aXZlIG1vZGVsOgoKJCRoX3tjdH0gPSBcYWxwaGEgKyBcYmV0YV97Y31wX3tjdH0gKyBcYm9sZHN5bWJvbHtXX3tjdH0nXGRlbHRhfSArICBcYm9sZHN5bWJvbHtDX3tjdH0nXGdhbW1hfSArIFxlcHNpbG9uX3tjdH0kJAotIEFjdHVhbCBkYXRhIGFuZCBmYWtlIGRhdGEKCi0gV2UgZXN0CgotLS0KCiMgSW1wYWN0IG9mIG1pc3NpbmcgdmFsdWVzCgojIyBNb3RpdmF0aW9uCgotIEFpciBwb2xsdXRpb24gZGF0YSBzZXRzIGFsd2F5cyBkaXNwbGF5IG1pc3Npbmcgb2JzZXJ2YXRpb25zOiBub3QgYWx3YXlzIGNsZWFyIGhvdyB0byBoYW5kbGUgdGhlbQoKLSBNaXNzaW5nIGRhdGEgY2FuIGNyZWF0ZSBiaWFzIGFuZCBkZWNyZWFzZSBwcmVjaXNpb24sIGVzcGVjaWFsbHkgaWYgbGFyZ2UgYW1vdW50cyBvZiBkYXRhIGFyZSBtaXNzaW5nCgotIFdlIHdpbGwgYmUgYWJsZSB0byBtb3RpdmF0ZSBpdCBiZXR0ZXIgKG9yIGRpc21vdGl2YXRlIGl0KSB3aGVuIHdlIGhhdmUgbW9yZSByZXN1bHRzCgoKCgoKCg==</div>
 
 
 

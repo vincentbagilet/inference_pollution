@@ -91,16 +91,103 @@ knitr::include_graphics("images/genesis_graph.png")
 knitr::include_graphics("images/pollution_paris.jpg")
 ```
   
-- I skip the motivation section for the sake of time
+- I skip the motivation overall section for the sake of time
 
 ???
 
 - The questions we will focus on will also depend on our results: it might be the case that missing data is not a problem for instance. In this case we would not focus on this
 
-- You know why understanding the health effects of air pollution is an important question
+- You know why understanding the health effects of air pollution is an important question. However, I will discuss why each subquestion matters
+
+- In this presentation, I tackle each question somehow separately
 
 ---
 
+# Usual power in air pollution studies
+
+## Definitions
+
+- **Power**: probability of finding an effect when there is actually one
+
+- Power can be low when effects are small and/or variance of the estimates is large (*eg* small sample size)
+
+- Type M and type S errors:
+
+```{r echo=FALSE, out.width= 250, fig.align="center"} 
+knitr::include_graphics("images/typeMS.png")
+```
+
+---
+
+## Motivation
+
+- Ioannidis et al (2017) showed that studies in economics are massively under-powered: median statistical power of 18%
+
+- Is there a similar issue in studies of health effects of air pollution?
+
+- Health effects of air pollution are often tiny, making them difficult to detect
+
+- Low power is associated with high rates of type M and S error
+
+---
+
+## Method
+
+- Follow Ioannidis and retrieve point estimates and s.e. of estimates
+
+- Compute power, type M and type S errors using the package `retrodesign`
+
+- Literature review of causal studies: yield a set of $\sim$ 30 studies
+
+- Systematic literature review for other studies: for now, we retrieved about 1000 estimates
+
+
+## Results
+
+- 
+
+- 
+
+---
+
+# Performance of different methods
+
+## Motivation
+
+- Epidemiologists often use very simple models, with small sample size: is it enough to recover the true effects? 
+
+- Are more fancy techniques an overkill?
+
+- Some methods can perform better than other in some contexts but less well in others
+
+- Want to compare: Poisson generalized additive model, IV, DiD, event study, RD
+
+???
+
+- Keep in mind that this is also a way for us to play around with many estimation strategies and to build some methodological knowledge
+
+---
+
+## Method
+
+- For the sake of the example, let's focus on a simple Poisson generalized additive model:
+
+$$h_{ct} = \alpha + \beta_{c}p_{ct} + \boldsymbol{W_{ct}'\delta} +  \boldsymbol{C_{ct}'\gamma} + \epsilon_{ct}$$
+- Actual data and fake data
+
+- We est
+
+---
+
+# Impact of missing values
+
+## Motivation
+
+- Air pollution data sets always display missing observations: not always clear how to handle them
+
+- Missing data can create bias and decrease precision, especially if large amounts of data are missing
+
+- We will be able to motivate it better (or dismotivate it) when we have more results
 
 
 
