@@ -1,0 +1,109 @@
+---
+title: "Analysis of studies on the short term health effects of air pollution"
+author: "Vincent Bagilet - Leo Zabrocki"
+date: "November 30, 2020"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    css: xaringan-themer.css
+    nature:
+      countIncrementalSlides: no
+      highlightLines: yes
+      highlightStyle: github
+  github_document: default
+  ioslides_presentation:
+    highlight: pygments
+  html_notebook:
+    highlight: pygments
+    theme: simplex
+    toc: yes
+  slidy_presentation:
+    highlight: pygments
+  beamer_presentation:
+    highlight: pygments
+    theme: VB_Beamer
+  html_document:
+    highlight: pygments
+    theme: simplex
+  pdf_document:
+    includes:
+      in_header: VB_markdown.sty
+    keep_tex: yes
+subtitle: "Crab lab presentation"
+---
+
+```{r xaringan-themer, include = FALSE}
+library(xaringanthemer)
+mono_light(
+  base_color = "#1B2754",
+  header_font_google = google_font("Lato", "400"),
+  text_font_google   = google_font("Raleway", "300", "300i"),
+  header_font_weight = "bold",
+  text_bold_color = "#B67F10",
+  text_font_size = "24px",
+  header_h1_font_size = "45px",
+  header_h2_font_size = "35px",
+  header_h3_font_size = "25px"
+)
+```
+
+# Genesis of the project
+
+--
+
+```{r echo=FALSE, out.width= 500, fig.align="center"} 
+knitr::include_graphics("images/book.gif")
+```
+
+--
+
+```{r echo=FALSE, out.width= 800, fig.align="center"} 
+knitr::include_graphics("images/genesis_graph.png")
+```
+
+???
+
+- While Léo was working on several projects on short term health effects of air pollution some questions arose:
+
+  - How do different methods compare in terms of estimation of these effects?
+  
+  - How should we handle missing data in such studies?
+  
+- Starting from there, it led to additional questions
+
+  - Are missing data an actual problem?
+  
+  - What is the usual power in such studies? Does it varies with estimation methods?
+
+- Very methodological project: we are interested in learning a lot of methods
+
+---
+
+# Main questions and motivation
+
+- What is the usual **power** in studies of short-term health effects of air pollution?
+  
+- How do **different identification strategies** perform to estimate these effects?
+  
+- What is the impact of **missing data** on these estimates? 
+
+```{r echo=FALSE, out.width= 350, fig.align="center"} 
+knitr::include_graphics("images/pollution_paris.jpg")
+```
+  
+- I skip the motivation section for the sake of time
+
+???
+
+- The questions we will focus on will also depend on our results: it might be the case that missing data is not a problem for instance. In this case we would not focus on this
+
+- You know why understanding the health effects of air pollution is an important question
+
+---
+
+
+
+
+
+
+

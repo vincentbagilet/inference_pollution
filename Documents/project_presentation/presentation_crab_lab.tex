@@ -1,0 +1,219 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={Analysis of studies on the short term health effects of air pollution},
+  pdfauthor={Vincent Bagilet - Leo Zabrocki},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\NeedsTeXFormat{LaTeX2e}
+ 
+%\ProvidesPackage{VB_markdown}[2016/01/11 Extension personnelle, V2.0]
+ 
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[english, francais]{babel}
+%\RequirePackage[top=2.6cm,bottom=2.6cm,left=2.6cm,right=2.6cm]{geometry}
+%\RequirePackage[pdftex]{graphicx}
+\RequirePackage{amsmath}
+\RequirePackage{amssymb}
+\RequirePackage{mathrsfs}
+\RequirePackage{setspace}
+\RequirePackage{fancyhdr}
+\RequirePackage{wrapfig}
+\RequirePackage[hyphens]{url}
+\RequirePackage[final]{pdfpages} 
+%\RequirePackage[Rejne]{fncychap}
+%\RequirePackage{titlesec}
+\RequirePackage{cancel}
+\RequirePackage{lscape}
+\RequirePackage{sectsty}
+\RequirePackage{ulem}
+\RequirePackage{lscape}
+\RequirePackage{multicol}
+\RequirePackage{eurosym}
+\RequirePackage{titling}
+\RequirePackage{nameref}
+\RequirePackage{natbib}
+\RequirePackage{csquotes}
+\RequirePackage{booktabs}
+\RequirePackage{array}
+\RequirePackage[bottom]{footmisc}
+\RequirePackage{multirow}
+\RequirePackage[flushleft]{threeparttable}
+\RequirePackage{titling}
+
+\sloppy
+
+\hypersetup{ backref=true, %permet d'ajouter des liens dans...
+pagebackref=true, %...les bibliographies
+hyperindex=true, %ajoute des liens dans les index.
+colorlinks=false, %colorise les liens
+breaklinks=true, %permet le retour à la ligne dans les liens trop longs
+urlcolor= black, %couleur des hyperliens
+linkcolor= black, %couleur des liens internes
+bookmarks=true, %créé des signets pour Acrobat
+bookmarksopen=true
+%si les signets Acrobat sont créés, %les afficher complètement. %informations apparaissant dans %dans les informations du document %sous Acrobat.
+}
+
+\title{}
+
+%%%%%%%%%%%%%%%%
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\nouppercase{\leftmark}}
+\renewcommand{\sectionmark}[1]{\markboth{\textit{\bsc{\thesection~ #1}}}{}}
+%\chead{\leftmark}
+\fancypagestyle{plain}{
+\fancyhead{}
+\renewcommand{\headrulewidth}{0pt}}
+\renewcommand{\footrulewidth}{0.5pt}
+\fancyfoot[C]{\textsc{Page \thepage}} 
+%\fancyfoot[R]{\begin{picture}(63,12) \put(-80,-13){\includegraphics[width=5cm]{logo.png}}
+%\end{picture}}
+
+ \renewcommand{\chaptermark}[1]{\markboth{#1}{}}
+
+
+\renewcommand{\thesection}{\Roman{section}}
+\sectionfont{{} \mdseries \scshape}
+\renewcommand{\thesubsection}{\Roman{section}. \arabic{subsection}}
+\subsectionfont{{} \quad \mdseries \scshape}
+\subsubsectionfont{{} \quad \quad \mdseries \scshape}
+%\titlespacing{\chapter}{0pt}{-30pt}{22pt}[0pt]
+
+
+
+%\setcounter{tocdepth}{3}     % Dans la table des matieres
+\setcounter{secnumdepth}{3} 
+
+%\RequirePackage[shortlabels]{enumitem}
+%\setlist[itemize]{label=\textbullet}
+
+\definecolor{darkblue}{rgb}{0.0, 0.0, 0.55}
+\renewcommand{\emph}[1]{\textcolor{darkblue}{#1}}
+
+
+\newcolumntype{H}{>{\setbox0=\hbox\bgroup}c<{\egroup}@{}} %to hide one column in tables
+\newcolumntype{L}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}m{#1}}
+
+
+%Matlab in LaTeX
+\usepackage[framed]{matlab-prettifier} %numbered,
+
+\let\ph\mlplaceholder % shorter macro
+\lstMakeShortInline"
+
+\lstset{
+  style              = Matlab-editor,
+  basicstyle         = \mlttfamily,
+  escapechar         = ",
+  mlshowsectionrules = true,
+}
+
+\onehalfspacing
+
+
+%%%%% Title format %%%%%%
+
+%%%%% Title, author, date format %%%%%%
+
+
+         \pretitle{\vspace{-2.4cm} \begin{center} \LARGE \bfseries \scshape}
+         \posttitle{\end{center}}
+         
+        
+        \preauthor{\begin{center}\large \mdseries}
+        \postauthor{\end{center}}
+        
+        \newcommand{\institution}[1]{}
+        
+        \predate{\date{}}
+         \postdate{}
+
+ 
+ %%%%%%%%%%%%%
+
+\title{Analysis of studies on the short term health effects of air pollution}
+\usepackage{etoolbox}
+\makeatletter
+\providecommand{\subtitle}[1]{% add subtitle to \maketitle
+  \apptocmd{\@title}{\par {\large #1 \par}}{}{}
+}
+\makeatother
+\subtitle{Recitation 10 - Spring 2020}
+\author{Vincent Bagilet - Leo Zabrocki}
+\date{November 30, 2020}
+
+\begin{document}
+\maketitle
+
+\hypertarget{how-this-project-came-about}{%
+\section{How this project came
+about}\label{how-this-project-came-about}}
+
+\begin{itemize}
+\item
+  Various works on air pollution
+\item
+  Very methodological paper: we are interested in learning a lot of
+  methods
+\end{itemize}
+
+\end{document}
