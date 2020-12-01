@@ -12,7 +12,7 @@
 class: center, middle, inverse, title-slide
 
 # Analysis of studies on the short term health effects of air pollution
-## Crab lab presentation
+## 🦀 lab presentation
 ### Vincent Bagilet - Leo Zabrocki
 ### November 30, 2020
 
@@ -21,7 +21,7 @@ class: center, middle, inverse, title-slide
 
 
 
-# Genesis of the project
+# Genesis
 
 --
 
@@ -49,7 +49,7 @@ class: center, middle, inverse, title-slide
 
 ---
 
-# Main questions and motivation
+# Main questions
 
 - What is the usual **power** in studies of short-term health effects of air pollution?
   
@@ -57,9 +57,9 @@ class: center, middle, inverse, title-slide
   
 - What is the impact of **missing data** on these estimates? 
 
-&lt;img src="images/pollution_paris.jpg" width="350" style="display: block; margin: auto;" /&gt;
+&lt;img src="images/pollution_paris.jpg" width="400" style="display: block; margin: auto;" /&gt;
   
-- I skip the motivation overall section for the sake of time
+- I skip the overall motivation for air pollution studies for the sake of time
 
 ???
 
@@ -79,15 +79,15 @@ class: center, middle, inverse, title-slide
 
 - Power can be low when effects are small and/or variance of the estimates is large (*eg* small sample size)
 
-- Type M and type S errors:
-
-&lt;img src="images/typeMS.png" width="250" style="display: block; margin: auto;" /&gt;
+&lt;img src="images/typeMS_own.png" width="600" style="display: block; margin: auto;" /&gt;
 
 ---
 
 ## Motivation
 
 - Ioannidis et al (2017) showed that studies in economics are massively under-powered: median statistical power of 18%
+
+&lt;img src="images/broken.gif" width="400" style="display: block; margin: auto;" /&gt;
 
 - Is there a similar issue in studies of health effects of air pollution?
 
@@ -101,34 +101,40 @@ class: center, middle, inverse, title-slide
 
 - Follow Ioannidis and retrieve point estimates and s.e. of estimates
 
-- Compute power, type M and type S errors using the package `retrodesign`
+- Compute power, type M and type S errors 
 
 - Literature review of causal studies: yield a set of `\(\sim\)` 30 studies
 
-- Systematic literature review for other studies: for now, we retrieved about 1000 estimates
+- Systematic literature review for other studies: for now, about 1000 estimates ([method](file:///Users/vincentbagilet/Documents/Research/imputation_pollution/Documents/project_presentation/htmls/systematic_lit_review.html))
 
 
-## Results
+## Preliminary results
 
-- 
+- Causal studies: some studies have high power, others have quite low power.
 
-- 
+- Systematic literature review: similar results. 
+
+- We need to investigate this further to understand the sources of heterogeneity
 
 ---
 
-# Performance of different methods
+# Performance of different estimation methods
 
 ## Motivation
 
 - Epidemiologists often use very simple models, with small sample size: is it enough to recover the true effects? 
 
-- Are more fancy techniques an overkill?
+- Are more "fancy" techniques necessary? 
 
-- Some methods can perform better than other in some contexts but less well in others
+- Some methods can perform better than others in some contexts but less well in others
 
-- Want to compare: Poisson generalized additive model, IV, DiD, event study, RD
+- We look into the performance of Poisson generalized additive model, IV, DiD, event study, RD
+
+- Good exercise for us, PhD students
 
 ???
+
+- Fancy techniques also limit the number of situations in which we can compute the estimates of interest
 
 - Keep in mind that this is also a way for us to play around with many estimation strategies and to build some methodological knowledge
 
@@ -139,9 +145,35 @@ class: center, middle, inverse, title-slide
 - For the sake of the example, let's focus on a simple Poisson generalized additive model:
 
 `$$h_{ct} = \alpha + \beta_{c}p_{ct} + \boldsymbol{W_{ct}'\delta} +  \boldsymbol{C_{ct}'\gamma} + \epsilon_{ct}$$`
-- Actual data and fake data
+- Use both actual and fake data (here focus on actual data)
 
-- We est
+1. Estimate the model on the existing data
+
+--
+
+1. Define a "fake", known, effect `\(\beta_c\)`
+
+--
+
+1. Generate noise `\((\epsilon)\)` and predict/generate fake hospital admission and mortality data `\((h)\)` based on our estimated model (1000 data sets)
+
+--
+
+1. Reestimate the model to see if we recover our true value
+
+--
+
+1. Compute bias, power, type I, type M, type S error
+
+---
+
+- Look how our measures of interest vary with sample size and effect size.
+
+- Where do papers in the literature lie? `\(\to\)` what problem could it be exposed to
+
+- Repeat this for each identification strategy (with different DGPs of course)
+
+- Reproduce the same analysis with fake data (*ie* generate all the data)
 
 ---
 
@@ -151,9 +183,83 @@ class: center, middle, inverse, title-slide
 
 - Air pollution data sets always display missing observations: not always clear how to handle them
 
+&lt;img src="images/heatmap.png" width="400" style="display: block; margin: auto;" /&gt;
+
 - Missing data can create bias and decrease precision, especially if large amounts of data are missing
 
+???
+
 - We will be able to motivate it better (or dismotivate it) when we have more results
+
+---
+
+## Questions
+
+- Does the literature discuss missing data issues?
+
+- To what extent do missing data affect estimates? 
+
+- Are some estimation methods more robust to the missing data problems? 
+
+- How does this vary with the type of [missing data mechanism](file:///Users/vincentbagilet/Documents/Research/imputation_pollution/Documents/project_presentation/htmls/missingness_pattern_fr.html)?
+
+- If it is actually a problem, which imputation method performs better?
+
+---
+
+## Method
+
+1. Build a complete data set (how?)
+
+--
+
+1. Estimate the model and find the "true" effect
+
+--
+
+1. [Delete data](file:///Users/vincentbagilet/Documents/Research/imputation_pollution/Documents/project_presentation/htmls/create_missing.html) to create missing observations (create 1000 samples)
+
+--
+
+1. Estimate the model on the incomplete sets 
+
+--
+
+1. Compute bias, power, type I, type M, type S error
+
+--
+
+1. Rerun this for different missing data mechanisms and estimation methods and compare
+
+---
+
+## Comparison of imputation methods
+
+If missing data is actually a problem:
+
+1. Redo the previous steps
+
+--
+
+1. On each incomplete set, impute data for missing observations
+
+--
+
+1. Estimate the model on the imputed sets 
+
+--
+
+1. Compute bias, power, type I, type M, type S error
+
+--
+
+1. Compare results across imputation methods and missingness patterns
+
+
+---
+class: center, middle
+
+&lt;img src="images/over.gif" width="800" style="display: block; margin: auto;" /&gt;
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>

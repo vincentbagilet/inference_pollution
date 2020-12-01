@@ -1790,7 +1790,7 @@ summary {
 
 
 <h1 class="title toc-ignore">Analysis of studies on the short term health effects of air pollution</h1>
-<h3 class="subtitle">Crab lab presentation</h3>
+<h3 class="subtitle">🦀 lab presentation</h3>
 <h4 class="author">Vincent Bagilet - Leo Zabrocki</h4>
 <h4 class="date">November 30, 2020</h4>
 
@@ -1798,20 +1798,23 @@ summary {
 
 <div id="TOC">
 <ul>
-<li><a href="#genesis-of-the-project">Genesis of the project</a></li>
-<li><a href="#main-questions-and-motivation">Main questions and motivation</a></li>
+<li><a href="#genesis">Genesis</a></li>
+<li><a href="#main-questions">Main questions</a></li>
 <li><a href="#usual-power-in-air-pollution-studies">Usual power in air pollution studies</a><ul>
 <li><a href="#definitions">Definitions</a></li>
 <li><a href="#motivation">Motivation</a></li>
 <li><a href="#method">Method</a></li>
-<li><a href="#results">Results</a></li>
+<li><a href="#preliminary-results">Preliminary results</a></li>
 </ul></li>
-<li><a href="#performance-of-different-methods">Performance of different methods</a><ul>
+<li><a href="#performance-of-different-estimation-methods">Performance of different estimation methods</a><ul>
 <li><a href="#motivation-1">Motivation</a></li>
 <li><a href="#method-1">Method</a></li>
 </ul></li>
 <li><a href="#impact-of-missing-values">Impact of missing values</a><ul>
 <li><a href="#motivation-2">Motivation</a></li>
+<li><a href="#questions">Questions</a></li>
+<li><a href="#method-2">Method</a></li>
+<li><a href="#comparison-of-imputation-methods">Comparison of imputation methods</a></li>
 </ul></li>
 </ul>
 </div>
@@ -1819,8 +1822,8 @@ summary {
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-text-begin -->
-<div id="genesis-of-the-project" class="section level1">
-<h1>Genesis of the project</h1>
+<div id="genesis" class="section level1">
+<h1>Genesis</h1>
 <p>–</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
@@ -1847,8 +1850,8 @@ summary {
 </ul>
 <hr />
 </div>
-<div id="main-questions-and-motivation" class="section level1">
-<h1>Main questions and motivation</h1>
+<div id="main-questions" class="section level1">
+<h1>Main questions</h1>
 <ul>
 <li><p>What is the usual <strong>power</strong> in studies of short-term health effects of air pollution?</p></li>
 <li><p>How do <strong>different identification strategies</strong> perform to estimate these effects?</p></li>
@@ -1859,7 +1862,7 @@ summary {
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <ul>
-<li>I skip the motivation overall section for the sake of time</li>
+<li>I skip the overall motivation for air pollution studies for the sake of time</li>
 </ul>
 <p>???</p>
 <ul>
@@ -1876,7 +1879,6 @@ summary {
 <ul>
 <li><p><strong>Power</strong>: probability of finding an effect when there is actually one</p></li>
 <li><p>Power can be low when effects are small and/or variance of the estimates is large (<em>eg</em> small sample size)</p></li>
-<li><p>Type M and type S errors:</p></li>
 </ul>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
@@ -1887,7 +1889,13 @@ summary {
 <div id="motivation" class="section level2">
 <h2>Motivation</h2>
 <ul>
-<li><p>Ioannidis et al (2017) showed that studies in economics are massively under-powered: median statistical power of 18%</p></li>
+<li>Ioannidis et al (2017) showed that studies in economics are massively under-powered: median statistical power of 18%</li>
+</ul>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<ul>
 <li><p>Is there a similar issue in studies of health effects of air pollution?</p></li>
 <li><p>Health effects of air pollution are often tiny, making them difficult to detect</p></li>
 <li><p>Low power is associated with high rates of type M and S error</p></li>
@@ -1898,33 +1906,36 @@ summary {
 <h2>Method</h2>
 <ul>
 <li><p>Follow Ioannidis and retrieve point estimates and s.e. of estimates</p></li>
-<li><p>Compute power, type M and type S errors using the package <code>retrodesign</code></p></li>
+<li><p>Compute power, type M and type S errors</p></li>
 <li><p>Literature review of causal studies: yield a set of <span class="math inline">\(\sim\)</span> 30 studies</p></li>
-<li><p>Systematic literature review for other studies: for now, we retrieved about 1000 estimates</p></li>
+<li><p>Systematic literature review for other studies: for now, about 1000 estimates (<a href="file:///Users/vincentbagilet/Documents/Research/imputation_pollution/Documents/project_presentation/htmls/systematic_lit_review.html">method</a>)</p></li>
 </ul>
 </div>
-<div id="results" class="section level2">
-<h2>Results</h2>
+<div id="preliminary-results" class="section level2">
+<h2>Preliminary results</h2>
 <ul>
-<li></li>
-<li></li>
+<li><p>Causal studies: some studies have high power, others have quite low power.</p></li>
+<li><p>Systematic literature review: similar results.</p></li>
+<li><p>We need to investigate this further to understand the sources of heterogeneity</p></li>
 </ul>
 <hr />
 </div>
 </div>
-<div id="performance-of-different-methods" class="section level1">
-<h1>Performance of different methods</h1>
+<div id="performance-of-different-estimation-methods" class="section level1">
+<h1>Performance of different estimation methods</h1>
 <div id="motivation-1" class="section level2">
 <h2>Motivation</h2>
 <ul>
 <li><p>Epidemiologists often use very simple models, with small sample size: is it enough to recover the true effects?</p></li>
-<li><p>Are more fancy techniques an overkill?</p></li>
-<li><p>Some methods can perform better than other in some contexts but less well in others</p></li>
-<li><p>Want to compare: Poisson generalized additive model, IV, DiD, event study, RD</p></li>
+<li><p>Are more “fancy” techniques necessary?</p></li>
+<li><p>Some methods can perform better than others in some contexts but less well in others</p></li>
+<li><p>We look into the performance of Poisson generalized additive model, IV, DiD, event study, RD</p></li>
+<li><p>Good exercise for us, PhD students</p></li>
 </ul>
 <p>???</p>
 <ul>
-<li>Keep in mind that this is also a way for us to play around with many estimation strategies and to build some methodological knowledge</li>
+<li><p>Fancy techniques also limit the number of situations in which we can compute the estimates of interest</p></li>
+<li><p>Keep in mind that this is also a way for us to play around with many estimation strategies and to build some methodological knowledge</p></li>
 </ul>
 <hr />
 </div>
@@ -1933,9 +1944,32 @@ summary {
 <ul>
 <li>For the sake of the example, let’s focus on a simple Poisson generalized additive model:</li>
 </ul>
-<p><span class="math display">\[h_{ct} = \alpha + \beta_{c}p_{ct} + \boldsymbol{W_{ct}&#39;\delta} +  \boldsymbol{C_{ct}&#39;\gamma} + \epsilon_{ct}\]</span> - Actual data and fake data</p>
+<p><span class="math display">\[h_{ct} = \alpha + \beta_{c}p_{ct} + \boldsymbol{W_{ct}&#39;\delta} +  \boldsymbol{C_{ct}&#39;\gamma} + \epsilon_{ct}\]</span> - Use both actual and fake data (here focus on actual data)</p>
+<ol style="list-style-type: decimal">
+<li>Estimate the model on the existing data</li>
+</ol>
+<p>–</p>
+<ol style="list-style-type: decimal">
+<li>Define a “fake”, known, effect <span class="math inline">\(\beta_c\)</span></li>
+</ol>
+<p>–</p>
+<ol style="list-style-type: decimal">
+<li>Generate noise <span class="math inline">\((\epsilon)\)</span> and predict/generate fake hospital admission and mortality data <span class="math inline">\((h)\)</span> based on our estimated model (1000 data sets)</li>
+</ol>
+<p>–</p>
+<ol style="list-style-type: decimal">
+<li>Reestimate the model to see if we recover our true value</li>
+</ol>
+<p>–</p>
+<ol style="list-style-type: decimal">
+<li>Compute bias, power, type I, type M, type S error</li>
+</ol>
+<hr />
 <ul>
-<li>We est</li>
+<li><p>Look how our measures of interest vary with sample size and effect size.</p></li>
+<li><p>Where do papers in the literature lie? <span class="math inline">\(\to\)</span> what problem could it be exposed to</p></li>
+<li><p>Repeat this for each identification strategy (with different DGPs of course)</p></li>
+<li><p>Reproduce the same analysis with fake data (<em>ie</em> generate all the data)</p></li>
 </ul>
 <hr />
 </div>
@@ -1945,15 +1979,92 @@ summary {
 <div id="motivation-2" class="section level2">
 <h2>Motivation</h2>
 <ul>
-<li><p>Air pollution data sets always display missing observations: not always clear how to handle them</p></li>
-<li><p>Missing data can create bias and decrease precision, especially if large amounts of data are missing</p></li>
-<li><p>We will be able to motivate it better (or dismotivate it) when we have more results</p></li>
+<li>Air pollution data sets always display missing observations: not always clear how to handle them</li>
 </ul>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<ul>
+<li>Missing data can create bias and decrease precision, especially if large amounts of data are missing</li>
+</ul>
+<p>???</p>
+<ul>
+<li>We will be able to motivate it better (or dismotivate it) when we have more results</li>
+</ul>
+<hr />
+</div>
+<div id="questions" class="section level2">
+<h2>Questions</h2>
+<ul>
+<li><p>Does the literature discuss missing data issues?</p></li>
+<li><p>To what extent do missing data affect estimates?</p></li>
+<li><p>Are some estimation methods more robust to the missing data problems?</p></li>
+<li><p>How does this vary with the type of <a href="file:///Users/vincentbagilet/Documents/Research/imputation_pollution/Documents/project_presentation/htmls/missingness_pattern_fr.html">missing data mechanism</a>?</p></li>
+<li><p>If it is actually a problem, which imputation method performs better?</p></li>
+</ul>
+<hr />
+</div>
+<div id="method-2" class="section level2">
+<h2>Method</h2>
+<ol style="list-style-type: decimal">
+<li>Build a complete data set (how?)</li>
+</ol>
+<p>–</p>
+<ol style="list-style-type: decimal">
+<li>Estimate the model and find the “true” effect</li>
+</ol>
+<p>–</p>
+<ol style="list-style-type: decimal">
+<li><a href="file:///Users/vincentbagilet/Documents/Research/imputation_pollution/Documents/project_presentation/htmls/create_missing.html">Delete data</a> to create missing observations (create 1000 samples)</li>
+</ol>
+<p>–</p>
+<ol style="list-style-type: decimal">
+<li>Estimate the model on the incomplete sets</li>
+</ol>
+<p>–</p>
+<ol style="list-style-type: decimal">
+<li>Compute bias, power, type I, type M, type S error</li>
+</ol>
+<p>–</p>
+<ol style="list-style-type: decimal">
+<li>Rerun this for different missing data mechanisms and estimation methods and compare</li>
+</ol>
+<hr />
+</div>
+<div id="comparison-of-imputation-methods" class="section level2">
+<h2>Comparison of imputation methods</h2>
+<p>If missing data is actually a problem:</p>
+<ol style="list-style-type: decimal">
+<li>Redo the previous steps</li>
+</ol>
+<p>–</p>
+<ol style="list-style-type: decimal">
+<li>On each incomplete set, impute data for missing observations</li>
+</ol>
+<p>–</p>
+<ol style="list-style-type: decimal">
+<li>Estimate the model on the imputed sets</li>
+</ol>
+<p>–</p>
+<ol style="list-style-type: decimal">
+<li>Compute bias, power, type I, type M, type S error</li>
+</ol>
+<p>–</p>
+<ol style="list-style-type: decimal">
+<li>Compare results across imputation methods and missingness patterns</li>
+</ol>
+<hr />
+<p>class: center, middle</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 </div>
 </div>
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiQW5hbHlzaXMgb2Ygc3R1ZGllcyBvbiB0aGUgc2hvcnQgdGVybSBoZWFsdGggZWZmZWN0cyBvZiBhaXIgcG9sbHV0aW9uIgphdXRob3I6ICJWaW5jZW50IEJhZ2lsZXQgLSBMZW8gWmFicm9ja2kiCmRhdGU6ICJOb3ZlbWJlciAzMCwgMjAyMCIKb3V0cHV0OgogIHhhcmluZ2FuOjptb29uX3JlYWRlcjoKICAgIGxpYl9kaXI6IGxpYnMKICAgIGNzczogeGFyaW5nYW4tdGhlbWVyLmNzcwogICAgbmF0dXJlOgogICAgICBjb3VudEluY3JlbWVudGFsU2xpZGVzOiBubwogICAgICBoaWdobGlnaHRMaW5lczogeWVzCiAgICAgIGhpZ2hsaWdodFN0eWxlOiBnaXRodWIKICBnaXRodWJfZG9jdW1lbnQ6IGRlZmF1bHQKICBpb3NsaWRlc19wcmVzZW50YXRpb246CiAgICBoaWdobGlnaHQ6IHB5Z21lbnRzCiAgaHRtbF9ub3RlYm9vazoKICAgIGhpZ2hsaWdodDogcHlnbWVudHMKICAgIHRoZW1lOiBzaW1wbGV4CiAgICB0b2M6IHllcwogIHNsaWR5X3ByZXNlbnRhdGlvbjoKICAgIGhpZ2hsaWdodDogcHlnbWVudHMKICBiZWFtZXJfcHJlc2VudGF0aW9uOgogICAgaGlnaGxpZ2h0OiBweWdtZW50cwogICAgdGhlbWU6IFZCX0JlYW1lcgogIGh0bWxfZG9jdW1lbnQ6CiAgICBoaWdobGlnaHQ6IHB5Z21lbnRzCiAgICB0aGVtZTogc2ltcGxleAogIHBkZl9kb2N1bWVudDoKICAgIGluY2x1ZGVzOgogICAgICBpbl9oZWFkZXI6IFZCX21hcmtkb3duLnN0eQogICAga2VlcF90ZXg6IHllcwpzdWJ0aXRsZTogIkNyYWIgbGFiIHByZXNlbnRhdGlvbiIKLS0tCgpgYGB7ciB4YXJpbmdhbi10aGVtZXIsIGluY2x1ZGUgPSBGQUxTRX0KbGlicmFyeSh4YXJpbmdhbnRoZW1lcikKbW9ub19saWdodCgKICBiYXNlX2NvbG9yID0gIiMxQjI3NTQiLAogIGhlYWRlcl9mb250X2dvb2dsZSA9IGdvb2dsZV9mb250KCJMYXRvIiwgIjQwMCIpLAogIHRleHRfZm9udF9nb29nbGUgICA9IGdvb2dsZV9mb250KCJSYWxld2F5IiwgIjMwMCIsICIzMDBpIiksCiAgaGVhZGVyX2ZvbnRfd2VpZ2h0ID0gImJvbGQiLAogIHRleHRfYm9sZF9jb2xvciA9ICIjQjY3RjEwIiwKICB0ZXh0X2ZvbnRfc2l6ZSA9ICIyNHB4IiwKICBoZWFkZXJfaDFfZm9udF9zaXplID0gIjQ1cHgiLAogIGhlYWRlcl9oMl9mb250X3NpemUgPSAiMzVweCIsCiAgaGVhZGVyX2gzX2ZvbnRfc2l6ZSA9ICIyNXB4IgopCmBgYAoKIyBHZW5lc2lzIG9mIHRoZSBwcm9qZWN0CgotLQoKYGBge3IgZWNobz1GQUxTRSwgb3V0LndpZHRoPSA1MDAsIGZpZy5hbGlnbj0iY2VudGVyIn0gCmtuaXRyOjppbmNsdWRlX2dyYXBoaWNzKCJpbWFnZXMvYm9vay5naWYiKQpgYGAKCi0tCgpgYGB7ciBlY2hvPUZBTFNFLCBvdXQud2lkdGg9IDgwMCwgZmlnLmFsaWduPSJjZW50ZXIifSAKa25pdHI6OmluY2x1ZGVfZ3JhcGhpY3MoImltYWdlcy9nZW5lc2lzX2dyYXBoLnBuZyIpCmBgYAoKPz8/CgotIFdoaWxlIEzDqW8gd2FzIHdvcmtpbmcgb24gc2V2ZXJhbCBwcm9qZWN0cyBvbiBzaG9ydCB0ZXJtIGhlYWx0aCBlZmZlY3RzIG9mIGFpciBwb2xsdXRpb24gc29tZSBxdWVzdGlvbnMgYXJvc2U6CgogIC0gSG93IGRvIGRpZmZlcmVudCBtZXRob2RzIGNvbXBhcmUgaW4gdGVybXMgb2YgZXN0aW1hdGlvbiBvZiB0aGVzZSBlZmZlY3RzPwogIAogIC0gSG93IHNob3VsZCB3ZSBoYW5kbGUgbWlzc2luZyBkYXRhIGluIHN1Y2ggc3R1ZGllcz8KICAKLSBTdGFydGluZyBmcm9tIHRoZXJlLCBpdCBsZWQgdG8gYWRkaXRpb25hbCBxdWVzdGlvbnMKCiAgLSBBcmUgbWlzc2luZyBkYXRhIGFuIGFjdHVhbCBwcm9ibGVtPwogIAogIC0gV2hhdCBpcyB0aGUgdXN1YWwgcG93ZXIgaW4gc3VjaCBzdHVkaWVzPyBEb2VzIGl0IHZhcmllcyB3aXRoIGVzdGltYXRpb24gbWV0aG9kcz8KCi0gVmVyeSBtZXRob2RvbG9naWNhbCBwcm9qZWN0OiB3ZSBhcmUgaW50ZXJlc3RlZCBpbiBsZWFybmluZyBhIGxvdCBvZiBtZXRob2RzCgotLS0KCiMgTWFpbiBxdWVzdGlvbnMgYW5kIG1vdGl2YXRpb24KCi0gV2hhdCBpcyB0aGUgdXN1YWwgKipwb3dlcioqIGluIHN0dWRpZXMgb2Ygc2hvcnQtdGVybSBoZWFsdGggZWZmZWN0cyBvZiBhaXIgcG9sbHV0aW9uPwogIAotIEhvdyBkbyAqKmRpZmZlcmVudCBpZGVudGlmaWNhdGlvbiBzdHJhdGVnaWVzKiogcGVyZm9ybSB0byBlc3RpbWF0ZSB0aGVzZSBlZmZlY3RzPwogIAotIFdoYXQgaXMgdGhlIGltcGFjdCBvZiAqKm1pc3NpbmcgZGF0YSoqIG9uIHRoZXNlIGVzdGltYXRlcz8gCgpgYGB7ciBlY2hvPUZBTFNFLCBvdXQud2lkdGg9IDM1MCwgZmlnLmFsaWduPSJjZW50ZXIifSAKa25pdHI6OmluY2x1ZGVfZ3JhcGhpY3MoImltYWdlcy9wb2xsdXRpb25fcGFyaXMuanBnIikKYGBgCiAgCi0gSSBza2lwIHRoZSBtb3RpdmF0aW9uIG92ZXJhbGwgc2VjdGlvbiBmb3IgdGhlIHNha2Ugb2YgdGltZQoKPz8/CgotIFRoZSBxdWVzdGlvbnMgd2Ugd2lsbCBmb2N1cyBvbiB3aWxsIGFsc28gZGVwZW5kIG9uIG91ciByZXN1bHRzOiBpdCBtaWdodCBiZSB0aGUgY2FzZSB0aGF0IG1pc3NpbmcgZGF0YSBpcyBub3QgYSBwcm9ibGVtIGZvciBpbnN0YW5jZS4gSW4gdGhpcyBjYXNlIHdlIHdvdWxkIG5vdCBmb2N1cyBvbiB0aGlzCgotIFlvdSBrbm93IHdoeSB1bmRlcnN0YW5kaW5nIHRoZSBoZWFsdGggZWZmZWN0cyBvZiBhaXIgcG9sbHV0aW9uIGlzIGFuIGltcG9ydGFudCBxdWVzdGlvbi4gSG93ZXZlciwgSSB3aWxsIGRpc2N1c3Mgd2h5IGVhY2ggc3VicXVlc3Rpb24gbWF0dGVycwoKLSBJbiB0aGlzIHByZXNlbnRhdGlvbiwgSSB0YWNrbGUgZWFjaCBxdWVzdGlvbiBzb21laG93IHNlcGFyYXRlbHkKCi0tLQoKIyBVc3VhbCBwb3dlciBpbiBhaXIgcG9sbHV0aW9uIHN0dWRpZXMKCiMjIERlZmluaXRpb25zCgotICoqUG93ZXIqKjogcHJvYmFiaWxpdHkgb2YgZmluZGluZyBhbiBlZmZlY3Qgd2hlbiB0aGVyZSBpcyBhY3R1YWxseSBvbmUKCi0gUG93ZXIgY2FuIGJlIGxvdyB3aGVuIGVmZmVjdHMgYXJlIHNtYWxsIGFuZC9vciB2YXJpYW5jZSBvZiB0aGUgZXN0aW1hdGVzIGlzIGxhcmdlICgqZWcqIHNtYWxsIHNhbXBsZSBzaXplKQoKLSBUeXBlIE0gYW5kIHR5cGUgUyBlcnJvcnM6CgpgYGB7ciBlY2hvPUZBTFNFLCBvdXQud2lkdGg9IDI1MCwgZmlnLmFsaWduPSJjZW50ZXIifSAKa25pdHI6OmluY2x1ZGVfZ3JhcGhpY3MoImltYWdlcy90eXBlTVMucG5nIikKYGBgCgotLS0KCiMjIE1vdGl2YXRpb24KCi0gSW9hbm5pZGlzIGV0IGFsICgyMDE3KSBzaG93ZWQgdGhhdCBzdHVkaWVzIGluIGVjb25vbWljcyBhcmUgbWFzc2l2ZWx5IHVuZGVyLXBvd2VyZWQ6IG1lZGlhbiBzdGF0aXN0aWNhbCBwb3dlciBvZiAxOCUKCi0gSXMgdGhlcmUgYSBzaW1pbGFyIGlzc3VlIGluIHN0dWRpZXMgb2YgaGVhbHRoIGVmZmVjdHMgb2YgYWlyIHBvbGx1dGlvbj8KCi0gSGVhbHRoIGVmZmVjdHMgb2YgYWlyIHBvbGx1dGlvbiBhcmUgb2Z0ZW4gdGlueSwgbWFraW5nIHRoZW0gZGlmZmljdWx0IHRvIGRldGVjdAoKLSBMb3cgcG93ZXIgaXMgYXNzb2NpYXRlZCB3aXRoIGhpZ2ggcmF0ZXMgb2YgdHlwZSBNIGFuZCBTIGVycm9yCgotLS0KCiMjIE1ldGhvZAoKLSBGb2xsb3cgSW9hbm5pZGlzIGFuZCByZXRyaWV2ZSBwb2ludCBlc3RpbWF0ZXMgYW5kIHMuZS4gb2YgZXN0aW1hdGVzCgotIENvbXB1dGUgcG93ZXIsIHR5cGUgTSBhbmQgdHlwZSBTIGVycm9ycyB1c2luZyB0aGUgcGFja2FnZSBgcmV0cm9kZXNpZ25gCgotIExpdGVyYXR1cmUgcmV2aWV3IG9mIGNhdXNhbCBzdHVkaWVzOiB5aWVsZCBhIHNldCBvZiAkXHNpbSQgMzAgc3R1ZGllcwoKLSBTeXN0ZW1hdGljIGxpdGVyYXR1cmUgcmV2aWV3IGZvciBvdGhlciBzdHVkaWVzOiBmb3Igbm93LCB3ZSByZXRyaWV2ZWQgYWJvdXQgMTAwMCBlc3RpbWF0ZXMKCgojIyBSZXN1bHRzCgotIAoKLSAKCi0tLQoKIyBQZXJmb3JtYW5jZSBvZiBkaWZmZXJlbnQgbWV0aG9kcwoKIyMgTW90aXZhdGlvbgoKLSBFcGlkZW1pb2xvZ2lzdHMgb2Z0ZW4gdXNlIHZlcnkgc2ltcGxlIG1vZGVscywgd2l0aCBzbWFsbCBzYW1wbGUgc2l6ZTogaXMgaXQgZW5vdWdoIHRvIHJlY292ZXIgdGhlIHRydWUgZWZmZWN0cz8gCgotIEFyZSBtb3JlIGZhbmN5IHRlY2huaXF1ZXMgYW4gb3ZlcmtpbGw/CgotIFNvbWUgbWV0aG9kcyBjYW4gcGVyZm9ybSBiZXR0ZXIgdGhhbiBvdGhlciBpbiBzb21lIGNvbnRleHRzIGJ1dCBsZXNzIHdlbGwgaW4gb3RoZXJzCgotIFdhbnQgdG8gY29tcGFyZTogUG9pc3NvbiBnZW5lcmFsaXplZCBhZGRpdGl2ZSBtb2RlbCwgSVYsIERpRCwgZXZlbnQgc3R1ZHksIFJECgo/Pz8KCi0gS2VlcCBpbiBtaW5kIHRoYXQgdGhpcyBpcyBhbHNvIGEgd2F5IGZvciB1cyB0byBwbGF5IGFyb3VuZCB3aXRoIG1hbnkgZXN0aW1hdGlvbiBzdHJhdGVnaWVzIGFuZCB0byBidWlsZCBzb21lIG1ldGhvZG9sb2dpY2FsIGtub3dsZWRnZQoKLS0tCgojIyBNZXRob2QKCi0gRm9yIHRoZSBzYWtlIG9mIHRoZSBleGFtcGxlLCBsZXQncyBmb2N1cyBvbiBhIHNpbXBsZSBQb2lzc29uIGdlbmVyYWxpemVkIGFkZGl0aXZlIG1vZGVsOgoKJCRoX3tjdH0gPSBcYWxwaGEgKyBcYmV0YV97Y31wX3tjdH0gKyBcYm9sZHN5bWJvbHtXX3tjdH0nXGRlbHRhfSArICBcYm9sZHN5bWJvbHtDX3tjdH0nXGdhbW1hfSArIFxlcHNpbG9uX3tjdH0kJAotIEFjdHVhbCBkYXRhIGFuZCBmYWtlIGRhdGEKCi0gV2UgZXN0CgotLS0KCiMgSW1wYWN0IG9mIG1pc3NpbmcgdmFsdWVzCgojIyBNb3RpdmF0aW9uCgotIEFpciBwb2xsdXRpb24gZGF0YSBzZXRzIGFsd2F5cyBkaXNwbGF5IG1pc3Npbmcgb2JzZXJ2YXRpb25zOiBub3QgYWx3YXlzIGNsZWFyIGhvdyB0byBoYW5kbGUgdGhlbQoKLSBNaXNzaW5nIGRhdGEgY2FuIGNyZWF0ZSBiaWFzIGFuZCBkZWNyZWFzZSBwcmVjaXNpb24sIGVzcGVjaWFsbHkgaWYgbGFyZ2UgYW1vdW50cyBvZiBkYXRhIGFyZSBtaXNzaW5nCgotIFdlIHdpbGwgYmUgYWJsZSB0byBtb3RpdmF0ZSBpdCBiZXR0ZXIgKG9yIGRpc21vdGl2YXRlIGl0KSB3aGVuIHdlIGhhdmUgbW9yZSByZXN1bHRzCgoKCgoKCg==</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiQW5hbHlzaXMgb2Ygc3R1ZGllcyBvbiB0aGUgc2hvcnQgdGVybSBoZWFsdGggZWZmZWN0cyBvZiBhaXIgcG9sbHV0aW9uIgphdXRob3I6ICJWaW5jZW50IEJhZ2lsZXQgLSBMZW8gWmFicm9ja2kiCmRhdGU6ICJOb3ZlbWJlciAzMCwgMjAyMCIKb3V0cHV0OgogIHhhcmluZ2FuOjptb29uX3JlYWRlcjoKICAgIGxpYl9kaXI6IGxpYnMKICAgIGNzczogeGFyaW5nYW4tdGhlbWVyLmNzcwogICAgbmF0dXJlOgogICAgICBjb3VudEluY3JlbWVudGFsU2xpZGVzOiBubwogICAgICBoaWdobGlnaHRMaW5lczogeWVzCiAgICAgIGhpZ2hsaWdodFN0eWxlOiBnaXRodWIKICBzbGlkeV9wcmVzZW50YXRpb246CiAgICBoaWdobGlnaHQ6IHB5Z21lbnRzCiAgZ2l0aHViX2RvY3VtZW50OiBkZWZhdWx0CiAgaHRtbF9ub3RlYm9vazoKICAgIGhpZ2hsaWdodDogcHlnbWVudHMKICAgIHRoZW1lOiBzaW1wbGV4CiAgICB0b2M6IHllcwogIGlvc2xpZGVzX3ByZXNlbnRhdGlvbjoKICAgIGhpZ2hsaWdodDogcHlnbWVudHMKICBwZGZfZG9jdW1lbnQ6CiAgICBpbmNsdWRlczoKICAgICAgaW5faGVhZGVyOiBWQl9tYXJrZG93bi5zdHkKICAgIGtlZXBfdGV4OiB5ZXMKICBodG1sX2RvY3VtZW50OgogICAgaGlnaGxpZ2h0OiBweWdtZW50cwogICAgdGhlbWU6IHNpbXBsZXgKICBiZWFtZXJfcHJlc2VudGF0aW9uOgogICAgaGlnaGxpZ2h0OiBweWdtZW50cwogICAgdGhlbWU6IFZCX0JlYW1lcgpzdWJ0aXRsZTogIvCfpoAgbGFiIHByZXNlbnRhdGlvbiIKLS0tCgpgYGB7ciB4YXJpbmdhbi10aGVtZXIsIGluY2x1ZGUgPSBGQUxTRX0KbGlicmFyeSh4YXJpbmdhbnRoZW1lcikKc3R5bGVfbW9ub19saWdodCgKICBiYXNlX2NvbG9yID0gIiMwMDMxM0MiLCAjMUIyNzU0CiAgdGV4dF9jb2xvciA9ICIjMDAzMTNDIiwKICBiYWNrZ3JvdW5kX2NvbG9yID0gIiNGOUZBRjciLAogIGhlYWRlcl9mb250X2dvb2dsZSA9IGdvb2dsZV9mb250KCJKb3NlZmluIFNhbnMiLCAiNDAwIiksCiAgdGV4dF9mb250X2dvb2dsZSAgID0gZ29vZ2xlX2ZvbnQoIkxhdG8iLCAiNDAwIiwgIjQwMGkiKSwKICBoZWFkZXJfZm9udF93ZWlnaHQgPSAiYm9sZCIsCiAgdGV4dF9ib2xkX2NvbG9yID0gIiM4MTQwMkMiLCAjIiNCNjdGMTAiLAogIGxpbmtfY29sb3IgPSAiIzgxNDAyQyIsCiAgdGV4dF9mb250X3NpemUgPSAiMjJweCIsCiAgaGVhZGVyX2gxX2ZvbnRfc2l6ZSA9ICI0NXB4IiwKICBoZWFkZXJfaDJfZm9udF9zaXplID0gIjM1cHgiLAogIGhlYWRlcl9oM19mb250X3NpemUgPSAiMjVweCIsCiAgdGV4dF9zbGlkZV9udW1iZXJfZm9udF9zaXplID0gIjE2cHgiCikKYGBgCgojIEdlbmVzaXMKCi0tCgpgYGB7ciBlY2hvPUZBTFNFLCBvdXQud2lkdGg9IDUwMCwgZmlnLmFsaWduPSJjZW50ZXIifSAKa25pdHI6OmluY2x1ZGVfZ3JhcGhpY3MoImltYWdlcy9ib29rLmdpZiIpCmBgYAoKLS0KCmBgYHtyIGVjaG89RkFMU0UsIG91dC53aWR0aD0gODAwLCBmaWcuYWxpZ249ImNlbnRlciJ9IAprbml0cjo6aW5jbHVkZV9ncmFwaGljcygiaW1hZ2VzL2dlbmVzaXNfZ3JhcGgucG5nIikKYGBgCgo/Pz8KCi0gV2hpbGUgTMOpbyB3YXMgd29ya2luZyBvbiBzZXZlcmFsIHByb2plY3RzIG9uIHNob3J0IHRlcm0gaGVhbHRoIGVmZmVjdHMgb2YgYWlyIHBvbGx1dGlvbiBzb21lIHF1ZXN0aW9ucyBhcm9zZToKCiAgLSBIb3cgZG8gZGlmZmVyZW50IG1ldGhvZHMgY29tcGFyZSBpbiB0ZXJtcyBvZiBlc3RpbWF0aW9uIG9mIHRoZXNlIGVmZmVjdHM/CiAgCiAgLSBIb3cgc2hvdWxkIHdlIGhhbmRsZSBtaXNzaW5nIGRhdGEgaW4gc3VjaCBzdHVkaWVzPwogIAotIFN0YXJ0aW5nIGZyb20gdGhlcmUsIGl0IGxlZCB0byBhZGRpdGlvbmFsIHF1ZXN0aW9ucwoKICAtIEFyZSBtaXNzaW5nIGRhdGEgYW4gYWN0dWFsIHByb2JsZW0/CiAgCiAgLSBXaGF0IGlzIHRoZSB1c3VhbCBwb3dlciBpbiBzdWNoIHN0dWRpZXM/IERvZXMgaXQgdmFyaWVzIHdpdGggZXN0aW1hdGlvbiBtZXRob2RzPwoKLSBWZXJ5IG1ldGhvZG9sb2dpY2FsIHByb2plY3Q6IHdlIGFyZSBpbnRlcmVzdGVkIGluIGxlYXJuaW5nIGEgbG90IG9mIG1ldGhvZHMKCi0tLQoKIyBNYWluIHF1ZXN0aW9ucwoKLSBXaGF0IGlzIHRoZSB1c3VhbCAqKnBvd2VyKiogaW4gc3R1ZGllcyBvZiBzaG9ydC10ZXJtIGhlYWx0aCBlZmZlY3RzIG9mIGFpciBwb2xsdXRpb24/CiAgCi0gSG93IGRvICoqZGlmZmVyZW50IGlkZW50aWZpY2F0aW9uIHN0cmF0ZWdpZXMqKiBwZXJmb3JtIHRvIGVzdGltYXRlIHRoZXNlIGVmZmVjdHM/CiAgCi0gV2hhdCBpcyB0aGUgaW1wYWN0IG9mICoqbWlzc2luZyBkYXRhKiogb24gdGhlc2UgZXN0aW1hdGVzPyAKCmBgYHtyIGVjaG89RkFMU0UsIG91dC53aWR0aD0gNDAwLCBmaWcuYWxpZ249ImNlbnRlciJ9IAprbml0cjo6aW5jbHVkZV9ncmFwaGljcygiaW1hZ2VzL3BvbGx1dGlvbl9wYXJpcy5qcGciKQpgYGAKICAKLSBJIHNraXAgdGhlIG92ZXJhbGwgbW90aXZhdGlvbiBmb3IgYWlyIHBvbGx1dGlvbiBzdHVkaWVzIGZvciB0aGUgc2FrZSBvZiB0aW1lCgo/Pz8KCi0gVGhlIHF1ZXN0aW9ucyB3ZSB3aWxsIGZvY3VzIG9uIHdpbGwgYWxzbyBkZXBlbmQgb24gb3VyIHJlc3VsdHM6IGl0IG1pZ2h0IGJlIHRoZSBjYXNlIHRoYXQgbWlzc2luZyBkYXRhIGlzIG5vdCBhIHByb2JsZW0gZm9yIGluc3RhbmNlLiBJbiB0aGlzIGNhc2Ugd2Ugd291bGQgbm90IGZvY3VzIG9uIHRoaXMKCi0gWW91IGtub3cgd2h5IHVuZGVyc3RhbmRpbmcgdGhlIGhlYWx0aCBlZmZlY3RzIG9mIGFpciBwb2xsdXRpb24gaXMgYW4gaW1wb3J0YW50IHF1ZXN0aW9uLiBIb3dldmVyLCBJIHdpbGwgZGlzY3VzcyB3aHkgZWFjaCBzdWJxdWVzdGlvbiBtYXR0ZXJzCgotIEluIHRoaXMgcHJlc2VudGF0aW9uLCBJIHRhY2tsZSBlYWNoIHF1ZXN0aW9uIHNvbWVob3cgc2VwYXJhdGVseQoKLS0tCgojIFVzdWFsIHBvd2VyIGluIGFpciBwb2xsdXRpb24gc3R1ZGllcwoKIyMgRGVmaW5pdGlvbnMKCi0gKipQb3dlcioqOiBwcm9iYWJpbGl0eSBvZiBmaW5kaW5nIGFuIGVmZmVjdCB3aGVuIHRoZXJlIGlzIGFjdHVhbGx5IG9uZQoKLSBQb3dlciBjYW4gYmUgbG93IHdoZW4gZWZmZWN0cyBhcmUgc21hbGwgYW5kL29yIHZhcmlhbmNlIG9mIHRoZSBlc3RpbWF0ZXMgaXMgbGFyZ2UgKCplZyogc21hbGwgc2FtcGxlIHNpemUpCgpgYGB7ciBlY2hvPUZBTFNFLCBvdXQud2lkdGg9IDYwMCwgZmlnLmFsaWduPSJjZW50ZXIifSAKa25pdHI6OmluY2x1ZGVfZ3JhcGhpY3MoImltYWdlcy90eXBlTVNfb3duLnBuZyIpCmBgYAoKLS0tCgojIyBNb3RpdmF0aW9uCgotIElvYW5uaWRpcyBldCBhbCAoMjAxNykgc2hvd2VkIHRoYXQgc3R1ZGllcyBpbiBlY29ub21pY3MgYXJlIG1hc3NpdmVseSB1bmRlci1wb3dlcmVkOiBtZWRpYW4gc3RhdGlzdGljYWwgcG93ZXIgb2YgMTglCgpgYGB7ciBlY2hvPUZBTFNFLCBvdXQud2lkdGg9IDQwMCwgZmlnLmFsaWduPSJjZW50ZXIifSAKa25pdHI6OmluY2x1ZGVfZ3JhcGhpY3MoImltYWdlcy9icm9rZW4uZ2lmIikKYGBgCgotIElzIHRoZXJlIGEgc2ltaWxhciBpc3N1ZSBpbiBzdHVkaWVzIG9mIGhlYWx0aCBlZmZlY3RzIG9mIGFpciBwb2xsdXRpb24/CgotIEhlYWx0aCBlZmZlY3RzIG9mIGFpciBwb2xsdXRpb24gYXJlIG9mdGVuIHRpbnksIG1ha2luZyB0aGVtIGRpZmZpY3VsdCB0byBkZXRlY3QKCi0gTG93IHBvd2VyIGlzIGFzc29jaWF0ZWQgd2l0aCBoaWdoIHJhdGVzIG9mIHR5cGUgTSBhbmQgUyBlcnJvcgoKLS0tCgojIyBNZXRob2QKCi0gRm9sbG93IElvYW5uaWRpcyBhbmQgcmV0cmlldmUgcG9pbnQgZXN0aW1hdGVzIGFuZCBzLmUuIG9mIGVzdGltYXRlcwoKLSBDb21wdXRlIHBvd2VyLCB0eXBlIE0gYW5kIHR5cGUgUyBlcnJvcnMgCgotIExpdGVyYXR1cmUgcmV2aWV3IG9mIGNhdXNhbCBzdHVkaWVzOiB5aWVsZCBhIHNldCBvZiAkXHNpbSQgMzAgc3R1ZGllcwoKLSBTeXN0ZW1hdGljIGxpdGVyYXR1cmUgcmV2aWV3IGZvciBvdGhlciBzdHVkaWVzOiBmb3Igbm93LCBhYm91dCAxMDAwIGVzdGltYXRlcyAoW21ldGhvZF0oZmlsZTovLy9Vc2Vycy92aW5jZW50YmFnaWxldC9Eb2N1bWVudHMvUmVzZWFyY2gvaW1wdXRhdGlvbl9wb2xsdXRpb24vRG9jdW1lbnRzL3Byb2plY3RfcHJlc2VudGF0aW9uL2h0bWxzL3N5c3RlbWF0aWNfbGl0X3Jldmlldy5odG1sKSkKCgojIyBQcmVsaW1pbmFyeSByZXN1bHRzCgotIENhdXNhbCBzdHVkaWVzOiBzb21lIHN0dWRpZXMgaGF2ZSBoaWdoIHBvd2VyLCBvdGhlcnMgaGF2ZSBxdWl0ZSBsb3cgcG93ZXIuCgotIFN5c3RlbWF0aWMgbGl0ZXJhdHVyZSByZXZpZXc6IHNpbWlsYXIgcmVzdWx0cy4gCgotIFdlIG5lZWQgdG8gaW52ZXN0aWdhdGUgdGhpcyBmdXJ0aGVyIHRvIHVuZGVyc3RhbmQgdGhlIHNvdXJjZXMgb2YgaGV0ZXJvZ2VuZWl0eQoKLS0tCgojIFBlcmZvcm1hbmNlIG9mIGRpZmZlcmVudCBlc3RpbWF0aW9uIG1ldGhvZHMKCiMjIE1vdGl2YXRpb24KCi0gRXBpZGVtaW9sb2dpc3RzIG9mdGVuIHVzZSB2ZXJ5IHNpbXBsZSBtb2RlbHMsIHdpdGggc21hbGwgc2FtcGxlIHNpemU6IGlzIGl0IGVub3VnaCB0byByZWNvdmVyIHRoZSB0cnVlIGVmZmVjdHM/IAoKLSBBcmUgbW9yZSAiZmFuY3kiIHRlY2huaXF1ZXMgbmVjZXNzYXJ5PyAKCi0gU29tZSBtZXRob2RzIGNhbiBwZXJmb3JtIGJldHRlciB0aGFuIG90aGVycyBpbiBzb21lIGNvbnRleHRzIGJ1dCBsZXNzIHdlbGwgaW4gb3RoZXJzCgotIFdlIGxvb2sgaW50byB0aGUgcGVyZm9ybWFuY2Ugb2YgUG9pc3NvbiBnZW5lcmFsaXplZCBhZGRpdGl2ZSBtb2RlbCwgSVYsIERpRCwgZXZlbnQgc3R1ZHksIFJECgotIEdvb2QgZXhlcmNpc2UgZm9yIHVzLCBQaEQgc3R1ZGVudHMKCj8/PwoKLSBGYW5jeSB0ZWNobmlxdWVzIGFsc28gbGltaXQgdGhlIG51bWJlciBvZiBzaXR1YXRpb25zIGluIHdoaWNoIHdlIGNhbiBjb21wdXRlIHRoZSBlc3RpbWF0ZXMgb2YgaW50ZXJlc3QKCi0gS2VlcCBpbiBtaW5kIHRoYXQgdGhpcyBpcyBhbHNvIGEgd2F5IGZvciB1cyB0byBwbGF5IGFyb3VuZCB3aXRoIG1hbnkgZXN0aW1hdGlvbiBzdHJhdGVnaWVzIGFuZCB0byBidWlsZCBzb21lIG1ldGhvZG9sb2dpY2FsIGtub3dsZWRnZQoKLS0tCgojIyBNZXRob2QKCi0gRm9yIHRoZSBzYWtlIG9mIHRoZSBleGFtcGxlLCBsZXQncyBmb2N1cyBvbiBhIHNpbXBsZSBQb2lzc29uIGdlbmVyYWxpemVkIGFkZGl0aXZlIG1vZGVsOgoKJCRoX3tjdH0gPSBcYWxwaGEgKyBcYmV0YV97Y31wX3tjdH0gKyBcYm9sZHN5bWJvbHtXX3tjdH0nXGRlbHRhfSArICBcYm9sZHN5bWJvbHtDX3tjdH0nXGdhbW1hfSArIFxlcHNpbG9uX3tjdH0kJAotIFVzZSBib3RoIGFjdHVhbCBhbmQgZmFrZSBkYXRhIChoZXJlIGZvY3VzIG9uIGFjdHVhbCBkYXRhKQoKMS4gRXN0aW1hdGUgdGhlIG1vZGVsIG9uIHRoZSBleGlzdGluZyBkYXRhCgotLQoKMS4gRGVmaW5lIGEgImZha2UiLCBrbm93biwgZWZmZWN0ICRcYmV0YV9jJAoKLS0KCjEuIEdlbmVyYXRlIG5vaXNlICQoXGVwc2lsb24pJCBhbmQgcHJlZGljdC9nZW5lcmF0ZSBmYWtlIGhvc3BpdGFsIGFkbWlzc2lvbiBhbmQgbW9ydGFsaXR5IGRhdGEgJChoKSQgYmFzZWQgb24gb3VyIGVzdGltYXRlZCBtb2RlbCAoMTAwMCBkYXRhIHNldHMpCgotLQoKMS4gUmVlc3RpbWF0ZSB0aGUgbW9kZWwgdG8gc2VlIGlmIHdlIHJlY292ZXIgb3VyIHRydWUgdmFsdWUKCi0tCgoxLiBDb21wdXRlIGJpYXMsIHBvd2VyLCB0eXBlIEksIHR5cGUgTSwgdHlwZSBTIGVycm9yCgotLS0KCi0gTG9vayBob3cgb3VyIG1lYXN1cmVzIG9mIGludGVyZXN0IHZhcnkgd2l0aCBzYW1wbGUgc2l6ZSBhbmQgZWZmZWN0IHNpemUuCgotIFdoZXJlIGRvIHBhcGVycyBpbiB0aGUgbGl0ZXJhdHVyZSBsaWU/ICRcdG8kIHdoYXQgcHJvYmxlbSBjb3VsZCBpdCBiZSBleHBvc2VkIHRvCgotIFJlcGVhdCB0aGlzIGZvciBlYWNoIGlkZW50aWZpY2F0aW9uIHN0cmF0ZWd5ICh3aXRoIGRpZmZlcmVudCBER1BzIG9mIGNvdXJzZSkKCi0gUmVwcm9kdWNlIHRoZSBzYW1lIGFuYWx5c2lzIHdpdGggZmFrZSBkYXRhICgqaWUqIGdlbmVyYXRlIGFsbCB0aGUgZGF0YSkKCi0tLQoKIyBJbXBhY3Qgb2YgbWlzc2luZyB2YWx1ZXMKCiMjIE1vdGl2YXRpb24KCi0gQWlyIHBvbGx1dGlvbiBkYXRhIHNldHMgYWx3YXlzIGRpc3BsYXkgbWlzc2luZyBvYnNlcnZhdGlvbnM6IG5vdCBhbHdheXMgY2xlYXIgaG93IHRvIGhhbmRsZSB0aGVtCgpgYGB7ciBlY2hvPUZBTFNFLCBvdXQud2lkdGg9IDQwMCwgZmlnLmFsaWduPSJjZW50ZXIifSAKa25pdHI6OmluY2x1ZGVfZ3JhcGhpY3MoImltYWdlcy9oZWF0bWFwLnBuZyIpCmBgYAoKLSBNaXNzaW5nIGRhdGEgY2FuIGNyZWF0ZSBiaWFzIGFuZCBkZWNyZWFzZSBwcmVjaXNpb24sIGVzcGVjaWFsbHkgaWYgbGFyZ2UgYW1vdW50cyBvZiBkYXRhIGFyZSBtaXNzaW5nCgo/Pz8KCi0gV2Ugd2lsbCBiZSBhYmxlIHRvIG1vdGl2YXRlIGl0IGJldHRlciAob3IgZGlzbW90aXZhdGUgaXQpIHdoZW4gd2UgaGF2ZSBtb3JlIHJlc3VsdHMKCi0tLQoKIyMgUXVlc3Rpb25zCgotIERvZXMgdGhlIGxpdGVyYXR1cmUgZGlzY3VzcyBtaXNzaW5nIGRhdGEgaXNzdWVzPwoKLSBUbyB3aGF0IGV4dGVudCBkbyBtaXNzaW5nIGRhdGEgYWZmZWN0IGVzdGltYXRlcz8gCgotIEFyZSBzb21lIGVzdGltYXRpb24gbWV0aG9kcyBtb3JlIHJvYnVzdCB0byB0aGUgbWlzc2luZyBkYXRhIHByb2JsZW1zPyAKCi0gSG93IGRvZXMgdGhpcyB2YXJ5IHdpdGggdGhlIHR5cGUgb2YgW21pc3NpbmcgZGF0YSBtZWNoYW5pc21dKGZpbGU6Ly8vVXNlcnMvdmluY2VudGJhZ2lsZXQvRG9jdW1lbnRzL1Jlc2VhcmNoL2ltcHV0YXRpb25fcG9sbHV0aW9uL0RvY3VtZW50cy9wcm9qZWN0X3ByZXNlbnRhdGlvbi9odG1scy9taXNzaW5nbmVzc19wYXR0ZXJuX2ZyLmh0bWwpPwoKLSBJZiBpdCBpcyBhY3R1YWxseSBhIHByb2JsZW0sIHdoaWNoIGltcHV0YXRpb24gbWV0aG9kIHBlcmZvcm1zIGJldHRlcj8KCi0tLQoKIyMgTWV0aG9kCgoxLiBCdWlsZCBhIGNvbXBsZXRlIGRhdGEgc2V0IChob3c/KQoKLS0KCjEuIEVzdGltYXRlIHRoZSBtb2RlbCBhbmQgZmluZCB0aGUgInRydWUiIGVmZmVjdAoKLS0KCjEuIFtEZWxldGUgZGF0YV0oZmlsZTovLy9Vc2Vycy92aW5jZW50YmFnaWxldC9Eb2N1bWVudHMvUmVzZWFyY2gvaW1wdXRhdGlvbl9wb2xsdXRpb24vRG9jdW1lbnRzL3Byb2plY3RfcHJlc2VudGF0aW9uL2h0bWxzL2NyZWF0ZV9taXNzaW5nLmh0bWwpIHRvIGNyZWF0ZSBtaXNzaW5nIG9ic2VydmF0aW9ucyAoY3JlYXRlIDEwMDAgc2FtcGxlcykKCi0tCgoxLiBFc3RpbWF0ZSB0aGUgbW9kZWwgb24gdGhlIGluY29tcGxldGUgc2V0cyAKCi0tCgoxLiBDb21wdXRlIGJpYXMsIHBvd2VyLCB0eXBlIEksIHR5cGUgTSwgdHlwZSBTIGVycm9yCgotLQoKMS4gUmVydW4gdGhpcyBmb3IgZGlmZmVyZW50IG1pc3NpbmcgZGF0YSBtZWNoYW5pc21zIGFuZCBlc3RpbWF0aW9uIG1ldGhvZHMgYW5kIGNvbXBhcmUKCi0tLQoKIyMgQ29tcGFyaXNvbiBvZiBpbXB1dGF0aW9uIG1ldGhvZHMKCklmIG1pc3NpbmcgZGF0YSBpcyBhY3R1YWxseSBhIHByb2JsZW06CgoxLiBSZWRvIHRoZSBwcmV2aW91cyBzdGVwcwoKLS0KCjEuIE9uIGVhY2ggaW5jb21wbGV0ZSBzZXQsIGltcHV0ZSBkYXRhIGZvciBtaXNzaW5nIG9ic2VydmF0aW9ucwoKLS0KCjEuIEVzdGltYXRlIHRoZSBtb2RlbCBvbiB0aGUgaW1wdXRlZCBzZXRzIAoKLS0KCjEuIENvbXB1dGUgYmlhcywgcG93ZXIsIHR5cGUgSSwgdHlwZSBNLCB0eXBlIFMgZXJyb3IKCi0tCgoxLiBDb21wYXJlIHJlc3VsdHMgYWNyb3NzIGltcHV0YXRpb24gbWV0aG9kcyBhbmQgbWlzc2luZ25lc3MgcGF0dGVybnMKCgotLS0KY2xhc3M6IGNlbnRlciwgbWlkZGxlCgpgYGB7ciBlY2hvPUZBTFNFLCBvdXQud2lkdGg9IDgwMCwgZmlnLmFsaWduPSJjZW50ZXIifSAKa25pdHI6OmluY2x1ZGVfZ3JhcGhpY3MoImltYWdlcy9vdmVyLmdpZiIpCmBgYAoKCgo=</div>
 
 
 

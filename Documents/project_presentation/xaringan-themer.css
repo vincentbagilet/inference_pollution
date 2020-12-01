@@ -18,23 +18,23 @@
  *  Version: 0.3.0
  *
  * ------------------------------------------------------- */
-@import url(https://fonts.googleapis.com/css?family=Raleway:300,300i&display=swap);
-@import url(https://fonts.googleapis.com/css?family=Lato:400&display=swap);
+@import url(https://fonts.googleapis.com/css?family=Lato:400,400i&display=swap);
+@import url(https://fonts.googleapis.com/css?family=Josefin+Sans:400&display=swap);
 @import url(https://fonts.googleapis.com/css?family=Source+Code+Pro:400,700&display=swap);
 
 
 :root {
   /* Fonts */
-  --text-font-family: Raleway;
+  --text-font-family: Lato;
   --text-font-is-google: 1;
   --text-font-family-fallback: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, Ubuntu, roboto, noto, segoe ui, arial;
   --text-font-base: sans-serif;
-  --header-font-family: Lato;
+  --header-font-family: 'Josefin Sans';
   --header-font-is-google: 1;
   --code-font-family: 'Source Code Pro';
   --code-font-is-google: 1;
   --base-font-size: 20px;
-  --text-font-size: 24px;
+  --text-font-size: 22px;
   --code-font-size: 0.9rem;
   --code-inline-font-size: 1em;
   --header-h1-font-size: 45px;
@@ -42,22 +42,22 @@
   --header-h3-font-size: 25px;
 
   /* Colors */
-  --text-color: #121B3A;
-  --header-color: #1B2754;
-  --background-color: #E8E9ED;
-  --link-color: #1B2754;
-  --text-bold-color: #B67F10;
+  --text-color: #00313C;
+  --header-color: #00313C;
+  --background-color: #F9FAF7;
+  --link-color: #81402C;
+  --text-bold-color: #81402C;
   --code-highlight-color: rgba(255,255,0,0.5);
-  --inverse-text-color: #E8E9ED;
-  --inverse-background-color: #1B2754;
-  --inverse-header-color: #E8E9ED;
-  --title-slide-background-color: #1B2754;
-  --title-slide-text-color: #E8E9ED;
-  --header-background-color: #1B2754;
-  --header-background-text-color: #E8E9ED;
-  --base: #1B2754;
-  --white: #E8E9ED;
-  --black: #121B3A;
+  --inverse-text-color: #E5EAEB;
+  --inverse-background-color: #00313C;
+  --inverse-header-color: #E5EAEB;
+  --title-slide-background-color: #00313C;
+  --title-slide-text-color: #E5EAEB;
+  --header-background-color: #00313C;
+  --header-background-text-color: #F9FAF7;
+  --base: #00313C;
+  --white: #E5EAEB;
+  --black: #00222A;
 }
 
 html {
@@ -66,7 +66,7 @@ html {
 
 body {
   font-family: var(--text-font-family), var(--text-font-family-fallback), var(--text-font-base);
-  font-weight: 300;
+  font-weight: 400;
   color: var(--text-color);
 }
 h1, h2, h3 {
@@ -76,7 +76,7 @@ h1, h2, h3 {
 }
 .remark-slide-content {
   background-color: var(--background-color);
-  font-size: 24px;
+  font-size: 22px;
   padding: 16px 64px 16px 64px;
   width: 100%;
   height: 100%;
@@ -98,12 +98,12 @@ h1, h2, h3 {
 }
 .remark-inline-code {
   font-size: var(--code-inline-font-size);
-  color: #1B2754;
+  color: #00313C;
 }
 .remark-slide-number {
-  color: #1B2754;
+  color: #00313C;
   opacity: 1;
-  font-size: 0.9em;
+  font-size: 16px;
 }
 strong { color: var(--text-bold-color); }
 a, a > code {
@@ -143,10 +143,10 @@ a, a > code {
   float: left;
 }
 .left-column h2, .left-column h3 {
-  color: #1B275499;
+  color: #00313C99;
 }
 .left-column h2:last-of-type, .left-column h3:last-child {
-  color: #1B2754;
+  color: #00313C;
 }
 .right-column {
   width: 75%;
@@ -168,7 +168,7 @@ img, video, iframe {
   max-width: 100%;
 }
 blockquote {
-  border-left: solid 5px #1B275480;
+  border-left: solid 5px #00313C80;
   padding-left: 1em;
 }
 .remark-slide table {
@@ -183,7 +183,7 @@ th, td {
   padding: 5px;
 }
 .remark-slide thead, .remark-slide tfoot, .remark-slide tr:nth-child(even) {
-  background: #D1D3DC;
+  background: #CCD5D8;
 }
 table.dataTable tbody {
   background-color: var(--background-color);
@@ -193,7 +193,7 @@ table.dataTable.display tbody tr.odd {
   background-color: var(--background-color);
 }
 table.dataTable.display tbody tr.even {
-  background-color: #D1D3DC;
+  background-color: #CCD5D8;
 }
 table.dataTable.hover tbody tr:hover, table.dataTable.display tbody tr:hover {
   background-color: rgba(255, 255, 255, 0.5);
