@@ -204,6 +204,10 @@ Then we want to extract the effects, odds ratio and associated confidence interv
 ```{r}
 abstracts <- readRDS("../Outputs/abstracts.RDS")
 
+string_confint <- "(95\\s?%|\\bCIs?\\b|\\b(c|C)onfidence (i|I)nterval\\b)"
+num_confint <- "(-\\s?|−\\s?)?[\\d\\.]{1,7}[–\\s:;,%\\-to\\‐]{1,5}(-\\s?|−\\s?)?[\\d\\.]{1,7}"
+num_effect <- "(-\\s?|−\\s?)?[\\d\\.]{1,7}"
+
 effects_CI <- abstracts %>% 
   mutate(
     abstract = str_replace_all(abstract, "·", "."),
@@ -212,12 +216,20 @@ effects_CI <- abstracts %>%
   select(doi, abstract) %>% 
   unnest_tokens(sentence, abstract, token = "sentences", to_lower = FALSE, drop = FALSE) %>% 
   mutate(
-    contains_CI = str_detect(sentence, "(95%|\\bCI\\b|\\b(c|C)onfidence (i|I)nterval\\b)")
+    contains_CI = str_detect(sentence, string_confint)
   ) %>%
   filter(contains_CI) %>%
   mutate(
-    CI = str_extract_all(sentence, "((?<=(95\\s?%|\\bCI\\b|\\b(c|C)onfidence (i|I)nterval\\b)[^\\d]{0,4})(-\\s?|−\\s?)?[\\d\\.]{1,7}[–\\s:;,%\\-to\\‐]{1,5}(-\\s?|−\\s?)?[\\d\\.]{1,7})|(?<=(\\(|\\[))[\\d-]{1,4}\\.?\\d{0,5}[–\\s:;,%-to‐]{1,5}[\\d-]{1,4}\\.?\\d{0,5}(?=%?[\\)\\];])"),
-    effect = str_extract_all(sentence, "(-\\s?|−\\s?)?[\\d\\.]{1,7}(?=[^\\d.]{0,7}([^\\.\\d]\\b95\\s?%|\\bCI|\\b(c|C)onfidence (i|I)nterval\\b))(?<!\\b95)|(-\\s?|−\\s?)?[\\d\\.]{1,7}(?=%?\\s?(\\(|\\[)[\\d-]{1,4}\\.?\\d{0,5}[–\\s:;,%-to‐]{1,5}[\\d-]{1,4}\\.?\\d{0,5}(?=%?[\\)\\];]))(?<![^\\.\\d]95)")
+    # CI = str_extract_all(sentence, "((?<=(95\\s?%|\\bCI\\b|\\b(c|C)onfidence (i|I)nterval\\b)[^\\d]{0,4})(-\\s?|−\\s?)?[\\d\\.]{1,7}[–\\s:;,%\\-to\\‐]{1,5}(-\\s?|−\\s?)?[\\d\\.]{1,7})|(?<=(\\(|\\[))[\\d-]{1,4}\\.?\\d{0,5}[–\\s:;,%-to‐]{1,5}[\\d-]{1,4}\\.?\\d{0,5}(?=%?[\\)\\];])"),
+    CI = str_extract_all(sentence, str_c(
+      "((?<=", string_confint, "[^\\d]{0,4})",
+      num_confint, ")|",
+      "(?<=(\\(|\\[))", num_confint, "(?=%?[\\)\\];])")
+    ),   
+    effect = str_extract_all(sentence, str_c(
+      num_effect, "(?=[^\\d.]{0,7}([^\\.\\d]", string_confint, "))(?<!\\b95)|",
+      num_effect, "(?=%?\\s?(\\(|\\[)", num_confint, "(?=%?[\\)\\];]))(?<![^\\.\\d]95)")
+    )
   ) 
 ```
 
@@ -227,7 +239,10 @@ Here are examples of the confidence intervals detected using this method:
 
 ```{r}
 random_sentences <- sample(1:length(effects_CI$sentence), 3)
-str_view_all(effects_CI$sentence[random_sentences], "((?<=(95%|\\bCI\\b|\\b(c|C)onfidence (i|I)nterval\\b)[^\\d\\.]{0,4})[-−]?[\\d\\.]{1,7}[–\\s:;,%-to]{1,4}[-−]?[\\d\\.]{1,5})|(?<=(\\(|\\[))[\\d-]{1,4}\\.?\\d{0,5}[–\\s:;,%-to]{1,4}[\\d-]{1,4}\\.?\\d{0,5}(?=[\\)\\];])")
+str_view_all(effects_CI$sentence[random_sentences], str_c(
+      "((?<=", string_confint, "[^\\d]{0,4})",
+      num_confint, ")|",
+      "(?<=(\\(|\\[))", num_confint, "(?=%?[\\)\\];])"))
 ```
 
 The corresponding detected effects are:
