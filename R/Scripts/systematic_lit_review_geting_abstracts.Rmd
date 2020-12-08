@@ -71,7 +71,7 @@ query <- 'TITLE(("air pollution"  OR "air quality" OR "particulate matter" OR oz
 
 opts_entrez <- list(use_history = TRUE)
 
-Run a search
+#Run a search
 # search <- ft_search(query, from = c("scopus", "entrez"), limit = 50)
 search <- ft_search(query, from = "scopus", limit = 2000)
 search_entrez <- ft_search(query, from = "entrez", limit = 600, entrezopts = opts_entrez)
@@ -111,7 +111,10 @@ metadata_entrez <- search_entrez$entrez$data %>% #search_entrez$entrez$data
 
 metadata_lit_review <- metadata_scopus %>% 
   rbind(metadata_entrez) %>% 
-  filter(!is.na(doi))
+  filter(!is.na(doi)) %>% 
+  mutate(pb_doi = str_detect(doi, "[<>;]")) %>% #some dois are not valid
+  filter(pb_doi == FALSE) %>% 
+  select(-pb_doi)
 
 saveRDS(metadata_lit_review, "../Outputs/metadata_lit_review.RDS")
 ```
@@ -165,7 +168,7 @@ get_abstracts <- function(doi) {
     )
     
     if (inherits(possible_error, "error")) {
-      warning(paste("The abstracts for the following articles could not be downloaded:", doi_period))
+      warning(str_c("The abstracts for the following articles could not be downloaded: ", str_c(doi_period, collapse = ",")))
       next
     } else {
        abs <- abs %>%
@@ -181,11 +184,11 @@ get_abstracts <- function(doi) {
   return(abs)
 }
 
-abstracts_t <- metadata_lit_review$doi %>% 
+abstracts <- metadata_lit_review %>%
+  distinct(title, .keep_all = TRUE) %>% 
+  .$doi %>% 
   get_abstracts()  %>% 
-  left_join(metadata_lit_review, by = "doi") %>%
-  distinct(title, .keep_all = TRUE)
-  
+  left_join(metadata_lit_review, by = "doi") 
 
 # saveRDS(abstracts, "../Outputs/abstracts.RDS")
 ```
@@ -204,7 +207,7 @@ Then we want to extract the effects, odds ratio and associated confidence interv
 ```{r}
 abstracts <- readRDS("../Outputs/abstracts.RDS")
 
-string_confint <- "(95\\s?%|\\bCIs?\\b|\\b(c|C)onfidence (i|I)nterval\\b)"
+string_confint <- "(95\\s?%|\\bCIs?\\b|\\bPIs?\\b|\\b(c|C)onfidence\\s(i|I)nterval\\b)"
 num_confint <- "(-\\s?|−\\s?)?[\\d\\.]{1,7}[–\\s:;,%\\-to\\‐]{1,5}(-\\s?|−\\s?)?[\\d\\.]{1,7}"
 num_effect <- "(-\\s?|−\\s?)?[\\d\\.]{1,7}"
 
@@ -220,14 +223,13 @@ effects_CI <- abstracts %>%
   ) %>%
   filter(contains_CI) %>%
   mutate(
-    # CI = str_extract_all(sentence, "((?<=(95\\s?%|\\bCI\\b|\\b(c|C)onfidence (i|I)nterval\\b)[^\\d]{0,4})(-\\s?|−\\s?)?[\\d\\.]{1,7}[–\\s:;,%\\-to\\‐]{1,5}(-\\s?|−\\s?)?[\\d\\.]{1,7})|(?<=(\\(|\\[))[\\d-]{1,4}\\.?\\d{0,5}[–\\s:;,%-to‐]{1,5}[\\d-]{1,4}\\.?\\d{0,5}(?=%?[\\)\\];])"),
     CI = str_extract_all(sentence, str_c(
       "((?<=", string_confint, "[^\\d]{0,4})",
       num_confint, ")|",
       "(?<=(\\(|\\[))", num_confint, "(?=%?[\\)\\];])")
     ),   
     effect = str_extract_all(sentence, str_c(
-      num_effect, "(?=[^\\d.]{0,7}([^\\.\\d]", string_confint, "))(?<!\\b95)|",
+      num_effect, "(?=[^\\d\\.]{0,7}([^\\.\\d]", string_confint, "))(?<!\\b95)|",
       num_effect, "(?=%?\\s?(\\(|\\[)", num_confint, "(?=%?[\\)\\];]))(?<![^\\.\\d]95)")
     )
   ) 
@@ -248,7 +250,9 @@ str_view_all(effects_CI$sentence[random_sentences], str_c(
 The corresponding detected effects are:
 
 ```{r}
-str_view_all(effects_CI$sentence[random_sentences], "[-−]?[\\d\\.]{1,7}(?=[^\\d.]{0,7}([^\\.\\d]\\b95%|\\bCI|\\b(c|C)onfidence (i|I)nterval\\b))(?<!\\b95)|[-−]?[\\d\\.]{1,7}(?=%?\\s?(\\(|\\[)[\\d-]{1,4}\\.?\\d{0,5}[–\\s:;,%-to]{1,4}[\\d-]{1,4}\\.?\\d{0,5}[\\)\\];])(?<![^\\.\\d]95)")
+str_view_all(effects_CI$sentence[random_sentences], str_c(
+      num_effect, "(?=[^\\d.]{0,7}([^\\.\\d]", string_confint, "))(?<!\\b95)|",
+      num_effect, "(?=%?\\s?(\\(|\\[)", num_confint, "(?=%?[\\)\\];]))(?<![^\\.\\d]95)"))
 ```
 
 Once the effects and CI are identified, some wrangling is necessary in order to get the data into a usable format.
@@ -269,7 +273,7 @@ effects_CI_clean <- effects_CI %>%
   ) %>% 
   select(-sentence, -abstract, -contains_CI) %>% 
   filter(!is.na(effect)) %>% 
-  filter(!pb_or_not_significant) %>% 
+  filter(!pb_or_not_significant) %>%
   select(-pb_or_not_significant)
 
 articles_effect <- abstracts %>% 
