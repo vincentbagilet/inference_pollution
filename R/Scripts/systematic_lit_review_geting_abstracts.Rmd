@@ -200,8 +200,8 @@ Then we want to extract the effects, odds ratio and associated confidence interv
 <!-- - Effect: any number following the words "with " or "with a ". The idea behind that is that effect are almost always described as "associated with a x increase in" or similar sentences. -->
 <!-- - OR: we retrieve digits following "OR" by less than 4 characters (to account for ":", "=" or parentheses for instance) -->
 <!-- - Confidence intervals: we retrieve digits following "CI" by less than 4 characters. We also get upper bound of the interval by allowing for the presence of spaces, commas or dashes in between sequences of digits. -->
-- CI: any couple of numbers following by less than 4 characters a string describing a confidence interval ("95%", "CI", "confidence interval"). We also consider "(-8.7, 54.7)"
-- Effect: any number preceding by less than 7 characters a similar string describing a confidence interval (we do not consider "95%") or 
+- CI: any couple of numbers following by less than 4 characters a string describing a confidence interval ("95%", "CI", "confidence interval"). We also consider confidence intervals of the shape "(-8.7, 54.7)": it needs to have a shape "(number separator number)" and needs to be preceded by a number less than 5 characters away.
+- Effect: the first number preceding by less than 17 characters a similar string describing a confidence interval (we do not consider "95%") or 
 
 
 ```{r}
@@ -214,7 +214,8 @@ num_effect <- "(-\\s?|−\\s?)?[\\d\\.]{1,7}"
 effects_CI <- abstracts %>% 
   mutate(
     abstract = str_replace_all(abstract, "·", "."),
-    abstract = str_replace_all(abstract, "C.I.", "CI")
+    abstract = str_replace_all(abstract, "C.I.", "CI"),
+    abstract = str_replace_all(abstract, "(?<=(?<!\\.)(?<!\\d)\\d{1,4}),(?=(\\d{3}(?!\\.)))", "")
   ) %>% 
   select(doi, abstract) %>% 
   unnest_tokens(sentence, abstract, token = "sentences", to_lower = FALSE, drop = FALSE) %>% 
@@ -226,33 +227,26 @@ effects_CI <- abstracts %>%
     CI = str_extract_all(sentence, str_c(
       "((?<=", string_confint, "[^\\d]{0,4})",
       num_confint, ")|",
-      "(?<=(\\(|\\[))", num_confint, "(?=%?[\\)\\];])")
+      "(?<=", num_effect, "[^\\d\\.]{0,5})(?<=(\\(|\\[))", num_confint, "(?=%?[\\)\\];])")
     ),   
     effect = str_extract_all(sentence, str_c(
-      num_effect, "(?=[^\\d\\.]{0,7}([^\\.\\d]", string_confint, "))(?<!\\b95)|",
-      num_effect, "(?=%?\\s?(\\(|\\[)", num_confint, "(?=%?[\\)\\];]))(?<![^\\.\\d]95)")
+      num_effect, "(?=[^\\d\\.]{0,17}([^\\.\\d]", string_confint, "))(?<!\\b95)|",
+      num_effect, "(?=[^\\d\\.]{0,5}(\\(|\\[)", num_confint, "(?=%?[\\)\\];]))(?<![^\\.\\d]95)")
     )
   ) 
 ```
 
 `r effects_CI %>% distinct(doi) %>% nrow()` are considered here as they contain the phrase "confidence interval" or "CI", etc.
 
-Here are examples of the confidence intervals detected using this method:
+Here are examples of the confidence intervals and effects detected using this method:
 
 ```{r}
 random_sentences <- sample(1:length(effects_CI$sentence), 3)
 str_view_all(effects_CI$sentence[random_sentences], str_c(
-      "((?<=", string_confint, "[^\\d]{0,4})",
-      num_confint, ")|",
-      "(?<=(\\(|\\[))", num_confint, "(?=%?[\\)\\];])"))
-```
-
-The corresponding detected effects are:
-
-```{r}
-str_view_all(effects_CI$sentence[random_sentences], str_c(
-      num_effect, "(?=[^\\d.]{0,7}([^\\.\\d]", string_confint, "))(?<!\\b95)|",
-      num_effect, "(?=%?\\s?(\\(|\\[)", num_confint, "(?=%?[\\)\\];]))(?<![^\\.\\d]95)"))
+    num_effect, "(?=[^\\d\\.]{0,17}([^\\.\\d]", string_confint, "))(?<!\\b95)|",
+    num_effect, "(?=[^\\d\\.]{0,5}(\\(|\\[)", num_confint, "(?=%?[\\)\\];]))(?<![^\\.\\d]95)", "|((?<=", string_confint, "[^\\d]{0,4})",
+    num_confint, ")|",
+    "(?<=(\\(|\\[))", num_confint, "(?=%?[\\)\\];])"))
 ```
 
 Once the effects and CI are identified, some wrangling is necessary in order to get the data into a usable format.
@@ -333,7 +327,7 @@ articles_retro <- articles_effect %>%
     # retro_0.01 = as.tibble(retro_design(effect*0.01, se)),
     # retro_0.05 = as.tibble(retro_design(effect*0.05, se)),
     # retro_0.1 = as.tibble(retro_design(effect*0.1, se)),
-    retro_0.5 = as.tibble(retro_design(effect*0.5, se)),
+    retro_0.5 = as_tibble(retro_design(effect*0.5, se)),
     retro_0.67 = as_tibble(retro_design(effect*0.67, se)),
     retro_0.75 = as_tibble(retro_design(effect*0.75, se)),
     # retro_0.9 = as_tibble(retro_design(effect*0.9, se)) 
@@ -387,7 +381,7 @@ articles_retro %>%
   geom_histogram(bins = 10) +
   facet_wrap(~ prop_true_effect) +
   labs(title = "Distribution of type M error in retrodesign simulations", subtitle = "If the size of true effect was a fraction of the measured effect") +
-  scale_x_continuous(trans='log10')
+  xlim(1, 4)
 
 articles_retro %>% 
   ggplot(aes(x = typeS)) + 
