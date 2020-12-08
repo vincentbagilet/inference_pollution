@@ -207,20 +207,20 @@ Then we want to extract the effects, odds ratio and associated confidence interv
 ```{r}
 abstracts <- readRDS("../Outputs/abstracts.RDS")
 
-string_confint <- "(95\\s?%|\\bCIs?\\b|\\bPIs?\\b|\\b(c|C)onfidence\\s(i|I)nterval\\b)"
+string_confint <- "(95\\s?%|95\\s(per(\\s?)cent)|CI(s?)\\b|PI(s?)\\b|\\b(c|C)onfidence\\s(i|I)nterval|\\b(c|C)redible\\s(i|I)nterval|\\b(p|P)osterior\\s(i|I)nterval)"
 num_confint <- "(-\\s?|−\\s?)?[\\d\\.]{1,7}[–\\s:;,%\\-to\\‐]{1,5}(-\\s?|−\\s?)?[\\d\\.]{1,7}"
 num_effect <- "(-\\s?|−\\s?)?[\\d\\.]{1,7}"
 
 effects_CI <- abstracts %>% 
   mutate(
     abstract = str_replace_all(abstract, "·", "."),
-    abstract = str_replace_all(abstract, "C.I.", "CI"),
-    abstract = str_replace_all(abstract, "(?<=(?<!\\.)(?<!\\d)\\d{1,4}),(?=(\\d{3}(?!\\.)))", "")
+    abstract = str_replace_all(abstract, "C.I.", "CI")
   ) %>% 
   select(doi, abstract) %>% 
   unnest_tokens(sentence, abstract, token = "sentences", to_lower = FALSE, drop = FALSE) %>% 
   mutate(
-    contains_CI = str_detect(sentence, string_confint)
+    contains_CI = str_detect(sentence, string_confint),
+    sentence = str_replace_all(sentence, "(?<=(?<!\\.)(?<!\\d)\\d{1,4}),(?=(\\d{3}(?!\\.)))", "")
   ) %>%
   filter(contains_CI) %>%
   mutate(
@@ -241,7 +241,7 @@ effects_CI <- abstracts %>%
 Here are examples of the confidence intervals and effects detected using this method:
 
 ```{r}
-random_sentences <- sample(1:length(effects_CI$sentence), 3)
+random_sentences <- sample(1:length(effects_CI$sentence), 5)
 str_view_all(effects_CI$sentence[random_sentences], str_c(
     num_effect, "(?=[^\\d\\.]{0,17}([^\\.\\d]", string_confint, "))(?<!\\b95)|",
     num_effect, "(?=[^\\d\\.]{0,5}(\\(|\\[)", num_confint, "(?=%?[\\)\\];]))(?<![^\\.\\d]95)", "|((?<=", string_confint, "[^\\d]{0,4})",
@@ -254,7 +254,7 @@ Once the effects and CI are identified, some wrangling is necessary in order to 
 ```{r}
 effects_CI_clean <- effects_CI %>% 
   filter(lengths(effect) == lengths(CI)) %>% 
-  unnest(c(effect, CI), keep_empty = TRUE) %>% 
+  unnest(c(effect, CI), keep_empty = TRUE)%>% 
   mutate(CI = str_remove_all(CI, "\\s")) %>% 
   # separate(CI, into = c("low_CI", "up_CI"), "([\\s,]+)|(?<!^)[-–]") %>% 
   separate(CI, into = c("low_CI", "up_CI"), "(?<!^)[–:;,%\\-to\\‐]{1,5}") %>%
@@ -265,7 +265,7 @@ effects_CI_clean <- effects_CI %>%
     effect = ifelse(is.na(low_CI), NA, effect),
     pb_or_not_significant = (effect <= low_CI | effect >= up_CI)
   ) %>% 
-  select(-sentence, -abstract, -contains_CI) %>% 
+  select(-sentence, -abstract, -contains_CI) %>%
   filter(!is.na(effect)) %>% 
   filter(!pb_or_not_significant) %>%
   select(-pb_or_not_significant)
@@ -284,6 +284,10 @@ articles_effect %>%
   mutate(ret = ifelse(ret, "Yes", "No")) %>% 
   kable(col.names = c("Effect retreived", "Number of articles"), caption = "Number of articles for which at least one effect is retrieved (out of those containing the phrase CI)")
 ```
+
+Note that, we get several warnings. Here are some potential explanations for these warnings:
+- "Expected 2 pieces. Missing pieces filled with `NA`": problem in detection, only detected one value for the confidence interval. Note that some of these issues are due to problems with the text data itself.
+- "Input `..1` is `across(c("effect", "low_CI", "up_CI"), .fns = as.numeric)`.NAs introduced by coercion": some effect detected cannot be coerced to numeric values because do not have a numeric format. This leads to the creation of `NA`s.
 
 ## Retreiving additional information
 
@@ -324,9 +328,9 @@ articles_retro <- articles_effect %>%
   select(-se_low, -se_up) %>% 
   filter(!is.na(effect)) %>% 
   mutate(
-    # retro_0.01 = as.tibble(retro_design(effect*0.01, se)),
-    # retro_0.05 = as.tibble(retro_design(effect*0.05, se)),
-    # retro_0.1 = as.tibble(retro_design(effect*0.1, se)),
+    # retro_0.01 = as_tibble(retro_design(effect*0.01, se)),
+    # retro_0.05 = as_tibble(retro_design(effect*0.05, se)),
+    # retro_0.1 = as_tibble(retro_design(effect*0.1, se)),
     retro_0.5 = as_tibble(retro_design(effect*0.5, se)),
     retro_0.67 = as_tibble(retro_design(effect*0.67, se)),
     retro_0.75 = as_tibble(retro_design(effect*0.75, se)),
