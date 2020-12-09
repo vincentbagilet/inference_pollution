@@ -119,17 +119,6 @@ metadata_lit_review <- metadata_scopus %>%
 saveRDS(metadata_lit_review, "../Outputs/metadata_lit_review.RDS")
 ```
 
-The full list of articles studied here is as follows:
-
-```{r}
-metadata_lit_review <- readRDS("../Outputs/metadata_lit_review.RDS")
-
-metadata_lit_review %>% 
-  select(authors, pub_date, title, journal) %>% 
-  datatable()
-```
-
-
 # Analysis of the power in the literature
 
 ## Retreiving abstracts
@@ -138,8 +127,7 @@ First, we focus on the abstracts and download them.
 
 There is no `fulltext` function to access abstracts from Entrez. Therefore, using the DOI, we get the abstracts from Semantic Scholar. We also access Scopus abstracts from Semantic Scholar since, due to my IP address being located outside of Columbia, I cannot access the texts and abstracts from Scopus.
 
-In Semantic Scholar, there is a rate limit of 100 articles per 5 min or 20 articles per minute. We therefore need to pause the system to be able to download everything. In addition, there are some problems with some DOIs and thus need to use tryCatch to record where these errors are, to be able to handle them later.
-
+In Semantic Scholar, there is a rate limit of 100 articles per 5 min or 20 articles per minute. We therefore need to pause the system to be able to download everything. In addition, some DOIs are not valid so we filtered them out in a previous step (`pb_doi`). In case any problem remains, we use tryCatch to record the DOIs corresponding to errors in order to be able to handle them later.
 
 ```{r eval = FALSE}
 get_abstracts <- function(doi) {
@@ -191,24 +179,25 @@ abstracts <- metadata_lit_review %>%
   left_join(metadata_lit_review, by = "doi") 
 
 # saveRDS(abstracts, "../Outputs/abstracts.RDS")
+
 ```
 
 ## Retreiving effects and confidence interavals
 
-Then we want to extract the effects, odds ratio and associated confidence intervals in the abstracts. To identify the effect and CI we proceed as follows:
+```{r}
+abstracts <- readRDS("../Outputs/abstracts.RDS")
+```
 
-<!-- - Effect: any number following the words "with " or "with a ". The idea behind that is that effect are almost always described as "associated with a x increase in" or similar sentences. -->
-<!-- - OR: we retrieve digits following "OR" by less than 4 characters (to account for ":", "=" or parentheses for instance) -->
-<!-- - Confidence intervals: we retrieve digits following "CI" by less than 4 characters. We also get upper bound of the interval by allowing for the presence of spaces, commas or dashes in between sequences of digits. -->
+Then we want to extract the effects, odds ratio and associated confidence intervals in the abstracts. Part of the literature, display directly effects and confidence intervals in their abstracts.^[We analyse the characteristics of articles doing soin another document.] We thus consider these abstracts (about 684 abstracts) and identify effects and CIs as follows:
+
 - CI: any couple of numbers following by less than 4 characters a string describing a confidence interval ("95%", "CI", "confidence interval"). We also consider confidence intervals of the shape "(-8.7, 54.7)": it needs to have a shape "(number separator number)" and needs to be preceded by a number less than 5 characters away.
-- Effect: the first number preceding by less than 17 characters a similar string describing a confidence interval (we do not consider "95%") or 
+- Effect: the first number preceding by less than 17 characters a similar string describing a confidence interval (we do not consider "95%").
 
 
 ```{r}
-abstracts <- readRDS("../Outputs/abstracts.RDS")
-
-string_confint <- "(95\\s?%|95\\s(per(\\s?)cent)|CI(s?)\\b|PI(s?)\\b|\\b(c|C)onfidence\\s(i|I)nterval|\\b(c|C)redible\\s(i|I)nterval|\\b(p|P)osterior\\s(i|I)nterval)"
-num_confint <- "(-\\s?|−\\s?)?[\\d\\.]{1,7}[–\\s:;,%\\-to\\‐]{1,5}(-\\s?|−\\s?)?[\\d\\.]{1,7}"
+string_confint <- "((?<!(\\.|\\d))95\\s?%|\\b95\\s(per(\\s?)cent)|\\bCI(s?)\\b|\\bPI(s?)\\b|\\b(i|I)nterval|\\b(c|C)onfidence\\s(i|I)nterval|\\b(c|C)redible\\s(i|I)nterval|\\b(p|P)osterior\\s(i|I)nterval)"
+# string_confint_detect <- "(?<!(\\.|\\d))(95)?\\s?%?(per(\\s?)cent)?\\s?(\\bCI(s?)|(\\b(c|C)onfidence\\s)?(i|I)nterval(s?))(\\s?(\\(|\\[)?CIs?(\\)|\\])?)?"
+num_confint <- "(-\\s?|−\\s?)?[\\d\\.]{1,7}[–\\s:;,%\\-to\\‐-]{1,5}(-\\s?|−\\s?)?[\\d\\.]{1,7}"
 num_effect <- "(-\\s?|−\\s?)?[\\d\\.]{1,7}"
 
 effects_CI <- abstracts %>% 
@@ -223,10 +212,16 @@ effects_CI <- abstracts %>%
     sentence = str_replace_all(sentence, "(?<=(?<!\\.)(?<!\\d)\\d{1,4}),(?=(\\d{3}(?!\\.)))", "")
   ) %>%
   filter(contains_CI) %>%
+  # mutate(
+  #   effect_CI = str_extract_all(sentence, str_c(
+  #   num_effect, "[^\\d\\.]{0,17}([^\\.\\d]",
+  #   string_confint, ").{0,35}((?<=", string_confint, "[^\\d]{0,4})",
+  #   num_confint, "[^\\d\\.]{0,3}[\\)\\];,])|", num_effect, "[^\\d\\.]{0,5}(\\(|\\[)", num_confint, "%?[\\)\\];](?<![^\\.\\d]95)"))
+  # ) %>%
+  # unnest(effect_CI, keep_empty = TRUE) %>% 
   mutate(
     CI = str_extract_all(sentence, str_c(
-      "((?<=", string_confint, "[^\\d]{0,4})",
-      num_confint, ")|",
+      "((?<=", string_confint, "[^\\d]{0,4})", num_confint, ")|",
       "(?<=", num_effect, "[^\\d\\.]{0,5})(?<=(\\(|\\[))", num_confint, "(?=%?[\\)\\];])")
     ),   
     effect = str_extract_all(sentence, str_c(
@@ -234,27 +229,29 @@ effects_CI <- abstracts %>%
       num_effect, "(?=[^\\d\\.]{0,5}(\\(|\\[)", num_confint, "(?=%?[\\)\\];]))(?<![^\\.\\d]95)")
     )
   ) 
+  # select(-effect_CI)
 ```
 
-`r effects_CI %>% distinct(doi) %>% nrow()` are considered here as they contain the phrase "confidence interval" or "CI", etc.
+These lines of code return a set of confidence intervals and effect for each sentence containing the phrase ("CI", "confidence interval", etc). We could improve this code by linking directly each effect to its confidence interval. For now, if we do not detect the same number of effects and confidence interval in a sentence, we drop the sentence, even though there are 5 pairs of effect-CI and only one of them is badly detected.
 
-Here are examples of the confidence intervals and effects detected using this method:
+Note that some problems might remain with our estimates and CIs detected. Yet, a vast majority of estimates are correctly detected. Here are examples of the confidence intervals and effects detected using our current method:
 
 ```{r}
 random_sentences <- sample(1:length(effects_CI$sentence), 5)
 str_view_all(effects_CI$sentence[random_sentences], str_c(
     num_effect, "(?=[^\\d\\.]{0,17}([^\\.\\d]", string_confint, "))(?<!\\b95)|",
-    num_effect, "(?=[^\\d\\.]{0,5}(\\(|\\[)", num_confint, "(?=%?[\\)\\];]))(?<![^\\.\\d]95)", "|((?<=", string_confint, "[^\\d]{0,4})",
-    num_confint, ")|",
-    "(?<=(\\(|\\[))", num_confint, "(?=%?[\\)\\];])"))
+      num_effect, "(?=[^\\d\\.]{0,5}(\\(|\\[)", num_confint, "(?=%?[\\)\\];]))(?<![^\\.\\d]95)",
+    "|((?<=", string_confint, "[^\\d]{0,4})", num_confint, ")|",
+      "(?<=", num_effect, "[^\\d\\.]{0,5})(?<=(\\(|\\[))", num_confint, "(?=%?[\\)\\];])"))
 ```
 
-Once the effects and CI are identified, some wrangling is necessary in order to get the data into a usable format.
+Once the effects and CI are identified, some wrangling is necessary in order to get the data into a usable format. We also choose to **drop effects which do not fall into the CI** (62 estimates) in order to get rid off most of the poorly detected effects-CIs. This leads us to also drop non significant estimates. We could also only drop estimates which are not in an interval twice as big as the CI to be more conservative.
 
 ```{r}
 effects_CI_clean <- effects_CI %>% 
-  filter(lengths(effect) == lengths(CI)) %>% 
-  unnest(c(effect, CI), keep_empty = TRUE)%>% 
+  filter(lengths(effect) == lengths(CI)) %>% #if number of effects != nb of CI for a sentence,
+  #can't attribute effects to CI so, drop sentence
+  unnest(c(effect, CI), keep_empty = TRUE) %>%
   mutate(CI = str_remove_all(CI, "\\s")) %>% 
   # separate(CI, into = c("low_CI", "up_CI"), "([\\s,]+)|(?<!^)[-–]") %>% 
   separate(CI, into = c("low_CI", "up_CI"), "(?<!^)[–:;,%\\-to\\‐]{1,5}") %>%
@@ -273,6 +270,14 @@ effects_CI_clean <- effects_CI %>%
 articles_effect <- abstracts %>% 
   left_join(effects_CI_clean, by = "doi")
 
+saveRDS(articles_effect, "../Outputs/articles_effect.RDS")
+```
+
+<!-- Note that, we get several warnings. Here are some potential explanations for these warnings: -->
+<!-- - "Expected 2 pieces. Missing pieces filled with `NA`": problem in detection, only detected one value for the confidence interval. Note that some of these issues are due to problems with the text data itself. -->
+<!-- - "Input `..1` is `across(c("effect", "low_CI", "up_CI"), .fns = as.numeric)`.NAs introduced by coercion": some effect detected cannot be coerced to numeric values because do not have a numeric format. This leads to the creation of `NA`s. -->
+
+```{r}
 articles_effect %>% 
   mutate(
     contains_CI = str_detect(abstract, "(95%|\\bCI\\b|\\b(c|C)onfidence (i|I)nterval\\b)")
@@ -285,9 +290,6 @@ articles_effect %>%
   kable(col.names = c("Effect retreived", "Number of articles"), caption = "Number of articles for which at least one effect is retrieved (out of those containing the phrase CI)")
 ```
 
-Note that, we get several warnings. Here are some potential explanations for these warnings:
-- "Expected 2 pieces. Missing pieces filled with `NA`": problem in detection, only detected one value for the confidence interval. Note that some of these issues are due to problems with the text data itself.
-- "Input `..1` is `across(c("effect", "low_CI", "up_CI"), .fns = as.numeric)`.NAs introduced by coercion": some effect detected cannot be coerced to numeric values because do not have a numeric format. This leads to the creation of `NA`s.
 
 ## Retreiving additional information
 

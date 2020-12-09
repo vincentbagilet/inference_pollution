@@ -1,0 +1,361 @@
+---
+title: "Systematic literature review"
+author:
+- name: Vincent Bagilet
+  url: https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet
+  affiliation: Columbia University
+  affiliation_url: https://www.columbia.edu/
+- name: Léo Zabrocki
+  url: https://www.parisschoolofeconomics.eu/en/
+  affiliation: Paris School of Economics
+  affiliation_url: https://www.parisschoolofeconomics.eu/en/
+date: "`r Sys.Date()`"
+output:
+  distill::distill_article: default
+  html_notebook: default
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+```{r setup, include=FALSE, results='hide', warning=FALSE}
+library(knitr)
+opts_chunk$set(fig.path = "images/",
+               cache.path = "cache/",
+               cache = FALSE,
+               echo = FALSE, #set to false to hide code
+               message = FALSE,
+               warning = FALSE,
+               out.width = "85%",
+               dpi = 200,
+               fig.align = "center")  
+```  
+
+```{r include=FALSE}
+library(tidyverse)
+library(fulltext)
+library(tidytext)
+library(wordcloud)
+library(retrodesign)
+library(mediocrethemes)
+library(lubridate)
+library(DT)
+
+set_mediocre_all()
+set.seed(1)
+```
+
+# Purpose of the document
+
+In the present document, we aim to conduct a systematic review of the literature on short term health effects of air pollution. The objective is two fold: 
+- Retrieve effect sizes and confidence intervals in order to compute power, type M and type S error in the literature
+- Get a sense of the proportion of papers in this literature discussing power and missing data issues.  
+
+# Motivation
+
+In this section, we discuss the importance of such an analysis.
+
+# Power analysis
+
+In this section, we implement robustness tests in order to compute the power, type M and type S error in the studied articles. We look at what would be the power, type M and type S error if the true effect was a fraction of the measured effect. We retrieved estimates and confidence intervals of articles in the literature of interest in [another document](systematic_lit_review_geting_abstracts.html). Before looking into the power analysis itself, we look at the characteristics of the articles considered.
+
+## Articles characteristics
+
+### Full set of articles
+
+We retrieved the articles using the following query:
+
+`'TITLE(("air pollution"  OR "air quality" OR "particulate matter" OR ozone OR "nitrogen dioxide" OR "sulfur dioxide") AND ("emergency" OR "mortality") AND NOT ("long term" or "long-term")) AND ("particulate matter" OR ozone OR "nitrogen dioxide" OR "sulfur dioxide")'`
+
+```{r}
+articles_effect <- readRDS("../Outputs/articles_effect.RDS")
+metadata_lit_review <- readRDS("../Outputs/metadata_lit_review.RDS")
+abstracts <- readRDS("../Outputs/abstracts.RDS")
+```
+
+This query returns `r metadata_lit_review %>% distinct(title) %>% nrow()`. Based on the abstracts, we can briefly explore the main (unsurprising) themes of the articles.
+
+```{r}
+abstracts %>%
+  unnest_tokens(word, abstract, to_lower = TRUE) %>% 
+  anti_join(tidytext::stop_words, by = "word") %>%
+  count(word) %>%
+  with(wordcloud::wordcloud(word, n, max.words = 100, random.color = TRUE))
+```
+### Abstracts with effects and confidence intervals
+
+```{r}
+string_confint <- "((?<!(\\.|\\d))95\\s?%|\\b95\\s(per(\\s?)cent)|\\bCI(s?)\\b|\\bPI(s?)\\b|\\b(i|I)nterval|\\b(c|C)onfidence\\s(i|I)nterval|\\b(c|C)redible\\s(i|I)nterval|\\b(p|P)osterior\\s(i|I)nterval)"
+
+articles_contains_CI <- articles_effect %>% 
+  mutate(
+    contains_CI = str_detect(abstract, string_confint)
+  ) %>%
+  filter(contains_CI) 
+
+abstracts_CI <- articles_effect %>% 
+  mutate(
+    contains_CI = str_detect(abstract, string_confint)
+  ) %>%
+  select(-effect, -low_CI, -up_CI) %>% 
+  distinct()
+```
+
+
+Out of all articles returned by the query, `r articles_contains_CI %>% distinct(title) %>% nrow()` display confidence intervals. "CI", "confidence interval", etc. The list of such articles is as follows:
+
+```{r}
+articles_contains_CI %>% 
+  select(authors, pub_date, title, journal) %>% 
+  datatable()
+```
+
+In these articles, we retrieve valid effects and confidence intervals in the following proportions:^[Note that a bunch of abstracts contain the phrase "CI" without actually displaying effects and confidence intervals.]
+
+```{r}
+articles_contains_CI %>%
+  group_by(title) %>% 
+  summarise(has_effect = (sum(!is.na(effect), na.rm = TRUE) > 0)) %>% 
+  ungroup() %>% 
+  count(has_effect) %>% 
+  mutate(
+    prop = n/sum(n),
+    has_effect = ifelse(has_effect, "Yes", "No")
+  ) %>% 
+  arrange(desc(has_effect)) %>% 
+  kable(col.names = c("Effect retreived", "Number of articles", "Proportion"), caption = "Number of articles for which at least one effect is retrieved (out of those containing the phrase CI)")
+```
+
+This corresponds to `r articles_contains_CI %>% filter(!is.na(effect)) %>% nrow()` valid effects and associated confidence intervals. 
+
+
+### Abstracts we droped
+
+In this subsection, we look at articles for which we were not able to retrieve effects
+
+
+## Analysis
+
+To do so, we use the package `retrodesign` and To use the `retro_design()` function, we first need to compute the standard error of the estimate. Probably due to rounding effect, we often do not get the same value for the standard error if we compute it using the upper or the lower bound of the CI. Thus, we average across the two values obtained.
+
+```{r}
+articles_retro <- articles_effect %>% 
+  mutate(
+    se_up = (up_CI - effect)/1.96,
+    se_low = (low_CI - effect)/(-1.96),
+    se = (se_up + se_low)/2
+  ) %>% 
+  select(-se_low, -se_up) %>% 
+  filter(!is.na(effect)) %>% 
+  mutate(
+    # retro_0.01 = as.tibble(retro_design(effect*0.01, se)),
+    # retro_0.05 = as.tibble(retro_design(effect*0.05, se)),
+    # retro_0.1 = as.tibble(retro_design(effect*0.1, se)),
+    retro_0.5 = as.tibble(retro_design(effect*0.5, se)),
+    retro_0.67 = as_tibble(retro_design(effect*0.67, se)),
+    retro_0.75 = as_tibble(retro_design(effect*0.75, se)),
+    # retro_0.9 = as_tibble(retro_design(effect*0.9, se)) 
+  ) %>% 
+  pivot_longer(
+    starts_with("retro"), 
+    names_to = "prop_true_effect", 
+    values_to = "computed"
+  ) %>% 
+  mutate(
+    power = computed$power,
+    typeS = computed$typeS,
+    typeM = computed$typeM,
+    prop_true_effect = as.numeric(str_sub(prop_true_effect, 7, nchar(prop_true_effect)))
+  ) %>% 
+  select(-computed)
+```
+
+## Results and graphs
+
+Then, we quickly explore the results. First, we compute the average and median power, type M and type S errors.
+
+```{r}
+articles_retro %>% 
+  filter(typeM < Inf) %>% 
+  group_by(prop_true_effect) %>% 
+  summarise(
+    mean_power = mean(power, na.rm = TRUE),
+    mean_typeM = mean(typeM, na.rm = TRUE),
+    mean_typeS = mean(typeS, na.rm = TRUE),
+    median_power = median(power, na.rm = TRUE),
+    median_typeM = median(typeM, na.rm = TRUE),
+    median_typeS = median(typeS, na.rm = TRUE)
+  ) %>% 
+  kable()
+```
+
+
+Then, we look at the distribution of power, type M and type S error across simulation and for different size of true effect.
+
+```{r}
+articles_retro %>% 
+  ggplot(aes(x = power)) + 
+  geom_histogram(bins = 10) +
+  facet_wrap(~ prop_true_effect) +
+  labs(title = "Distribution of power in retrodesign simulations", subtitle = "If the size of true effect was a fraction of the measured effect")
+  # geom_density()
+
+articles_retro %>% 
+  ggplot(aes(x = typeM)) + 
+  geom_histogram(bins = 10) +
+  facet_wrap(~ prop_true_effect) +
+  labs(title = "Distribution of type M error in retrodesign simulations", subtitle = "If the size of true effect was a fraction of the measured effect") +
+  scale_x_continuous(trans='log10')
+
+articles_retro %>% 
+  ggplot(aes(x = typeS)) + 
+  geom_histogram(bins = 10) +
+  facet_wrap(~ prop_true_effect) +
+  labs(title = "Distribution of type S error in retrodesign simulations", subtitle = "If the size of true effect was a fraction of the measured effect")
+```
+
+Then, we look at the relation between power, type M and type S error and true effect size.
+
+```{r}
+articles_retro %>% 
+  ggplot() +
+  geom_point(aes(x = power, y = typeM)) +
+  facet_wrap(~ prop_true_effect) +
+  labs(title = "Link between type M and power in retrodesign simulations", subtitle = "If the size of true effect was a fraction of the measured effect", x = "Power", y = "Type M")
+
+articles_retro %>% 
+  ggplot() +
+  geom_point(aes(x = power, y = typeS)) +
+  facet_wrap(~ prop_true_effect) +
+  labs(title = "Link between type S and power in retrodesign simulations", subtitle = "If the size of true effect was a fraction of the measured effect", x = "Power", y = "Type S")
+
+articles_retro %>% 
+  filter(typeM < Inf) %>% 
+  group_by(prop_true_effect) %>% 
+  summarise(typeM = mean(typeM, na.rm = TRUE)) %>% 
+  ggplot() +
+  geom_point(aes(x = prop_true_effect, y = typeM)) +
+  labs(title = "Link between type M and 'true effect' in retrodesign simulations", x = "True effect as a proportion of the measured effect", y = "Type M")
+
+articles_retro %>% 
+  group_by(prop_true_effect) %>% 
+  summarise(typeS = mean(typeS, na.rm = TRUE)) %>% 
+  ggplot() +
+  geom_point(aes(x = prop_true_effect, y = typeS)) +
+  labs(title = "Link between type S and 'true effect' in retrodesign simulations", x = "True effect as a proportion of the measured effect", y = "Type S")
+```
+
+We can also look at how power, type M and type S error evolved with publication date.
+
+```{r}
+articles_retro %>% 
+  group_by(year = year(pub_date), prop_true_effect) %>%
+  mutate(power = mean(power, na.rm = TRUE)) %>% 
+  ungroup() %>% 
+  ggplot() +
+  geom_point(aes(x = year, y = power)) +
+  facet_wrap(~ prop_true_effect) +
+  labs(title = "Evolution of power with publication date", x = "Publication date", y = "Power")
+
+articles_retro %>% 
+  group_by(year = year(pub_date), prop_true_effect) %>%
+  mutate(typeM = mean(typeM, na.rm = TRUE)) %>% 
+  ungroup() %>% 
+  ggplot() +
+  geom_point(aes(x = year, y = typeM)) +
+  facet_wrap(~ prop_true_effect) +
+  labs(title = "Evolution of type M with publication date", x = "Publication date", y = "Type M")
+
+articles_retro %>% 
+  group_by(year = year(pub_date), prop_true_effect) %>%
+  mutate(typeS = mean(typeS, na.rm = TRUE)) %>% 
+  ungroup() %>% 
+  ggplot() +
+  geom_point(aes(x = year, y = typeS)) +
+  facet_wrap(~ prop_true_effect) +
+  labs(title = "Evolution of type S with publication date", x = "Publication date", y = "Type S")
+```
+
+# Analysis of papers dealing with power and missingness issues
+
+## Retreiving the full texts
+
+We then download the full texts (using the `ft_get` functions). The full texts are stored in an xml format in the cache directory. Note that due to my IP address being located outside of Columbia, I cannot access the texts from Scopus.
+
+```{r eval = FALSE}
+metadata_scopus$doi %>% 
+  ft_get(progress = TRUE)
+
+metadata_entrez$doi %>% 
+  ft_get(from = "entrez", progress = TRUE, type = "pdf")
+```
+
+Once we have downloaded all the files, we can put them into a table format, before analyzing them.
+
+```{r eval = FALSE}
+#put text into a table format
+article_texts <- ft_table() %>% #searches for documents in the cache directory 
+  select(-paths, -ids_norm) %>% 
+  .$text 
+
+saveRDS(article_texts, "../Outputs/article_texts.RDS")
+```
+
+## Analysis
+
+To analyse the texts, we first start by simply exploring the proportion of articles mentioning the words "missing" and "power".
+
+```{r eval = FALSE}
+readRDS("../Outputs/article_texts.RDS")
+
+article_texts %>%
+  summarise(
+    contains_missing = sum(str_detect(text, pattern = "\\bmissing"))/n(), #could put a vector with various terms
+    contains_power = sum(str_detect(text, pattern = "\\bpower\\b"))/n() #statistical power
+  )
+```
+
+<!-- # Test with rentrez package -->
+
+<!-- ```{r} -->
+<!-- querry_entrez <- "((air pollution[TITL]  OR air quality[TITL] OR particulate matter[TITL] OR ozone[TITL] OR nitrogen dioxide[TITL] OR sulfur dioxide[TITL]) AND (emergency[TITL] OR mortality[TITL])) AND (particulate matter[TIAB] OR ozone[TIAB] OR nitrogen dioxide[TIAB] OR sulfur dioxide[TIAB])" -->
+
+<!-- rentrez_search <- entrez_search(db = "pubmed", term = querry_entrez, use_history = TRUE) -->
+<!-- rentrez_ids <- rentrez_search$ids %>% as.numeric() -->
+
+<!-- rentrez_texts <- entrez_fetch(db = "pubmed", id = rentrez_ids, rettype = "xml") -->
+
+<!-- t <- rentrez_texts %>% -->
+<!--   xmlParse() %>% -->
+<!--   xmlToList() -->
+
+<!-- retrieve_abstract <- function(lis) { -->
+<!--   df <- lis$MedlineCitation$Article$Abstract %>% -->
+<!--   map_df(., data.frame) %>% -->
+<!--   as.tibble() %>% -->
+<!--   distinct() -->
+
+<!--   # %>% -->
+<!--   # filter(!is.na(text)) %>% -->
+<!--   # select(-3) -->
+
+<!--   return(df) -->
+<!-- } -->
+
+<!-- out <- map_df(t, retrieve_abstract) -->
+
+<!-- r <- t$PubmedArticle$MedlineCitation$Article$Abstract %>% -->
+<!--   map_df(., data.frame) %>% -->
+<!--   as.tibble() %>% -->
+<!--   distinct() %>% -->
+<!--   filter(!is.na(text)) %>% -->
+<!--   select(-3) -->
+
+<!-- t$PubmedArticle$MedlineCitation$Article -->
+<!-- ``` -->
+
+
+
+
