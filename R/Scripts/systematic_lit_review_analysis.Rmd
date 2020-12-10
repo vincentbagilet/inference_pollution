@@ -67,7 +67,7 @@ In this section, we implement robustness tests in order to compute the power, ty
 
 We retrieved the articles using the following query:
 
-`'TITLE(("air pollution"  OR "air quality" OR "particulate matter" OR ozone OR "nitrogen dioxide" OR "sulfur dioxide") AND ("emergency" OR "mortality") AND NOT ("long term" or "long-term")) AND ("particulate matter" OR ozone OR "nitrogen dioxide" OR "sulfur dioxide")'`
+'TITLE(("air pollution"  OR "air quality" OR "particulate matter" OR ozone OR "nitrogen dioxide" OR "sulfur dioxide") AND ("emergency" OR "mortality") AND NOT ("long term" or "long-term")) AND ("particulate matter" OR ozone OR "nitrogen dioxide" OR "sulfur dioxide")'
 
 ```{r}
 articles_effect <- readRDS("../Outputs/articles_effect.RDS")
@@ -82,32 +82,42 @@ abstracts %>%
   unnest_tokens(word, abstract, to_lower = TRUE) %>% 
   anti_join(tidytext::stop_words, by = "word") %>%
   count(word) %>%
-  with(wordcloud::wordcloud(word, n, max.words = 100, random.color = TRUE))
+  with(wordcloud::wordcloud(word, n, max.words = 100, random.color = TRUE, colors = "#00313C"))
 ```
+
+```{r fig.asp = 1}
+abstracts %>%
+  unnest_tokens(word, abstract, to_lower = TRUE) %>% 
+  anti_join(tidytext::stop_words, by = "word") %>%
+  count(word, sort = TRUE) %>%
+  filter(n > 1000) %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(n, word)) +
+  geom_col() +
+  labs(y = NULL, title = "Main themes in the abstracts", subtitle = "Droping usual stop words") 
+```
+
 ### Abstracts with effects and confidence intervals
 
 ```{r}
 string_confint <- "((?<!(\\.|\\d))95\\s?%|\\b95\\s(per(\\s?)cent)|\\bCI(s?)\\b|\\bPI(s?)\\b|\\b(i|I)nterval|\\b(c|C)onfidence\\s(i|I)nterval|\\b(c|C)redible\\s(i|I)nterval|\\b(p|P)osterior\\s(i|I)nterval)"
 
-articles_contains_CI <- articles_effect %>% 
-  mutate(
-    contains_CI = str_detect(abstract, string_confint)
-  ) %>%
-  filter(contains_CI) 
-
 abstracts_CI <- articles_effect %>% 
   mutate(
     contains_CI = str_detect(abstract, string_confint)
   ) %>%
+  group_by(title) %>% 
+  mutate(has_effect = (sum(!is.na(effect), na.rm = TRUE) > 0)) %>% 
+  ungroup() %>% 
   select(-effect, -low_CI, -up_CI) %>% 
   distinct()
 ```
 
-
-Out of all articles returned by the query, `r articles_contains_CI %>% distinct(title) %>% nrow()` display confidence intervals. "CI", "confidence interval", etc. The list of such articles is as follows:
+Out of all articles returned by the query, `r articles_contains_CI %>% distinct(title) %>% nrow()` display confidence intervals. "CI", "confidence interval", etc. These articles are the following:
 
 ```{r}
-articles_contains_CI %>% 
+abstracts_CI %>% 
+  filter(contains_CI) %>% 
   select(authors, pub_date, title, journal) %>% 
   datatable()
 ```
@@ -115,10 +125,8 @@ articles_contains_CI %>%
 In these articles, we retrieve valid effects and confidence intervals in the following proportions:^[Note that a bunch of abstracts contain the phrase "CI" without actually displaying effects and confidence intervals.]
 
 ```{r}
-articles_contains_CI %>%
-  group_by(title) %>% 
-  summarise(has_effect = (sum(!is.na(effect), na.rm = TRUE) > 0)) %>% 
-  ungroup() %>% 
+abstracts_CI %>%
+  filter(contains_CI) %>% 
   count(has_effect) %>% 
   mutate(
     prop = n/sum(n),
@@ -128,17 +136,77 @@ articles_contains_CI %>%
   kable(col.names = c("Effect retreived", "Number of articles", "Proportion"), caption = "Number of articles for which at least one effect is retrieved (out of those containing the phrase CI)")
 ```
 
-This corresponds to `r articles_contains_CI %>% filter(!is.na(effect)) %>% nrow()` valid effects and associated confidence intervals. 
+This corresponds to `r articles_contains_CI %>% filter(!is.na(effect)) %>% nrow()` valid effects and associated confidence intervals.
 
+### Comparison between abstracts with and without detected effects
 
-### Abstracts we droped
+In this subsection, we investigate whether there are systematic differences between articles displaying an effect in the abstract (effect that we detected) and articles that do not. 
 
-In this subsection, we look at articles for which we were not able to retrieve effects
+We first wonder whether there are disparities in publication dates. It might be the case that displaying effects in the abstract was a feature of a given period.
 
+```{r}
+abstracts_CI %>% 
+  mutate(has_effect = ifelse(has_effect, "Effect detected", "Effect not detected")) %>% 
+  ggplot() +
+  geom_density(aes(x = year(pub_date), fill = has_effect, , color = has_effect)) +
+  labs(title = "Distribution of publication year", subtitle = "Comparison between articles for which an effect is retrieved and not", x = "Publication year", y = "Density") + 
+  scale_fill_discrete(name = "")
+```
+Even though there are slightly more recent (2010-2020) articles for which effects are retrieved, the difference does not seem to be substantial.
 
-## Analysis
+We also investigate whether there are differences in the journals in which the articles are published.
 
-To do so, we use the package `retrodesign` and To use the `retro_design()` function, we first need to compute the standard error of the estimate. Probably due to rounding effect, we often do not get the same value for the standard error if we compute it using the upper or the lower bound of the CI. Thus, we average across the two values obtained.
+```{r fig.asp=1}
+abstracts_CI %>% 
+  mutate(has_effect = ifelse(has_effect, "Effect detected", "Effect not detected")) %>% 
+  group_by(has_effect) %>% 
+  mutate(nb_has_effect = n()) %>% 
+  count(journal, nb_has_effect, has_effect, sort = TRUE) %>% 
+  mutate(prop = n/nb_has_effect) %>% 
+  select(-nb_has_effect, -n) %>% 
+  group_by(journal) %>% 
+  mutate(keep = (sum(prop) > 0.02)) %>% 
+  filter(keep) %>% 
+  select(-keep) %>% 
+  ungroup() %>% 
+  mutate(journal = reorder(journal, prop)) %>% 
+  ggplot() +
+  geom_col(aes(prop, journal, fill = has_effect)) +
+  # facet_wrap(~ has_effect) +
+  labs(y = NULL, title = "Main themes in the abstracts", subtitle = "Droping usual stop words") +
+  scale_fill_discrete(name = "")
+```
+
+For this analysis to be informative, we would need to cluster the journals into groups (*eg* epidemiology journals, general science journals, etc).
+
+Then, we wonder if the the themes considered in each types of abstracts differ.
+
+```{r fig.asp=1}
+abstracts_CI %>%
+  unnest_tokens(word, abstract, to_lower = TRUE) %>% 
+  anti_join(tidytext::stop_words, by = "word") %>%
+  count(word, has_effect, sort = TRUE) %>%
+  group_by(word) %>% 
+  mutate(keep = (sum(n) > 1200)) %>% 
+  filter(keep) %>% 
+  select(-keep) %>% 
+  mutate(has_effect = ifelse(has_effect, "Effect detected", "Effect not detected")) %>% 
+  group_by(has_effect) %>% 
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(x = n, y = word, fill = has_effect)) +
+  geom_col(position = "dodge") +
+  # facet_wrap(~ has_effect) + 
+  labs(y = NULL, title = "Main themes in the abstracts", subtitle = "Comparison between articles with and without detected effect") +
+  scale_fill_discrete(name = "")
+```
+
+Apart from a few key terms, such as CI, 95 for instance, there are no huge variations in the themes. 
+
+Now that we have quickly compared the articles for which we retrieve an effect an those for which we don't, we can dig further into the analysis of the estimates retrieved.
+
+## Power analysis
+
+To carry out our power analysis, we use the package `retrodesign` which computes post analysis design calculations (power, type M and type S errors). To use the `retro_design()` function, we first need to compute the standard error of the estimate. Probably due to rounding effect, we often do not get the same value for the standard error if we compute it using the upper or the lower bound of the CI. Thus, we average across the two values obtained.
 
 ```{r}
 articles_retro <- articles_effect %>% 
@@ -150,11 +218,12 @@ articles_retro <- articles_effect %>%
   select(-se_low, -se_up) %>% 
   filter(!is.na(effect)) %>% 
   mutate(
-    # retro_0.01 = as.tibble(retro_design(effect*0.01, se)),
-    # retro_0.05 = as.tibble(retro_design(effect*0.05, se)),
-    # retro_0.1 = as.tibble(retro_design(effect*0.1, se)),
-    retro_0.5 = as.tibble(retro_design(effect*0.5, se)),
-    retro_0.67 = as_tibble(retro_design(effect*0.67, se)),
+    # retro_0.01 = as_tibble(retro_design(effect*0.01, se)),
+    # retro_0.05 = as_tibble(retro_design(effect*0.05, se)),
+    # retro_0.1 = as_tibble(retro_design(effect*0.1, se)),
+    retro_0.1 = as_tibble(retro_design(effect*0.33, se)),
+    retro_0.5 = as_tibble(retro_design(effect*0.5, se)),
+    # retro_0.67 = as_tibble(retro_design(effect*0.67, se)),
     retro_0.75 = as_tibble(retro_design(effect*0.75, se)),
     # retro_0.9 = as_tibble(retro_design(effect*0.9, se)) 
   ) %>% 
