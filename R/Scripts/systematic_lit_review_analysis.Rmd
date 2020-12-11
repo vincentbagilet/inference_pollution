@@ -75,6 +75,7 @@ We retrieved the articles using the following query:
 articles_effect <- readRDS("../Outputs/articles_effect.RDS")
 metadata_lit_review <- readRDS("../Outputs/metadata_lit_review.RDS")
 abstracts <- readRDS("../Outputs/abstracts.RDS")
+abstracts_more_info <- readRDS("../Outputs/abstracts_more_info.RDS")
 ```
 
 This query returns `r metadata_lit_review %>% distinct(title) %>% nrow()` articles. Based on the abstracts, we can briefly explore the main (unsurprising) themes of the articles:
@@ -104,7 +105,8 @@ abstracts %>%
 ```{r}
 string_confint <- "((?<!(\\.|\\d))95\\s?%|\\b95\\s(per(\\s?)cent)|\\bCI(s?)\\b|\\bPI(s?)\\b|\\b(i|I)nterval|\\b(c|C)onfidence\\s(i|I)nterval|\\b(c|C)redible\\s(i|I)nterval|\\b(p|P)osterior\\s(i|I)nterval)"
 
-abstracts_CI <- articles_effect %>% 
+abstracts_CI <- articles_effect %>%
+  left_join(abstracts_more_info, by = c("doi", "abstract")) %>% 
   mutate(
     contains_CI = str_detect(abstract, string_confint)
   ) %>%
@@ -203,6 +205,28 @@ abstracts_CI %>%
 ```
 
 Apart from a few key terms, such as CI, 95 for instance, there are no huge variations in the themes. 
+
+```{r fig.asp=0.7}
+abstracts_CI %>% 
+  unnest(pollutant) %>% 
+  filter(!is.na(pollutant)) %>% 
+  mutate(has_effect = ifelse(has_effect, "Effect detected", "Effect not detected")) %>% 
+  group_by(has_effect) %>% 
+  mutate(nb_has_effect = n()) %>% 
+  count(pollutant, nb_has_effect, has_effect, sort = TRUE) %>% 
+  mutate(prop = n/nb_has_effect) %>% 
+  select(-nb_has_effect, -n) %>% 
+  group_by(pollutant) %>% 
+  ungroup() %>% 
+  mutate(pollutant = reorder(pollutant, prop)) %>% 
+  ggplot() +
+  geom_col(aes(prop, pollutant, fill = has_effect)) +
+  # facet_wrap(~ has_effect) +
+  labs(y = NULL, title = "Proportion of articles studing a given pollutant", subtitle = "Comparison between articles for which an effect was detected or not", x = "Poportion of articles studying a given pollutant") +
+  scale_fill_discrete(name = "")
+```
+
+We do not seem to detect effects more for a pollutant than for another. Note that if an article considers several pollutants, it will appear several times in this graph.
 
 Now that we have quickly compared the articles for which we retrieve an effect an those for which we don't, we can dig further into the analysis of the estimates retrieved.
 
@@ -559,8 +583,27 @@ Interestingly, some journals, such as "Science of the Total Environment", the "I
 
 Here also, grouping the journals into big main themes could be more instructive.
 
+We also look into disparities
 
-
-
-
+```{r fig.asp=1}
+articles_low_adequate %>% 
+  left_join(abstracts_more_info, by = c("doi", "abstract")) %>% 
+  unnest(pollutant) %>% 
+  filter(!is.na(pollutant)) %>% 
+  mutate(low_power = ifelse(low_power, "Low power", "Adequate power")) %>% 
+  group_by(low_power) %>% 
+  mutate(nb_low_power = n()) %>% 
+  count(pollutant, nb_low_power, low_power, sort = TRUE) %>% 
+  mutate(prop = n/nb_low_power) %>% 
+  select(-nb_low_power, -n) %>% 
+  group_by(pollutant) %>% 
+  ungroup() %>% 
+  mutate(pollutant = reorder(pollutant, prop)) %>% 
+  ggplot() +
+  geom_col(aes(prop, pollutant, fill = low_power)) +
+  # facet_wrap(~ has_effect) +
+  labs(y = NULL, title = "Proportion of articles studing a given pollutant", subtitle = "Comparison between articles with low and adequate power", x = "Poportion of articles studying a given pollutant") +
+  scale_fill_manual(values = colors_low_power, name = "")
+```
+There does not seem to be stark differences by pollutant type.
 

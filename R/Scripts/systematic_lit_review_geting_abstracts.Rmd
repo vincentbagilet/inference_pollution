@@ -271,27 +271,24 @@ articles_effect <- abstracts %>%
 saveRDS(articles_effect, "../Outputs/articles_effect.RDS")
 ```
 
-<!-- Note that, we get several warnings. Here are some potential explanations for these warnings: -->
-<!-- - "Expected 2 pieces. Missing pieces filled with `NA`": problem in detection, only detected one value for the confidence interval. Note that some of these issues are due to problems with the text data itself. -->
-<!-- - "Input `..1` is `across(c("effect", "low_CI", "up_CI"), .fns = as.numeric)`.NAs introduced by coercion": some effect detected cannot be coerced to numeric values because do not have a numeric format. This leads to the creation of `NA`s. -->
 
-```{r}
-articles_effect %>% 
-  mutate(
-    contains_CI = str_detect(abstract, "(95%|\\bCI\\b|\\b(c|C)onfidence (i|I)nterval\\b)")
-  ) %>%
-  filter(contains_CI) %>%
-  group_by(doi) %>% 
-  summarise(has_effect = mean(effect, na.rm = TRUE)) %>% 
-  count(ret = !is.nan(has_effect)) %>% 
-  mutate(ret = ifelse(ret, "Yes", "No")) %>% 
-  kable(col.names = c("Effect retreived", "Number of articles"), caption = "Number of articles for which at least one effect is retrieved (out of those containing the phrase CI)")
-```
 
+<!-- ```{r} -->
+<!-- articles_effect %>%  -->
+<!--   mutate( -->
+<!--     contains_CI = str_detect(abstract, "(95%|\\bCI\\b|\\b(c|C)onfidence (i|I)nterval\\b)") -->
+<!--   ) %>% -->
+<!--   filter(contains_CI) %>% -->
+<!--   group_by(doi) %>%  -->
+<!--   summarise(has_effect = mean(effect, na.rm = TRUE)) %>%  -->
+<!--   count(ret = !is.nan(has_effect)) %>%  -->
+<!--   mutate(ret = ifelse(ret, "Yes", "No")) %>%  -->
+<!--   kable(col.names = c("Effect retreived", "Number of articles"), caption = "Number of articles for which at least one effect is retrieved (out of those containing the phrase CI)") -->
+<!-- ``` -->
 
 ## Retreiving additional information
 
-It might also be interesting to information about the study period, the number of observations or p-values. We also use regex to recover these information.
+It might also be interesting to information about the type of pollutant considered in the study, the study period, the number of observations or p-values. We also use regex to recover these information.
 
 ```{r}
 month_regex <- "\\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|(Nov|Dec)(?:ember)?)"
@@ -310,10 +307,24 @@ abstracts_more_info <- abstracts %>%
   mutate(
     p_value = str_extract_all(abstract, "(?<=\\b(p|P|p-value|p value)\\s?)[=<]\\s?[\\d.]+"),
     n_obs = str_extract_all(abstract, "(?<=(\\bn\\s?= ))[\\d,]{1,10}|[\\d,]{1,8}(?=(\\sobservations))"),
-    pollutant = str_extract_all(abstract, "(\\bPM\\s?2.5|\\bPM\\s?10|\\bO\\s?3\\b|\\bparticulate\\smatter\\b|\\bNO\\s?2|\\bNO\\b|\\bSO\\s?2|\\bCO\\b|\\b(A|a)ir\\s(Q|q)uality\\s(I|i)ndex\\b)")
-  )
-```
+    pollutant = str_extract_all(abstract, "(\\bPM\\s?2(\\.|,)5|\\bPM\\s?10|\\bO\\s?3\\b|\\b(o|O)zone\\b|\\b(P|p)articulate\\s(M|m)atter\\b|\\bNO\\s?2|\\b(n|N)itrogen\\s?(d|D)ioxide\\b|\\bNO\\b|\\b(n|N)itrogen\\s?(o|O)xide\\b|\\bNO\\s?(x|X)\\b|\\bSO\\s?2|\\bCO\\b|\\bBC\\b|\\b(A|a)ir\\s(Q|q)uality\\s(I|i)ndex\\b)")
+  ) %>% 
+  unnest(pollutant, keep_empty = TRUE) %>% 
+  group_by(doi) %>% 
+  mutate(
+    pollutant = tolower(pollutant), 
+    pollutant = str_replace_all(pollutant, "\\s", ""),
+    pollutant = str_replace_all(pollutant, ",", "\\."),
+    pollutant = ifelse(pollutant == "nitrogendioxide", "no2", pollutant),
+    pollutant = ifelse(pollutant == "nitrogenoxide", "no", pollutant),
+    pollutant = ifelse(pollutant == "ozone", "o3",pollutant)
+  ) %>% 
+  distinct(pollutant, .keep_all = TRUE) %>% 
+  ungroup() %>% 
+  nest(pollutant = pollutant)
 
+saveRDS(abstracts_more_info, "../Outputs/abstracts_more_info.RDS")
+```
 
 
 # Analysis of papers dealing with power and missingness issues
