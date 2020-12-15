@@ -57,7 +57,7 @@ In the present document, we aim to conduct a systematic review of the literature
 
 # Motivation
 
-In this section, we discuss the importance of such an analysis.
+In this section, we discuss the importance of such an analysis. (*Yet to be written*)
 
 # Power analysis
 
@@ -141,6 +141,25 @@ abstracts_CI %>%
 ```
 
 This corresponds **to `r articles_effect %>% filter(!is.na(effect)) %>% nrow()` valid effects** and associated confidence intervals.
+
+Here is a random example of the effects and confidence intervals detected by our method (highlighted in gray):
+
+```{r}
+set.seed(12)
+random_sentences <- sample(1:length(abstracts_CI$abstract), 3)
+
+string_confint <- "((?<!(\\.|\\d))95\\s?%|\\b95\\s(per(\\s?)cent)|\\bCI(s?)\\b|\\bPI(s?)\\b|\\b(i|I)nterval|\\b(c|C)onfidence\\s(i|I)nterval|\\b(c|C)redible\\s(i|I)nterval|\\b(p|P)osterior\\s(i|I)nterval)"
+# string_confint_detect <- "(?<!(\\.|\\d))(95)?\\s?%?(per(\\s?)cent)?\\s?(\\bCI(s?)|(\\b(c|C)onfidence\\s)?(i|I)nterval(s?))(\\s?(\\(|\\[)?CIs?(\\)|\\])?)?"
+num_confint <- "(-\\s?|−\\s?)?[\\d\\.]{1,7}[–\\s:;,%\\-to\\‐-]{1,5}(-\\s?|−\\s?)?[\\d\\.]{1,7}"
+num_effect <- "(-\\s?|−\\s?)?[\\d\\.]{1,7}"
+
+str_view_all(abstracts_CI$abstract[random_sentences], str_c(
+    num_effect, "(?=[^\\d\\.]{0,17}([^\\.\\d]", string_confint, "))(?<!\\b95)|",
+      num_effect, "(?=[^\\d\\.]{0,5}(\\(|\\[)", num_confint, "(?=%?[\\)\\];]))(?<![^\\.\\d]95)",
+    "|((?<=", string_confint, "[^\\d]{0,4})", num_confint, ")|",
+      "(?<=", num_effect, "[^\\d\\.]{0,5})(?<=(\\(|\\[))", num_confint, "(?=%?[\\)\\];])"))
+```
+
 
 ### Comparison between abstracts with and without detected effects
 

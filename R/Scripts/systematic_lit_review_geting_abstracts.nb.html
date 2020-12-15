@@ -10,7 +10,7 @@
 
 
 
-<meta name="date" content="2020-12-11" />
+<meta name="date" content="2020-12-14" />
 
 <title>Systematic literature review</title>
 
@@ -2730,7 +2730,7 @@ summary {
 <address class="author_afil">
 Columbia University<br><h4 class="author">Léo Zabrocki</h4>
 <address class="author_afil">
-Paris School of Economics<br><h4 class="date">2020-12-11</h4>
+Paris School of Economics<br><h4 class="date">2020-12-14</h4>
 
 </div>
 
@@ -2757,11 +2757,64 @@ text-align: justify}
 <p>First of all, we need to clearly define the set of articles we want to consider in this analysis. Our baseline search query is: <code>&quot;air pollution&quot; AND (&quot;emergency&quot; OR &quot;mortality&quot;) AND (&quot;particulate matter&quot; OR ozone OR &quot;nitrogen dioxyde&quot; OR &quot;sulfur dioxyde&quot;)</code>. This returns about 57000 articles (without accounting for duplicates in between journals). This number being rather large, we want to narrow it down. To focus on the epidemiological literature, we add the query term <code>poisson</code>. To get causal analyses, we add the term <code>causal</code>.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjpbIiNzZXQgZm9sZGVyIHRvIHN0b3JlIGRvd25sb2FkcyIsImNhY2hlX29wdGlvbnNfc2V0KGZ1bGxfcGF0aCA9IFwiL1VzZXJzL3ZpbmNlbnRiYWdpbGV0L0RvY3VtZW50cy9mdWxsdGV4dFwiKSIsIiMgY2FjaGVfb3B0aW9uc19zZXQoZnVsbF9wYXRoID0gXCIvVm9sdW1lcy9WaW5jZW50U1NEL1Jlc2VhcmNoX2RhdGEvYWlyX3BvbGx1dGlvbi9saXRfcmV2aWV3L2Z1bGxfdGV4dHNcIikiLCIiLCJxdWVyeSA8LSAnVElUTEUoKFwiYWlyIHBvbGx1dGlvblwiICBPUiBcImFpciBxdWFsaXR5XCIgT1IgXCJwYXJ0aWN1bGF0ZSBtYXR0ZXJcIiBPUiBvem9uZSBPUiBcIm5pdHJvZ2VuIGRpb3hpZGVcIiBPUiBcInN1bGZ1ciBkaW94aWRlXCIpIEFORCAoXCJlbWVyZ2VuY3lcIiBPUiBcIm1vcnRhbGl0eVwiKSBBTkQgTk9UIChcImxvbmcgdGVybVwiIG9yIFwibG9uZy10ZXJtXCIpKSBBTkQgKFwicGFydGljdWxhdGUgbWF0dGVyXCIgT1Igb3pvbmUgT1IgXCJuaXRyb2dlbiBkaW94aWRlXCIgT1IgXCJzdWxmdXIgZGlveGlkZVwiKScjIEFORCAocG9pc3NvbiBPUiBjYXVzYWwpJyIsIiIsIm9wdHNfZW50cmV6IDwtIGxpc3QodXNlX2hpc3RvcnkgPSBUUlVFKSIsIiIsIiNSdW4gYSBzZWFyY2giLCIjIHNlYXJjaCA8LSBmdF9zZWFyY2gocXVlcnksIGZyb20gPSBjKFwic2NvcHVzXCIsIFwiZW50cmV6XCIpLCBsaW1pdCA9IDUwKSIsInNlYXJjaCA8LSBmdF9zZWFyY2gocXVlcnksIGZyb20gPSBcInNjb3B1c1wiLCBsaW1pdCA9IDIwMDApIiwic2VhcmNoX2VudHJleiA8LSBmdF9zZWFyY2gocXVlcnksIGZyb20gPSBcImVudHJlelwiLCBsaW1pdCA9IDYwMCwgZW50cmV6b3B0cyA9IG9wdHNfZW50cmV6KSJdfQ== -->
+<pre class="r"><code>#set folder to store downloads
+cache_options_set(full_path = &quot;/Users/vincentbagilet/Documents/fulltext&quot;)
+# cache_options_set(full_path = &quot;/Volumes/VincentSSD/Research_data/air_pollution/lit_review/full_texts&quot;)
+
+query &lt;- &#39;TITLE((&quot;air pollution&quot;  OR &quot;air quality&quot; OR &quot;particulate matter&quot; OR ozone OR &quot;nitrogen dioxide&quot; OR &quot;sulfur dioxide&quot;) AND (&quot;emergency&quot; OR &quot;mortality&quot;) AND NOT (&quot;long term&quot; or &quot;long-term&quot;)) AND (&quot;particulate matter&quot; OR ozone OR &quot;nitrogen dioxide&quot; OR &quot;sulfur dioxide&quot;)&#39;# AND (poisson OR causal)&#39;
+
+opts_entrez &lt;- list(use_history = TRUE)
+
+#Run a search
+# search &lt;- ft_search(query, from = c(&quot;scopus&quot;, &quot;entrez&quot;), limit = 50)
+search &lt;- ft_search(query, from = &quot;scopus&quot;, limit = 2000)
+search_entrez &lt;- ft_search(query, from = &quot;entrez&quot;, limit = 600, entrezopts = opts_entrez)</code></pre>
+<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>Then, we retrieve the related metadata. The metadata from different sources having different shapes, we only select a few relevant columns to build an overall metadata set.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjpbIm1ldGFkYXRhX3Njb3B1cyA8LSBzZWFyY2gkc2NvcHVzJGRhdGEgJT4lICIsIiAgYXNfdGliYmxlKCkgJT4lICIsIiAgcmVuYW1lX2FsbChmdW5jdGlvbih4KSBzdHJfcmVtb3ZlX2FsbChuYW1lcyguKSwgXCJwcmlzbTp8ZGM6XCIpKSAlPiUgIiwiICByZW5hbWVfYWxsKGZ1bmN0aW9uKHgpIHN0cl9yZXBsYWNlX2FsbChuYW1lcyguKSwgXCItXCIsIFwiX1wiKSkgJT4lICIsIiAgc2VsZWN0KGRvaSwgdGl0bGUsIGNyZWF0b3IsIHB1YmxpY2F0aW9uTmFtZSwgcHVibWVkX2lkLCBjb3ZlckRhdGUpICU+JSAiLCIgIHJlbmFtZSgiLCIgICAgYXV0aG9ycyA9IGNyZWF0b3IsIiwiICAgIGpvdXJuYWwgPSBwdWJsaWNhdGlvbk5hbWUiLCIgICkgJT4lICIsIiAgbXV0YXRlKCIsIiAgICBwdWJtZWRfaWQgPSBpZmVsc2UoIXN0cl9kZXRlY3QocHVibWVkX2lkLCBcIlswLTldezd9XCIpLCBOQSwgcHVibWVkX2lkKSwiLCIgICAgcHViX2RhdGUgPSB5bWQoY292ZXJEYXRlKSIsIiAgKSAlPiUgIiwiICBzZWxlY3QoLWNvdmVyRGF0ZSkiLCIiLCJtZXRhZGF0YV9lbnRyZXogPC0gc2VhcmNoX2VudHJleiRlbnRyZXokZGF0YSAlPiUgI3NlYXJjaF9lbnRyZXokZW50cmV6JGRhdGEgIiwiICBhc190aWJibGUoKSAlPiUgIiwiICAjIHJlbmFtZShpZCA9IHVpZCkgJT4lICIsIiAgc2VsZWN0KGRvaSwgdGl0bGUsIGF1dGhvcnMsIGZ1bGxqb3VybmFsbmFtZSwgcG1pZCwgcHViZGF0ZSkgJT4lICIsIiAgcmVuYW1lKCIsIiAgICBqb3VybmFsID0gZnVsbGpvdXJuYWxuYW1lLCIsIiAgICBwdWJtZWRfaWQgPSBwbWlkIiwiICApICU+JSAiLCIgIG11dGF0ZSgiLCIgICAgcHVibWVkX2lkID0gaWZlbHNlKCFzdHJfZGV0ZWN0KHB1Ym1lZF9pZCwgXCJbMC05XXs3fVwiKSwgTkEsIHB1Ym1lZF9pZCksIiwiICAgIHB1Yl9kYXRlID0geW1kKHB1YmRhdGUpIiwiICApICU+JSAiLCIgIHNlbGVjdCgtcHViZGF0ZSkiLCIiLCJtZXRhZGF0YV9saXRfcmV2aWV3IDwtIG1ldGFkYXRhX3Njb3B1cyAlPiUgIiwiICByYmluZChtZXRhZGF0YV9lbnRyZXopICU+JSAiLCIgIGZpbHRlcighaXMubmEoZG9pKSkgJT4lICIsIiAgbXV0YXRlKHBiX2RvaSA9IHN0cl9kZXRlY3QoZG9pLCBcIls8PjtdXCIpKSAlPiUgI3NvbWUgZG9pcyBhcmUgbm90IHZhbGlkIiwiICBmaWx0ZXIocGJfZG9pID09IEZBTFNFKSAlPiUgIiwiICBzZWxlY3QoLXBiX2RvaSkiLCIiLCJzYXZlUkRTKG1ldGFkYXRhX2xpdF9yZXZpZXcsIFwiLi4vT3V0cHV0cy9tZXRhZGF0YV9saXRfcmV2aWV3LlJEU1wiKSJdfQ== -->
+<pre class="r"><code>metadata_scopus &lt;- search$scopus$data %&gt;% 
+  as_tibble() %&gt;% 
+  rename_all(function(x) str_remove_all(names(.), &quot;prism:|dc:&quot;)) %&gt;% 
+  rename_all(function(x) str_replace_all(names(.), &quot;-&quot;, &quot;_&quot;)) %&gt;% 
+  select(doi, title, creator, publicationName, pubmed_id, coverDate) %&gt;% 
+  rename(
+    authors = creator,
+    journal = publicationName
+  ) %&gt;% 
+  mutate(
+    pubmed_id = ifelse(!str_detect(pubmed_id, &quot;[0-9]{7}&quot;), NA, pubmed_id),
+    pub_date = ymd(coverDate)
+  ) %&gt;% 
+  select(-coverDate)
+
+metadata_entrez &lt;- search_entrez$entrez$data %&gt;% #search_entrez$entrez$data 
+  as_tibble() %&gt;% 
+  # rename(id = uid) %&gt;% 
+  select(doi, title, authors, fulljournalname, pmid, pubdate) %&gt;% 
+  rename(
+    journal = fulljournalname,
+    pubmed_id = pmid
+  ) %&gt;% 
+  mutate(
+    pubmed_id = ifelse(!str_detect(pubmed_id, &quot;[0-9]{7}&quot;), NA, pubmed_id),
+    pub_date = ymd(pubdate)
+  ) %&gt;% 
+  select(-pubdate)
+
+metadata_lit_review &lt;- metadata_scopus %&gt;% 
+  rbind(metadata_entrez) %&gt;% 
+  filter(!is.na(doi)) %&gt;% 
+  mutate(pb_doi = str_detect(doi, &quot;[&lt;&gt;;]&quot;)) %&gt;% #some dois are not valid
+  filter(pb_doi == FALSE) %&gt;% 
+  select(-pb_doi)
+
+saveRDS(metadata_lit_review, &quot;../Outputs/metadata_lit_review.RDS&quot;)</code></pre>
+<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 </div>
@@ -2775,6 +2828,57 @@ text-align: justify}
 <p>In Semantic Scholar, there is a rate limit of 100 articles per 5 min or 20 articles per minute. We therefore need to pause the system to be able to download everything. In addition, some DOIs are not valid so we filtered them out in a previous step (<code>pb_doi</code>). In case any problem remains, we use tryCatch to record the DOIs corresponding to errors in order to be able to handle them later.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjpbImdldF9hYnN0cmFjdHMgPC0gZnVuY3Rpb24oZG9pKSB7IiwiICB2ZWN0X2RvaSA8LSB1bmlxdWUoZG9pKSIsIiAgbnVtYmVyX3BlcmlvZHMgPC0gKGxlbmd0aCh2ZWN0X2RvaSkgLSAxKSAlLyUgMjAiLCIgIGFicyA8LSBOVUxMIiwiIiwiICBtZXNzYWdlKHN0cl9jKFwiVG90YWwgZG93bmxvYWRpbmcgdGltZTogXCIsIG51bWJlcl9wZXJpb2RzLCBcIm1pblwiKSkiLCIgICIsIiAgZm9yIChpIGluIDA6bnVtYmVyX3BlcmlvZHMpIHsiLCIgICAgIiwiICAgIGRvaV9wZXJpb2QgPC0gdmVjdF9kb2lbKDIwKmkrMSk6KDIwKihpKzEpKV0iLCIgICAgZG9pX3BlcmlvZCA8LSBkb2lfcGVyaW9kWyFpcy5uYShkb2lfcGVyaW9kKV0iLCIgICAgIiwiICAgIHNraXBfdG9fbmV4dCA8LSBGQUxTRSAjdG8gaGFuZGxlIGlzc3VlcywgdXNpbmcgdHJ5Q2F0Y2giLCIgICAgIiwiICAgIHBvc3NpYmxlX2Vycm9yIDwtIHRyeUNhdGNoKCIsIiAgICAgIGFic19wZXJpb2QgPC0gZG9pX3BlcmlvZCAlPiUiLCIgICAgICAgIGZ0X2Fic3RyYWN0KGZyb20gPSBcInNlbWFudGljc2Nob2xhclwiKSAlPiUiLCIgICAgICAgIC4kc2VtYW50aWNzY2hvbGFyICU+JSIsIiAgICAgICAgYXNfdGliYmxlKCkgJT4lIiwiICAgICAgICB1bm5lc3QoY29scyA9IGV2ZXJ5dGhpbmcoKSkgJT4lIiwiICAgICAgICBwaXZvdF9sb25nZXIoZXZlcnl0aGluZygpLCBuYW1lc190byA9IFwiZG9pXCIsIHZhbHVlc190byA9IFwiYWJzdHJhY3RcIikgJT4lIiwiICAgICAgICBmaWx0ZXIoZG9pICE9IGFic3RyYWN0KSwiLCIgICAgICBlcnJvciA9IGZ1bmN0aW9uKGUpIGUiLCIgICAgKSIsIiAgICAiLCIgICAgaWYgKGluaGVyaXRzKHBvc3NpYmxlX2Vycm9yLCBcImVycm9yXCIpKSB7IiwiICAgICAgd2FybmluZyhzdHJfYyhcIlRoZSBhYnN0cmFjdHMgZm9yIHRoZSBmb2xsb3dpbmcgYXJ0aWNsZXMgY291bGQgbm90IGJlIGRvd25sb2FkZWQ6IFwiLCBzdHJfYyhkb2lfcGVyaW9kLCBjb2xsYXBzZSA9IFwiLFwiKSkpIiwiICAgICAgbmV4dCIsIiAgICB9IGVsc2UgeyIsIiAgICAgICBhYnMgPC0gYWJzICU+JSIsIiAgICAgICAgcmJpbmQoYWJzX3BlcmlvZCkiLCIgICAgfSIsIiAgICAiLCIgICAgaWYgKGkgPCBudW1iZXJfcGVyaW9kcyAmIG51bWJlcl9wZXJpb2RzICE9IDApIHsiLCIgICAgICBtZXNzYWdlKHN0cl9jKFwiUmVtYWluaW5nIHRpbWU6IFwiLCAobnVtYmVyX3BlcmlvZHMgLSBpKSwgXCJtaW5cIikpIiwiICAgICAgU3lzLnNsZWVwKDYzKSIsIiAgICB9IiwiICB9ICIsIiAgIiwiICByZXR1cm4oYWJzKSIsIn0iLCIiLCJhYnN0cmFjdHMgPC0gbWV0YWRhdGFfbGl0X3JldmlldyAlPiUiLCIgIGRpc3RpbmN0KHRpdGxlLCAua2VlcF9hbGwgPSBUUlVFKSAlPiUgIiwiICAuJGRvaSAlPiUgIiwiICBnZXRfYWJzdHJhY3RzKCkgICU+JSAiLCIgIGxlZnRfam9pbihtZXRhZGF0YV9saXRfcmV2aWV3LCBieSA9IFwiZG9pXCIpICIsIiIsIiMgc2F2ZVJEUyhhYnN0cmFjdHMsIFwiLi4vT3V0cHV0cy9hYnN0cmFjdHMuUkRTXCIpIl19 -->
+<pre class="r"><code>get_abstracts &lt;- function(doi) {
+  vect_doi &lt;- unique(doi)
+  number_periods &lt;- (length(vect_doi) - 1) %/% 20
+  abs &lt;- NULL
+
+  message(str_c(&quot;Total downloading time: &quot;, number_periods, &quot;min&quot;))
+  
+  for (i in 0:number_periods) {
+    
+    doi_period &lt;- vect_doi[(20*i+1):(20*(i+1))]
+    doi_period &lt;- doi_period[!is.na(doi_period)]
+    
+    skip_to_next &lt;- FALSE #to handle issues, using tryCatch
+    
+    possible_error &lt;- tryCatch(
+      abs_period &lt;- doi_period %&gt;%
+        ft_abstract(from = &quot;semanticscholar&quot;) %&gt;%
+        .$semanticscholar %&gt;%
+        as_tibble() %&gt;%
+        unnest(cols = everything()) %&gt;%
+        pivot_longer(everything(), names_to = &quot;doi&quot;, values_to = &quot;abstract&quot;) %&gt;%
+        filter(doi != abstract),
+      error = function(e) e
+    )
+    
+    if (inherits(possible_error, &quot;error&quot;)) {
+      warning(str_c(&quot;The abstracts for the following articles could not be downloaded: &quot;, str_c(doi_period, collapse = &quot;,&quot;)))
+      next
+    } else {
+       abs &lt;- abs %&gt;%
+        rbind(abs_period)
+    }
+    
+    if (i &lt; number_periods &amp; number_periods != 0) {
+      message(str_c(&quot;Remaining time: &quot;, (number_periods - i), &quot;min&quot;))
+      Sys.sleep(63)
+    }
+  } 
+  
+  return(abs)
+}
+
+abstracts &lt;- metadata_lit_review %&gt;%
+  distinct(title, .keep_all = TRUE) %&gt;% 
+  .$doi %&gt;% 
+  get_abstracts()  %&gt;% 
+  left_join(metadata_lit_review, by = &quot;doi&quot;) 
+
+# saveRDS(abstracts, &quot;../Outputs/abstracts.RDS&quot;)</code></pre>
+<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 </div>
@@ -2782,6 +2886,9 @@ text-align: justify}
 <h2>Retreiving effects and confidence interavals</h2>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYWJzdHJhY3RzIDwtIHJlYWRSRFMoXCIuLi9PdXRwdXRzL2Fic3RyYWN0cy5SRFNcIilcbmBgYCJ9 -->
+<pre class="r"><code>abstracts &lt;- readRDS(&quot;../Outputs/abstracts.RDS&quot;)</code></pre>
+<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>Then we want to extract the effects, odds ratio and associated confidence intervals in the abstracts. Part of the literature, display directly effects and confidence intervals in their abstracts.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> We thus consider these abstracts (about 684 abstracts) and identify effects and CIs as follows:</p>
@@ -2791,12 +2898,57 @@ text-align: justify}
 </ul>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc3RyaW5nX2NvbmZpbnQgPC0gXCIoKD88IShcXFxcLnxcXFxcZCkpOTVcXFxccz8lfFxcXFxiOTVcXFxccyhwZXIoXFxcXHM/KWNlbnQpfFxcXFxiQ0kocz8pXFxcXGJ8XFxcXGJQSShzPylcXFxcYnxcXFxcYihpfEkpbnRlcnZhbHxcXFxcYihjfEMpb25maWRlbmNlXFxcXHMoaXxJKW50ZXJ2YWx8XFxcXGIoY3xDKXJlZGlibGVcXFxccyhpfEkpbnRlcnZhbHxcXFxcYihwfFApb3N0ZXJpb3JcXFxccyhpfEkpbnRlcnZhbClcIlxuIyBzdHJpbmdfY29uZmludF9kZXRlY3QgPC0gXCIoPzwhKFxcXFwufFxcXFxkKSkoOTUpP1xcXFxzPyU/KHBlcihcXFxccz8pY2VudCk/XFxcXHM/KFxcXFxiQ0kocz8pfChcXFxcYihjfEMpb25maWRlbmNlXFxcXHMpPyhpfEkpbnRlcnZhbChzPykpKFxcXFxzPyhcXFxcKHxcXFxcWyk/Q0lzPyhcXFxcKXxcXFxcXSk/KT9cIlxubnVtX2NvbmZpbnQgPC0gXCIoLVxcXFxzP3ziiJJcXFxccz8pP1tcXFxcZFxcXFwuXXsxLDd9W+KAk1xcXFxzOjssJVxcXFwtdG9cXFxc4oCQLV17MSw1fSgtXFxcXHM/fOKIklxcXFxzPyk/W1xcXFxkXFxcXC5dezEsN31cIlxubnVtX2VmZmVjdCA8LSBcIigtXFxcXHM/fOKIklxcXFxzPyk/W1xcXFxkXFxcXC5dezEsN31cIlxuXG5lZmZlY3RzX0NJIDwtIGFic3RyYWN0cyAlPiUgXG4gIG11dGF0ZShcbiAgICBhYnN0cmFjdCA9IHN0cl9yZXBsYWNlX2FsbChhYnN0cmFjdCwgXCLCt1wiLCBcIi5cIiksXG4gICAgYWJzdHJhY3QgPSBzdHJfcmVwbGFjZV9hbGwoYWJzdHJhY3QsIFwiQy5JLlwiLCBcIkNJXCIpXG4gICkgJT4lIFxuICBzZWxlY3QoZG9pLCBhYnN0cmFjdCkgJT4lIFxuICB1bm5lc3RfdG9rZW5zKHNlbnRlbmNlLCBhYnN0cmFjdCwgdG9rZW4gPSBcInNlbnRlbmNlc1wiLCB0b19sb3dlciA9IEZBTFNFLCBkcm9wID0gRkFMU0UpICU+JSBcbiAgbXV0YXRlKFxuICAgIGNvbnRhaW5zX0NJID0gc3RyX2RldGVjdChzZW50ZW5jZSwgc3RyaW5nX2NvbmZpbnQpLFxuICAgIHNlbnRlbmNlID0gc3RyX3JlcGxhY2VfYWxsKHNlbnRlbmNlLCBcIig/PD0oPzwhXFxcXC4pKD88IVxcXFxkKVxcXFxkezEsNH0pLCg/PShcXFxcZHszfSg/IVxcXFwuKSkpXCIsIFwiXCIpXG4gICkgJT4lXG4gIGZpbHRlcihjb250YWluc19DSSkgJT4lXG4gICMgbXV0YXRlKFxuICAjICAgZWZmZWN0X0NJID0gc3RyX2V4dHJhY3RfYWxsKHNlbnRlbmNlLCBzdHJfYyhcbiAgIyAgIG51bV9lZmZlY3QsIFwiW15cXFxcZFxcXFwuXXswLDE3fShbXlxcXFwuXFxcXGRdXCIsXG4gICMgICBzdHJpbmdfY29uZmludCwgXCIpLnswLDM1fSgoPzw9XCIsIHN0cmluZ19jb25maW50LCBcIlteXFxcXGRdezAsNH0pXCIsXG4gICMgICBudW1fY29uZmludCwgXCJbXlxcXFxkXFxcXC5dezAsM31bXFxcXClcXFxcXTssXSl8XCIsIG51bV9lZmZlY3QsIFwiW15cXFxcZFxcXFwuXXswLDV9KFxcXFwofFxcXFxbKVwiLCBudW1fY29uZmludCwgXCIlP1tcXFxcKVxcXFxdO10oPzwhW15cXFxcLlxcXFxkXTk1KVwiKSlcbiAgIyApICU+JVxuICAjIHVubmVzdChlZmZlY3RfQ0ksIGtlZXBfZW1wdHkgPSBUUlVFKSAlPiUgXG4gIG11dGF0ZShcbiAgICBDSSA9IHN0cl9leHRyYWN0X2FsbChzZW50ZW5jZSwgc3RyX2MoXG4gICAgICBcIigoPzw9XCIsIHN0cmluZ19jb25maW50LCBcIlteXFxcXGRdezAsNH0pXCIsIG51bV9jb25maW50LCBcIil8XCIsXG4gICAgICBcIig/PD1cIiwgbnVtX2VmZmVjdCwgXCJbXlxcXFxkXFxcXC5dezAsNX0pKD88PShcXFxcKHxcXFxcWykpXCIsIG51bV9jb25maW50LCBcIig/PSU/W1xcXFwpXFxcXF07XSlcIilcbiAgICApLCAgIFxuICAgIGVmZmVjdCA9IHN0cl9leHRyYWN0X2FsbChzZW50ZW5jZSwgc3RyX2MoXG4gICAgICBudW1fZWZmZWN0LCBcIig/PVteXFxcXGRcXFxcLl17MCwxN30oW15cXFxcLlxcXFxkXVwiLCBzdHJpbmdfY29uZmludCwgXCIpKSg/PCFcXFxcYjk1KXxcIixcbiAgICAgIG51bV9lZmZlY3QsIFwiKD89W15cXFxcZFxcXFwuXXswLDV9KFxcXFwofFxcXFxbKVwiLCBudW1fY29uZmludCwgXCIoPz0lP1tcXFxcKVxcXFxdO10pKSg/PCFbXlxcXFwuXFxcXGRdOTUpXCIpXG4gICAgKVxuICApIFxuICAjIHNlbGVjdCgtZWZmZWN0X0NJKVxuYGBgIn0= -->
+<pre class="r"><code>string_confint &lt;- &quot;((?&lt;!(\\.|\\d))95\\s?%|\\b95\\s(per(\\s?)cent)|\\bCI(s?)\\b|\\bPI(s?)\\b|\\b(i|I)nterval|\\b(c|C)onfidence\\s(i|I)nterval|\\b(c|C)redible\\s(i|I)nterval|\\b(p|P)osterior\\s(i|I)nterval)&quot;
+# string_confint_detect &lt;- &quot;(?&lt;!(\\.|\\d))(95)?\\s?%?(per(\\s?)cent)?\\s?(\\bCI(s?)|(\\b(c|C)onfidence\\s)?(i|I)nterval(s?))(\\s?(\\(|\\[)?CIs?(\\)|\\])?)?&quot;
+num_confint &lt;- &quot;(-\\s?|−\\s?)?[\\d\\.]{1,7}[–\\s:;,%\\-to\\‐-]{1,5}(-\\s?|−\\s?)?[\\d\\.]{1,7}&quot;
+num_effect &lt;- &quot;(-\\s?|−\\s?)?[\\d\\.]{1,7}&quot;
+
+effects_CI &lt;- abstracts %&gt;% 
+  mutate(
+    abstract = str_replace_all(abstract, &quot;·&quot;, &quot;.&quot;),
+    abstract = str_replace_all(abstract, &quot;C.I.&quot;, &quot;CI&quot;)
+  ) %&gt;% 
+  select(doi, abstract) %&gt;% 
+  unnest_tokens(sentence, abstract, token = &quot;sentences&quot;, to_lower = FALSE, drop = FALSE) %&gt;% 
+  mutate(
+    contains_CI = str_detect(sentence, string_confint),
+    sentence = str_replace_all(sentence, &quot;(?&lt;=(?&lt;!\\.)(?&lt;!\\d)\\d{1,4}),(?=(\\d{3}(?!\\.)))&quot;, &quot;&quot;)
+  ) %&gt;%
+  filter(contains_CI) %&gt;%
+  # mutate(
+  #   effect_CI = str_extract_all(sentence, str_c(
+  #   num_effect, &quot;[^\\d\\.]{0,17}([^\\.\\d]&quot;,
+  #   string_confint, &quot;).{0,35}((?&lt;=&quot;, string_confint, &quot;[^\\d]{0,4})&quot;,
+  #   num_confint, &quot;[^\\d\\.]{0,3}[\\)\\];,])|&quot;, num_effect, &quot;[^\\d\\.]{0,5}(\\(|\\[)&quot;, num_confint, &quot;%?[\\)\\];](?&lt;![^\\.\\d]95)&quot;))
+  # ) %&gt;%
+  # unnest(effect_CI, keep_empty = TRUE) %&gt;% 
+  mutate(
+    CI = str_extract_all(sentence, str_c(
+      &quot;((?&lt;=&quot;, string_confint, &quot;[^\\d]{0,4})&quot;, num_confint, &quot;)|&quot;,
+      &quot;(?&lt;=&quot;, num_effect, &quot;[^\\d\\.]{0,5})(?&lt;=(\\(|\\[))&quot;, num_confint, &quot;(?=%?[\\)\\];])&quot;)
+    ),   
+    effect = str_extract_all(sentence, str_c(
+      num_effect, &quot;(?=[^\\d\\.]{0,17}([^\\.\\d]&quot;, string_confint, &quot;))(?&lt;!\\b95)|&quot;,
+      num_effect, &quot;(?=[^\\d\\.]{0,5}(\\(|\\[)&quot;, num_confint, &quot;(?=%?[\\)\\];]))(?&lt;![^\\.\\d]95)&quot;)
+    )
+  ) 
+  # select(-effect_CI)</code></pre>
+<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>These lines of code return a set of confidence intervals and effect for each sentence containing the phrase (“CI”, “confidence interval”, etc). We could improve this code by linking directly each effect to its confidence interval. For now, if we do not detect the same number of effects and confidence interval in a sentence, we drop the sentence, even though there are 5 pairs of effect-CI and only one of them is badly detected.</p>
 <p>Note that some problems might remain with our estimates and CIs detected. Yet, a vast majority of estimates are correctly detected. Here are examples of the confidence intervals and effects detected using our current method:</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucmFuZG9tX3NlbnRlbmNlcyA8LSBzYW1wbGUoMTpsZW5ndGgoZWZmZWN0c19DSSRzZW50ZW5jZSksIDUpXG5zdHJfdmlld19hbGwoZWZmZWN0c19DSSRzZW50ZW5jZVtyYW5kb21fc2VudGVuY2VzXSwgc3RyX2MoXG4gICAgbnVtX2VmZmVjdCwgXCIoPz1bXlxcXFxkXFxcXC5dezAsMTd9KFteXFxcXC5cXFxcZF1cIiwgc3RyaW5nX2NvbmZpbnQsIFwiKSkoPzwhXFxcXGI5NSl8XCIsXG4gICAgICBudW1fZWZmZWN0LCBcIig/PVteXFxcXGRcXFxcLl17MCw1fShcXFxcKHxcXFxcWylcIiwgbnVtX2NvbmZpbnQsIFwiKD89JT9bXFxcXClcXFxcXTtdKSkoPzwhW15cXFxcLlxcXFxkXTk1KVwiLFxuICAgIFwifCgoPzw9XCIsIHN0cmluZ19jb25maW50LCBcIlteXFxcXGRdezAsNH0pXCIsIG51bV9jb25maW50LCBcIil8XCIsXG4gICAgICBcIig/PD1cIiwgbnVtX2VmZmVjdCwgXCJbXlxcXFxkXFxcXC5dezAsNX0pKD88PShcXFxcKHxcXFxcWykpXCIsIG51bV9jb25maW50LCBcIig/PSU/W1xcXFwpXFxcXF07XSlcIikpXG5gYGAifQ== -->
+<pre class="r"><code>random_sentences &lt;- sample(1:length(effects_CI$sentence), 5)
+str_view_all(effects_CI$sentence[random_sentences], str_c(
+    num_effect, &quot;(?=[^\\d\\.]{0,17}([^\\.\\d]&quot;, string_confint, &quot;))(?&lt;!\\b95)|&quot;,
+      num_effect, &quot;(?=[^\\d\\.]{0,5}(\\(|\\[)&quot;, num_confint, &quot;(?=%?[\\)\\];]))(?&lt;![^\\.\\d]95)&quot;,
+    &quot;|((?&lt;=&quot;, string_confint, &quot;[^\\d]{0,4})&quot;, num_confint, &quot;)|&quot;,
+      &quot;(?&lt;=&quot;, num_effect, &quot;[^\\d\\.]{0,5})(?&lt;=(\\(|\\[))&quot;, num_confint, &quot;(?=%?[\\)\\];])&quot;))</code></pre>
+<!-- rnb-source-end -->
 
 <!-- rnb-htmlwidget-begin eyJkZXBlbmRlbmNpZXMiOlt7Im5hbWUiOiJodG1sd2lkZ2V0cyIsInZlcnNpb24iOiIxLjUuMiIsInNyYyI6eyJmaWxlIjoiL0xpYnJhcnkvRnJhbWV3b3Jrcy9SLmZyYW1ld29yay9WZXJzaW9ucy80LjAvUmVzb3VyY2VzL2xpYnJhcnkvaHRtbHdpZGdldHMvd3d3In0sIm1ldGEiOltdLCJzY3JpcHQiOiJodG1sd2lkZ2V0cy5qcyIsInN0eWxlc2hlZXQiOltdLCJoZWFkIjpbXSwiYXR0YWNobWVudCI6W10sInBhY2thZ2UiOltdLCJhbGxfZmlsZXMiOnRydWV9LHsibmFtZSI6InN0cl92aWV3IiwidmVyc2lvbiI6IjAuMS4wIiwic3JjIjp7ImZpbGUiOiIvTGlicmFyeS9GcmFtZXdvcmtzL1IuZnJhbWV3b3JrL1ZlcnNpb25zLzQuMC9SZXNvdXJjZXMvbGlicmFyeS9zdHJpbmdyL2h0bWx3aWRnZXRzL2xpYi8ifSwibWV0YSI6W10sInNjcmlwdCI6W10sInN0eWxlc2hlZXQiOiJzdHJfdmlldy5jc3MiLCJoZWFkIjpbXSwiYXR0YWNobWVudCI6W10sInBhY2thZ2UiOltdLCJhbGxfZmlsZXMiOnRydWV9LHsibmFtZSI6InN0cl92aWV3LWJpbmRpbmciLCJ2ZXJzaW9uIjoiMS40LjAiLCJzcmMiOnsiZmlsZSI6Ii9MaWJyYXJ5L0ZyYW1ld29ya3MvUi5mcmFtZXdvcmsvVmVyc2lvbnMvNC4wL1Jlc291cmNlcy9saWJyYXJ5L3N0cmluZ3IvaHRtbHdpZGdldHMifSwibWV0YSI6W10sInNjcmlwdCI6InN0cl92aWV3LmpzIiwic3R5bGVzaGVldCI6W10sImhlYWQiOltdLCJhdHRhY2htZW50IjpbXSwicGFja2FnZSI6W10sImFsbF9maWxlcyI6ZmFsc2V9XSwibWV0YWRhdGEiOnsiY2xhc3NlcyI6WyJzdHJfdmlldyIsImh0bWx3aWRnZXQiXSwic2l6aW5nUG9saWN5Ijp7ImRlZmF1bHRXaWR0aCI6WyJhdXRvIl0sImRlZmF1bHRIZWlnaHQiOls1MF0sInBhZGRpbmciOltdLCJ2aWV3ZXIiOnsiZGVmYXVsdFdpZHRoIjpbXSwiZGVmYXVsdEhlaWdodCI6W10sInBhZGRpbmciOltdLCJmaWxsIjpbdHJ1ZV0sInN1cHByZXNzIjpbZmFsc2VdLCJwYW5lSGVpZ2h0IjpbXX0sImJyb3dzZXIiOnsiZGVmYXVsdFdpZHRoIjpbXSwiZGVmYXVsdEhlaWdodCI6W10sInBhZGRpbmciOltdLCJmaWxsIjpbZmFsc2VdLCJleHRlcm5hbCI6W2ZhbHNlXX0sImtuaXRyIjp7ImRlZmF1bHRXaWR0aCI6W10sImRlZmF1bHRIZWlnaHQiOlsiMTAwJSJdLCJmaWd1cmUiOltmYWxzZV19LCJ2aWV3ZXIucGFkZGluZyI6WzBdLCJ2aWV3ZXIuZmlsbCI6W3RydWVdfX19 -->
 
@@ -2813,6 +2965,29 @@ text-align: justify}
 <p>Once the effects and CI are identified, some wrangling is necessary in order to get the data into a usable format. We also choose to <strong>drop effects which do not fall into the CI</strong> (62 estimates) in order to get rid off most of the poorly detected effects-CIs.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZWZmZWN0c19DSV9jbGVhbiA8LSBlZmZlY3RzX0NJICU+JSBcbiAgZmlsdGVyKGxlbmd0aHMoZWZmZWN0KSA9PSBsZW5ndGhzKENJKSkgJT4lICNpZiBudW1iZXIgb2YgZWZmZWN0cyAhPSBuYiBvZiBDSSBmb3IgYSBzZW50ZW5jZSxcbiAgI2Nhbid0IGF0dHJpYnV0ZSBlZmZlY3RzIHRvIENJIHNvLCBkcm9wIHNlbnRlbmNlXG4gIHVubmVzdChjKGVmZmVjdCwgQ0kpLCBrZWVwX2VtcHR5ID0gVFJVRSkgJT4lXG4gIG11dGF0ZShDSSA9IHN0cl9yZW1vdmVfYWxsKENJLCBcIlxcXFxzXCIpKSAlPiUgXG4gICMgc2VwYXJhdGUoQ0ksIGludG8gPSBjKFwibG93X0NJXCIsIFwidXBfQ0lcIiksIFwiKFtcXFxccyxdKyl8KD88IV4pWy3igJNdXCIpICU+JSBcbiAgc2VwYXJhdGUoQ0ksIGludG8gPSBjKFwibG93X0NJXCIsIFwidXBfQ0lcIiksIFwiKD88IV4pW+KAkzo7LCVcXFxcLXRvXFxcXOKAkF17MSw1fVwiKSAlPiVcbiAgbXV0YXRlKGFjcm9zcyhjKFwiZWZmZWN0XCIsIFwibG93X0NJXCIsIFwidXBfQ0lcIiksIC5mbnMgPSBhcy5udW1lcmljKSkgJT4lIFxuICBtdXRhdGUoXG4gICAgbG93X0NJID0gaWZlbHNlKGlzLm5hKHVwX0NJKSwgTkEsIGxvd19DSSksXG4gICAgdXBfQ0kgPSBpZmVsc2UoaXMubmEobG93X0NJKSwgTkEsIHVwX0NJKSxcbiAgICBlZmZlY3QgPSBpZmVsc2UoaXMubmEobG93X0NJKSwgTkEsIGVmZmVjdClcbiAgKSAlPiUgXG4gIHNlbGVjdCgtc2VudGVuY2UsIC1hYnN0cmFjdCwgLWNvbnRhaW5zX0NJKSAlPiVcbiAgZmlsdGVyKCFpcy5uYShlZmZlY3QpKSAlPiUgIFxuICBmaWx0ZXIoZWZmZWN0ID4gbG93X0NJICYgZWZmZWN0IDwgdXBfQ0kpXG5cbmFydGljbGVzX2VmZmVjdCA8LSBhYnN0cmFjdHMgJT4lIFxuICBsZWZ0X2pvaW4oZWZmZWN0c19DSV9jbGVhbiwgYnkgPSBcImRvaVwiKVxuXG5zYXZlUkRTKGFydGljbGVzX2VmZmVjdCwgXCIuLi9PdXRwdXRzL2FydGljbGVzX2VmZmVjdC5SRFNcIilcbmBgYCJ9 -->
+<pre class="r"><code>effects_CI_clean &lt;- effects_CI %&gt;% 
+  filter(lengths(effect) == lengths(CI)) %&gt;% #if number of effects != nb of CI for a sentence,
+  #can&#39;t attribute effects to CI so, drop sentence
+  unnest(c(effect, CI), keep_empty = TRUE) %&gt;%
+  mutate(CI = str_remove_all(CI, &quot;\\s&quot;)) %&gt;% 
+  # separate(CI, into = c(&quot;low_CI&quot;, &quot;up_CI&quot;), &quot;([\\s,]+)|(?&lt;!^)[-–]&quot;) %&gt;% 
+  separate(CI, into = c(&quot;low_CI&quot;, &quot;up_CI&quot;), &quot;(?&lt;!^)[–:;,%\\-to\\‐]{1,5}&quot;) %&gt;%
+  mutate(across(c(&quot;effect&quot;, &quot;low_CI&quot;, &quot;up_CI&quot;), .fns = as.numeric)) %&gt;% 
+  mutate(
+    low_CI = ifelse(is.na(up_CI), NA, low_CI),
+    up_CI = ifelse(is.na(low_CI), NA, up_CI),
+    effect = ifelse(is.na(low_CI), NA, effect)
+  ) %&gt;% 
+  select(-sentence, -abstract, -contains_CI) %&gt;%
+  filter(!is.na(effect)) %&gt;%  
+  filter(effect &gt; low_CI &amp; effect &lt; up_CI)
+
+articles_effect &lt;- abstracts %&gt;% 
+  left_join(effects_CI_clean, by = &quot;doi&quot;)
+
+saveRDS(articles_effect, &quot;../Outputs/articles_effect.RDS&quot;)</code></pre>
+<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- ```{r} -->
@@ -2833,6 +3008,41 @@ text-align: justify}
 <p>It might also be interesting to information about the type of pollutant considered in the study, the study period, the number of observations or p-values. We also use regex to recover these information.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubW9udGhfcmVnZXggPC0gXCJcXFxcYig/Okphbig/OnVhcnkpP3xGZWIoPzpydWFyeSk/fE1hcig/OmNoKT98QXByKD86aWwpP3xNYXl8SnVuKD86ZSk/fEp1bCg/OnkpP3xBdWcoPzp1c3QpP3xTZXAoPzp0ZW1iZXIpP3xPY3QoPzpvYmVyKT98KE5vdnxEZWMpKD86ZW1iZXIpPylcIlxuZGF0ZV9yZWdleCA8LSBzdHJfYyhcIihcIixtb250aF9yZWdleCwgXCJcXFxccyl7MCwxfSgxOXwyMClcXFxcZHsyfVwiKVxuXG5hYnN0cmFjdHNfbW9yZV9pbmZvIDwtIGFic3RyYWN0cyAlPiUgXG4gIG11dGF0ZShcbiAgICBhYnN0cmFjdCA9IHN0cl9yZXBsYWNlX2FsbChhYnN0cmFjdCwgXCLCt1wiLCBcIi5cIilcbiAgKSAlPiUgXG4gIHNlbGVjdChkb2ksIGFic3RyYWN0KSAlPiVcbiAgbXV0YXRlKFxuICAgIGRhdGVzX29icyA9IHN0cl9leHRyYWN0X2FsbChhYnN0cmFjdCwgc3RyX2MoZGF0ZV9yZWdleCwgXCIoIHRvIHxcXFxccz/igJRcXFxccz98XFxcXHM/LVxcXFxzP3wgYW5kIClcIiwgZGF0ZV9yZWdleCkpXG4gICkgJT4lIFxuICB1bm5lc3QoZGF0ZXNfb2JzLCBrZWVwX2VtcHR5ID0gVFJVRSkgJT4lXG4gIHNlcGFyYXRlKGRhdGVzX29icywgaW50byA9IGMoXCJiZWdpbl9vYnNcIiwgXCJlbmRfb2JzXCIpLCBcIiggdG8gfFxcXFxzP+KAlFxcXFxzP3xcXFxccz8tXFxcXHM/fCBhbmQgKVwiKSAlPiUgXG4gIG11dGF0ZShcbiAgICBwX3ZhbHVlID0gc3RyX2V4dHJhY3RfYWxsKGFic3RyYWN0LCBcIig/PD1cXFxcYihwfFB8cC12YWx1ZXxwIHZhbHVlKVxcXFxzPylbPTxdXFxcXHM/W1xcXFxkLl0rXCIpLFxuICAgIG5fb2JzID0gc3RyX2V4dHJhY3RfYWxsKGFic3RyYWN0LCBcIig/PD0oXFxcXGJuXFxcXHM/PSApKVtcXFxcZCxdezEsMTB9fFtcXFxcZCxdezEsOH0oPz0oXFxcXHNvYnNlcnZhdGlvbnMpKVwiKSxcbiAgICBwb2xsdXRhbnQgPSBzdHJfZXh0cmFjdF9hbGwoYWJzdHJhY3QsIFwiKFxcXFxiUE1cXFxccz8yKFxcXFwufCwpNXxcXFxcYlBNXFxcXHM/MTB8XFxcXGJPXFxcXHM/M1xcXFxifFxcXFxiKG98Tyl6b25lXFxcXGJ8XFxcXGIoUHxwKWFydGljdWxhdGVcXFxccyhNfG0pYXR0ZXJcXFxcYnxcXFxcYk5PXFxcXHM/MnxcXFxcYihufE4paXRyb2dlblxcXFxzPyhkfEQpaW94aWRlXFxcXGJ8XFxcXGJOT1xcXFxifFxcXFxiKG58TilpdHJvZ2VuXFxcXHM/KG98Tyl4aWRlXFxcXGJ8XFxcXGJOT1xcXFxzPyh4fFgpXFxcXGJ8XFxcXGJTT1xcXFxzPzJ8XFxcXGJDT1xcXFxifFxcXFxiQkNcXFxcYnxcXFxcYihBfGEpaXJcXFxccyhRfHEpdWFsaXR5XFxcXHMoSXxpKW5kZXhcXFxcYilcIilcbiAgKSAlPiUgXG4gIHVubmVzdChwb2xsdXRhbnQsIGtlZXBfZW1wdHkgPSBUUlVFKSAlPiUgXG4gIGdyb3VwX2J5KGRvaSkgJT4lIFxuICBtdXRhdGUoXG4gICAgcG9sbHV0YW50ID0gdG9sb3dlcihwb2xsdXRhbnQpLCBcbiAgICBwb2xsdXRhbnQgPSBzdHJfcmVwbGFjZV9hbGwocG9sbHV0YW50LCBcIlxcXFxzXCIsIFwiXCIpLFxuICAgIHBvbGx1dGFudCA9IHN0cl9yZXBsYWNlX2FsbChwb2xsdXRhbnQsIFwiLFwiLCBcIlxcXFwuXCIpLFxuICAgIHBvbGx1dGFudCA9IGlmZWxzZShwb2xsdXRhbnQgPT0gXCJuaXRyb2dlbmRpb3hpZGVcIiwgXCJubzJcIiwgcG9sbHV0YW50KSxcbiAgICBwb2xsdXRhbnQgPSBpZmVsc2UocG9sbHV0YW50ID09IFwibml0cm9nZW5veGlkZVwiLCBcIm5vXCIsIHBvbGx1dGFudCksXG4gICAgcG9sbHV0YW50ID0gaWZlbHNlKHBvbGx1dGFudCA9PSBcIm96b25lXCIsIFwibzNcIixwb2xsdXRhbnQpXG4gICkgJT4lIFxuICBkaXN0aW5jdChwb2xsdXRhbnQsIC5rZWVwX2FsbCA9IFRSVUUpICU+JSBcbiAgdW5ncm91cCgpICU+JSBcbiAgbmVzdChwb2xsdXRhbnQpXG5cbnNhdmVSRFMoYWJzdHJhY3RzX21vcmVfaW5mbywgXCIuLi9PdXRwdXRzL2Fic3RyYWN0c19tb3JlX2luZm8uUkRTXCIpXG5gYGAifQ== -->
+<pre class="r"><code>month_regex &lt;- &quot;\\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|(Nov|Dec)(?:ember)?)&quot;
+date_regex &lt;- str_c(&quot;(&quot;,month_regex, &quot;\\s){0,1}(19|20)\\d{2}&quot;)
+
+abstracts_more_info &lt;- abstracts %&gt;% 
+  mutate(
+    abstract = str_replace_all(abstract, &quot;·&quot;, &quot;.&quot;)
+  ) %&gt;% 
+  select(doi, abstract) %&gt;%
+  mutate(
+    dates_obs = str_extract_all(abstract, str_c(date_regex, &quot;( to |\\s?—\\s?|\\s?-\\s?| and )&quot;, date_regex))
+  ) %&gt;% 
+  unnest(dates_obs, keep_empty = TRUE) %&gt;%
+  separate(dates_obs, into = c(&quot;begin_obs&quot;, &quot;end_obs&quot;), &quot;( to |\\s?—\\s?|\\s?-\\s?| and )&quot;) %&gt;% 
+  mutate(
+    p_value = str_extract_all(abstract, &quot;(?&lt;=\\b(p|P|p-value|p value)\\s?)[=&lt;]\\s?[\\d.]+&quot;),
+    n_obs = str_extract_all(abstract, &quot;(?&lt;=(\\bn\\s?= ))[\\d,]{1,10}|[\\d,]{1,8}(?=(\\sobservations))&quot;),
+    pollutant = str_extract_all(abstract, &quot;(\\bPM\\s?2(\\.|,)5|\\bPM\\s?10|\\bO\\s?3\\b|\\b(o|O)zone\\b|\\b(P|p)articulate\\s(M|m)atter\\b|\\bNO\\s?2|\\b(n|N)itrogen\\s?(d|D)ioxide\\b|\\bNO\\b|\\b(n|N)itrogen\\s?(o|O)xide\\b|\\bNO\\s?(x|X)\\b|\\bSO\\s?2|\\bCO\\b|\\bBC\\b|\\b(A|a)ir\\s(Q|q)uality\\s(I|i)ndex\\b)&quot;)
+  ) %&gt;% 
+  unnest(pollutant, keep_empty = TRUE) %&gt;% 
+  group_by(doi) %&gt;% 
+  mutate(
+    pollutant = tolower(pollutant), 
+    pollutant = str_replace_all(pollutant, &quot;\\s&quot;, &quot;&quot;),
+    pollutant = str_replace_all(pollutant, &quot;,&quot;, &quot;\\.&quot;),
+    pollutant = ifelse(pollutant == &quot;nitrogendioxide&quot;, &quot;no2&quot;, pollutant),
+    pollutant = ifelse(pollutant == &quot;nitrogenoxide&quot;, &quot;no&quot;, pollutant),
+    pollutant = ifelse(pollutant == &quot;ozone&quot;, &quot;o3&quot;,pollutant)
+  ) %&gt;% 
+  distinct(pollutant, .keep_all = TRUE) %&gt;% 
+  ungroup() %&gt;% 
+  nest(pollutant)
+
+saveRDS(abstracts_more_info, &quot;../Outputs/abstracts_more_info.RDS&quot;)</code></pre>
+<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 </div>
@@ -2844,11 +3054,26 @@ text-align: justify}
 <p>We then download the full texts (using the <code>ft_get</code> functions). The full texts are stored in an xml format in the cache directory. Note that due to my IP address being located outside of Columbia, I cannot access the texts from Scopus.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjpbIm1ldGFkYXRhX3Njb3B1cyRkb2kgJT4lICIsIiAgZnRfZ2V0KHByb2dyZXNzID0gVFJVRSkiLCIiLCJtZXRhZGF0YV9lbnRyZXokZG9pICU+JSAiLCIgIGZ0X2dldChmcm9tID0gXCJlbnRyZXpcIiwgcHJvZ3Jlc3MgPSBUUlVFLCB0eXBlID0gXCJwZGZcIikiXX0= -->
+<pre class="r"><code>metadata_scopus$doi %&gt;% 
+  ft_get(progress = TRUE)
+
+metadata_entrez$doi %&gt;% 
+  ft_get(from = &quot;entrez&quot;, progress = TRUE, type = &quot;pdf&quot;)</code></pre>
+<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>Once we have downloaded all the files, we can put them into a table format, before analyzing them.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjpbIiNwdXQgdGV4dCBpbnRvIGEgdGFibGUgZm9ybWF0IiwiYXJ0aWNsZV90ZXh0cyA8LSBmdF90YWJsZSgpICU+JSAjc2VhcmNoZXMgZm9yIGRvY3VtZW50cyBpbiB0aGUgY2FjaGUgZGlyZWN0b3J5ICIsIiAgc2VsZWN0KC1wYXRocywgLWlkc19ub3JtKSAlPiUgIiwiICAuJHRleHQgIiwiIiwic2F2ZVJEUyhhcnRpY2xlX3RleHRzLCBcIi4uL091dHB1dHMvYXJ0aWNsZV90ZXh0cy5SRFNcIikiXX0= -->
+<pre class="r"><code>#put text into a table format
+article_texts &lt;- ft_table() %&gt;% #searches for documents in the cache directory 
+  select(-paths, -ids_norm) %&gt;% 
+  .$text 
+
+saveRDS(article_texts, &quot;../Outputs/article_texts.RDS&quot;)</code></pre>
+<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 </div>
@@ -2857,6 +3082,15 @@ text-align: justify}
 <p>To analyse the texts, we first start by simply exploring the proportion of articles mentioning the words “missing” and “power”.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjpbInJlYWRSRFMoXCIuLi9PdXRwdXRzL2FydGljbGVfdGV4dHMuUkRTXCIpIiwiIiwiYXJ0aWNsZV90ZXh0cyAlPiUiLCIgIHN1bW1hcmlzZSgiLCIgICAgY29udGFpbnNfbWlzc2luZyA9IHN1bShzdHJfZGV0ZWN0KHRleHQsIHBhdHRlcm4gPSBcIlxcXFxibWlzc2luZ1wiKSkvbigpLCAjY291bGQgcHV0IGEgdmVjdG9yIHdpdGggdmFyaW91cyB0ZXJtcyIsIiAgICBjb250YWluc19wb3dlciA9IHN1bShzdHJfZGV0ZWN0KHRleHQsIHBhdHRlcm4gPSBcIlxcXFxicG93ZXJcXFxcYlwiKSkvbigpICNzdGF0aXN0aWNhbCBwb3dlciIsIiAgKSJdfQ== -->
+<pre class="r"><code>readRDS(&quot;../Outputs/article_texts.RDS&quot;)
+
+article_texts %&gt;%
+  summarise(
+    contains_missing = sum(str_detect(text, pattern = &quot;\\bmissing&quot;))/n(), #could put a vector with various terms
+    contains_power = sum(str_detect(text, pattern = &quot;\\bpower\\b&quot;))/n() #statistical power
+  )</code></pre>
+<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- # Test with rentrez package -->
