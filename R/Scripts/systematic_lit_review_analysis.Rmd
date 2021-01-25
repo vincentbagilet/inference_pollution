@@ -66,6 +66,8 @@ In this particular document, we focus mainly on the epidemiology literature. We 
 
 In this section, we implement robustness tests in order to compute the power, type M and type S error in the studied articles. We look at what would be the power, type M and type S error if the true effect was a fraction of the measured effect. We retrieved estimates and confidence intervals of articles in the literature of interest in [another document](systematic_lit_review_geting_abstracts.html). Before looking into the power analysis itself, we look at the characteristics of the articles considered.
 
+<!-- write a paragraph explaining why the robustness checks make sense -->
+
 ## Articles characteristics
 
 ### Full set of articles
@@ -178,6 +180,7 @@ abstracts_CI %>%
   labs(title = "Distribution of publication year", subtitle = "Comparison between articles for which an effect is retrieved and not", x = "Publication year", y = "Density") + 
   scale_fill_discrete(name = "")
 ```
+
 Even though there are slightly more recent (2010-2020) articles for which effects are retrieved, the difference does not seem to be substantial.
 
 We also investigate whether there are differences in the journals in which the articles are published.
@@ -185,21 +188,15 @@ We also investigate whether there are differences in the journals in which the a
 ```{r fig.asp=1}
 abstracts_CI %>% 
   mutate(has_effect = ifelse(has_effect, "Effect detected", "Effect not detected")) %>% 
-  group_by(has_effect) %>% 
-  mutate(nb_has_effect = n()) %>% 
-  count(journal, nb_has_effect, has_effect, sort = TRUE) %>% 
-  mutate(prop = n/nb_has_effect) %>% 
-  select(-nb_has_effect, -n) %>% 
   group_by(journal) %>% 
-  mutate(keep = (sum(prop) > 0.02)) %>% 
-  filter(keep) %>% 
-  select(-keep) %>% 
+  mutate(nb_journal = n()) %>% 
   ungroup() %>% 
-  mutate(journal = reorder(journal, prop)) %>% 
+  mutate(journal = reorder(journal, nb_journal)) %>% 
+  filter(nb_journal > 15) %>% 
   ggplot() +
-  geom_col(aes(prop, journal, fill = has_effect)) +
-  # facet_wrap(~ has_effect) +
-  labs(y = NULL, title = "Main journals in which studies have been published", subtitle = "Comparison between articles for which an effect was detected or not", x = "Poportion of articles in a given journal") +
+  geom_bar(aes(journal, fill = has_effect)) +
+  coord_flip() +
+  labs(x = NULL, y = "Number of articles", title = "Main journals in which studies have been published", subtitle = "Comparison between articles for which an effect was detected or not") +
   scale_fill_discrete(name = "")
 ```
 
@@ -210,30 +207,34 @@ Then, we wonder if the the themes considered in each types of abstracts differ.
 ```{r fig.asp=1}
 theme_effect <- abstracts_CI %>%
   unnest_tokens(word, abstract, to_lower = TRUE) %>% 
-  anti_join(tidytext::stop_words, by = "word") %>%
-  count(word, has_effect, sort = TRUE) %>%
-  group_by(word) %>%
-  mutate(keep = (sum(n) > 1200)) %>%
-  filter(keep) %>%
-  select(-keep) %>%
+  anti_join(tidytext::stop_words, by = "word") %>% 
+  group_by(word, has_effect) %>%
+  mutate(n_articles_word = length(unique(doi))) %>% 
+  ungroup() %>% 
+  select(word, has_effect, n_articles_word) %>% 
+  distinct() %>% 
+  group_by(word) %>% 
+  mutate(tot_n_articles_word = sum(n_articles_word, na.rm = TRUE)) %>% 
+  ungroup() %>% 
+  filter(tot_n_articles_word > 600) %>% 
+  ungroup() %>% 
   mutate(has_effect = ifelse(has_effect, "Effect detected", "Effect not detected")) %>% 
-  group_by(has_effect) %>%
-  mutate(word = reorder(word, n))
+  mutate(word = reorder(word, n_articles_word)) 
 
 theme_effect %>% 
   ggplot(aes(x = word, fill = has_effect)) +
   geom_col(
     data = subset(theme_effect, has_effect == "Effect detected"), 
-    aes(y = n)
+    aes(y = n_articles_word)
   ) +
   geom_col(
-    data = subset(theme_effect, has_effect == "Effect not detected"), 
-    aes(y = -n), 
+    data = subset(theme_effect, has_effect == "Effect not detected"),
+    aes(y = -n_articles_word),
     position = "identity"
   ) +
   scale_y_continuous(labels = abs) +
   coord_flip() +
-  labs(y = NULL, title = "Main themes in the abstracts", subtitle = "Comparison between articles with and without detected effect") +
+  labs(x = NULL, y = "Number of abstracts containing a given word", title = "Words appearing in the more abstracts", subtitle = "Comparison between articles with and without detected effect") +
   scale_fill_discrete(name = "")
 ```
 
@@ -244,22 +245,29 @@ abstracts_CI %>%
   unnest(pollutant) %>% 
   filter(!is.na(pollutant)) %>% 
   mutate(has_effect = ifelse(has_effect, "Effect detected", "Effect not detected")) %>% 
-  group_by(has_effect) %>% 
-  mutate(nb_has_effect = n()) %>% 
-  count(pollutant, nb_has_effect, has_effect, sort = TRUE) %>% 
-  mutate(prop = n/nb_has_effect) %>% 
-  select(-nb_has_effect, -n) %>% 
   group_by(pollutant) %>% 
+  mutate(nb_pollutant = n()) %>% 
   ungroup() %>% 
-  mutate(pollutant = reorder(pollutant, prop)) %>% 
+  mutate(pollutant = reorder(pollutant, nb_pollutant)) %>% 
   ggplot() +
-  geom_col(aes(prop, pollutant, fill = has_effect)) +
-  # facet_wrap(~ has_effect) +
-  labs(y = NULL, title = "Proportion of articles studing a given pollutant", subtitle = "Comparison between articles for which an effect was detected or not", x = "Poportion of articles studying a given pollutant") +
+  geom_bar(aes(pollutant, fill = has_effect)) +
+  coord_flip() +
+  labs(x = NULL, y = "Number of articles", title = "Number of articles studing a given pollutant", subtitle = "Comparison between articles for which an effect was detected or not") +
   scale_fill_discrete(name = "")
 ```
 
 We do not seem to detect effects more for a pollutant than for another. Note that if an article considers several pollutants, it will appear several times in this graph.
+
+```{r fig.asp=0.7}
+abstracts_CI %>% 
+  unnest(outcome) %>% 
+  filter(!is.na(outcome)) %>% 
+  mutate(has_effect = ifelse(has_effect, "Effect detected", "Effect not detected")) %>% 
+  ggplot() +
+  geom_bar(aes(x = outcome, fill = has_effect), position = "dodge") +
+  labs(x = NULL, y = "Number of articles", title = "Number of articles studing a given outcome", subtitle = "Comparison between articles for which an effect was detected or not") +
+  scale_fill_discrete(name = "") 
+```
 
 Now that we have quickly compared the articles for which we retrieve an effect an those for which we don't, we can dig further into the analysis of the estimates retrieved.
 
