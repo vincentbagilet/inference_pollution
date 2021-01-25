@@ -264,7 +264,7 @@ abstracts_CI %>%
   filter(!is.na(outcome)) %>% 
   mutate(has_effect = ifelse(has_effect, "Effect detected", "Effect not detected")) %>% 
   ggplot() +
-  geom_bar(aes(x = outcome, fill = has_effect), position = "dodge") +
+  geom_bar(aes(x = outcome, fill = has_effect), position = "stack") +
   labs(x = NULL, y = "Number of articles", title = "Number of articles studing a given outcome", subtitle = "Comparison between articles for which an effect was detected or not") +
   scale_fill_discrete(name = "") 
 ```
@@ -605,21 +605,15 @@ It seems that less articles with low power have been published recently, in comp
 ```{r fig.asp=1}
 articles_low_adequate %>% 
   mutate(low_power = ifelse(low_power, "Low power", "Adequate power")) %>% 
-  group_by(low_power) %>% 
-  mutate(nb_low_power = n()) %>% 
-  count(journal, nb_low_power, low_power, sort = TRUE) %>% 
-  mutate(prop = n/nb_low_power) %>% 
-  select(-nb_low_power, -n) %>% 
   group_by(journal) %>% 
-  mutate(keep = (sum(prop) > 0.02)) %>% 
-  filter(keep) %>% 
-  select(-keep) %>% 
+  mutate(nb_journal = n()) %>% 
   ungroup() %>% 
-  mutate(journal = reorder(journal, prop)) %>% 
+  mutate(journal = reorder(journal, nb_journal)) %>% 
+  filter(nb_journal > 15) %>% 
   ggplot() +
-  geom_col(aes(prop, journal, fill = low_power)) +
-  # facet_wrap(~ has_effect) +
-  labs(y = NULL, title = "Main journals in which studies have been published", subtitle = "Comparison between articles for which an effect was detected or not", x = "Poportion of articles in a given journal") +
+  geom_bar(aes(journal, fill = low_power)) +
+  coord_flip() +
+  labs(x = NULL, y = "Number of articles", title = "Main journals in which studies have been published", subtitle = "Comparison between articles for which an effect was detected or not") +
   scale_fill_manual(values = colors_low_power, name = "")
 ```
 
@@ -635,19 +629,16 @@ articles_low_adequate %>%
   unnest(pollutant) %>% 
   filter(!is.na(pollutant)) %>% 
   mutate(low_power = ifelse(low_power, "Low power", "Adequate power")) %>% 
-  group_by(low_power) %>% 
-  mutate(nb_low_power = n()) %>% 
-  count(pollutant, nb_low_power, low_power, sort = TRUE) %>% 
-  mutate(prop = n/nb_low_power) %>% 
-  select(-nb_low_power, -n) %>% 
   group_by(pollutant) %>% 
+  mutate(nb_pollutant = n()) %>% 
   ungroup() %>% 
-  mutate(pollutant = reorder(pollutant, prop)) %>% 
+  mutate(pollutant = reorder(pollutant, nb_pollutant)) %>% 
   ggplot() +
-  geom_col(aes(prop, pollutant, fill = low_power)) +
-  # facet_wrap(~ has_effect) +
-  labs(y = NULL, title = "Proportion of articles studing a given pollutant", subtitle = "Comparison between articles with low and adequate power", x = "Poportion of articles studying a given pollutant") +
+  geom_bar(aes(pollutant, fill = low_power)) +
+  coord_flip() +
+  labs(x = NULL, y = "Number of articles", title = "Number of articles studing a given pollutant", subtitle = "Comparison between articles with low and adequate power") +
   scale_fill_manual(values = colors_low_power, name = "")
 ```
+
 There does not seem to be stark differences by pollutant type.
 
