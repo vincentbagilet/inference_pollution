@@ -1,0 +1,148 @@
+---
+title: "Power Simulation Exercise: Standard Model"
+description: |
+  Marseille Data 2008-2018.
+author:
+  - name: Vincent Bagilet 
+    url: https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet
+    affiliation: Columbia University
+    affiliation_url: https://www.columbia.edu/
+  - name: Léo Zabrocki 
+    url: https://www.parisschoolofeconomics.eu/en/
+    affiliation: Paris School of Economics
+    affiliation_url: https://www.parisschoolofeconomics.eu/en/
+date: "`r Sys.Date()`"
+output: distill::distill_article
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+In this document, we carry out a simulation exercise measure the statistical power of a standard analysis of the short-term effects of air pollution on health. We use here data from Marseille over the 2008-2018 period.
+
+# Loading and Formatting Data
+
+We load the packages:
+
+```{r, echo=TRUE, message = FALSE, warning = FALSE}
+library(here) # for files paths organization
+library(tidyverse) # for data manipulation and visualization
+library(modelr) # modeling within the tidyverse
+library(retrodesign) # formulas for type-m and type-s errors
+library(knitr) # for tables
+library(mediocrethemes)
+
+set_mediocre_all()
+```
+
+# Running a Very Simple Power Simulation
+
+### Set-Up of the Simulations
+
+We create a science table where we observe the two potential outcomes - here the mortality counts under a control and hypothetical treatment equal to +0.42 death - for a city over 10 000 days:
+
+```{r, echo=TRUE, message = FALSE, warning = FALSE}
+# create the science table
+data <- 
+  tibble(
+    y_0 = rpois(10000, 42), 
+    y_1 = y_0 + rnorm(10000, mean = 0.42, sd = 0.5),
+    treatment = c(rep(0, 5000), rep(1, 5000))
+  )
+# display the science table
+head(data)
+```
+
+We added to this science table a treatment indicator that we are going to randomly permute to carry out many randomized experiments for various sample sizes. We define below a function to randomly sample a given number of days, randomize the treatment and compute the average difference in mortality counts between treated and control units:
+
+```{r, echo=TRUE, message = FALSE, warning = FALSE}
+# power simulation function
+function_power_simulation <- function(data, sample_size){
+simulation_results <- data %>%
+  sample_n(., sample_size, replace = TRUE) %>%
+  mutate(
+    permuted_treatment = sample(treatment, replace = FALSE),
+    mortality_count = y_0 * (1 - permuted_treatment) + y_1 * permuted_treatment
+  ) %>%
+  lm(mortality_count ~ permuted_treatment, data = .) %>%
+  broom::tidy() %>%
+  filter(term == "permuted_treatment") %>%
+  select(estimate, p.value)
+
+  return(simulation_results)
+}
+```
+
+### Running the Simulations
+
+We run the simulations:
+
+```{r, eval = FALSE, message = FALSE, warning = FALSE}
+data_simulations <- data %>%
+  nest(data = everything()) %>%
+  crossing(sample_size = c(100, 250, 500, 750, 1000, 1500, 2500, 5000)) %>%
+  mutate(
+    simulation_results = map2(
+      data, 
+      sample_size, 
+      ~ rerun(2500, function_power_simulation(.x, .y))
+    )
+  )
+
+saveRDS(data_simulations, "../Outputs/data_simulations.RDS")
+``` 
+
+We compute the power, type m and s errors:
+
+```{r message = FALSE, warning = FALSE}
+data_simulations <- readRDS("../Outputs/data_simulations.RDS")
+
+# we transform lists of results into data frames with 100 rows 
+# and two columns for the coefficients and p-values:
+data_simulation_results <- data_simulations %>%
+  select(-data) %>%
+  unnest(simulation_results) %>% 
+  unnest(simulation_results)
+
+data_simulation_results_all <- data_simulation_results %>%
+  group_by(sample_size) %>%
+  mutate(power = mean(p.value<= 0.05)*100) %>% 
+  filter(p.value <= 0.05) %>%
+  summarise(
+    power = unique(power),
+    type_m_error = mean(abs(estimate)/0.42), 
+    type_s_error = (sum(estimate<0)/n())*100
+  )
+``` 
+
+
+### Simulation Results
+
+We plot below the simulations results:
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, fig.width=20, fig.height=8, fig.fullwidth=TRUE, dev = "CairoPNG"}
+# make the graph
+graph <- data_simulation_results_all %>%
+  mutate_at(vars(sample_size), ~ as.factor(.)) %>%
+  rename("Power (%)" = power, "Type M Error (Bias)" = type_m_error, "Type S Error (%)" = type_s_error) %>%
+  pivot_longer(cols= c(`Power (%)`:`Type S Error (%)`), names_to = "variable", values_to = "value") %>%
+  ggplot(., aes(x = sample_size, y = value, group = "l")) +
+  geom_line(linetype = "dashed") +
+  geom_point() + 
+  # geom_point(shape = 21, size = 4, fill = "coral", color = "black") +
+  facet_wrap(~ variable, scales = "free", nrow = 1) +
+  xlab("Sample Size") + ylab("") +
+  ggtitle("Power Simulations Results") 
+
+# print graph
+graph
+
+# save graph
+# ggsave(graph, filename = here::here("3.outputs", "1.figures", "graph_demo_power.pdf"), 
+#        width = 45, height = 20, units = "cm", device = cairo_pdf)
+``` 
+
+
+

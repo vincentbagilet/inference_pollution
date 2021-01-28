@@ -1,0 +1,289 @@
+---
+title: "Power Simulation Exercise: Standard Model"
+description: |
+  Marseille Data 2008-2018.
+author:
+  - name: Vincent Bagilet 
+    url: https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet
+    affiliation: Columbia University
+    affiliation_url: https://www.columbia.edu/
+  - name: Léo Zabrocki 
+    url: https://www.parisschoolofeconomics.eu/en/
+    affiliation: Paris School of Economics
+    affiliation_url: https://www.parisschoolofeconomics.eu/en/
+date: "`r Sys.Date()`"
+output: distill::distill_article
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+In this document, we carry out a simulation exercise measure the statistical power of a standard analysis of the short-term effects of air pollution on health. We use here data from Marseille over the 2008-2018 period.
+
+# Loading and Formatting Data
+
+We load the packages:
+
+```{r, echo=TRUE, message = FALSE, warning = FALSE}
+library(here) # for files paths organization
+library(tidyverse) # for data manipulation and visualisation
+library(modelr) # modelling within the tidyverse
+library(retrodesign) # formulas for type-m and type-s errors
+library(knitr) # for tables
+```
+
+We load our custom ggplot2 theme:
+
+```{r, echo=TRUE, message = FALSE, warning = FALSE}
+source(here::here("2.scripts", "script_custom_ggplot_theme.R"))
+```
+
+We open the data:
+
+```{r, echo=TRUE, message = FALSE, warning = FALSE}
+data <- readRDS(here::here("1.data", "1.standard_model", "data_marseille_daily_2008_2018.rds"))
+```
+
+We transform some calendar variables as factors:
+
+```{r, echo=TRUE, message = FALSE, warning = FALSE}
+data <- data %>%
+  mutate_at(vars(year, holidays_dummy, bank_day_dummy), ~ as.factor(.))
+```
+
+We select the relevant period as emergency admissions data are available from 2010:
+
+```{r, echo=TRUE, message = FALSE, warning = FALSE}
+data <- data %>%
+  filter(!(year %in% c("2008", "2009")))
+```
+
+We create wind direction categories:
+
+```{r, echo=TRUE, message = FALSE, warning = FALSE}
+data <- data %>%
+  mutate(wind_direction_categories = cut(wind_direction, breaks = seq(0, 360, by  = 90), include.lowest = TRUE) %>%
+  recode(., "[0,90]" = "North-East", "(90,180]" = "South-East", "(180,270]" = "South-West", "(270,360]" = "North-West"))
+```
+
+We create the one-day lag for wind speed and wind direction:
+
+```{r, echo=TRUE, message = FALSE, warning = FALSE}
+data <- data %>%
+  mutate(wind_speed_lag_1 = lag(wind_speed),
+         wind_direction_categories_lag_1 = lag(wind_direction_categories))
+```
+
+We create a rainfall dummy:
+
+```{r, echo=TRUE, message = FALSE, warning = FALSE}
+data <- data %>%
+  mutate(rainfall_dummy = ifelse(rainfall_height>0, "True", "False"))
+```
+
+We also need to compute the the average mean over the current and previous days for continuous dependent variables
+
+```{r, echo=TRUE, message = FALSE, warning = FALSE}
+data <- data %>%
+  mutate_at(vars(mean_no2_agregate, mean_o3_l, mean_pm10_agregate, mean_pm25_l, temperature_average, humidity_average), list("01" = ~ zoo::rollmean(., k = 2, align = "right", fill = NA)))
+```
+
+We then scale the new pollutant measures:
+
+```{r, echo=TRUE, message = FALSE, warning = FALSE}
+data <- data %>%
+  mutate_at(vars(mean_no2_agregate_01:humidity_average_01), ~ scale(.))
+```
+
+We take the logarithm of the `emergency_cv_r` variable to measure a percentage change in this outcome:
+
+```{r, echo=TRUE, message = FALSE, warning = FALSE}
+data <- data %>%
+  mutate(emergency_cv_r = log(emergency_cv_r))
+```
+
+We finally select relevant variables:
+
+```{r, echo=TRUE, message = FALSE, warning = FALSE}
+data <- data %>%
+  select(emergency_cv_r, mean_no2_agregate, temperature_average_01, humidity_average_01, rainfall_dummy, wind_speed, wind_speed_lag_1, wind_direction_categories, wind_direction_categories_lag_1, weekday, holidays_dummy, bank_day_dummy, month, year)
+```      
+
+# Simulations
+
+### Preparing the simulations
+
+We first want to have an idea of the effect of `mean_no2_agregate` on `emergency_cv_r` in our data:
+
+```{r, echo=TRUE, message = FALSE, warning = FALSE}
+fitted_model_real_data <- lm(emergency_cv_r ~ mean_no2_agregate + 
+              temperature_average_01 + I(temperature_average_01^2) +
+              humidity_average_01 +
+              rainfall_dummy +
+              wind_speed + wind_speed_lag_1 + 
+              wind_direction_categories + wind_direction_categories_lag_1 +
+              weekday + holidays_dummy + bank_day_dummy + month*year, data = data)
+
+fitted_model_real_data %>%
+  broom::tidy(., conf.int = TRUE) %>%
+  filter(term == "mean_no2_agregate")
+```      
+
+We see that a one standard deviation in `mean_no2_agregate` lead to 0.05% (95% CI: [-0.035; 0.139]) increase in `emergency_cv_r`.
+
+Using our data and this model, we can simulate fake-data for different effect sizes of `mean_no2_agregate` on
+`emergency_cv_r`. We first create a nested tibble where store our data, variables recording the effect sizes (effect sizes = 0.05%, 0.1% , 0.5% and 1%) and the sample size (N = 1068, 1780, 2492, 3650) and the fit of the true model.
+
+```{r, echo=TRUE, message = FALSE, warning = FALSE}
+data_simulations <- data %>% 
+  nest(data = everything()) %>%
+  crossing(effect_size = c(0.0005, 0.001, 0.005, 0.01)) %>%
+  crossing(sample_size = c(1068, 1780, 2492, 3650)) %>%
+  mutate(true_model = map(data, ~ lm(emergency_cv_r ~ mean_no2_agregate + 
+                                       temperature_average_01 +
+                                       I(temperature_average_01^2) +
+                                       humidity_average_01 +
+                                       rainfall_dummy +
+                                       wind_speed + wind_speed_lag_1 + 
+                                       wind_direction_categories + wind_direction_categories_lag_1 +
+                                       weekday + holidays_dummy + bank_day_dummy + month*year, data = .)))
+```      
+
+Once we have fitted the true model on our data, we need to modify the effect size of `mean_no2_agregate` in order to create new fake `emergency_cv_r` observations:
+
+```{r, echo=TRUE, message = FALSE, warning = FALSE}
+function_model_effect_size <- function(model, effect_size){
+  model$coefficients[2] <- effect_size
+  return(model)
+} 
+
+data_simulations <- data_simulations %>%
+  mutate(true_model = map2(true_model, effect_size, ~ function_model_effect_size(.x, .y)))
+```        
+
+We finally need to retrieve the mean and the standard deviation of residuals found for the `fitted_model_real_data` to add some noise in our simulations:
+
+```{r, echo=TRUE, message = FALSE, warning = FALSE}
+# get the distribution of residuals
+mean_residuals <- mean(residuals(fitted_model_real_data))
+sd_residuals <- sd(residuals(fitted_model_real_data))
+```      
+
+### Function to create fake-data and run the model
+
+We create a function to create fake-data, run on them the model for which know the true effect size and retrieve the estimate and p-value for `mean_no2_agregate`. The function takes three arguments:the data, a sample size, and a model:
+
+```{r, eval = FALSE, message = FALSE, warning = FALSE}
+function_power_simulation <- function(data, sample_size, true_model){
+simulation_results <- data %>%
+  sample_n(., sample_size, replace = TRUE) %>%
+  add_predictions(true_model, var = "predicted_emergency_cv_r") %>%
+  mutate(predicted_emergency_cv_r = predicted_emergency_cv_r + rnorm(nrow(.), mean_residuals, sd_residuals)) %>%
+  lm(predicted_emergency_cv_r ~ mean_no2_agregate + 
+       temperature_average_01 + I(temperature_average_01^2) +
+       humidity_average_01 +
+       rainfall_dummy +
+       wind_speed + wind_speed_lag_1 + 
+       wind_direction_categories + wind_direction_categories_lag_1 +
+       weekday + holidays_dummy + bank_day_dummy + month*year, data = .) %>%
+  broom::tidy() %>%
+  filter(term == "mean_no2_agregate") %>%
+  select(estimate, p.value)
+  
+  return(simulation_results)
+}
+```      
+
+### Running and Cleaning the Simulations
+
+We run the simulations:
+
+```{r, eval = FALSE, message = FALSE, warning = FALSE}
+data_simulations <- data_simulations %>%
+  crossing(id_sim = seq(1:1000)) %>%
+  mutate(simulation_results = pmap(list(data, sample_size, true_model), function_power_simulation))
+``` 
+
+We compute the power, type m and s errors:
+
+```{r, eval = FALSE, message = FALSE, warning = FALSE}
+data_simulation_results <- data_simulations %>%
+  select(-data, - true_model) %>%
+  unnest(simulation_results)
+
+data_simulation_results_power <- data_simulation_results %>%
+  group_by(sample_size, effect_size) %>%
+  summarise(power = mean(p.value<= 0.05)*100)
+
+data_simulation_results_m_error <- data_simulation_results %>%
+  group_by(sample_size, effect_size) %>%
+  filter(p.value <= 0.05) %>%
+  summarise(type_m_error = mean(abs(estimate)/effect_size))
+
+data_simulation_results_s_error <- data_simulation_results %>%
+  group_by(sample_size, effect_size) %>%
+  filter(p.value <= 0.05) %>%
+  summarise(type_s_error = (sum(estimate<0)/n())*100)
+
+# join the figures together
+data_simulation_results_all <- left_join(data_simulation_results_power, data_simulation_results_m_error, by = c("sample_size", "effect_size")) %>%
+  left_join(., data_simulation_results_s_error, by = c("sample_size", "effect_size"))
+``` 
+
+
+### Simulation Results
+
+We plot below the simulations results:
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, fig.width=20, fig.height=8, fig.fullwidth=TRUE, dev = "CairoPNG"}
+# load simulation results data
+data_simulation_results <- readRDS(here::here("1.data", "1.standard_model", "simulation_results.RDS"))
+
+# make the graph
+graph <- data_simulation_results %>%
+  mutate_at(vars(sample_size, effect_size), ~ as.factor(.)) %>%
+  mutate(effect_size = case_when(effect_size == "5e-04" ~ "+0.05%",
+                                 effect_size == "0.001" ~ "+0.1%",
+                                 effect_size == "0.005" ~ "+0.5%",
+                                 effect_size == "0.01" ~ "+1%")) %>%
+  rename("Power (%)" = power, "Type M Error (Bias)" = type_m_error, "Type S Error (%)" = type_s_error) %>%
+  pivot_longer(cols= c(`Power (%)`:`Type S Error (%)`), names_to = "variable", values_to = "value") %>%
+  ggplot(., aes(x = sample_size, y = value, group = effect_size, color = effect_size)) +
+  geom_line(linetype = "dashed") +
+  geom_point(size = 4) +
+  scale_color_manual(values=c("#f2cc8f", "#3d405b", "#81b29a", "#e07a5f")) +
+  facet_wrap(~ variable, scales = "free", nrow = 1) +
+  xlab("Sample Size") + ylab("Value") +
+  ggtitle("Power Simulations Results", subtitle = "The effect of a one standard deviation increase in NO2 on Emergency Admissions.") +
+  labs(color = "Effect Size:") +
+  custom_theme +
+  theme(legend.position = "top", legend.justification = "left", legend.direction = "horizontal")
+
+# print graph
+graph
+
+# save graph
+ggsave(graph, filename = here::here("3.outputs", "1.figures", "graph.pdf"), 
+       width = 45, height = 20, units = "cm", device = cairo_pdf)
+``` 
+
+We can compare our results with those of `retrodesign` package:
+
+```{r, eval = TRUE, message = FALSE, warning = FALSE}
+tibble(effect_size = c(0.0005, 0.001, 0.005, 0.01), standard_error = c(rep(0.00045, 4))) %>%
+  mutate(power = map2(effect_size, standard_error, ~ retro_design(.x, .y)$power*100),
+         type_s = map2(effect_size, standard_error, ~ retro_design(.x, .y)$typeS*100),
+         type_m = map2(effect_size, standard_error, ~ retro_design(.x, .y)$typeM)) %>%
+  unnest(cols = c(power, type_s, type_m)) %>%
+  mutate_at(vars(power:type_m), ~ round(., 1)) %>%
+  mutate(effect_size = case_when(effect_size == "5e-04" ~ "+0.05%",
+                                 effect_size == "0.001" ~ "+0.1%",
+                                 effect_size == "0.005" ~ "+0.5%",
+                                 effect_size == "0.01" ~ "+1%")) %>%
+  kable()
+``` 
+
+
+

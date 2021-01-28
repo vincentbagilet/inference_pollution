@@ -1,0 +1,95 @@
+---
+title: "Power Simulation Exercise: Interrupted time series"
+author:
+  - name: Vincent Bagilet 
+    url: https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet
+    affiliation: Columbia University
+    affiliation_url: https://www.columbia.edu/
+  - name: Léo Zabrocki 
+    url: https://www.parisschoolofeconomics.eu/en/
+    affiliation: Paris School of Economics
+    affiliation_url: https://www.parisschoolofeconomics.eu/en/
+date: "`r Sys.Date()`"
+output: distill::distill_article
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+```{r setup, include=FALSE, results='hide', warning=FALSE}
+library(knitr)
+opts_chunk$set(fig.path = "images/",
+               cache.path = "cache/",
+               cache = FALSE,
+               echo = FALSE, #set to false to hide code
+               message = FALSE,
+               warning = FALSE,
+               out.width = "85%",
+               dpi = 200,
+               fig.align = "center")  
+```  
+
+# Purpose of the document
+
+In this document, we carry out a simulation exercise to evaluate the performance of interrupted time series analyses in measuring the short-term effects of air pollution on health. 
+
+# Description of the analysis
+
+## Background on interrupted time series
+
+Interrupted time series (ITS) is a method used to estimate the effect of an intervention affecting all units at the same time and/or when no control group is available. For instance, n the case of air pollution, one can think of the implementation of emissions standards at the national level, implying a reduction in air pollution. ITS methods can then be used to measure the impact of this decrease in pollutant concentration on health outcomes such as mortality or hospital admissions. Considering a simple hypothetical example, assume that at time $t_{treat}$, a new technology is implemented, reducing ambient PM10 concentration by $10 \mu g/m^3$ for all observation units. This leads to a reduction in hospital admissions. ITS aim to recover the impact of this reduction in PM10 concentration on hospital admissions. In this very simple example, the model to estimate would be the following:
+
+\begin{equation}
+  h_{ct} = \alpha + \beta p_{ct} + \mu T_{t} + \boldsymbol{W_{ct}'\delta} +  \boldsymbol{C_{ct}'\gamma} + \epsilon_{ct} 
+  \label{eq_its}
+\end{equation}
+    
+where $h_{ct}$ represents the daily number of deaths or emergency admissions, for a given city $c$ at time $t$, $p$ a pollutant's concentration, $T$ the treatment variable which is equal to zero for $t < t_{treat}$ and 1 otherwise. $W$ is a set of weather covariates and $C$ calendar indicators. $\mu$ is the parameter of interest here. Of course, we can also consider more complex models than this basic one..For instance, $T$ might vary across cities, might vary in time in more complex ways than only a binary change, etc.
+
+## Data
+
+We use data from Marseille over the 2008-2018 period (*est ce qu'on utiliserait pas directement le jeu de données complet, maintenant qu'on l'a ?*). The data set contains records of hospital admissions and deaths, mean concentration data for various air pollutants, a bunch of weather variables and calendar control variables (such as school holidays for instance). All variables are at the daily level and aggregated over the city. There is therefore a unique observation per date in the data set.
+
+## Analysis
+
+### Overall setting
+
+To sum up the analysis, the aim is to measure the performance of ITS methods to recover the true effect of the treatment (*ie* to recover $\mu$ in the previous equation). To do so, we proceed as follows:
+
+1. We estimate our "true" model 
+$$h_{ct} = \alpha + \beta p_{ct} + \boldsymbol{W_{ct}'\delta} +  \boldsymbol{C_{ct}'\gamma} + \epsilon_{ct}$$
+*ie* assuming $T_{t} = 0 ~\ \forall t$ and recover the "true" values of our different parameters, $\alpha_0, \beta_0, \delta_0, \gamma_0$
+1. We create a fake pollution shock $T_{t}$ and create fake pollution concentration $p^{fake}$ corresponding to this shock
+*eg* we increase the PM10 concentration values by 10$\mu g/m^3$ after a given date, eg April 4, 2013. For instance, if the measured value of PM10 concentration on December 12, 2015 is 87$\mu g/m^3$, we create a fake concentration value of 97$\mu g/m^3$.
+1. We posit an hypothetical effect of this fake pollution shock on health ($\mu_0$)  
+*eg* a permanent increase of 10$\mu g/m^3$ in PM10 is associated with a 0.4% increase in the number of deaths per day
+1. We create fake deaths values $h^{fake}$, predicting outcomes from our complete model
+$$h_{ct}^{fake} = \alpha_0 + \beta_0 p_{ct}^{fake} + \mu_0 T_{t} + \boldsymbol{W_{ct}'\delta_0} +  \boldsymbol{C_{ct}'\gamma_0} + e_{ct}$$
+We generate error terms $e_{ct}$ using the mean and standard deviation of the residuals $\epsilon_{ct}$ from the estimation of our "true" model. Note that, in the potential outcomes framework, these fake death values correspond to our Y(1). The Y(0) corresponds to the actual number of deaths per day.
+1. We estimate our model to recover $\hat{\mu}$
+$$h_{ct}^{fake} = \alpha + \beta p_{ct}^{fake} + \mu T_{t} + \boldsymbol{W_{ct}'\delta} +  \boldsymbol{C_{ct}'\gamma} + \epsilon_{ct}$$
+
+1. We can then compare $\hat{\mu}$ to $\mu_0$
+1. We run the previous steps 1000 times and compute the average bias, type M, type S and power of the estimate. It enable us to get an idea of the performance of ITS in recovering effects of a given size.
+
+We can then rerun this analysis for different effect sizes and number of observations to investigate how the performance of ITS methods vary with the effect size and the number of observations.
+
+### More complex treatments
+
+In the description of the overall setting, we considered a very simple treatment (constant across individual and time). We can consider more complex treatments:
+
+- Varying across individuals in a deterministic or stochastic way,
+- Varying in time, for instance dying out in a linear or non linear way, 
+- Variations correlated with weather or calendar covariates
+
+- We also consider non linear relationships between air pollution and health outcomes.
+
+## Actual implementation
+
+
+
+
+
+
