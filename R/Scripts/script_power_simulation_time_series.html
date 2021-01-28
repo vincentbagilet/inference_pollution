@@ -2470,15 +2470,205 @@ text-align: justify}
 <li><p>We can then compare <span class="math inline">\(\hat{\mu}\)</span> to <span class="math inline">\(\mu_0\)</span></p></li>
 <li><p>We run the previous steps 1000 times and compute the average bias, type M, type S and power of the estimate. It enable us to get an idea of the performance of ITS in recovering effects of a given size.</p></li>
 </ol>
-<p>We can then rerun this analysis for different effect sizes and number of observations to investigate how the performance of ITS methods vary with the effect size and the number of observations.</p>
+<p>We can then rerun this analysis for different effect sizes and number of observations to investigate how the performance of ITS methods vary with the effect size and the number of observations. Note that, to limit the number of estimation, we do not vary effect size and number of observation for all treatments (only for the simple dummy treatment and a realistic one).</p>
 <h3 id="more-complex-treatments">More complex treatments</h3>
 <p>In the description of the overall setting, we considered a very simple treatment (constant across individual and time). We can consider more complex treatments:</p>
 <ul>
-<li>Varying across individuals in a deterministic or stochastic way,</li>
-<li>Varying in time, for instance dying out in a linear or non linear way,</li>
-<li>Correlated with weather or calendar covariates</li>
+<li><p>Varying across individuals in a deterministic or stochastic way,</p></li>
+<li><p>Varying in time, for instance dying out in a linear or non linear way,</p></li>
+<li><p>Variations correlated with weather or calendar covariates</p></li>
+<li><p>We also consider non linear relationships between air pollution and health outcomes.</p></li>
 </ul>
-<h2 id="method">Method</h2>
+<h1 id="actual-implementation">Actual implementation</h1>
+<p>In this section, we follow the steps described in the section “overall setting” and carry out our analysis. (<em>Je ne mets pas de code là pour l’instant pour que ce soit plus lisible mais c’est la partie où il y aura vraiment le code</em>)</p>
+<h2 id="loading-and-formatting-data">Loading and Formatting Data</h2>
+<p>We load the packages and the data and wrangle it into a format well suited for this analysis.</p>
+<h2 id="estimation-of-the-model">Estimation of the model</h2>
+<p>In this section we:</p>
+<ul>
+<li>We estimate the “true” model <span class="math inline">\(h_{ct} = \alpha + \beta p_{ct} + \boldsymbol{W_{ct}&#39;\delta} + \boldsymbol{C_{ct}&#39;\gamma} + \epsilon_{ct}\)</span></li>
+<li>We store estimates of the parameters <span class="math inline">\(\alpha_0, \beta_0, \delta_0, \gamma_0\)</span> and the mean and variance of the residuals <span class="math inline">\(\epsilon_{ct}\)</span></li>
+</ul>
+<h3 id="definition-of-the-treatment">Definition of the treatment</h3>
+<p>Here we define: - <span class="math inline">\(n_e\)</span> Effect sizes - <span class="math inline">\(n_{obs}\)</span> Number of observations - <span class="math inline">\(n_T\)</span> different treatments, <em>ie</em> one new column in the data set for each treatment, giving the new value of pollution</p>
+<h3 id="creating-fake-health">Creating fake health</h3>
+<ul>
+<li>We create the 1000 fake hospital admission and death time series</li>
+</ul>
+<h3 id="model-estimation">Model estimation</h3>
+<ul>
+<li>For each time series and each treatment, we estimate our model. We thus retrieve <span class="math inline">\(1000 \times n_T\)</span> estimates</li>
+<li>For the dummy treatment and a complex one, we also vary effect size. We get <span class="math inline">\(2 \times 1000 \times n_e\)</span> estimates</li>
+<li>For the dummy treatment and a complex one, we also vary effect size. We get <span class="math inline">\(2 \times 1000 \times n_e\)</span> estimates</li>
+<li>Then, for all these estimates, we compute different measures: bias, power, rate of type I, type M and type S error, signal to noise ratio, etc.</li>
+</ul>
+<h3 id="summary-of-the-performance-of-its">Summary of the performance of ITS</h3>
+<p>The objective of this analysis is to compare the performance of different estimation methods. We therefore need a systematic way to compare them. In this section, we create the summary tables for ITS that will enable us to compare its performance to the other methods.</p>
+<!-- We load the packages and the data: -->
+<!-- ```{r, echo=TRUE, message = FALSE, warning = FALSE} -->
+<!-- library(here) # for files paths organization -->
+<!-- library(tidyverse) # for data manipulation and visualisation -->
+<!-- library(modelr) # modeling within the tidyverse -->
+<!-- library(retrodesign) # formulas for type-m and type-s errors -->
+<!-- library(knitr) # for tables -->
+<!-- source(here::here("R", "Scripts", "script_custom_ggplot_theme.R")) -->
+<!-- data <- readRDS(here::here("R", "Inputs", "data_marseille_daily_2008_2018.rds")) -->
+<!-- ``` -->
+<!-- Then, we format the data, adding relevant variables. -->
+<!-- ```{r, echo=TRUE, message = FALSE, warning = FALSE} -->
+<!-- data_formated <- data %>% -->
+<!--   mutate_at(vars(year, holidays_dummy, bank_day_dummy), ~ as.factor(.))  %>% -->
+<!--   filter(!(year %in% c("2008", "2009"))) %>% #emergency admissions data available from 2010  -->
+<!--   mutate(wind_direction_categories = cut(wind_direction, breaks = seq(0, 360, by  = 90), include.lowest = TRUE) %>% -->
+<!--   recode(., "[0,90]" = "North-East", "(90,180]" = "South-East", "(180,270]" = "South-West", "(270,360]" = "North-West")) %>% -->
+<!--   mutate( -->
+<!--     wind_speed_lag_1 = lag(wind_speed), -->
+<!--     wind_direction_categories_lag_1 = lag(wind_direction_categories), -->
+<!--     rainfall_dummy = ifelse(rainfall_height>0, "True", "False") -->
+<!--   ) %>% -->
+<!--   mutate_at(vars(mean_no2_agregate, mean_o3_l, mean_pm10_agregate, mean_pm25_l, temperature_average, humidity_average), list("01" = ~ zoo::rollmean(., k = 2, align = "right", fill = NA))) %>% -->
+<!--   mutate_at(vars(mean_no2_agregate_01:humidity_average_01), ~ scale(.)) %>% -->
+<!--   mutate(emergency_cv_r = log(emergency_cv_r)) %>% -->
+<!--   select(date, emergency_cv_r, mean_no2_agregate, temperature_average_01, humidity_average_01, rainfall_dummy, wind_speed, wind_speed_lag_1, wind_direction_categories, wind_direction_categories_lag_1, weekday, holidays_dummy, bank_day_dummy, month, year) -->
+<!-- ```       -->
+<!-- # Simulations -->
+<!-- ### Preparing the simulations -->
+<!-- We first want to have an idea of the effect of `mean_no2_agregate` on `emergency_cv_r` in our data: -->
+<!-- ```{r, echo=TRUE, message = FALSE, warning = FALSE} -->
+<!-- fitted_model_real_data <- lm(emergency_cv_r ~ mean_no2_agregate +  -->
+<!--               temperature_average_01 + I(temperature_average_01^2) + -->
+<!--               humidity_average_01 + -->
+<!--               rainfall_dummy + -->
+<!--               wind_speed + wind_speed_lag_1 +  -->
+<!--               wind_direction_categories + wind_direction_categories_lag_1 + -->
+<!--               weekday + holidays_dummy + bank_day_dummy + month*year, data = data_formated) -->
+<!-- fitted_model_real_data %>% -->
+<!--   broom::tidy(., conf.int = TRUE) %>% -->
+<!--   filter(term == "mean_no2_agregate") -->
+<!-- ```       -->
+<!-- We see that a one standard deviation in `mean_no2_agregate` lead to 0.05% (95% CI: [-0.035; 0.139]) increase in `emergency_cv_r`. -->
+<!-- Using our data and this model, we can simulate fake-data for different effect sizes of `mean_no2_agregate` on -->
+<!-- `emergency_cv_r`. We first create a nested tibble where store our data, variables recording the effect sizes (effect sizes = 0.05%, 0.1% , 0.5% and 1%) and the sample size (N = 1068, 1780, 2492, 3650) and the fit of the true model. -->
+<!-- ```{r, echo=TRUE, message = FALSE, warning = FALSE} -->
+<!-- data_simulations <- data %>%  -->
+<!--   nest(data = everything()) %>% -->
+<!--   crossing(effect_size = c(0.0005, 0.001, 0.005, 0.01)) %>% -->
+<!--   crossing(sample_size = c(1068, 1780, 2492, 3650)) %>% -->
+<!--   mutate(true_model = map(data, ~ lm(emergency_cv_r ~ mean_no2_agregate +  -->
+<!--                                        temperature_average_01 + I(temperature_average_01^2) + -->
+<!--                                        humidity_average_01 + -->
+<!--                                        rainfall_dummy + -->
+<!--                                        wind_speed + wind_speed_lag_1 +  -->
+<!--                                        wind_direction_categories + wind_direction_categories_lag_1 + -->
+<!--                                        weekday + holidays_dummy + bank_day_dummy + month*year, data = .))) -->
+<!-- ```       -->
+<!-- Once we have fitted the true model on our data, we need to modifiy the effect size of `mean_no2_agregate` in order to create new fake `emergency_cv_r` observations: -->
+<!-- ```{r, echo=TRUE, message = FALSE, warning = FALSE} -->
+<!-- function_model_effect_size <- function(model, effect_size){ -->
+<!--   model$coefficients[2] <- effect_size -->
+<!--   return(model) -->
+<!-- }  -->
+<!-- data_simulations <- data_simulations %>% -->
+<!--   mutate(true_model = map2(true_model, effect_size, ~ function_model_effect_size(.x, .y))) -->
+<!-- ```         -->
+<!-- We finally need to retrieve the mean and the standard deviation of residuals found for the `fitted_model_real_data` to add some noise in our simulations: -->
+<!-- ```{r, echo=TRUE, message = FALSE, warning = FALSE} -->
+<!-- # get the distribution of residuals -->
+<!-- mean_residuals <- mean(residuals(fitted_model_real_data)) -->
+<!-- sd_residuals <- sd(residuals(fitted_model_real_data)) -->
+<!-- ```       -->
+<!-- ### Function to create fake-data and run the model -->
+<!-- We create a function to create fake-data, run on them the model for which know the true effect size and retrieve the estimate and p-value for `mean_no2_agregate`. The function takes three arguments:the data, a sample size, and a model: -->
+<!-- ```{r, eval = FALSE, message = FALSE, warning = FALSE} -->
+<!-- function_power_simulation <- function(data, sample_size, true_model){ -->
+<!-- simulation_results <- data %>% -->
+<!--   sample_n(., sample_size, replace = TRUE) %>% -->
+<!--   add_predictions(true_model, var = "predicted_emergency_cv_r") %>% -->
+<!--   mutate(predicted_emergency_cv_r = predicted_emergency_cv_r + rnorm(nrow(.), mean_residuals, sd_residuals)) %>% -->
+<!--   lm(predicted_emergency_cv_r ~ mean_no2_agregate +  -->
+<!--        temperature_average_01 + I(temperature_average_01^2) + -->
+<!--        humidity_average_01 + -->
+<!--        rainfall_dummy + -->
+<!--        wind_speed + wind_speed_lag_1 +  -->
+<!--        wind_direction_categories + wind_direction_categories_lag_1 + -->
+<!--        weekday + holidays_dummy + bank_day_dummy + month*year, data = .) %>% -->
+<!--   broom::tidy() %>% -->
+<!--   filter(term == "mean_no2_agregate") %>% -->
+<!--   select(estimate, p.value) -->
+<!--   return(simulation_results) -->
+<!-- } -->
+<!-- ```       -->
+<!-- ### Running and Cleaning the Simulations -->
+<!-- We run the simulations: -->
+<!-- ```{r, eval = FALSE, message = FALSE, warning = FALSE} -->
+<!-- data_simulations <- data_simulations %>% -->
+<!--   crossing(id_sim = seq(1:1000)) %>% -->
+<!--   mutate(simulation_results = pmap(list(data, sample_size, true_model), function_power_simulation)) -->
+<!-- ```  -->
+<!-- We compute the power, type m and s errors: -->
+<!-- ```{r, eval = FALSE, message = FALSE, warning = FALSE} -->
+<!-- data_simulation_results <- data_simulations %>% -->
+<!--   select(-data, - true_model) %>% -->
+<!--   unnest(simulation_results) -->
+<!-- data_simulation_results_power <- data_simulation_results %>% -->
+<!--   group_by(sample_size, effect_size) %>% -->
+<!--   summarise(power = mean(p.value<= 0.05)*100) -->
+<!-- data_simulation_results_m_error <- data_simulation_results %>% -->
+<!--   group_by(sample_size, effect_size) %>% -->
+<!--   filter(p.value <= 0.05) %>% -->
+<!--   summarise(type_m_error = mean(abs(estimate)/effect_size)) -->
+<!-- data_simulation_results_s_error <- data_simulation_results %>% -->
+<!--   group_by(sample_size, effect_size) %>% -->
+<!--   filter(p.value <= 0.05) %>% -->
+<!--   summarise(type_s_error = (sum(estimate<0)/n())*100) -->
+<!-- # join the figures together -->
+<!-- data_simulation_results_all <- left_join(data_simulation_results_power, data_simulation_results_m_error, by = c("sample_size", "effect_size")) %>% -->
+<!--   left_join(., data_simulation_results_s_error, by = c("sample_size", "effect_size")) -->
+<!-- ```  -->
+<!-- ### Simulation Results -->
+<!-- We plot below the simulations results: -->
+<!-- ```{r, echo = FALSE, message = FALSE, warning = FALSE, fig.width=20, fig.height=8, fig.fullwidth=TRUE, dev = "CairoPNG"} -->
+<!-- # load simulation results data -->
+<!-- data_simulation_results <- readRDS(here::here("1.data", "1.standard_model", "simulation_results.RDS")) -->
+<!-- # make the graph -->
+<!-- graph <- data_simulation_results %>% -->
+<!--   mutate_at(vars(sample_size, effect_size), ~ as.factor(.)) %>% -->
+<!--   mutate(effect_size = case_when(effect_size == "5e-04" ~ "+0.05%", -->
+<!--                                  effect_size == "0.001" ~ "+0.1%", -->
+<!--                                  effect_size == "0.005" ~ "+0.5%", -->
+<!--                                  effect_size == "0.01" ~ "+1%")) %>% -->
+<!--   rename("Power (%)" = power, "Type M Error (Bias)" = type_m_error, "Type S Error (%)" = type_s_error) %>% -->
+<!--   pivot_longer(cols= c(`Power (%)`:`Type S Error (%)`), names_to = "variable", values_to = "value") %>% -->
+<!--   ggplot(., aes(x = sample_size, y = value, group = effect_size, color = effect_size)) + -->
+<!--   geom_line(linetype = "dashed") + -->
+<!--   geom_point(size = 4) + -->
+<!--   scale_color_manual(values=c("#f2cc8f", "#3d405b", "#81b29a", "#e07a5f")) + -->
+<!--   facet_wrap(~ variable, scales = "free", nrow = 1) + -->
+<!--   xlab("Sample Size") + ylab("Value") + -->
+<!--   ggtitle("Power Simulations Results", subtitle = "The effect of a one standard deviation increase in NO2 on Emergency Admissions.") + -->
+<!--   labs(color = "Effect Size:") + -->
+<!--   custom_theme + -->
+<!--   theme(legend.position = "top", legend.justification = "left", legend.direction = "horizontal") -->
+<!-- # print graph -->
+<!-- graph -->
+<!-- # save graph -->
+<!-- ggsave(graph, filename = here::here("3.outputs", "1.figures", "graph.pdf"),  -->
+<!--        width = 45, height = 20, units = "cm", device = cairo_pdf) -->
+<!-- ```  -->
+<!-- We can compare our results with those of `retrodesign` package: -->
+<!-- ```{r, eval = TRUE, message = FALSE, warning = FALSE} -->
+<!-- tibble(effect_size = c(0.0005, 0.001, 0.005, 0.01), standard_error = c(rep(0.00045, 4))) %>% -->
+<!--   mutate(power = map2(effect_size, standard_error, ~ retro_design(.x, .y)$power*100), -->
+<!--          type_s = map2(effect_size, standard_error, ~ retro_design(.x, .y)$typeS*100), -->
+<!--          type_m = map2(effect_size, standard_error, ~ retro_design(.x, .y)$typeM)) %>% -->
+<!--   unnest(cols = c(power, type_s, type_m)) %>% -->
+<!--   mutate_at(vars(power:type_m), ~ round(., 1)) %>% -->
+<!--   mutate(effect_size = case_when(effect_size == "5e-04" ~ "+0.05%", -->
+<!--                                  effect_size == "0.001" ~ "+0.1%", -->
+<!--                                  effect_size == "0.005" ~ "+0.5%", -->
+<!--                                  effect_size == "0.01" ~ "+1%")) %>% -->
+<!--   kable() -->
+<!-- ```  -->
 <div class="sourceCode" id="cb1"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
 <!--radix_placeholder_article_footer-->
 <!--/radix_placeholder_article_footer-->
