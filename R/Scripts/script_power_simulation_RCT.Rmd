@@ -66,7 +66,7 @@ $h_{ct}^{fake} = (1 + \beta_0 T_{ct}) h_{ct}$ where $h_{ct}$ represents the dail
 In the potential outcome framework, we have $Y_{ct}(0)$, the number of deaths if a city $c$ is not treated at time $t$ equal to $h_{ct}$ and $Y_{ct}(1)$, the number of deaths if this city is treated, equal to $(1 + \beta_0 )h_{ct}$. We build our setting, so that we can "observe" both outcomes. The estimation is however performed on the fake observed data $h^{fake}$ and we have
 $h^{fake} = Y(0) × (1-T) + Y(1) × T$. 
 
-### Varying parameters
+### Varying "parameters"
 
 Note that there are several parameters we can vary in order to evaluate the performance of such RCTs: the number of observations, the proportion of treated days, the true effect size and the treatment allocation. In order to limit the number of simulations and for clarity, we only modify one parameter at the time, keeping the others constant. We consider the following values for these parameters:
 
@@ -74,10 +74,11 @@ Note that there are several parameters we can vary in order to evaluate the perf
 - Proportion of treated days: 0.1, 0.5, etc. The proportion of days treated matters since, while the number of observations can be large, the number of treated days may remain very small (*eg* the number of strikes). We choose these values **because** ...
 - Effect size: 0.05%, 0.1% , 0.5% and 1% **because** ...
 - The definition of treated days, *ie* the drawing processes: drawn at random, correlated with covariates, autocorrelated, etc (to do that, we can use the code we wrote to create missing data).
+- The estimation model
 
 # Actual implementation
 
-In this section, we follow the steps described in the section "analysis" and carry out our analysis.
+In this section, we follow the steps described in the section "analysis" and carry out our analysis. We basically define a function for each step.
 
 ## Loading and Formatting Data
 
@@ -89,10 +90,127 @@ library(tidyverse) # for data manipulation and visualisation
 library(modelr) # modeling within the tidyverse
 library(retrodesign) # formulas for type-m and type-s errors
 library(knitr) # for tables
+library(broom)
 
 source(here::here("R", "Scripts", "script_custom_ggplot_theme.R"))
 
-data <- readRDS(here::here("R", "Inputs", "data_marseille_daily_2008_2018.rds"))
+pollution_data <- readRDS(here::here("R", "Outputs", "data_daily_imputed.rds")) %>% 
+  ungroup() %>% 
+  mutate(
+    city = tolower(city),
+    city = str_remove_all(city, "[\\s-]")
+  )
+emergency_data <- readRDS(here::here("R", "Outputs", "emergency_data.rds"))
+mortality_data <- readRDS(here::here("R", "Outputs", "mortality_data.rds"))
+
+total_data <- pollution_data %>% 
+  left_join(emergency_data, by = c("city", "date")) %>% 
+  left_join(mortality_data, by = c("city", "date")) %>% 
+  ungroup()
+
+no_pollutant_data <- total_data %>% 
+  select(-(no2:pm2.5)) %>% 
+```
+
+## Function definitions
+
+### Drawing the study period
+
+First, we create a function to randomly draw a study period of a given length. For simplicity, we choose to have the same study period for each city. This also seems realistic; a study focusing on several cities would probably consider a unique study period. Note that to do so, we need to nest the data before running the function. 
+
+This function randomly selects a starting date for the study, early enough so that the study can actually last the number of days chosen, and returns a boolean vector indicating whether each date is in the study or not.
+
+```{r}
+draw_study_period <- function(dates, n_days_study = 1200) {
+  
+  max_date_allowed <- dates %>% 
+    ymd() %>% 
+    unique() %>% 
+    which.max() %>% 
+    sum(-n_days_study)
+  
+  begin_study <- sample(1:max_date_allowed, 1)
+  
+  study_period <- c(
+    rep(FALSE, max_date_allowed - 1), 
+    rep(TRUE, n_days_study), 
+    rep(FALSE, length(dates) - n_days_study - max_date_allowed + 1)
+  )
+}
+```
+
+### Defining the treatment
+
+Then, we create a function to draw the treatment. 
+
+```{r}
+draw_treated_days <- function(dates, p_treat = 0.5, treatment_type = "random") {
+  
+  if(treatment_type == "random") {
+    treated <- rbernoulli(length(dates), p_treat)
+  }
+}
+```
+
+### Creating a fake output
+
+We then create our fake output
+
+```{r}
+create_fake_output <- function(output_var, percent_effect_size = 0.5) {
+  fake_output <- output_var*(1 + percent_effect_size/100)
+} 
+```
+
+### Estimate the model
+
+We can then estimate our model and retrieve the point estimate and p-value.
+
+```{r}
+estimate_model <- function(df, formula) {
+  est_results <- df %>% 
+    lm(data = ., formula = formula) %>% 
+    tidy(., conf.int = TRUE) 
+  
+  est_results %>% 
+    filter(term == "treatedTRUE") %>% 
+    select(estimate, p.value)
+} 
+```
+
+### Computing simulations
+
+We also need a function to compute the simulations.
+
+```{r}
+compute_one_simulation <- function(df, n_days_study = 1200, p_treat = 0.5, treatment_type = "random", output_var, percent_effect_size = 0.5, formula) {
+  
+  df %>% 
+    nest(cols = c(everything(), -date))  %>%
+    mutate(study_period = draw_study_period(date, n_days_study)) %>% 
+    filter(study_period) %>%
+    select(-study_period) %>%
+    mutate(treated = draw_treated_days("date", p_treat, treatment_type)) %>% 
+    unnest() %>%
+    mutate(fake_output = create_fake_output(output_var, 1)) 
+  #   estimate_model(formula = "fake_output ~ treated + rainfall_height")
+} 
+
+compute_simulations(total_data, n_days_study = 2000, p_treat = 0.1, treatment_type = "random", output_var = deaths_all_causes, percent_effect_size = 1, formula)
+````
+
+```{r}
+dat <- total_data %>% 
+  nest(cols = c(everything(), -date)) %>% 
+  mutate(study_period = draw_study_period(date, 2000)) %>% 
+  filter(study_period) %>% 
+  select(-study_period) %>% 
+  mutate(treated = draw_treated_days(date, 0.1, "random")) %>% 
+  unnest() %>% 
+  mutate(fake_death = create_fake_output(deaths_all_causes, 1)) 
+
+dat %>% 
+  estimate_model(formula = "fake_death ~ treated + rainfall_height")
 ```
 
 <!-- ## Estimation of the model -->
