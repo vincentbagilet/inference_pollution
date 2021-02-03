@@ -41,7 +41,9 @@ In this document, we carry out a simulation exercise to evaluate the performance
 
 We use data from 18 cities in France over the 2013-2018 period. The data set contains records of hospital admissions and deaths, mean concentration data for various air pollutants, a bunch of weather variables and calendar control variables (such as school holidays for instance). All variables are at the daily and city level. There is therefore a unique observation per date and per city in the data set.
 
-## Background on RCTs for air pollution analyses
+## Background on selected designs for air pollution analyses
+
+### RCT
 
 Here, we consider interventions leading to changes in air pollution levels on some random days. Examples of such interventions include transportation strikes or for instance. Of course, dates are often not defined as random and are likely to be correlated with unobserved variable. In the present setting, we first consider the golden standard case in which these days are defined at random. Then, we consider deviations from this golden standard.
 
@@ -52,12 +54,11 @@ The overall idea of the RCT is to compare the average number of deaths or hospit
 
 ### Overall setting
 
-To sum up the analysis, the aim is to measure the performance of RCTs in recovering the true effect of the treatment and to analyze the characteristics of the estimates. For simplicity, consider the daily number of death as the output variable of interest for now. To do so, we proceed as follows:
+To sum up the analysis, the aim is to measure the performance of different designs in recovering the true effect of a treatment and to analyze characteristics of the estimates. For simplicity, consider the daily number of death as the output variable of interest for now. To do so, we proceed as follows:
 
 1. We define the length of the study period, *ie* the number of observations, and draw a study period randomly.
-1. We define the proportion of treated days, $p_{treat}$.
-1. We define the true effect size, $\beta_0$, representing the percentage change in the number of deaths in response to the treatment.
-1. We define the treated days, *ie* we draw $n_{obs} \times p_{treat}$ treated days. 
+1. We define the treated days. In the case of the RCT, we draw $n_{obs} \times p_{treat}$ treated days, where $p_{treat}$ is the proportion of treated days. For the ITS, we draw the date at which the treatment starts. For the RDD, we define the concentration threshold above which observations are treated. For the DiD, we define the group of treated cities.
+1. We choose a true effect size, $\beta_0$, representing the percentage change in the number of deaths in response to the treatment.
 1. We create fake death counts, accounting for the "true" effect of the treatment:  
 $h_{ct}^{fake} = (1 + \beta_0 T_{ct}) h_{ct}$ where $h_{ct}$ represents the daily number of deaths or emergency admissions, for a given city $c$ at time $t$, $T_{ct}$ the treatment variable which is equal to 1 if the city $c$ is treated at time $t$ and zero otherwise. 
 1. We estimate our model and retrieve $\hat{\beta}$ and the associated p-value.
@@ -91,6 +92,8 @@ library(modelr) # modeling within the tidyverse
 library(retrodesign) # formulas for type-m and type-s errors
 library(knitr) # for tables
 library(broom)
+library(furrr) # for parallel computing
+future::plan(multiprocess)
 
 source(here::here("R", "Scripts", "script_custom_ggplot_theme.R"))
 
@@ -106,7 +109,8 @@ mortality_data <- readRDS(here::here("R", "Outputs", "mortality_data.rds"))
 total_data <- pollution_data %>% 
   left_join(emergency_data, by = c("city", "date")) %>% 
   left_join(mortality_data, by = c("city", "date")) %>% 
-  ungroup()
+  ungroup() %>% 
+  mutate(date = ymd(date))
 
 # no_pollutant_data <- total_data %>% 
 #   select(-(no2:pm2.5)) %>% 
@@ -122,20 +126,12 @@ This function randomly selects a starting date for the study, early enough so th
 
 ```{r}
 draw_study_period <- function(dates, n_days_study = 1200) {
+  max_date <- max(dates)
+  min_date <- min(dates)
   
-  max_date_allowed <- dates %>% 
-    ymd() %>% 
-    unique() %>% 
-    which.max() %>% 
-    sum(-n_days_study)
+  begin_study <- sample(seq_along(max_date - n_days_study), 1)
   
-  begin_study <- sample(1:max_date_allowed, 1)
-  
-  study_period <- c(
-    rep(FALSE, max_date_allowed - 1), 
-    rep(TRUE, n_days_study), 
-    rep(FALSE, length(dates) - n_days_study - max_date_allowed + 1)
-  )
+  study_period <- (dates < begin_study)
 }
 ```
 
@@ -158,7 +154,8 @@ We then create our fake output
 
 ```{r}
 create_fake_output <- function(output_var, percent_effect_size = 0.5) {
-  fake_output <- output_var*(1 + percent_effect_size/100)
+  # fake_output <- output_var*(1 + percent_effect_size/100)
+  fake_output <- output_var + rpois(length(output_var), output_var*percent_effect_size/100)
 } 
 ```
 
@@ -169,13 +166,16 @@ We can then estimate our model and retrieve the point estimate and p-value.
 ```{r}
 estimate_model <- function(data, formula) {
   est_results <- data %>% 
-    lm(data = ., formula = formula) %>% 
-    tidy(., conf.int = TRUE) 
+    lm(data = ., formula = formula) 
   
-  est_results %>%
+  nobs <- length(est_results$residuals)
+  
+  est_results %>% 
+    broom::tidy(., conf.int = TRUE) %>% 
     filter(term == "treatedTRUE") %>%
     rename(p_value = p.value) %>% 
-    select(estimate, p_value)
+    select(estimate, p_value) %>% 
+    mutate(n_obs = nobs)
 } 
 ```
 
@@ -200,9 +200,11 @@ compute_one_simulation <- function(data, n_days_study = 1200, p_treat = 0.5, tre
     estimate_model(formula = str_c("fake_output ~ ", indep_var))
 } 
 
-compute_simulations <- function(data, n_days_study = 1200, p_treat = 0.5, treatment_type = "random", percent_effect_size = 0.5, formula, n_iter = 1000) {
+# compute_one_simulation(total_data, formula = "deaths_all_causes ~ treated")
+
+compute_simulations <- function(data, n_days_study = 1200, p_treat = 0.5, treatment_type = "random", percent_effect_size = 0.5, formula = "deaths_all_causes ~ treated", n_iter = 1000) {
   
-  all_est <- map_df(
+  all_est <- future_map_dfr(
     1:n_iter, 
     ~ compute_one_simulation(
       data = data, 
@@ -210,7 +212,8 @@ compute_simulations <- function(data, n_days_study = 1200, p_treat = 0.5, treatm
       p_treat = p_treat, 
       treatment_type = treatment_type, 
       percent_effect_size = percent_effect_size, 
-      formula = formula)
+      formula = formula), 
+    .options = furrr_options(seed = TRUE)
     )
   
   all_est %>%
@@ -219,281 +222,91 @@ compute_simulations <- function(data, n_days_study = 1200, p_treat = 0.5, treatm
       treatment_type = treatment_type, 
       n_days_study = n_days_study,
       p_treat = p_treat, 
-      effect_size = percent_effect_size, 
+      percent_effect_size = percent_effect_size, 
       n_iter = n_iter
     ) %>%
-    select(formula:n_iter, estimate, p_value)
+    select(formula:n_iter, n_obs, estimate, p_value)
 } 
+
+# test <- compute_simulations(total_data, n_iter = 3)
 ````
 
 Note that we can then loop the function `compute_simulations` on the values of its parameters in order to generate different simulations.
 
 Once we have estimates and p-values for each iteration and each set of parameters, we will be able to compute the statistics of interest (power, type M error, etc) for each set of parameters. The function `summarise_simulations` does just that. Note that it takes as input a data frame produced with `compute_simulations`.
 
-```{r}
+```{r eval=FALSE}
 summarise_simulations <- function(data) {
   
   data %>% 
-    group_by_("formula", "treatment_type", "n_days_study", "p_treat", "effect_size", "n_iter") %>%
-    mutate(power = mean(p_value <= 0.05)*100) %>% 
+    group_by(formula, treatment_type, n_days_study, p_treat, percent_effect_size, n_iter) %>%
+    mutate(
+      power = mean(p_value <= 0.05)*100, 
+      bias = mean(estimate) - percent_effect_size,
+      average_p_value = mean(p_value),
+      average_n_obs = mean(n_obs, na.rm = TRUE)
+    ) %>% 
     ungroup() %>%
     # filter(p_value <= 0.05) %>%
-    group_by_("formula", "treatment_type", "n_days_study", "p_treat", "effect_size", "n_iter") %>%
+    group_by(formula, treatment_type, n_days_study, p_treat, percent_effect_size, n_iter) %>%
     summarise(
+      average_n_obs = unique(average_n_obs),
       power = unique(power),
-      type_m = mean(abs(estimate)/effect_size),
+      type_m = mean(abs(estimate)/percent_effect_size),
       type_s = (sum(estimate < 0)/n())*100,
+      bias = unique(bias),
+      average_p_value = unique(average_p_value),
       .groups	= "drop"
     ) %>% 
     ungroup()
 } 
-  
-# t <- total_data %>%
-#   compute_simulations(
-#     formula = "deaths_all_causes ~ treated + rainfall_height",
-#     n_iter = 50
-#   )
 
-summarise_simulations(t)
+# summarise_simulations(test)
 ```
 
+## Running the simulations
 
-<!-- ## Estimation of the model -->
+We can then run the simulations, using the function `compute_simulations`. As mentioned, we want to loop its inputs on the set of inputs we want to test. Note that, in order to limit the number of simulations, for now, we only vary one input at the time. To do so, for each parameter, we define the list of parameters we want to test.
 
-<!-- In this section we: -->
+We store the list 
 
-<!-- - We estimate the "true" model $h_{ct} = \alpha + \beta p_{ct} + \boldsymbol{W_{ct}'\delta} +  \boldsymbol{C_{ct}'\gamma} + \epsilon_{ct}$ -->
-<!-- - We store estimates of the parameters $\alpha_0, \beta_0, \delta_0, \gamma_0$ and the mean and variance of the residuals $\epsilon_{ct}$ -->
+```{r eval=FALSE}
+vect_n_days_study <- c(1000, 100, 500, 2000)
+vect_p_treat <- c(0.5, 0.01, 0.1)
+vect_treatment_type <- c("random")
+vect_percent_effect_size <- c(1, 0.01, 0.5, 2)
+vect_formula <- c(
+  "deaths_all_causes ~ treated", 
+  "deaths_all_causes ~ treated + rainfall_height + sea_level_pressure + wind_speed + temperature + public_holiday + school_holiday"
+)
 
-<!-- ### Definition of the treatment -->
+vect_param <- c("p_treat", "treatment_type", "percent_effect_size", "formula") #,"n_days_study")
 
-<!-- Here we define: -->
-<!-- - $n_e$ Effect sizes -->
-<!-- - $n_{obs}$ Number of observations -->
-<!-- - $n_T$ different treatments, *ie* one new column in the data set for each treatment, giving the new value of pollution -->
+vary_param_simulations <- function(data, varying_param) {
+  
+  vect_varying_param <- str_c("vect_", varying_param)
+  form <- as.formula(paste(
+      "~ compute_simulations(data = data,", varying_param, "= ., n_iter = 3)"))
+  
+  map_dfr(get(vect_varying_param), form)
+} 
+```
 
-<!-- ### Creating fake health -->
+We can then vary all parameters one after the other:
 
-<!-- - We create the 1000 fake hospital admission and death time series -->
+```{r}
+all_simulations <- map_dfr(vect_param, vary_param_simulations, data = total_data)
 
-<!-- ### Model estimation -->
+saveRDS(all_simulations, "../Outputs/data_simulations.RDS")
+```
 
-<!-- - For each time series and each treatment, we estimate our model. We thus retrieve $1000 \times n_T$ estimates -->
-<!-- - For the dummy treatment and a complex one, we also vary effect size. We get $2 \times 1000 \times n_e$ estimates -->
-<!-- - For the dummy treatment and a complex one, we also vary effect size. We get $2 \times 1000 \times n_e$ estimates -->
-<!-- - Then, for all these estimates, we compute different measures: bias, power, rate of type I, type M and type S error, signal to noise ratio, etc. -->
+We then summarize our results, computing power, type M and so on for each set of parameters.
 
-<!-- ### Summary of the performance of ITS -->
+```{r}
+results_all_parameters <- summarise_simulations(all_simulations)
 
-<!-- The objective of this analysis is to compare the performance of different estimation methods. We therefore need a systematic way to compare them. In this section, we create the summary tables for ITS that will enable us to compare its performance to the other methods. -->
-
-<!-- We load the packages and the data: -->
-
-<!-- ```{r, echo=TRUE, message = FALSE, warning = FALSE} -->
-<!-- library(here) # for files paths organization -->
-<!-- library(tidyverse) # for data manipulation and visualisation -->
-<!-- library(modelr) # modeling within the tidyverse -->
-<!-- library(retrodesign) # formulas for type-m and type-s errors -->
-<!-- library(knitr) # for tables -->
-
-<!-- source(here::here("R", "Scripts", "script_custom_ggplot_theme.R")) -->
-
-<!-- data <- readRDS(here::here("R", "Inputs", "data_marseille_daily_2008_2018.rds")) -->
-<!-- ``` -->
-
-<!-- Then, we format the data, adding relevant variables. -->
-
-<!-- ```{r, echo=TRUE, message = FALSE, warning = FALSE} -->
-<!-- data_formated <- data %>% -->
-<!--   mutate_at(vars(year, holidays_dummy, bank_day_dummy), ~ as.factor(.))  %>% -->
-<!--   filter(!(year %in% c("2008", "2009"))) %>% #emergency admissions data available from 2010  -->
-<!--   mutate(wind_direction_categories = cut(wind_direction, breaks = seq(0, 360, by  = 90), include.lowest = TRUE) %>% -->
-<!--   recode(., "[0,90]" = "North-East", "(90,180]" = "South-East", "(180,270]" = "South-West", "(270,360]" = "North-West")) %>% -->
-<!--   mutate( -->
-<!--     wind_speed_lag_1 = lag(wind_speed), -->
-<!--     wind_direction_categories_lag_1 = lag(wind_direction_categories), -->
-<!--     rainfall_dummy = ifelse(rainfall_height>0, "True", "False") -->
-<!--   ) %>% -->
-<!--   mutate_at(vars(mean_no2_agregate, mean_o3_l, mean_pm10_agregate, mean_pm25_l, temperature_average, humidity_average), list("01" = ~ zoo::rollmean(., k = 2, align = "right", fill = NA))) %>% -->
-<!--   mutate_at(vars(mean_no2_agregate_01:humidity_average_01), ~ scale(.)) %>% -->
-<!--   mutate(emergency_cv_r = log(emergency_cv_r)) %>% -->
-<!--   select(date, emergency_cv_r, mean_no2_agregate, temperature_average_01, humidity_average_01, rainfall_dummy, wind_speed, wind_speed_lag_1, wind_direction_categories, wind_direction_categories_lag_1, weekday, holidays_dummy, bank_day_dummy, month, year) -->
-<!-- ```       -->
-
-
-<!-- # Simulations -->
-
-<!-- ### Preparing the simulations -->
-
-<!-- We first want to have an idea of the effect of `mean_no2_agregate` on `emergency_cv_r` in our data: -->
-
-<!-- ```{r, echo=TRUE, message = FALSE, warning = FALSE} -->
-<!-- fitted_model_real_data <- lm(emergency_cv_r ~ mean_no2_agregate +  -->
-<!--               temperature_average_01 + I(temperature_average_01^2) + -->
-<!--               humidity_average_01 + -->
-<!--               rainfall_dummy + -->
-<!--               wind_speed + wind_speed_lag_1 +  -->
-<!--               wind_direction_categories + wind_direction_categories_lag_1 + -->
-<!--               weekday + holidays_dummy + bank_day_dummy + month*year, data = data_formated) -->
-
-<!-- fitted_model_real_data %>% -->
-<!--   broom::tidy(., conf.int = TRUE) %>% -->
-<!--   filter(term == "mean_no2_agregate") -->
-<!-- ```       -->
-
-<!-- We see that a one standard deviation in `mean_no2_agregate` lead to 0.05% (95% CI: [-0.035; 0.139]) increase in `emergency_cv_r`. -->
-
-<!-- Using our data and this model, we can simulate fake-data for different effect sizes of `mean_no2_agregate` on -->
-<!-- `emergency_cv_r`. We first create a nested tibble where store our data, variables recording the effect sizes (effect sizes = 0.05%, 0.1% , 0.5% and 1%) and the sample size (N = 1068, 1780, 2492, 3650) and the fit of the true model. -->
-
-<!-- ```{r, echo=TRUE, message = FALSE, warning = FALSE} -->
-<!-- data_simulations <- data %>%  -->
-<!--   nest(data = everything()) %>% -->
-<!--   crossing(effect_size = c(0.0005, 0.001, 0.005, 0.01)) %>% -->
-<!--   crossing(sample_size = c(1068, 1780, 2492, 3650)) %>% -->
-<!--   mutate(true_model = map(data, ~ lm(emergency_cv_r ~ mean_no2_agregate +  -->
-<!--                                        temperature_average_01 + I(temperature_average_01^2) + -->
-<!--                                        humidity_average_01 + -->
-<!--                                        rainfall_dummy + -->
-<!--                                        wind_speed + wind_speed_lag_1 +  -->
-<!--                                        wind_direction_categories + wind_direction_categories_lag_1 + -->
-<!--                                        weekday + holidays_dummy + bank_day_dummy + month*year, data = .))) -->
-<!-- ```       -->
-
-<!-- Once we have fitted the true model on our data, we need to modifiy the effect size of `mean_no2_agregate` in order to create new fake `emergency_cv_r` observations: -->
-
-<!-- ```{r, echo=TRUE, message = FALSE, warning = FALSE} -->
-<!-- function_model_effect_size <- function(model, effect_size){ -->
-<!--   model$coefficients[2] <- effect_size -->
-<!--   return(model) -->
-<!-- }  -->
-
-<!-- data_simulations <- data_simulations %>% -->
-<!--   mutate(true_model = map2(true_model, effect_size, ~ function_model_effect_size(.x, .y))) -->
-<!-- ```         -->
-
-<!-- We finally need to retrieve the mean and the standard deviation of residuals found for the `fitted_model_real_data` to add some noise in our simulations: -->
-
-<!-- ```{r, echo=TRUE, message = FALSE, warning = FALSE} -->
-<!-- # get the distribution of residuals -->
-<!-- mean_residuals <- mean(residuals(fitted_model_real_data)) -->
-<!-- sd_residuals <- sd(residuals(fitted_model_real_data)) -->
-<!-- ```       -->
-
-<!-- ### Function to create fake-data and run the model -->
-
-<!-- We create a function to create fake-data, run on them the model for which know the true effect size and retrieve the estimate and p-value for `mean_no2_agregate`. The function takes three arguments:the data, a sample size, and a model: -->
-
-<!-- ```{r, eval = FALSE, message = FALSE, warning = FALSE} -->
-<!-- function_power_simulation <- function(data, sample_size, true_model){ -->
-<!-- simulation_results <- data %>% -->
-<!--   sample_n(., sample_size, replace = TRUE) %>% -->
-<!--   add_predictions(true_model, var = "predicted_emergency_cv_r") %>% -->
-<!--   mutate(predicted_emergency_cv_r = predicted_emergency_cv_r + rnorm(nrow(.), mean_residuals, sd_residuals)) %>% -->
-<!--   lm(predicted_emergency_cv_r ~ mean_no2_agregate +  -->
-<!--        temperature_average_01 + I(temperature_average_01^2) + -->
-<!--        humidity_average_01 + -->
-<!--        rainfall_dummy + -->
-<!--        wind_speed + wind_speed_lag_1 +  -->
-<!--        wind_direction_categories + wind_direction_categories_lag_1 + -->
-<!--        weekday + holidays_dummy + bank_day_dummy + month*year, data = .) %>% -->
-<!--   broom::tidy() %>% -->
-<!--   filter(term == "mean_no2_agregate") %>% -->
-<!--   select(estimate, p.value) -->
-
-<!--   return(simulation_results) -->
-<!-- } -->
-<!-- ```       -->
-
-<!-- ### Running and Cleaning the Simulations -->
-
-<!-- We run the simulations: -->
-
-<!-- ```{r, eval = FALSE, message = FALSE, warning = FALSE} -->
-<!-- data_simulations <- data_simulations %>% -->
-<!--   crossing(id_sim = seq(1:1000)) %>% -->
-<!--   mutate(simulation_results = pmap(list(data, sample_size, true_model), function_power_simulation)) -->
-<!-- ```  -->
-
-<!-- We compute the power, type m and s errors: -->
-
-<!-- ```{r, eval = FALSE, message = FALSE, warning = FALSE} -->
-<!-- data_simulation_results <- data_simulations %>% -->
-<!--   select(-data, - true_model) %>% -->
-<!--   unnest(simulation_results) -->
-
-<!-- data_simulation_results_power <- data_simulation_results %>% -->
-<!--   group_by(sample_size, effect_size) %>% -->
-<!--   summarise(power = mean(p.value<= 0.05)*100) -->
-
-<!-- data_simulation_results_m_error <- data_simulation_results %>% -->
-<!--   group_by(sample_size, effect_size) %>% -->
-<!--   filter(p.value <= 0.05) %>% -->
-<!--   summarise(type_m_error = mean(abs(estimate)/effect_size)) -->
-
-<!-- data_simulation_results_s_error <- data_simulation_results %>% -->
-<!--   group_by(sample_size, effect_size) %>% -->
-<!--   filter(p.value <= 0.05) %>% -->
-<!--   summarise(type_s_error = (sum(estimate<0)/n())*100) -->
-
-<!-- # join the figures together -->
-<!-- data_simulation_results_all <- left_join(data_simulation_results_power, data_simulation_results_m_error, by = c("sample_size", "effect_size")) %>% -->
-<!--   left_join(., data_simulation_results_s_error, by = c("sample_size", "effect_size")) -->
-<!-- ```  -->
-
-
-<!-- ### Simulation Results -->
-
-<!-- We plot below the simulations results: -->
-
-<!-- ```{r, echo = FALSE, message = FALSE, warning = FALSE, fig.width=20, fig.height=8, fig.fullwidth=TRUE, dev = "CairoPNG"} -->
-<!-- # load simulation results data -->
-<!-- data_simulation_results <- readRDS(here::here("1.data", "1.standard_model", "simulation_results.RDS")) -->
-
-<!-- # make the graph -->
-<!-- graph <- data_simulation_results %>% -->
-<!--   mutate_at(vars(sample_size, effect_size), ~ as.factor(.)) %>% -->
-<!--   mutate(effect_size = case_when(effect_size == "5e-04" ~ "+0.05%", -->
-<!--                                  effect_size == "0.001" ~ "+0.1%", -->
-<!--                                  effect_size == "0.005" ~ "+0.5%", -->
-<!--                                  effect_size == "0.01" ~ "+1%")) %>% -->
-<!--   rename("Power (%)" = power, "Type M Error (Bias)" = type_m_error, "Type S Error (%)" = type_s_error) %>% -->
-<!--   pivot_longer(cols= c(`Power (%)`:`Type S Error (%)`), names_to = "variable", values_to = "value") %>% -->
-<!--   ggplot(., aes(x = sample_size, y = value, group = effect_size, color = effect_size)) + -->
-<!--   geom_line(linetype = "dashed") + -->
-<!--   geom_point(size = 4) + -->
-<!--   scale_color_manual(values=c("#f2cc8f", "#3d405b", "#81b29a", "#e07a5f")) + -->
-<!--   facet_wrap(~ variable, scales = "free", nrow = 1) + -->
-<!--   xlab("Sample Size") + ylab("Value") + -->
-<!--   ggtitle("Power Simulations Results", subtitle = "The effect of a one standard deviation increase in NO2 on Emergency Admissions.") + -->
-<!--   labs(color = "Effect Size:") + -->
-<!--   custom_theme + -->
-<!--   theme(legend.position = "top", legend.justification = "left", legend.direction = "horizontal") -->
-
-<!-- # print graph -->
-<!-- graph -->
-
-<!-- # save graph -->
-<!-- ggsave(graph, filename = here::here("3.outputs", "1.figures", "graph.pdf"),  -->
-<!--        width = 45, height = 20, units = "cm", device = cairo_pdf) -->
-<!-- ```  -->
-
-<!-- We can compare our results with those of `retrodesign` package: -->
-
-<!-- ```{r, eval = TRUE, message = FALSE, warning = FALSE} -->
-<!-- tibble(effect_size = c(0.0005, 0.001, 0.005, 0.01), standard_error = c(rep(0.00045, 4))) %>% -->
-<!--   mutate(power = map2(effect_size, standard_error, ~ retro_design(.x, .y)$power*100), -->
-<!--          type_s = map2(effect_size, standard_error, ~ retro_design(.x, .y)$typeS*100), -->
-<!--          type_m = map2(effect_size, standard_error, ~ retro_design(.x, .y)$typeM)) %>% -->
-<!--   unnest(cols = c(power, type_s, type_m)) %>% -->
-<!--   mutate_at(vars(power:type_m), ~ round(., 1)) %>% -->
-<!--   mutate(effect_size = case_when(effect_size == "5e-04" ~ "+0.05%", -->
-<!--                                  effect_size == "0.001" ~ "+0.1%", -->
-<!--                                  effect_size == "0.005" ~ "+0.5%", -->
-<!--                                  effect_size == "0.01" ~ "+1%")) %>% -->
-<!--   kable() -->
-<!-- ```  -->
-
+saveRDS(results_all_parameters, "../Outputs/results_all_parameters.RDS")
+```
 
 
 

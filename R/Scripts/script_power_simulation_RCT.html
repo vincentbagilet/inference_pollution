@@ -2450,17 +2450,17 @@ text-align: justify}
 <h1 id="description-of-the-analysis">Description of the analysis</h1>
 <h2 id="data">Data</h2>
 <p>We use data from 18 cities in France over the 2013-2018 period. The data set contains records of hospital admissions and deaths, mean concentration data for various air pollutants, a bunch of weather variables and calendar control variables (such as school holidays for instance). All variables are at the daily and city level. There is therefore a unique observation per date and per city in the data set.</p>
-<h2 id="background-on-rcts-for-air-pollution-analyses">Background on RCTs for air pollution analyses</h2>
+<h2 id="background-on-selected-designs-for-air-pollution-analyses">Background on selected designs for air pollution analyses</h2>
+<h3 id="rct">RCT</h3>
 <p>Here, we consider interventions leading to changes in air pollution levels on some random days. Examples of such interventions include transportation strikes or for instance. Of course, dates are often not defined as random and are likely to be correlated with unobserved variable. In the present setting, we first consider the golden standard case in which these days are defined at random. Then, we consider deviations from this golden standard.</p>
 <p>The overall idea of the RCT is to compare the average number of deaths or hospital admissions on days with treatment to days with no treatment.</p>
 <h2 id="analysis">Analysis</h2>
 <h3 id="overall-setting">Overall setting</h3>
-<p>To sum up the analysis, the aim is to measure the performance of RCTs in recovering the true effect of the treatment and to analyze the characteristics of the estimates. For simplicity, consider the daily number of death as the output variable of interest for now. To do so, we proceed as follows:</p>
+<p>To sum up the analysis, the aim is to measure the performance of different designs in recovering the true effect of a treatment and to analyze characteristics of the estimates. For simplicity, consider the daily number of death as the output variable of interest for now. To do so, we proceed as follows:</p>
 <ol type="1">
 <li>We define the length of the study period, <em>ie</em> the number of observations, and draw a study period randomly.</li>
-<li>We define the proportion of treated days, <span class="math inline">\(p_{treat}\)</span>.</li>
-<li>We define the true effect size, <span class="math inline">\(\beta_0\)</span>, representing the percentage change in the number of deaths in response to the treatment.</li>
-<li>We define the treated days, <em>ie</em> we draw <span class="math inline">\(n_{obs} \times p_{treat}\)</span> treated days.</li>
+<li>We define the treated days. In the case of the RCT, we draw <span class="math inline">\(n_{obs} \times p_{treat}\)</span> treated days where <span class="math inline">\(p_{treat}\)</span> is the proportion of treated days. For the ITS, we draw the date at which the treatment starts. For the RDD, we define the concentration threshold above which observations are treated. For the DiD, we define the group of treated cities.</li>
+<li>We choose a true effect size, <span class="math inline">\(\beta_0\)</span>, representing the percentage change in the number of deaths in response to the treatment.</li>
 <li>We create fake death counts, accounting for the “true” effect of the treatment:<br />
 <span class="math inline">\(h_{ct}^{fake} = (1 + \beta_0 T_{ct}) h_{ct}\)</span> where <span class="math inline">\(h_{ct}\)</span> represents the daily number of deaths or emergency admissions, for a given city <span class="math inline">\(c\)</span> at time <span class="math inline">\(t\)</span>, <span class="math inline">\(T_{ct}\)</span> the treatment variable which is equal to 1 if the city <span class="math inline">\(c\)</span> is treated at time <span class="math inline">\(t\)</span> and zero otherwise.</li>
 <li>We estimate our model and retrieve <span class="math inline">\(\hat{\beta}\)</span> and the associated p-value.</li>
@@ -2488,6 +2488,8 @@ text-align: justify}
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/andytimm/retrodesign">retrodesign</a></span><span class="op">)</span> <span class="co"># formulas for type-m and type-s errors</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://yihui.org/knitr/">knitr</a></span><span class="op">)</span> <span class="co"># for tables</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://broom.tidymodels.org/">broom</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/DavisVaughan/furrr">furrr</a></span><span class="op">)</span> <span class="co"># for parallel computing</span>
+<span class="fu">future</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/future/man/plan.html">plan</a></span><span class="op">(</span><span class="va">multiprocess</span><span class="op">)</span>
 
 <span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/here/man/here.html">here</a></span><span class="op">(</span><span class="st">&quot;R&quot;</span>, <span class="st">&quot;Scripts&quot;</span>, <span class="st">&quot;script_custom_ggplot_theme.R&quot;</span><span class="op">)</span><span class="op">)</span>
 
@@ -2517,7 +2519,6 @@ text-align: justify}
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
 <pre><code><span class="va">draw_study_period</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">dates</span>, <span class="va">n_days_study</span> <span class="op">=</span> <span class="fl">1200</span><span class="op">)</span> <span class="op">{</span>
-  
   <span class="va">max_date_allowed</span> <span class="op">&lt;-</span> <span class="va">dates</span> <span class="op">%&gt;%</span> 
     <span class="fu">ymd</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> 
     <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> 
@@ -2565,7 +2566,7 @@ text-align: justify}
 <pre><code><span class="va">estimate_model</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">formula</span><span class="op">)</span> <span class="op">{</span>
   <span class="va">est_results</span> <span class="op">&lt;-</span> <span class="va">data</span> <span class="op">%&gt;%</span> 
     <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">.</span>, formula <span class="op">=</span> <span class="va">formula</span><span class="op">)</span> <span class="op">%&gt;%</span> 
-    <span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="va">.</span>, conf.int <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> 
+    <span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="va">.</span>, conf.int <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> 
   
   <span class="va">est_results</span> <span class="op">%&gt;%</span>
     <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">term</span> <span class="op">==</span> <span class="st">&quot;treatedTRUE&quot;</span><span class="op">)</span> <span class="op">%&gt;%</span>
@@ -2576,7 +2577,7 @@ text-align: justify}
 </div>
 </div>
 <h3 id="computing-simulations">Computing simulations</h3>
-<p>We also need a function to compute the simulations.</p>
+<p>We then create a function running all the previous functions together and therefore performing an iteration of the simulations. We then loop this function to get a large number of replications of this simulation, with fixed parameters. It gives a data set with estimate and p-value for each run, along with information about the parameter considered.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
 <pre><code><span class="va">compute_one_simulation</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">n_days_study</span> <span class="op">=</span> <span class="fl">1200</span>, <span class="va">p_treat</span> <span class="op">=</span> <span class="fl">0.5</span>, <span class="va">treatment_type</span> <span class="op">=</span> <span class="st">&quot;random&quot;</span>, <span class="va">percent_effect_size</span> <span class="op">=</span> <span class="fl">0.5</span>, <span class="va">formula</span><span class="op">)</span> <span class="op">{</span>
@@ -2597,7 +2598,7 @@ text-align: justify}
 
 <span class="va">compute_simulations</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">n_days_study</span> <span class="op">=</span> <span class="fl">1200</span>, <span class="va">p_treat</span> <span class="op">=</span> <span class="fl">0.5</span>, <span class="va">treatment_type</span> <span class="op">=</span> <span class="st">&quot;random&quot;</span>, <span class="va">percent_effect_size</span> <span class="op">=</span> <span class="fl">0.5</span>, <span class="va">formula</span>, <span class="va">n_iter</span> <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span> <span class="op">{</span>
   
-  <span class="va">all_est</span> <span class="op">&lt;-</span> <span class="fu">map_df</span><span class="op">(</span>
+  <span class="va">all_est</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/furrr/man/future_map.html">future_map_dfr</a></span><span class="op">(</span>
     <span class="fl">1</span><span class="op">:</span><span class="va">n_iter</span>, 
     <span class="op">~</span> <span class="fu">compute_one_simulation</span><span class="op">(</span>
       data <span class="op">=</span> <span class="va">data</span>, 
@@ -2605,7 +2606,8 @@ text-align: justify}
       p_treat <span class="op">=</span> <span class="va">p_treat</span>, 
       treatment_type <span class="op">=</span> <span class="va">treatment_type</span>, 
       percent_effect_size <span class="op">=</span> <span class="va">percent_effect_size</span>, 
-      formula <span class="op">=</span> <span class="va">formula</span><span class="op">)</span>
+      formula <span class="op">=</span> <span class="va">formula</span><span class="op">)</span>, 
+    .options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/furrr/man/furrr_options.html">furrr_options</a></span><span class="op">(</span>seed <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
     <span class="op">)</span>
   
   <span class="va">all_est</span> <span class="op">%&gt;%</span>
@@ -2614,24 +2616,36 @@ text-align: justify}
       treatment_type <span class="op">=</span> <span class="va">treatment_type</span>, 
       n_days_study <span class="op">=</span> <span class="va">n_days_study</span>,
       p_treat <span class="op">=</span> <span class="va">p_treat</span>, 
-      effect_size <span class="op">=</span> <span class="va">percent_effect_size</span>, 
+      percent_effect_size <span class="op">=</span> <span class="va">percent_effect_size</span>, 
       n_iter <span class="op">=</span> <span class="va">n_iter</span>
     <span class="op">)</span> <span class="op">%&gt;%</span>
     <span class="fu">select</span><span class="op">(</span><span class="va">formula</span><span class="op">:</span><span class="va">n_iter</span>, <span class="va">estimate</span>, <span class="va">p_value</span><span class="op">)</span>
 <span class="op">}</span> 
-
-<span class="va">summarise_simulations</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span><span class="op">)</span> <span class="op">{</span>
+</code></pre>
+</div>
+</div>
+<p>Note that we can then loop the function <code>compute_simulations</code> on the values of its parameters in order to generate different simulations.</p>
+<p>Once we have estimates and p-values for each iteration and each set of parameters, we will be able to compute the statistics of interest (power, type M error, etc) for each set of parameters. The function <code>summarise_simulations</code> does just that. Note that it takes as input a data frame produced with <code>compute_simulations</code>.</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre><code><span class="va">summarise_simulations</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span><span class="op">)</span> <span class="op">{</span>
   
   <span class="va">data</span> <span class="op">%&gt;%</span> 
-    <span class="fu">group_by_</span><span class="op">(</span><span class="st">&quot;formula&quot;</span>, <span class="st">&quot;treatment_type&quot;</span>, <span class="st">&quot;n_days_study&quot;</span>, <span class="st">&quot;p_treat&quot;</span>, <span class="st">&quot;effect_size&quot;</span>, <span class="st">&quot;n_iter&quot;</span><span class="op">)</span> <span class="op">%&gt;%</span>
-    <span class="fu">mutate</span><span class="op">(</span>power <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">p_value</span> <span class="op">&lt;=</span> <span class="fl">0.05</span><span class="op">)</span><span class="op">*</span><span class="fl">100</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+    <span class="fu">group_by</span><span class="op">(</span><span class="st">&quot;formula&quot;</span>, <span class="st">&quot;treatment_type&quot;</span>, <span class="st">&quot;n_days_study&quot;</span>, <span class="st">&quot;p_treat&quot;</span>, <span class="st">&quot;percent_effect_size&quot;</span>, <span class="st">&quot;n_iter&quot;</span><span class="op">)</span> <span class="op">%&gt;%</span>
+    <span class="fu">mutate</span><span class="op">(</span>
+      power <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">p_value</span> <span class="op">&lt;=</span> <span class="fl">0.05</span><span class="op">)</span><span class="op">*</span><span class="fl">100</span>, 
+      bias <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">estimate</span><span class="op">)</span> <span class="op">-</span> <span class="va">percent_effect_size</span>,
+      average_p_value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">p_value</span><span class="op">)</span>
+    <span class="op">)</span> <span class="op">%&gt;%</span> 
     <span class="fu">ungroup</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span>
     <span class="co"># filter(p_value &lt;= 0.05) %&gt;%</span>
-    <span class="fu">group_by_</span><span class="op">(</span><span class="st">&quot;formula&quot;</span>, <span class="st">&quot;treatment_type&quot;</span>, <span class="st">&quot;n_days_study&quot;</span>, <span class="st">&quot;p_treat&quot;</span>, <span class="st">&quot;effect_size&quot;</span>, <span class="st">&quot;n_iter&quot;</span><span class="op">)</span> <span class="op">%&gt;%</span>
+    <span class="fu">group_by</span><span class="op">(</span><span class="st">&quot;formula&quot;</span>, <span class="st">&quot;treatment_type&quot;</span>, <span class="st">&quot;n_days_study&quot;</span>, <span class="st">&quot;p_treat&quot;</span>, <span class="st">&quot;percent_effect_size&quot;</span>, <span class="st">&quot;n_iter&quot;</span><span class="op">)</span> <span class="op">%&gt;%</span>
     <span class="fu">summarise</span><span class="op">(</span>
       power <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">power</span><span class="op">)</span>,
-      type_m <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">abs</a></span><span class="op">(</span><span class="va">estimate</span><span class="op">)</span><span class="op">/</span><span class="va">effect_size</span><span class="op">)</span>,
+      type_m <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">abs</a></span><span class="op">(</span><span class="va">estimate</span><span class="op">)</span><span class="op">/</span><span class="va">percent_effect_size</span><span class="op">)</span>,
       type_s <span class="op">=</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">estimate</span> <span class="op">&lt;</span> <span class="fl">0</span><span class="op">)</span><span class="op">/</span><span class="fu">n</span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">*</span><span class="fl">100</span>,
+      bias <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">bias</span><span class="op">)</span>,
+      average_p_value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">average_p_value</span><span class="op">)</span>,
       .groups  <span class="op">=</span> <span class="st">&quot;drop&quot;</span>
     <span class="op">)</span> <span class="op">%&gt;%</span> 
     <span class="fu">ungroup</span><span class="op">(</span><span class="op">)</span>
@@ -2644,6 +2658,41 @@ text-align: justify}
 <span class="co">#   )</span>
 
 <span class="fu">summarise_simulations</span><span class="op">(</span><span class="va">t</span><span class="op">)</span>
+</code></pre>
+</div>
+</div>
+<h2 id="running-the-simulations">Running the simulations</h2>
+<p>We can then run the simulations, using the function <code>compute_simulations</code>. We loop its inputs on the set of inputs we want to test. Note that, in order to limit the number of simulations, for now, we only vary one input at the time.</p>
+<p>We store the list</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre><code><span class="va">vect_n_days_study</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1000</span>, <span class="fl">100</span>, <span class="fl">500</span>, <span class="fl">2000</span><span class="op">)</span>
+<span class="va">vect_p_treat</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">0.01</span>, <span class="fl">0.1</span><span class="op">)</span>
+<span class="va">vect_treatment_type</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">&quot;random&quot;</span><span class="op">)</span>
+<span class="va">vect_percent_effect_size</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">0.01</span>, <span class="fl">0.5</span>, <span class="fl">2</span><span class="op">)</span>
+<span class="va">vect_formulas</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span>
+  <span class="st">&quot;deaths_all_causes ~ treated&quot;</span>, 
+  <span class="st">&quot;deaths_all_causes ~ treated + rainfall_height + sea_level_pressure + wind_speed + temperature + public_holiday + school_holiday&quot;</span>
+<span class="op">)</span>
+
+<span class="fu"><a href="https://rdrr.io/pkg/furrr/man/future_map.html">future_map_dfr</a></span><span class="op">(</span>
+    , 
+    <span class="op">~</span> <span class="fu">compute_simulations</span><span class="op">(</span>
+      data <span class="op">=</span> <span class="va">data</span>, 
+      n_days_study <span class="op">=</span> <span class="va">n_days_study</span>, 
+      p_treat <span class="op">=</span> <span class="va">p_treat</span>, 
+      treatment_type <span class="op">=</span> <span class="va">treatment_type</span>, 
+      percent_effect_size <span class="op">=</span> <span class="va">percent_effect_size</span>, 
+      formula <span class="op">=</span> <span class="va">formula</span>, 
+      n_iter <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span>, 
+    .options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/furrr/man/furrr_options.html">furrr_options</a></span><span class="op">(</span>seed <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
+    <span class="op">)</span>
+
+<span class="co"># sims &lt;- total_data %&gt;%</span>
+<span class="co">#   compute_simulations(</span>
+<span class="co">#     formula = &quot;deaths_all_causes ~ treated + rainfall_height&quot;,</span>
+<span class="co">#     n_iter = 1000</span>
+<span class="co">#   )</span>
 </code></pre>
 </div>
 </div>
