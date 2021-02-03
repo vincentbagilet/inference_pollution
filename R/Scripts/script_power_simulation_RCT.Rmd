@@ -120,7 +120,7 @@ total_data <- pollution_data %>%
 
 ### Drawing the study period
 
-First, we create a function to randomly draw a study period of a given length. For simplicity, we choose to have the same study period for each city. This also seems realistic; a study focusing on several cities would probably consider a unique study period. Note that to do so, we need to nest the data before running the function. 
+First, we create a function to randomly draw a study period of a given length. For simplicity, we choose to have the same study period for each city. This also seems realistic; a study focusing on several cities would probably consider a unique study period. 
 
 This function randomly selects a starting date for the study, early enough so that the study can actually last the number of days chosen, and returns a boolean vector indicating whether each date is in the study or not.
 
@@ -129,28 +129,36 @@ draw_study_period <- function(dates, n_days_study = 1200) {
   max_date <- max(dates)
   min_date <- min(dates)
   
-  begin_study <- sample(seq_along(max_date - n_days_study), 1)
+  begin_study <- sample(seq.Date(min_date, max_date - n_days_study, "day"), 1)
+  end_study <- begin_study + n_days_study
   
-  study_period <- (dates < begin_study)
+  dplyr::between(dates, begin_study, end_study)
 }
 ```
 
 ### Defining the treatment
 
-Then, we create a function to draw the treatment. 
+Then, we create a function to draw the treatment. This function returns a boolean vector, stating whether each observation is in the treatment group or not.
 
 ```{r}
-draw_treated_days <- function(dates, p_treat = 0.5, treatment_type = "random") {
+draw_treated_days <- function(dates, p_treat = 0.5, treatment_type = "random_RCT") {
   
-  if(treatment_type == "random") {
+  if (treatment_type == "random_RCT") {
     treated <- rbernoulli(length(dates), p_treat)
-  }
+  } else if (treatment_type == "random_ITS") {
+    begin_treatment <- dates %>% 
+      unique() %>% 
+      sample(1)
+    treated <- (dates >= begin_treatment)
+  } 
+  
+  return(treated)
 }
 ```
 
 ### Creating a fake output
 
-We then create our fake output
+We then create our fake output.
 
 ```{r}
 create_fake_output <- function(output_var, percent_effect_size = 0.5) {
@@ -190,12 +198,10 @@ compute_one_simulation <- function(data, n_days_study = 1200, p_treat = 0.5, tre
   indep_var <- str_extract(formula, "(?<=~\\s).+")
   
   data %>% 
-    nest(cols = c(everything(), -date))  %>%
     mutate(study_period = draw_study_period(date, n_days_study)) %>% 
     filter(study_period) %>%
     select(-study_period) %>%
     mutate(treated = draw_treated_days(date, p_treat, treatment_type)) %>% 
-    unnest(cols = everything()) %>%
     mutate(fake_output = create_fake_output(.data[[output_var]], 1)) %>%
     estimate_model(formula = str_c("fake_output ~ ", indep_var))
 } 
