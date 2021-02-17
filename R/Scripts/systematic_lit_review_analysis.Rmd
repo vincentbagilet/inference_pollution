@@ -44,6 +44,7 @@ library(lubridate)
 library(DT)
 library(kableExtra)
 library(skimr)
+library(ggridges)
 
 set_mediocre_all()
 set.seed(1)
@@ -196,7 +197,7 @@ abstracts_CI %>%
   ggplot() +
   geom_bar(aes(journal, fill = has_effect)) +
   coord_flip() +
-  labs(x = NULL, y = "Number of articles", title = "Main journals in which studies have been published", subtitle = "Comparison between articles for which an effect was detected or not") +
+  labs(x = NULL, y = "Number of articles", title = "Main journals in which effeccts have been published", subtitle = "Comparison between effects detected or not") +
   scale_fill_discrete(name = "")
 ```
 
@@ -322,7 +323,8 @@ The graph is of course analogous to the previous one. It however informs us that
 
 ```{r}
 quantile(articles_analysis$signal_noise, seq(0, 1, 0.1)) %>% 
-  kable(col.names = c("Signal to noise ratio"))
+  tidy() %>% 
+  kable(col.names = c("Signal to noise ratio quantile", "Signal to noise ratio"))
 ```
 
 ## Power analysis
@@ -423,6 +425,36 @@ articles_retro %>%
 
 We find that, even if the measured effect is the true effect, there is some risk of type M error. 
 
+A clearer way to look at the distribution of power, type M and type S errors across studies is to look at their ECDF. 
+
+```{r}
+articles_retro %>% 
+  filter(prop_true_effect %in% c(0.5, 0.75, 1)) %>% 
+  ggplot(aes(x = power)) + 
+  stat_ecdf(geom = "line") +
+  facet_wrap(~ prop_true_effect) +
+  labs(title = "Cumulative distribution of power in the literature", subtitle = "If the magnitude of true effect is a fraction of the measured effect", x = "Power", y = "Proportion of estimates with a smaller power")
+
+articles_retro %>% 
+  filter(prop_true_effect %in% c(0.5, 0.75, 1)) %>%  
+  # filter(typeM < 2.5) %>%
+  ggplot(aes(x = typeM)) + 
+  stat_ecdf(geom = "line") +
+  # coord_flip() +
+  facet_wrap(~ prop_true_effect) +
+  labs(title = "Cumulative distribution of power in the literature", subtitle = "If the magnitude of true effect is a fraction of the measured effect", x = "Type M error", y = "Proportion of estimates with a smaller power") 
+
+articles_retro %>% 
+  filter(prop_true_effect %in% c(0.5, 0.75, 1)) %>%  
+  ggplot(aes(x = typeS)) + 
+  stat_ecdf(geom = "line") +
+  # coord_flip() +
+  facet_wrap(~ prop_true_effect) +
+  labs(title = "Cumulative distribution of power in the literature", subtitle = "If the magnitude of true effect is a fraction of the measured effect", x = "Type S error", y = "Proportion of estimates with a smaller power") 
+```
+
+We notice that more than 50% of studies would be underpowered at the conventional 80% level if we considered that the true effect was half the measured effect.
+
 Then, we look how type M and type S error evolve with power in the estimates considered.
 
 ```{r}
@@ -487,7 +519,26 @@ articles_retro %>%
   ylim(1, 2.2)
 ```
 
-We notice that, on average in the literature, the treatment effects are overestimated, even for large values of the true effect. This result might be linked to some outliers. We therefore look into the evolution of the median effect with true effect size.
+We notice that, on average in the literature, the treatment effects are overestimated, even for large values of the true effect. This result might be linked to some outliers. We therefore look into the evolution of the distribution with the proportion of effect size.
+
+```{r fig.asp=1}
+articles_retro %>% 
+  ggplot(aes(x = power, y = factor(prop_true_effect))) +
+  geom_density_ridges(color = "#00313C", fill = "#00313C", alpha = 0.3) +
+  labs(title = "Evolution of distrubtion of power as a function of the 'true effect'", x = "Power", y = "True effect as a proportion of the measured effect") 
+
+articles_retro %>% 
+  filter(typeM < 5) %>% 
+  ggplot(aes(x = typeM, y = factor(prop_true_effect))) +
+  geom_density_ridges(color = "#00313C", fill = "#00313C", alpha = 0.3) +
+  labs(title = "Evolution of distrubtion of type M error as a function of the 'true effect'", x = "Type M error", y = "True effect as a proportion of the measured effect")
+
+articles_retro %>% 
+  ggplot(aes(x = typeS, y = factor(prop_true_effect))) +
+  geom_density_ridges(color = "#00313C", fill = "#00313C", alpha = 0.3) +
+  labs(title = "Evolution of distrubtion of type M error as a function of the 'true effect'", x = "Type S error", y = "True effect as a proportion of the measured effect")
+```
+We also look into the evolution of the median effect with true effect size.
 
 ```{r}
 articles_retro %>% 
@@ -512,6 +563,7 @@ articles_retro %>%
 ```
 
 We notice that the issue is much less important when looking at the median. This suggests some heterogeneity in terms of power in the literature.
+
 
 It might also be interesting to look at how power, type M and type S error evolved in time, *ie* with publication date.
 
@@ -613,7 +665,7 @@ articles_low_adequate %>%
   ggplot() +
   geom_bar(aes(journal, fill = low_power)) +
   coord_flip() +
-  labs(x = NULL, y = "Number of articles", title = "Main journals in which studies have been published", subtitle = "Comparison between articles for which an effect was detected or not") +
+  labs(x = NULL, y = "Number of articles", title = "Main journals in which effects have been published", subtitle = "Comparison between effects that have adequate power or not") +
   scale_fill_manual(values = colors_low_power, name = "")
 ```
 
