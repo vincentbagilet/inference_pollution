@@ -1,5 +1,5 @@
 ---
-title: "Power Simulation Exercise: RCT"
+title: "Power Simulation Exercise: actual data"
 author:
   - name: Vincent Bagilet 
     url: https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet
@@ -59,13 +59,13 @@ To sum up the analysis, the aim is to measure the performance of different desig
 1. We define the length of the study period, *ie* the number of observations, and draw a study period randomly.
 1. We define the treated days. In the case of the RCT, we draw $n_{obs} \times p_{treat}$ treated days, where $p_{treat}$ is the proportion of treated days. For the ITS, we draw the date at which the treatment starts. For the RDD, we define the concentration threshold above which observations are treated. For the DiD, we define the group of treated cities.
 1. We choose a true effect size, $\beta_0$, representing the percentage change in the number of deaths in response to the treatment.
-1. We create fake death counts, accounting for the "true" effect of the treatment:  
-$h_{ct}^{fake} = (1 + \beta_0 T_{ct}) h_{ct}$ where $h_{ct}$ represents the daily number of deaths or emergency admissions, for a given city $c$ at time $t$, $T_{ct}$ the treatment variable which is equal to 1 if the city $c$ is treated at time $t$ and zero otherwise. 
+1. We create fake death counts ($Y_{obs}$), accounting for the "true" effect of the treatment:  
+$Y_{obs} = h_{ct}^{fake} = (1 + \beta_0 T_{ct}) h_{ct}$ where $h_{ct}$ represents the daily number of deaths or emergency admissions, for a given city $c$ at time $t$, $T_{ct}$ the treatment variable which is equal to 1 if the city $c$ is treated at time $t$ and zero otherwise. 
 1. We estimate our model and retrieve $\hat{\beta}$ and the associated p-value.
 1. We run the steps 4 to 6 $n_{iter}$ times and compare our estimated effects $\hat{\beta}$ to the true effect $\beta_0$. We compute the average bias, type M, type S and power.
 
-In the potential outcome framework, we have $Y_{ct}(0)$, the number of deaths if a city $c$ is not treated at time $t$ equal to $h_{ct}$ and $Y_{ct}(1)$, the number of deaths if this city is treated, equal to $(1 + \beta_0 )h_{ct}$. We build our setting, so that we can "observe" both outcomes. The estimation is however performed on the fake observed data $h^{fake}$ and we have
-$h^{fake} = Y(0) × (1-T) + Y(1) × T$. 
+In the potential outcome framework, we have $Y_{ct}(0)$, the number of deaths if a city $c$ is not treated at time $t$ equal to $h_{ct}$ and $Y_{ct}(1)$, the number of deaths if this city is treated, equal to $(1 + \beta_0)h_{ct}$. We build our setting, so that we can "observe" both outcomes. The estimation is performed on the fake observed data $Y_{obs} = h^{fake}$ and we have
+$Y_{obs} = Y(0) × (1-T) + Y(1) × T$. 
 
 ### Varying "parameters"
 
@@ -92,8 +92,10 @@ library(modelr) # modeling within the tidyverse
 library(retrodesign) # formulas for type-m and type-s errors
 library(knitr) # for tables
 library(broom)
+library(lubridate)
+library(lmtest)
 library(furrr) # for parallel computing
-future::plan(multiprocess)
+future::plan(multicore)
 
 source(here::here("R", "Scripts", "script_custom_ggplot_theme.R"))
 
@@ -140,30 +142,43 @@ draw_study_period <- function(dates, n_days_study = 1200) {
 
 Then, we create a function to draw the treatment. This function returns a boolean vector, stating whether each observation is in the treatment group or not.
 
+For each treatment, we define the proportion of treated units (`p_treat`). 
+- For the DiD, we find the closest number of cities corresponding to the desired proportion of treated 
+
 ```{r}
-draw_treated_days <- function(dates, p_treat = 0.5, treatment_type = "random_RCT") {
+draw_treated_days <- function(data, p_treat = 0.5, treatment_type = "RCT", pollutant = NULL) {
   
-  if (treatment_type == "random_RCT") {
-    treated <- rbernoulli(length(dates), p_treat)
-  } else if (treatment_type == "random_ITS") {
-    begin_treatment <- dates %>% 
+  if (treatment_type == "RDD" & is.null(pollutant)) {stop("For RDD, a pollutant should be specified")}
+  
+  if (treatment_type == "RCT") {
+    treated <- rbernoulli(length(data[["date"]]), p_treat)
+  } else if (treatment_type == "ITS") {
+    begin_treatment <- data[["date"]] %>% 
       unique() %>% 
       sample(1)
-    treated <- (dates >= begin_treatment)
-  } 
+    treated <- (data[["date"]] >= begin_treatment)
+  } else if (treatment_type %in% c("GAM", "IV")) {
+    treated <- TRUE
+  } else if (treatment_type == "DID") {
+    treated_cities <- unique(data[["city"]]) %>% 
+      sample(size = round(length(.)*p_treat))
+    treated <- (data[["city"]] %in% treated_cities)  
+  } else if (treatment_type == "RDD") {
+    treated <- (data[[pollutant]] >= quantile(data[[pollutant]], p_treat))
+  }
   
   return(treated)
 }
 ```
 
-### Creating a fake output
+### Creating the output if a unit is treated
 
-We then create our fake output.
+We then create the output if a unit is treated, Y(1).
 
 ```{r}
-create_fake_output <- function(output_var, percent_effect_size = 0.5) {
-  # fake_output <- output_var*(1 + percent_effect_size/100)
-  fake_output <- output_var + rpois(length(output_var), output_var*percent_effect_size/100)
+create_y_1 <- function(dep_var, percent_effect_size = 0.5) {
+  # y_1 <- output_var*(1 + percent_effect_size/100)
+  y_1 <- dep_var + rpois(length(dep_var), dep_var*percent_effect_size/100)
 } 
 ```
 
@@ -178,10 +193,12 @@ estimate_model <- function(data, formula) {
   
   nobs <- length(est_results$residuals)
   
-  est_results %>% 
-    broom::tidy(., conf.int = TRUE) %>% 
+  est_results %>%
+    # lmtest::coeftest(. , vcov = "vcovHC") %>%
+    broom::tidy(conf.int = TRUE) %>%
     filter(term == "treatedTRUE") %>%
     rename(p_value = p.value) %>% 
+    mutate(estimate = estimate) %>%
     select(estimate, p_value) %>% 
     mutate(n_obs = nobs)
 } 
@@ -192,23 +209,32 @@ estimate_model <- function(data, formula) {
 We then create a function running all the previous functions together and therefore performing an iteration of the simulations. We then loop this function to get a large number of replications of this simulation, with fixed parameters. It gives a data set with estimate and p-value for each run, along with information about the parameter considered.
 
 ```{r}
-compute_one_simulation <- function(data, n_days_study = 1200, p_treat = 0.5, treatment_type = "random", percent_effect_size = 0.5, formula) {
+compute_one_simulation <- function(data, n_days_study = 1200, p_treat = 0.5, treatment_type = "RCT", percent_effect_size = 0.5, formula = "deaths_all_causes ~ treated") {
   
-  output_var <- str_extract(formula, ".+(?=\\s~)")
+  dep_var <- str_extract(formula, ".+(?=\\s~)")
   indep_var <- str_extract(formula, "(?<=~\\s).+")
   
-  data %>% 
+  sim_data <- data %>% 
     mutate(study_period = draw_study_period(date, n_days_study)) %>% 
     filter(study_period) %>%
     select(-study_period) %>%
-    mutate(treated = draw_treated_days(date, p_treat, treatment_type)) %>% 
-    mutate(fake_output = create_fake_output(.data[[output_var]], 1)) %>%
-    estimate_model(formula = str_c("fake_output ~ ", indep_var))
+    mutate(
+      treated = draw_treated_days(., p_treat, treatment_type),
+      y_0 = .data[[dep_var]],
+      y_1 = create_y_1(.data[[dep_var]], percent_effect_size),
+      y_obs = y_1*treated + y_0*(1 - treated)
+    ) 
+  
+  sim_output <- sim_data %>%
+    estimate_model(formula = str_c("y_obs ~ ", indep_var)) %>%
+    mutate(true_effect = mean(sim_data$y_1 - sim_data$y_0, na.rm = TRUE))
+  
+  return(sim_output)
 } 
 
 # compute_one_simulation(total_data, formula = "deaths_all_causes ~ treated")
 
-compute_simulations <- function(data, n_days_study = 1200, p_treat = 0.5, treatment_type = "random", percent_effect_size = 0.5, formula = "deaths_all_causes ~ treated", n_iter = 1000) {
+compute_simulations <- function(data, n_days_study = 1200, p_treat = 0.5, treatment_type = "RCT", percent_effect_size = 0.5, formula = "deaths_all_causes ~ treated", n_iter = 1000) {
   
   all_est <- future_map_dfr(
     1:n_iter, 
@@ -231,7 +257,7 @@ compute_simulations <- function(data, n_days_study = 1200, p_treat = 0.5, treatm
       percent_effect_size = percent_effect_size, 
       n_iter = n_iter
     ) %>%
-    select(formula:n_iter, n_obs, estimate, p_value)
+    select(formula:n_iter, n_obs, estimate, p_value, true_effect)
 } 
 
 # test <- compute_simulations(total_data, n_iter = 3)
@@ -245,23 +271,14 @@ Once we have estimates and p-values for each iteration and each set of parameter
 summarise_simulations <- function(data) {
   
   data %>% 
-    group_by(formula, treatment_type, n_days_study, p_treat, percent_effect_size, n_iter) %>%
-    mutate(
-      power = mean(p_value <= 0.05)*100, 
-      bias = mean(estimate) - percent_effect_size,
-      average_p_value = mean(p_value),
-      average_n_obs = mean(n_obs, na.rm = TRUE)
-    ) %>% 
-    ungroup() %>%
-    # filter(p_value <= 0.05) %>%
-    group_by(formula, treatment_type, n_days_study, p_treat, percent_effect_size, n_iter) %>%
+    group_by(formula, treatment_type, n_days_study, p_treat, percent_effect_size, n_iter, true_effect) %>%
     summarise(
-      average_n_obs = unique(average_n_obs),
-      power = unique(power),
-      type_m = mean(abs(estimate)/percent_effect_size),
-      type_s = (sum(estimate < 0)/n())*100,
-      bias = unique(bias),
-      average_p_value = unique(average_p_value),
+      power = mean(p_value <= 0.05)*100, 
+      bias = mean(estimate) - true_effect,
+      average_p_value = mean(p_value),
+      average_n_obs = mean(n_obs, na.rm = TRUE),
+      type_m = mean(ifelse(p_value < 0.05, estimate, NA), na.rm = TRUE)/true_effect,
+      type_s = (sum(sign(estimate) != sign(true_effect))/n())*100,
       .groups	= "drop"
     ) %>% 
     ungroup()
@@ -272,11 +289,9 @@ summarise_simulations <- function(data) {
 
 ## Running the simulations
 
-We can then run the simulations, using the function `compute_simulations`. As mentioned, we want to loop its inputs on the set of inputs we want to test. Note that, in order to limit the number of simulations, for now, we only vary one input at the time. To do so, for each parameter, we define the list of parameters we want to test.
+We can then run the simulations, using the function `compute_simulations`. As mentioned, we want to loop its inputs on the set of inputs we want to test. Note that, in order to limit the number of simulations, for now, we only vary one input at the time. To do so, for each parameter, we define the list of values we want to test. We then build a very simple function which enables us to loop over the values of the parameter of interest (helpful to then vary all the parameters at once).
 
-We store the list 
-
-```{r eval=FALSE}
+```{r}
 vect_n_days_study <- c(1000, 100, 500, 2000)
 vect_p_treat <- c(0.5, 0.01, 0.1)
 vect_treatment_type <- c("random")
@@ -300,7 +315,7 @@ vary_param_simulations <- function(data, varying_param) {
 
 We can then vary all parameters one after the other:
 
-```{r}
+```{r eval=FALSE}
 all_simulations <- map_dfr(vect_param, vary_param_simulations, data = total_data)
 
 saveRDS(all_simulations, "../Outputs/data_simulations.RDS")
@@ -308,7 +323,7 @@ saveRDS(all_simulations, "../Outputs/data_simulations.RDS")
 
 We then summarize our results, computing power, type M and so on for each set of parameters.
 
-```{r}
+```{r eval=FALSE}
 results_all_parameters <- summarise_simulations(all_simulations)
 
 saveRDS(results_all_parameters, "../Outputs/results_all_parameters.RDS")
