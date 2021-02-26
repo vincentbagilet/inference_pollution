@@ -147,7 +147,7 @@ For each treatment, we define the proportion of treated units (`p_treat`).
 - For the DiD, we find the closest number of cities corresponding to the desired proportion of treated 
 
 ```{r}
-draw_treated_days <- function(data, p_treat = 0.5, treatment_type = "RCT", pollutant = NULL) {
+draw_treated_days <- function(data, p_treat = 0.5, treatment_type = "RCT", pollutant = "pm10") {
   
   if (treatment_type == "RDD" & is.null(pollutant)) {stop("For RDD, a pollutant should be specified")}
   
@@ -180,7 +180,7 @@ draw_treated_days <- function(data, p_treat = 0.5, treatment_type = "RCT", pollu
 We then create the output if a unit is treated, Y(1).
 
 ```{r}
-create_y1 <- function(dep_var, percent_effect_size = 0.5, treatment_type = "RCT", pollutant = NULL) {
+create_y1 <- function(dep_var, percent_effect_size = 0.5, treatment_type = "RCT") {
   # y1 <- output_var*(1 + percent_effect_size/100)
   if (treatment_type %in% c("RCT", "RDD", "DID", "ITS")) {
     y1 <- dep_var + rpois(length(dep_var), dep_var*percent_effect_size/100) %>% suppressWarnings()
@@ -287,7 +287,7 @@ summarise_simulations <- function(data) {
       average_p_value = mean(p_value),
       average_n_obs = mean(n_obs, na.rm = TRUE),
       type_m = mean(ifelse(p_value < 0.05, estimate/true_effect, NA), na.rm = TRUE),
-      type_s = (sum(ifelse(p_value < 0.05, sign(estimate) != sign(true_effect), NA), na.rm = TRUE)/n()*100,
+      type_s = sum(ifelse(p_value < 0.05, sign(estimate) != sign(true_effect), NA), na.rm = TRUE)/n()*100,
       .groups	= "drop"
     ) %>% 
     ungroup()
@@ -298,34 +298,37 @@ summarise_simulations <- function(data) {
 
 ## Running the simulations
 
-We can then run the simulations, using the function `compute_simulations`. As mentioned, we want to loop its inputs on the set of inputs we want to test. Note that, in order to limit the number of simulations, for now, we only vary one input at the time. To do so, for each parameter, we define the list of values we want to test. We then build a very simple function which enables us to loop over the values of the parameter of interest (helpful to then vary all the parameters at once).
+We can then run the simulations, using the function `compute_simulations`. As mentioned, we want to test different values for the parameters of this functions. For instance, we want to run simulations for different effect sizes. We thus create a table displaying in each row a set of parameters we want to have a simulation for, `sim_param`.
+
+To build `sim_param`, we first define the different values we want to consider for each parameter. Finally, we cross that with `vect_treatment_type` to get all set of parameter for each type of treatment.
 
 ```{r}
-vect_n_days_study <- c(1000, 100, 500, 2000)
+vect_n_days_study <- c(1000, 100, 500)
 vect_p_treat <- c(0.5, 0.01, 0.1)
-vect_treatment_type <- c("random")
+vect_treatment_type <- c("RCT", "RDD", "DID")
 vect_percent_effect_size <- c(1, 0.01, 0.5, 2)
 vect_formula <- c(
   "deaths_all_causes ~ treated", 
   "deaths_all_causes ~ treated + rainfall_height + sea_level_pressure + wind_speed + temperature + public_holiday + school_holiday"
 )
+vect_n_iter <- c(2)
 
-vect_param <- c("p_treat", "treatment_type", "percent_effect_size", "formula") #,"n_days_study")
-
-vary_param_simulations <- function(data, varying_param) {
-  
-  vect_varying_param <- str_c("vect_", varying_param)
-  form <- as.formula(paste(
-      "~ compute_simulations(data = data,", varying_param, "= ., n_iter = 3)"))
-  
-  map_dfr(get(vect_varying_param), form)
-} 
+sim_param <- 
+  crossing(
+    vect_n_days_study,
+    vect_p_treat,
+    vect_percent_effect_size,
+    vect_formula,
+    vect_n_iter
+  ) %>%
+  crossing(vect_treatment_type)
+names(sim_param) <- str_remove_all(names(sim_param), "vect_")
 ```
 
-We can then vary all parameters one after the other:
+We can then run the simulations for each set of parameter, using a pmap_dfr function.
 
 ```{r eval=FALSE}
-all_simulations <- map_dfr(vect_param, vary_param_simulations, data = total_data)
+all_simulations <- pmap_dfr(sim_param, compute_simulations, data = total_data)
 
 saveRDS(all_simulations, "../Outputs/data_simulations.RDS")
 ```
