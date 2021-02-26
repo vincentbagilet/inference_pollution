@@ -161,7 +161,11 @@ draw_treated_days <- function(data, p_treat = 0.5, treatment_type = "RCT", pollu
       sample(size = round(length(.)*p_treat))
     treated <- (data[["city"]] %in% treated_cities)  
   } else if (treatment_type == "RDD") {
-    treated <- (data[[pollutant]] >= quantile(data[[pollutant]], p_treat))
+    treated <- data %>% 
+      group_by(city) %>%
+      mutate(treated = (.data[[pollutant]] >= quantile(.data[[pollutant]], p_treat))) %>% 
+      ungroup() %>% 
+      .$treated
   }
   
   return(treated)
