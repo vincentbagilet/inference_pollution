@@ -94,6 +94,7 @@ library(knitr) # for tables
 library(broom)
 library(lubridate)
 library(lmtest)
+library(tictoc)
 library(furrr) # for parallel computing
 future::plan(multicore)
 
@@ -215,10 +216,10 @@ estimate_model <- function(data, formula) {
 
 ### Computing simulations
 
-We then create a function running all the previous functions together and therefore performing an iteration of the simulations. We then loop this function to get a large number of replications of this simulation, with fixed parameters. It gives a data set with estimate and p-value for each run, along with information about the parameter considered.
+We then create a function running all the previous functions together and therefore performing an iteration of the simulation for a given set of parameters. This function returns a one row data set with estimate, p-value, number of observations and true effect size.
 
 ```{r}
-compute_one_simulation <- function(data, n_days_study = 200, p_treat = 0.5, treatment_type = "RCT", percent_effect_size = 0.5, formula = "deaths_all_causes ~ treated") {
+compute_simulation <- function(data, n_days_study = 200, p_treat = 0.5, treatment_type = "RCT", percent_effect_size = 0.5, formula = "deaths_all_causes ~ treated") {
   
   dep_var <- str_extract(formula, ".+(?=\\s~)")
   indep_var <- str_extract(formula, "(?<=~\\s).+")
@@ -241,77 +242,24 @@ compute_one_simulation <- function(data, n_days_study = 200, p_treat = 0.5, trea
   return(sim_output)
 } 
 
-compute_one_simulation(total_data %>% filter(!is.na(deaths_all_causes)), formula = "deaths_all_causes ~ treated")
-
-compute_simulations <- function(data, n_days_study = 200, p_treat = 0.5, treatment_type = "RCT", percent_effect_size = 0.5, formula = "deaths_all_causes ~ treated", n_iter = 1000) {
-  
-  all_est <- future_map_dfr(
-    1:n_iter, 
-    ~ compute_one_simulation(
-      data = data, 
-      n_days_study = n_days_study, 
-      p_treat = p_treat, 
-      treatment_type = treatment_type, 
-      percent_effect_size = percent_effect_size, 
-      formula = formula), 
-    .options = furrr_options(seed = TRUE)
-    )
-  
-  all_est %>%
-    mutate(
-      formula = formula, 
-      treatment_type = treatment_type, 
-      n_days_study = n_days_study,
-      p_treat = p_treat, 
-      percent_effect_size = percent_effect_size, 
-      n_iter = n_iter
-    ) %>%
-    select(formula:n_iter, n_obs, estimate, p_value, true_effect)
-} 
-
-test <- compute_simulations(total_data, n_iter = 3) 
+test <- compute_simulation(total_data %>% filter(!is.na(deaths_all_causes)), formula = "deaths_all_causes ~ treated")
 ````
 
-Note that we can then loop the function `compute_simulations` on the values of its parameters in order to generate different simulations.
-
-Once we have estimates and p-values for each iteration and each set of parameters, we will be able to compute the statistics of interest (power, type M error, etc) for each set of parameters. The function `summarise_simulations` does just that. Note that it takes as input a data frame produced with `compute_simulations`.
-
-```{r eval=FALSE}
-summarise_simulations <- function(data) {
-  
-  data %>% 
-    group_by(formula, treatment_type, n_days_study, p_treat, percent_effect_size, n_iter) %>%
-    summarise(
-      power = mean(p_value <= 0.05)*100, 
-      bias = mean(abs((estimate - true_effect)/true_effect))*100,
-      average_p_value = mean(p_value),
-      average_n_obs = mean(n_obs, na.rm = TRUE),
-      type_m = mean(ifelse(p_value < 0.05, estimate/true_effect, NA), na.rm = TRUE),
-      type_s = sum(ifelse(p_value < 0.05, sign(estimate) != sign(true_effect), NA), na.rm = TRUE)/n()*100,
-      .groups	= "drop"
-    ) %>% 
-    ungroup()
-} 
-
-# summarise_simulations(test)
-```
+We will then loop this function to get a large number of replications of each simulation for a given set of parameters. We will also vary the values of the different parameter.
 
 ## Running the simulations
 
-We can then run the simulations, using the function `compute_simulations`. As mentioned, we want to test different values for the parameters of this functions. For instance, we want to run simulations for different effect sizes. We thus create a table displaying in each row a set of parameters we want to have a simulation for, `sim_param`.
+We can then run the simulations. As mentioned, we want to test different sets of parameters. For each set we want to run many iterations of the simulation, `n_iter`. We thus create a table displaying in each row a set of parameters we want to have a simulation for, `sim_param`. Each set of parameter is appears `n_iter` times in `sim_param`.
 
-To build `sim_param`, we first define the different values we want to consider for each parameter. Finally, we cross that with `vect_treatment_type` to get all set of parameter for each type of treatment.
+To build `sim_param`, we first define the different values we want to consider for each parameter. We also build a vector of simulation ids (that we drop afterwards). Finally, we cross that with `vect_treatment_type` to get all sets of parameters for each type of treatment.
 
 ```{r}
-vect_n_days_study <- c(1000, 100, 500)
-vect_p_treat <- c(0.5, 0.01, 0.1)
-vect_treatment_type <- c("RCT", "RDD", "DID")
-vect_percent_effect_size <- c(1, 0.01, 0.5, 2)
-vect_formula <- c(
-  "deaths_all_causes ~ treated", 
-  "deaths_all_causes ~ treated + rainfall_height + sea_level_pressure + wind_speed + temperature + public_holiday + school_holiday"
-)
-vect_n_iter <- c(2)
+vect_n_days_study <- c(100, 250, 500, 750, 1000)
+vect_p_treat <- c(0.1, 0.5)
+vect_treatment_type <- c("RCT", "ITS")
+vect_percent_effect_size <- c(0.1, 0.5, 1)
+vect_formula <- c("deaths_all_causes ~ treated")
+vect_sim_id <- 1:2
 
 sim_param <- 
   crossing(
@@ -319,26 +267,57 @@ sim_param <-
     vect_p_treat,
     vect_percent_effect_size,
     vect_formula,
-    vect_n_iter
-  ) %>%
-  crossing(vect_treatment_type)
+    vect_sim_id
+  ) %>% 
+  crossing(vect_treatment_type) %>% 
+  select(-vect_sim_id)
+
 names(sim_param) <- str_remove_all(names(sim_param), "vect_")
 ```
 
-We can then run the simulations for each set of parameter, using a pmap_dfr function.
+We can then run the simulations for each set of parameter, using a `pmap_dfr` function.
 
 ```{r eval=FALSE}
-all_simulations <- pmap_dfr(sim_param, compute_simulations, data = total_data)
+simulations <- future_pmap_dfr(
+  sim_param, 
+  compute_simulation, 
+  data = total_data,
+  .options = furrr_options(seed = TRUE)
+) 
+
+all_simulations <- sim_param %>% cbind(simulations)
 
 saveRDS(all_simulations, "../Outputs/data_simulations.RDS")
 ```
 
 We then summarize our results, computing power, type M and so on for each set of parameters.
 
-```{r eval=FALSE}
-results_all_parameters <- summarise_simulations(all_simulations)
+Once we have estimates and p-values for each iteration and each set of parameters, we will be able to compute the statistics of interest (power, type M error, etc) for each set of parameters. The function `summarise_simulations` does just that. Note that it takes as input a data frame produced with `compute_simulation` (or a mapped version of this function).
 
-saveRDS(results_all_parameters, "../Outputs/results_all_parameters.RDS")
+```{r eval=FALSE}
+summarise_simulations <- function(data) {
+  
+  data %>% 
+    group_by(formula, treatment_type, n_days_study, p_treat, percent_effect_size) %>%
+    summarise(
+      power = mean(p_value <= 0.05, na.rm = TRUE)*100, 
+      bias = mean(abs((estimate - true_effect)/true_effect), na.rm = TRUE)*100,
+      average_p_value = mean(p_value, na.rm = TRUE),
+      average_n_obs = mean(n_obs, na.rm = TRUE),
+      type_m = mean(ifelse(p_value < 0.05, estimate/true_effect, NA), na.rm = TRUE),
+      type_s = sum(ifelse(p_value < 0.05, sign(estimate) != sign(true_effect), NA), na.rm = TRUE)/n()*100,
+      .groups	= "drop"
+    ) %>% 
+    ungroup()
+} 
+```
+
+We then run this function.
+
+```{r eval=FALSE}
+summary_simulations <- summarise_simulations(all_simulations)
+
+saveRDS(summary_simulations, "../Outputs/summary_simulations.RDS")
 ```
 
 
