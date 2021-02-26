@@ -112,7 +112,8 @@ total_data <- pollution_data %>%
   left_join(emergency_data, by = c("city", "date")) %>% 
   left_join(mortality_data, by = c("city", "date")) %>% 
   ungroup() %>% 
-  mutate(date = ymd(date))
+  mutate(date = ymd(date)) %>% 
+  filter(date < "2016-01-01")
 
 # no_pollutant_data <- total_data %>% 
 #   select(-(no2:pm2.5)) %>% 
@@ -127,7 +128,7 @@ First, we create a function to randomly draw a study period of a given length. F
 This function randomly selects a starting date for the study, early enough so that the study can actually last the number of days chosen, and returns a boolean vector indicating whether each date is in the study or not.
 
 ```{r}
-draw_study_period <- function(dates, n_days_study = 1200) {
+draw_study_period <- function(dates, n_days_study = 200) {
   max_date <- max(dates)
   min_date <- min(dates)
   
@@ -153,7 +154,7 @@ draw_treated_days <- function(data, p_treat = 0.5, treatment_type = "RCT", pollu
   if (treatment_type == "RCT") {
     treated <- rbernoulli(length(data[["date"]]), p_treat)
   } else if (treatment_type == "ITS") {
-    treated <- (data[["date"]] >= quantile(data[["date"]], 1 - p_treat))
+    treated <- (as.numeric(data[["date"]]) >= quantile(as.numeric(data[["date"]]), 1 - p_treat))
   } else if (treatment_type %in% c("GAM", "IV")) {
     treated <- TRUE
   } else if (treatment_type == "DID") {
@@ -179,13 +180,14 @@ draw_treated_days <- function(data, p_treat = 0.5, treatment_type = "RCT", pollu
 We then create the output if a unit is treated, Y(1).
 
 ```{r}
-create_y_1 <- function(dep_var, percent_effect_size = 0.5, treatment_type = "RCT", pollutant = NULL) {
-  # y_1 <- output_var*(1 + percent_effect_size/100)
+create_y1 <- function(dep_var, percent_effect_size = 0.5, treatment_type = "RCT", pollutant = NULL) {
+  # y1 <- output_var*(1 + percent_effect_size/100)
   if (treatment_type %in% c("RCT", "RDD", "DID", "ITS")) {
-    y_1 <- dep_var + rpois(length(dep_var), dep_var*percent_effect_size/100) 
+    y1 <- dep_var + rpois(length(dep_var), dep_var*percent_effect_size/100) %>% suppressWarnings()
   } else if (treatment_type == "GAM") {
-    y_1 <- dep_var + rpois(length(dep_var), pollutant*percent_effect_size/100) 
+    y1 <- dep_var + rpois(length(dep_var), pollutant*percent_effect_size/100) %>% suppressWarnings()
   }
+  return(y1)
 } 
 ```
 
@@ -216,7 +218,7 @@ estimate_model <- function(data, formula) {
 We then create a function running all the previous functions together and therefore performing an iteration of the simulations. We then loop this function to get a large number of replications of this simulation, with fixed parameters. It gives a data set with estimate and p-value for each run, along with information about the parameter considered.
 
 ```{r}
-compute_one_simulation <- function(data, n_days_study = 1200, p_treat = 0.5, treatment_type = "RCT", percent_effect_size = 0.5, formula = "deaths_all_causes ~ treated") {
+compute_one_simulation <- function(data, n_days_study = 200, p_treat = 0.5, treatment_type = "RCT", percent_effect_size = 0.5, formula = "deaths_all_causes ~ treated") {
   
   dep_var <- str_extract(formula, ".+(?=\\s~)")
   indep_var <- str_extract(formula, "(?<=~\\s).+")
@@ -227,21 +229,21 @@ compute_one_simulation <- function(data, n_days_study = 1200, p_treat = 0.5, tre
     select(-study_period) %>%
     mutate(
       treated = draw_treated_days(., p_treat, treatment_type),
-      y_0 = .data[[dep_var]],
-      y_1 = create_y_1(.data[[dep_var]], percent_effect_size),
-      y_obs = y_1*treated + y_0*(1 - treated)
+      y0 = .data[[dep_var]],
+      y1 = create_y1(.data[[dep_var]], percent_effect_size),
+      yobs = y1*treated + y0*(1 - treated)
     ) 
   
   sim_output <- sim_data %>%
-    estimate_model(formula = str_c("y_obs ~ ", indep_var)) %>%
-    mutate(true_effect = mean(sim_data$y_1 - sim_data$y_0, na.rm = TRUE))
+    estimate_model(formula = str_c("yobs ~ ", indep_var)) %>%
+    mutate(true_effect = mean(sim_data$y1 - sim_data$y0, na.rm = TRUE))
   
   return(sim_output)
 } 
 
-# compute_one_simulation(total_data, formula = "deaths_all_causes ~ treated")
+compute_one_simulation(total_data %>% filter(!is.na(deaths_all_causes)), formula = "deaths_all_causes ~ treated")
 
-compute_simulations <- function(data, n_days_study = 1200, p_treat = 0.5, treatment_type = "RCT", percent_effect_size = 0.5, formula = "deaths_all_causes ~ treated", n_iter = 1000) {
+compute_simulations <- function(data, n_days_study = 200, p_treat = 0.5, treatment_type = "RCT", percent_effect_size = 0.5, formula = "deaths_all_causes ~ treated", n_iter = 1000) {
   
   all_est <- future_map_dfr(
     1:n_iter, 
@@ -267,7 +269,7 @@ compute_simulations <- function(data, n_days_study = 1200, p_treat = 0.5, treatm
     select(formula:n_iter, n_obs, estimate, p_value, true_effect)
 } 
 
-# test <- compute_simulations(total_data, n_iter = 3)
+test <- compute_simulations(total_data, n_iter = 3) 
 ````
 
 Note that we can then loop the function `compute_simulations` on the values of its parameters in order to generate different simulations.
