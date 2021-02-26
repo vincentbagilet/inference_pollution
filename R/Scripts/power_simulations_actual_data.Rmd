@@ -153,10 +153,7 @@ draw_treated_days <- function(data, p_treat = 0.5, treatment_type = "RCT", pollu
   if (treatment_type == "RCT") {
     treated <- rbernoulli(length(data[["date"]]), p_treat)
   } else if (treatment_type == "ITS") {
-    begin_treatment <- data[["date"]] %>% 
-      unique() %>% 
-      sample(1)
-    treated <- (data[["date"]] >= begin_treatment)
+    treated <- (data[["date"]] >= quantile(data[["date"]], 1 - p_treat))
   } else if (treatment_type %in% c("GAM", "IV")) {
     treated <- TRUE
   } else if (treatment_type == "DID") {
@@ -168,6 +165,8 @@ draw_treated_days <- function(data, p_treat = 0.5, treatment_type = "RCT", pollu
   }
   
   return(treated)
+  # data <- data %>% mutate(treated = treated)
+  # return(data)
 }
 ```
 
@@ -176,9 +175,13 @@ draw_treated_days <- function(data, p_treat = 0.5, treatment_type = "RCT", pollu
 We then create the output if a unit is treated, Y(1).
 
 ```{r}
-create_y_1 <- function(dep_var, percent_effect_size = 0.5) {
+create_y_1 <- function(dep_var, percent_effect_size = 0.5, treatment_type = "RCT", pollutant = NULL) {
   # y_1 <- output_var*(1 + percent_effect_size/100)
-  y_1 <- dep_var + rpois(length(dep_var), dep_var*percent_effect_size/100)
+  if (treatment_type %in% c("RCT", "RDD", "DID", "ITS")) {
+    y_1 <- dep_var + rpois(length(dep_var), dep_var*percent_effect_size/100) 
+  } else if (treatment_type == "GAM") {
+    y_1 <- dep_var + rpois(length(dep_var), pollutant*percent_effect_size/100) 
+  }
 } 
 ```
 
@@ -271,14 +274,14 @@ Once we have estimates and p-values for each iteration and each set of parameter
 summarise_simulations <- function(data) {
   
   data %>% 
-    group_by(formula, treatment_type, n_days_study, p_treat, percent_effect_size, n_iter, true_effect) %>%
+    group_by(formula, treatment_type, n_days_study, p_treat, percent_effect_size, n_iter) %>%
     summarise(
       power = mean(p_value <= 0.05)*100, 
-      bias = mean(estimate) - true_effect,
+      bias = mean(abs((estimate - true_effect)/true_effect))*100,
       average_p_value = mean(p_value),
       average_n_obs = mean(n_obs, na.rm = TRUE),
-      type_m = mean(ifelse(p_value < 0.05, estimate, NA), na.rm = TRUE)/true_effect,
-      type_s = (sum(sign(estimate) != sign(true_effect))/n())*100,
+      type_m = mean(ifelse(p_value < 0.05, estimate/true_effect, NA), na.rm = TRUE),
+      type_s = (sum(ifelse(p_value < 0.05, sign(estimate) != sign(true_effect), NA), na.rm = TRUE)/n()*100,
       .groups	= "drop"
     ) %>% 
     ungroup()
