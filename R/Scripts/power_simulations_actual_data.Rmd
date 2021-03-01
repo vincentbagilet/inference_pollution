@@ -145,10 +145,10 @@ draw_study_period <- function(dates, n_days_study = 200) {
 Then, we create a function to draw the treatment. This function returns a boolean vector, stating whether each observation is in the treatment group or not.
 
 For each treatment, we define the proportion of treated units (`p_treat`). 
-- For the DiD, we find the closest number of cities corresponding to the desired proportion of treated 
+- For the DiD, to simplify, we set the beginning of the treatment as the median date. To get the desired proportion of treated units, we thus need to draw 2*`p_treat` cities.
 
 ```{r}
-draw_treated_days <- function(data, p_treat = 0.5, treatment_type = "RCT", pollutant = "pm10") {
+draw_treated_days <- function(data, p_treat = 0.5, treatment_type = "RCT", pollutant = "pm10", n_days_study = 200) {
   
   if (treatment_type == "RDD" & is.null(pollutant)) {stop("For RDD, a pollutant should be specified")}
   
@@ -159,14 +159,28 @@ draw_treated_days <- function(data, p_treat = 0.5, treatment_type = "RCT", pollu
   } else if (treatment_type %in% c("GAM", "IV")) {
     treated <- TRUE
   } else if (treatment_type == "DID") {
-    treated_cities <- unique(data[["city"]]) %>% 
-      sample(size = round(length(.)*p_treat))
-    treated <- (data[["city"]] %in% treated_cities)  
+    treated_cities <- unique(data[["city"]]) %>%
+      sample(size = round(length(.) * min(p_treat * 2, 1)))
+    treated <- (data[["city"]] %in% treated_cities & data[["date"]] >= median(data[["date"]]))
   } else if (treatment_type == "RDD") {
-    treated <- data %>% 
+
+    treated <- data %>%
       group_by(city) %>%
-      mutate(treated = (.data[[pollutant]] >= quantile(.data[[pollutant]], p_treat))) %>% 
-      ungroup() %>% 
+      mutate(
+        threshold = as.numeric(quantile(.data[[pollutant]], p_treat)),
+        treated = (.data[[pollutant]] >= threshold),
+        in_bw = cut_width(
+          .data[[pollutant]],
+          width = n_days_study,
+          center = unique(threshold)
+        ),
+        treated =
+          ifelse(
+            threshold >= as.numeric(str_extract_all(in_bw, "([:digit:]|\\.|-)+(?=,)")) &
+            threshold < as.numeric(str_extract_all(in_bw, "(?<=,)([:digit:]|\\.)+")),
+          treated, NA)
+      ) %>%
+      ungroup() %>%
       .$treated
   }
   
@@ -176,12 +190,32 @@ draw_treated_days <- function(data, p_treat = 0.5, treatment_type = "RCT", pollu
 }
 ```
 
+```{r}
+total_data %>%
+      group_by(city) %>%
+      mutate(
+        threshold = as.numeric(quantile(pm10, 0.5)),
+        treated = (pm10 >= threshold),
+        in_bw = cut_width(
+          pm10,
+          width = 200,
+          center = unique(threshold)
+        ),
+        above_th = (threshold >= as.numeric(str_extract(in_bw, "([:digit:]|\\.|-).+(?=,)"))), 
+        below_th = (threshold < as.numeric(str_extract(in_bw, "(?<=,)([:digit:]|\\.)+"))),
+        treated = ifelse(above_th & below_th, treated, NA)
+      ) %>%
+      ungroup() %>%
+      .$treated 
+```
+
+
 ### Creating the output if a unit is treated
 
 We then create the output if a unit is treated, Y(1).
 
 ```{r}
-create_y1 <- function(dep_var, percent_effect_size = 0.5, treatment_type = "RCT") {
+create_y1 <- function(dep_var, percent_effect_size = 0.5, treatment_type = "RCT", pollutant = NULL) {
   # y1 <- output_var*(1 + percent_effect_size/100)
   if (treatment_type %in% c("RCT", "RDD", "DID", "ITS")) {
     y1 <- dep_var + rpois(length(dep_var), dep_var*percent_effect_size/100) %>% suppressWarnings()
@@ -259,7 +293,7 @@ vect_p_treat <- c(0.1, 0.5)
 vect_treatment_type <- c("RCT", "ITS")
 vect_percent_effect_size <- c(0.1, 0.5, 1)
 vect_formula <- c("deaths_all_causes ~ treated")
-vect_sim_id <- 1:2
+n_iter <- 3
 
 sim_param <- 
   crossing(
@@ -267,7 +301,7 @@ sim_param <-
     vect_p_treat,
     vect_percent_effect_size,
     vect_formula,
-    vect_sim_id
+    vect_sim_id = 1:n_iter
   ) %>% 
   crossing(vect_treatment_type) %>% 
   select(-vect_sim_id)
