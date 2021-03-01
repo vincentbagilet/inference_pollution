@@ -95,6 +95,7 @@ library(broom)
 library(lubridate)
 library(lmtest)
 library(tictoc)
+library(rlang)
 library(furrr) # for parallel computing
 future::plan(multicore)
 
@@ -146,11 +147,10 @@ Then, we create a function to draw the treatment. This function returns a boolea
 
 For each treatment, we define the proportion of treated units (`p_treat`). 
 - For the DiD, to simplify, we set the beginning of the treatment as the median date. To get the desired proportion of treated units, we thus need to draw 2*`p_treat` cities.
+- For the RDD, we draw a threshold position (from a beta distribution, for no reason). For each city, we find the corresponding threshold and define a bandwidth such that `p_treat` observations of the total sample are treated. Observations outside the bandwidth get a `NA` for `treated`. Thus, after calling this function, we need to filter out observations with a `NA` for `treated`.
 
 ```{r}
-draw_treated_days <- function(data, p_treat = 0.5, treatment_type = "RCT", pollutant = "pm10", n_days_study = 200) {
-  
-  if (treatment_type == "RDD" & is.null(pollutant)) {stop("For RDD, a pollutant should be specified")}
+draw_treated_days <- function(data, p_treat = 0.5, treatment_type = "RDD_pm10") {
   
   if (treatment_type == "RCT") {
     treated <- rbernoulli(length(data[["date"]]), p_treat)
@@ -162,23 +162,22 @@ draw_treated_days <- function(data, p_treat = 0.5, treatment_type = "RCT", pollu
     treated_cities <- unique(data[["city"]]) %>%
       sample(size = round(length(.) * min(p_treat * 2, 1)))
     treated <- (data[["city"]] %in% treated_cities & data[["date"]] >= median(data[["date"]]))
-  } else if (treatment_type == "RDD") {
-
+  } else if (str_starts(treatment_type, "RDD")) {
+    pollutant <- str_extract(treatment_type, "(?<=_).+")
+    threshold_pos <- rbeta(1, 10, 3.5)
     treated <- data %>%
-      group_by(city) %>%
+      group_by(.data$city) %>%
       mutate(
-        threshold = as.numeric(quantile(.data[[pollutant]], p_treat)),
-        treated = (.data[[pollutant]] >= threshold),
-        in_bw = cut_width(
+        threshold = quantile(.data[[pollutant]], threshold_pos, names = FALSE),
+        treated = (.data[[pollutant]] >= unique(threshold)),
+        bw = cut_width(
           .data[[pollutant]],
-          width = n_days_study,
+          width = length(.) * 2 * p_treat,
           center = unique(threshold)
         ),
-        treated =
-          ifelse(
-            threshold >= as.numeric(str_extract_all(in_bw, "([:digit:]|\\.|-)+(?=,)")) &
-            threshold < as.numeric(str_extract_all(in_bw, "(?<=,)([:digit:]|\\.)+")),
-          treated, NA)
+        treated = ifelse(
+          threshold > as.numeric(str_extract(bw, "([:digit:]|\\.|-)+(?=,)")) &
+            threshold < as.numeric(str_extract(bw, "(?<=,)([:digit:]|\\.)+")), treated, NA)
       ) %>%
       ungroup() %>%
       .$treated
@@ -190,25 +189,64 @@ draw_treated_days <- function(data, p_treat = 0.5, treatment_type = "RCT", pollu
 }
 ```
 
-```{r}
-total_data %>%
-      group_by(city) %>%
-      mutate(
-        threshold = as.numeric(quantile(pm10, 0.5)),
-        treated = (pm10 >= threshold),
-        in_bw = cut_width(
-          pm10,
-          width = 200,
-          center = unique(threshold)
-        ),
-        above_th = (threshold >= as.numeric(str_extract(in_bw, "([:digit:]|\\.|-).+(?=,)"))), 
-        below_th = (threshold < as.numeric(str_extract(in_bw, "(?<=,)([:digit:]|\\.)+"))),
-        treated = ifelse(above_th & below_th, treated, NA)
-      ) %>%
-      ungroup() %>%
-      .$treated 
-```
+Both to verify that everything works well and for illustration, we can make quick plots:
 
+```{r}
+test_treatment_data <- total_data %>% 
+  mutate(study_period = draw_study_period(date, 500)) %>% 
+    filter(study_period) %>%
+    select(-study_period) %>%
+    mutate(
+      treated_RCT = draw_treated_days(., 0.2, "RCT"),
+      treated_ITS = draw_treated_days(., 0.2, "ITS"),
+      treated_RDD = draw_treated_days(., 0.2, "RDD_pm10"),
+      treated_DID = draw_treated_days(., 0.2, "DID")
+    ) 
+
+test_treatment_data %>% 
+  ggplot() +
+  geom_point(aes(x = date, y = pm10, color = treated_RCT)) +
+  facet_wrap(~city) +
+  scale_color_discrete(na.value = "grey") +
+  labs(
+    title = "Treatment assignation for RCT", 
+    x = "Date", 
+    y = "PM10 concentration level (in mug/m3)"
+  )
+
+test_treatment_data %>% 
+  ggplot() +
+  geom_point(aes(x = date, y = pm10, color = treated_ITS)) +
+  facet_wrap(~city) +
+  scale_color_discrete(na.value = "grey") +
+  labs(
+    title = "Treatment assignation for ITS", 
+    x = "Date", 
+    y = "PM10 concentration level (in mug/m3)"
+  )
+
+test_treatment_data %>% 
+  ggplot() +
+  geom_point(aes(x = date, y = pm10, color = treated_RDD)) +
+  facet_wrap(~city) +
+  scale_color_discrete(na.value = "grey") +
+  labs(
+    title = "Treatment assignation for RDD", 
+    x = "Date", 
+    y = "PM10 concentration level (in mug/m3)"
+  )
+
+test_treatment_data %>% 
+  ggplot() +
+  geom_point(aes(x = date, y = pm10, color = treated_DID)) +
+  facet_wrap(~city) +
+  scale_color_discrete(na.value = "grey") +
+  labs(
+    title = "Treatment assignation for DID", 
+    x = "Date", 
+    y = "PM10 concentration level (in mug/m3)"
+  )
+```
 
 ### Creating the output if a unit is treated
 
@@ -267,7 +305,8 @@ compute_simulation <- function(data, n_days_study = 200, p_treat = 0.5, treatmen
       y0 = .data[[dep_var]],
       y1 = create_y1(.data[[dep_var]], percent_effect_size),
       yobs = y1*treated + y0*(1 - treated)
-    ) 
+    ) %>% 
+    filter(!is.na(treated)) #not necessary bc dropped in lm()
   
   sim_output <- sim_data %>%
     estimate_model(formula = str_c("yobs ~ ", indep_var)) %>%
@@ -290,7 +329,7 @@ To build `sim_param`, we first define the different values we want to consider f
 ```{r}
 vect_n_days_study <- c(100, 250, 500, 750, 1000)
 vect_p_treat <- c(0.1, 0.5)
-vect_treatment_type <- c("RCT", "ITS")
+vect_treatment_type <- c("RCT", "ITS", "RDD_pm10")
 vect_percent_effect_size <- c(0.1, 0.5, 1)
 vect_formula <- c("deaths_all_causes ~ treated")
 n_iter <- 3
