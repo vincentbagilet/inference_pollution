@@ -33,7 +33,9 @@ opts_chunk$set(fig.path = "images/",
 
 # Purpose of the document
 
-In this document, we carry out a simulation exercise to evaluate the performance of randomized control trials (RCTs) in measuring the short-term effects of air pollution on health. 
+In this document, we carry out a simulation exercise to evaluate the performance of Randomized Control Trials (RCTs), Difference-In-Differences (DiDs), Regression Discontinuity Designs (RDDs) and Interrupted Time Series (ITS) "methods" in measuring the short-term effects of air pollution on health. 
+
+Results are analysed and discussed in another document.
 
 # Description of the analysis
 
@@ -45,10 +47,27 @@ We use data from 18 cities in France over the 2013-2018 period. The data set con
 
 ### RCT
 
-Here, we consider interventions leading to changes in air pollution levels on some random days. Examples of such interventions include transportation strikes or for instance. Of course, dates are often not defined as random and are likely to be correlated with unobserved variable. In the present setting, we first consider the golden standard case in which these days are defined at random. Then, we consider deviations from this golden standard.
+Here, we consider interventions leading to changes in air pollution levels on some random days. Examples of such interventions include transportation strikes for instance. Of course, dates are often not defined as random and are likely to be correlated with unobserved variable. In the present setting, we first consider the golden standard case in which these days are defined at random. Then, we consider deviations from this golden standard.
 
-The overall idea of the RCT is to compare the average number of deaths or hospital admissions on days with treatment to days with no treatment.
+The overall idea of the RCT is to compare the average number of deaths or hospital admissions in cities with treatment to cities with no treatment on the same day, controlling for differences across cities.
 
+### DID
+
+Here, we consider interventions leading to changes in air pollution levels in a subset of cities after a given date. Examples of such interventions include an air pollution reduction policy at a sub-national level or a change in regulations at a sub-national level leading to an increase in pollution level. 
+
+The overall idea of the DID is to compare the average number of deaths or hospital admissions in cities with treatment to cities with no treatment on the same day, controlling for differences across cities.
+
+### ITS
+
+Here consider interventions leading to changes in air pollution levels in a subset of cities after a given date. Examples of such interventions include an air pollution reduction policy at a sub-national level or a change in regulations at a sub-national level leading to an increase in pollution level. 
+
+The overall idea of the ITS is to compare the average number of deaths or hospital admissions before and after treatment.
+
+### RDD
+
+Here consider interventions that affect exposure to air pollution when air pollution levels reach a given threshold. Examples of such interventions include air pollution alerts: when pollution reaches a certain level, alerts are released, inviting people to reduce their exposure.
+
+The overall idea of the RDD is to compare days just below the threshold to days just above the threshold (where exposure and health impacts are thus lower). The assumption is that days just below and just above the threshold are comparable.
 
 ## Analysis
 
@@ -69,13 +88,32 @@ $Y_{obs} = Y(0) × (1-T) + Y(1) × T$.
 
 ### Varying "parameters"
 
-Note that there are several parameters we can vary in order to evaluate the performance of such RCTs: the number of observations, the proportion of treated days, the true effect size and the treatment allocation. In order to limit the number of simulations and for clarity, we only modify one parameter at the time, keeping the others constant. We consider the following values for these parameters:
+Note that there are several parameters we can vary in order to evaluate the performance of the different methods: the identification strategy, the number of observations, the proportion of treated days, the true effect size and the model. In order to limit the number of simulations and for clarity, we only modify one parameter at the time, keeping others constant. We consider the following values for these parameters:
 
-- Number of observations: 1000, 2000 **because** ...
-- Proportion of treated days: 0.1, 0.5, etc. The proportion of days treated matters since, while the number of observations can be large, the number of treated days may remain very small (*eg* the number of strikes). We choose these values **because** ...
-- Effect size: 0.05%, 0.1% , 0.5% and 1% **because** ...
-- The definition of treated days, *ie* the drawing processes: drawn at random, correlated with covariates, autocorrelated, etc (to do that, we can use the code we wrote to create missing data).
-- The estimation model
+- Identification strategy: RCT, DID, RDD (we can use several pollutants to trigger the alerts), ITS
+- Number of observations: we actually vary the length of the study, in days. The number of observations is approximately equal to the number of days in the study times the number of cities. We consider 100, 250, 500, 750 and 1000 days **because** ...
+- Proportion of treated days: 0.1, 0.5. The proportion of days treated matters since, while the number of observations can be large, the number of treated days may remain very small (*eg* the number of strikes). We choose these values **because** ...
+- Effect size: 0.15%, 0.5% and 1% **because** ...
+- The estimation model: we first do not include covariates, only fixed effects. We then include include different sets of covariates.
+
+### Deviation from the ideal case
+
+In addition to considering an "ideal" case in which treatment is allocated randomly, the effect of the treatment is homogeneous and with perfect compliance, we can consider deviations from this "ideal" case:
+
+```{r table2, echo=FALSE, message=FALSE, warnings=FALSE, results='asis'}
+table_cases <- "
+| Allocation                  | Compliance   | Effect of the treatment  |
+|-----------------------------|:------------:|-------------------------:|
+| Random                      | Yes          | Homogeneous              |
+| Random                      | No           | Homogeneous              |
+| Correlated with covariates  | Yes          | Homogeneous              |
+| Random                      | Yes          | Heterogeneous            |
+"
+cat(table_cases) 
+```
+
+- For correlation of the allocation with covariates, we can consider that it is correlated with different covariates and in different ways
+- For heterogeneous effect of the treatment, it can vary with time, indviduals and covariates
 
 # Actual implementation
 
@@ -85,7 +123,7 @@ In this section, we follow the steps described in the section "analysis" and car
 
 We load the packages and the data and wrangle it into a format well suited for this analysis.
 
-```{r, echo=TRUE, message = FALSE, warning = FALSE}
+```{r message=FALSE, warning=FALSE, include=FALSE}
 library(here) # for files paths organization
 library(tidyverse) # for data manipulation and visualisation
 library(modelr) # modeling within the tidyverse
@@ -108,7 +146,7 @@ set_mediocre_all()
 ```
 
 
-```{r}
+```{r include=FALSE}
 pollution_data <- readRDS(here::here("R", "Outputs", "data_daily_imputed.rds")) %>% 
   ungroup() %>% 
   mutate(
@@ -200,7 +238,7 @@ draw_treated_days <- function(data, p_treat = 0.5, treatment_type = "RDD_pm10") 
 
 Both to verify that everything works well and for illustration, we can make quick plots:
 
-```{r}
+```{r include=FALSE}
 test_treatment_data <- total_data %>% 
   mutate(study_period = draw_study_period(date, 500)) %>% 
     filter(study_period) %>%
@@ -209,48 +247,36 @@ test_treatment_data <- total_data %>%
       treated_RCT = draw_treated_days(., 0.2, "RCT"),
       treated_ITS = draw_treated_days(., 0.2, "ITS"),
       treated_RDD = draw_treated_days(., 0.2, "RDD_pm10"),
-      treated_DID = draw_treated_days(., 0.2, "DID")
+      treated_DID = draw_treated_days(., 0.2, "DID"), 
+      city = str_to_title(city)
     ) 
 
-test_treatment_data %>% 
-  ggplot() +
-  geom_point(aes(x = date, y = pm10, color = treated_RCT)) +
-  facet_wrap(~city) +
-  labs(
-    title = "Treatment assignation for RCT", 
-    x = "Date", 
-    y = "PM10 concentration level (in mug/m3)"
-  )
+graph_treatment_assignment <- function(data, method) {
+  data %>% 
+    rename(Treated = .data[[paste("treated", method, sep = "_")]]) %>% 
+    ggplot() +
+    geom_point(aes(x = date, y = pm10, color = Treated), size = 0.3) +
+    facet_wrap(~city) +
+    labs(
+      title = paste("Treatment assignation for", method), 
+      subtitle = "Evolution of PM10 concentration in time for each city",
+      x = "Date", 
+      y = "PM10 concentration level (in mug/m3)"
+    )
+} 
 
 test_treatment_data %>% 
-  ggplot() +
-  geom_point(aes(x = date, y = pm10, color = treated_ITS)) +
-  facet_wrap(~city) +
-  labs(
-    title = "Treatment assignation for ITS", 
-    x = "Date", 
-    y = "PM10 concentration level (in mug/m3)"
-  )
+  graph_treatment_assignment("RCT")
 
 test_treatment_data %>% 
-  ggplot() +
-  geom_point(aes(x = date, y = pm10, color = treated_RDD)) +
-  facet_wrap(~city) +
-  labs(
-    title = "Treatment assignation for RDD", 
-    x = "Date", 
-    y = "PM10 concentration level (in mug/m3)"
-  )
+  graph_treatment_assignment("RDD")
 
 test_treatment_data %>% 
-  ggplot() +
-  geom_point(aes(x = date, y = pm10, color = treated_DID)) +
-  facet_wrap(~city) +
-  labs(
-    title = "Treatment assignation for DID", 
-    x = "Date", 
-    y = "PM10 concentration level (in mug/m3)"
-  )
+  graph_treatment_assignment("DID")
+
+test_treatment_data %>% 
+  graph_treatment_assignment("ITS")
+
 ```
 
 ### Creating the output if a unit is treated
@@ -331,7 +357,7 @@ We will then loop this function to get a large number of replications of each si
 
 ## Running the simulations
 
-We can then run the simulations. As mentioned, we want to test different sets of parameters. For each set we want to run many iterations of the simulation, `n_iter`. We thus create a table displaying in each row a set of parameters we want to have a simulation for, `sim_param`. Each set of parameter is appears `n_iter` times in `sim_param`.
+We can then run the simulations. As mentioned, we want to test different sets of parameters. For each set we want to run many iterations of the simulation, `n_iter`. We thus create a table displaying in each row a set of parameters we want to have a simulation for, `sim_param`. Each set of parameter is appears `n_iter` times in `sim_param` to map over the set of parameters.
 
 To build `sim_param`, we first define the different values we want to consider for each parameter. We also build a vector of simulation ids (that we drop afterwards). Finally, we cross that with `vect_treatment_type` to get all sets of parameters for each type of treatment.
 
