@@ -94,13 +94,21 @@ library(knitr) # for tables
 library(broom)
 library(lubridate)
 library(lmtest)
+library(sandwich)
 library(tictoc)
 library(rlang)
+library(readr)
 library(furrr) # for parallel computing
 future::plan(multicore)
+library(mediocrethemes)
 
 source(here::here("R", "Scripts", "script_custom_ggplot_theme.R"))
 
+set_mediocre_all()
+```
+
+
+```{r}
 pollution_data <- readRDS(here::here("R", "Outputs", "data_daily_imputed.rds")) %>% 
   ungroup() %>% 
   mutate(
@@ -116,9 +124,6 @@ total_data <- pollution_data %>%
   ungroup() %>% 
   mutate(date = ymd(date)) %>% 
   filter(date < "2016-01-01")
-
-# no_pollutant_data <- total_data %>% 
-#   select(-(no2:pm2.5)) %>% 
 ```
 
 ## Function definitions
@@ -148,6 +153,7 @@ Then, we create a function to draw the treatment. This function returns a boolea
 For each treatment, we define the proportion of treated units (`p_treat`). 
 - For the DiD, to simplify, we set the beginning of the treatment as the median date. To get the desired proportion of treated units, we thus need to draw 2*`p_treat` cities.
 - For the RDD, we draw a threshold position (from a beta distribution, for no reason). For each city, we find the corresponding threshold and define a bandwidth such that `p_treat` observations of the total sample are treated. Observations outside the bandwidth get a `NA` for `treated`. Thus, after calling this function, we need to filter out observations with a `NA` for `treated`.
+- For the GAM and IV, we only consider a subset of observations to create variation across observations
 
 ```{r}
 draw_treated_days <- function(data, p_treat = 0.5, treatment_type = "RDD_pm10") {
@@ -157,11 +163,14 @@ draw_treated_days <- function(data, p_treat = 0.5, treatment_type = "RDD_pm10") 
   } else if (treatment_type == "ITS") {
     treated <- (as.numeric(data[["date"]]) >= quantile(as.numeric(data[["date"]]), 1 - p_treat))
   } else if (treatment_type %in% c("GAM", "IV")) {
-    treated <- TRUE
+    # treated <- TRUE
+    treated <- rbernoulli(length(data[["date"]]), p_treat)
+    treated <- ifelse(treated, treated, NA) 
   } else if (treatment_type == "DID") {
     treated_cities <- unique(data[["city"]]) %>%
       sample(size = round(length(.) * min(p_treat * 2, 1)))
-    treated <- (data[["city"]] %in% treated_cities & data[["date"]] >= median(data[["date"]]))
+    treated <- (data[["city"]] %in% treated_cities &
+                  data[["date"]] >= median(data[["date"]]))
   } else if (str_starts(treatment_type, "RDD")) {
     pollutant <- str_extract(treatment_type, "(?<=_).+")
     threshold_pos <- rbeta(1, 10, 3.5)
@@ -207,7 +216,6 @@ test_treatment_data %>%
   ggplot() +
   geom_point(aes(x = date, y = pm10, color = treated_RCT)) +
   facet_wrap(~city) +
-  scale_color_discrete(na.value = "grey") +
   labs(
     title = "Treatment assignation for RCT", 
     x = "Date", 
@@ -218,7 +226,6 @@ test_treatment_data %>%
   ggplot() +
   geom_point(aes(x = date, y = pm10, color = treated_ITS)) +
   facet_wrap(~city) +
-  scale_color_discrete(na.value = "grey") +
   labs(
     title = "Treatment assignation for ITS", 
     x = "Date", 
@@ -229,7 +236,6 @@ test_treatment_data %>%
   ggplot() +
   geom_point(aes(x = date, y = pm10, color = treated_RDD)) +
   facet_wrap(~city) +
-  scale_color_discrete(na.value = "grey") +
   labs(
     title = "Treatment assignation for RDD", 
     x = "Date", 
@@ -240,7 +246,6 @@ test_treatment_data %>%
   ggplot() +
   geom_point(aes(x = date, y = pm10, color = treated_DID)) +
   facet_wrap(~city) +
-  scale_color_discrete(na.value = "grey") +
   labs(
     title = "Treatment assignation for DID", 
     x = "Date", 
@@ -255,7 +260,7 @@ We then create the output if a unit is treated, Y(1).
 ```{r}
 create_y1 <- function(dep_var, percent_effect_size = 0.5, treatment_type = "RCT", pollutant = NULL) {
   # y1 <- output_var*(1 + percent_effect_size/100)
-  if (treatment_type %in% c("RCT", "RDD", "DID", "ITS")) {
+  if (str_starts("RDD_gr", ("RDD|RCT|DID|ITS"))) {
     y1 <- dep_var + rpois(length(dep_var), dep_var*percent_effect_size/100) %>% suppressWarnings()
   } else if (treatment_type == "GAM") {
     y1 <- dep_var + rpois(length(dep_var), pollutant*percent_effect_size/100) %>% suppressWarnings()
@@ -276,7 +281,7 @@ estimate_model <- function(data, formula) {
   nobs <- length(est_results$residuals)
   
   est_results %>%
-    # lmtest::coeftest(. , vcov = "vcovHC") %>%
+    lmtest::coeftest(., vcov = vcovHC(.)) %>% 
     broom::tidy(conf.int = TRUE) %>%
     filter(term == "treatedTRUE") %>%
     rename(p_value = p.value) %>% 
@@ -302,11 +307,14 @@ compute_simulation <- function(data, n_days_study = 200, p_treat = 0.5, treatmen
     select(-study_period) %>%
     mutate(
       treated = draw_treated_days(., p_treat, treatment_type),
+      # true_treated = draw_treated_days(., p_treat, treatment_type),
       y0 = .data[[dep_var]],
       y1 = create_y1(.data[[dep_var]], percent_effect_size),
       yobs = y1*treated + y0*(1 - treated)
+      # yobs = y1*true_treated + y0*(1 - true_treated)
     ) %>% 
     filter(!is.na(treated)) #not necessary bc dropped in lm()
+    # filter(!is.na(true_treated)) #not necessary bc dropped in lm()
   
   sim_output <- sim_data %>%
     estimate_model(formula = str_c("yobs ~ ", indep_var)) %>%
@@ -315,7 +323,8 @@ compute_simulation <- function(data, n_days_study = 200, p_treat = 0.5, treatmen
   return(sim_output)
 } 
 
-test <- compute_simulation(total_data %>% filter(!is.na(deaths_all_causes)), formula = "deaths_all_causes ~ treated")
+# test <- total_data %>%
+#   compute_simulation(formula = "deaths_all_causes ~ treated")
 ````
 
 We will then loop this function to get a large number of replications of each simulation for a given set of parameters. We will also vary the values of the different parameter.
@@ -327,10 +336,12 @@ We can then run the simulations. As mentioned, we want to test different sets of
 To build `sim_param`, we first define the different values we want to consider for each parameter. We also build a vector of simulation ids (that we drop afterwards). Finally, we cross that with `vect_treatment_type` to get all sets of parameters for each type of treatment.
 
 ```{r}
-vect_n_days_study <- c(100, 250, 500, 750, 1000)
+# vect_n_days_study <- c(100, 250, 500, 750, 1000)
+vect_n_days_study <- 200
 vect_p_treat <- c(0.1, 0.5)
 vect_treatment_type <- c("RCT", "ITS", "RDD_pm10")
-vect_percent_effect_size <- c(0.1, 0.5, 1)
+# vect_percent_effect_size <- c(0.1, 0.5, 1)
+vect_percent_effect_size <- 0.5
 vect_formula <- c("deaths_all_causes ~ treated")
 n_iter <- 3
 
@@ -339,13 +350,19 @@ sim_param <-
     vect_n_days_study,
     vect_p_treat,
     vect_percent_effect_size,
-    vect_formula,
+    vect_formula
+  ) 
+
+write_csv(sim_param, "../Outputs/sim_param.csv")
+sim_param <- read_csv( "../Outputs/sim_param.csv")
+
+sim_param <- sim_param %>% 
+  crossing(
+    vect_treatment_type, 
     vect_sim_id = 1:n_iter
   ) %>% 
-  crossing(vect_treatment_type) %>% 
-  select(-vect_sim_id)
-
-names(sim_param) <- str_remove_all(names(sim_param), "vect_")
+  select(-vect_sim_id) %>% 
+  rename_with(~ str_remove_all(., "vect_"))
 ```
 
 We can then run the simulations for each set of parameter, using a `pmap_dfr` function.
@@ -377,7 +394,7 @@ summarise_simulations <- function(data) {
       bias = mean(abs((estimate - true_effect)/true_effect), na.rm = TRUE)*100,
       average_p_value = mean(p_value, na.rm = TRUE),
       average_n_obs = mean(n_obs, na.rm = TRUE),
-      type_m = mean(ifelse(p_value < 0.05, estimate/true_effect, NA), na.rm = TRUE),
+      type_m = mean(ifelse(p_value < 0.05, abs(estimate)/true_effect, NA), na.rm = TRUE),
       type_s = sum(ifelse(p_value < 0.05, sign(estimate) != sign(true_effect), NA), na.rm = TRUE)/n()*100,
       .groups	= "drop"
     ) %>% 
