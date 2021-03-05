@@ -136,6 +136,8 @@ library(sandwich)
 library(tictoc)
 library(rlang)
 library(readr)
+library(fixest)
+library(Formula)
 library(furrr) # for parallel computing
 future::plan(multicore)
 library(mediocrethemes)
@@ -298,21 +300,30 @@ create_y1 <- function(dep_var, percent_effect_size = 0.5, treatment_type = "RCT"
 ### Estimate the model
 
 We can then estimate our model and retrieve the point estimate and p-value.
+The model should be specified in a three part character-formula as follows: "y ~ x | fixed effects | cluster". If no fi
 
 ```{r}
 estimate_model <- function(data, formula) {
+  fml <- Formula::as.Formula(formula)
+  cluster <- formula(fml, lhs = 0, rhs = 3)
+  actual_fml <- formula(fml, rhs = -3)
+    
   est_results <- data %>% 
-    lm(data = ., formula = formula) 
+    feols(
+      data = ., 
+      fml = actual_fml, 
+      cluster = cluster,
+      se = "hetero"
+    ) 
   
   nobs <- length(est_results$residuals)
-  
+  # 
   est_results %>%
-    lmtest::coeftest(., vcov = vcovHC(.)) %>% 
     broom::tidy(conf.int = TRUE) %>%
     filter(term == "treatedTRUE") %>%
-    rename(p_value = p.value) %>% 
+    rename(p_value = p.value) %>%
     mutate(estimate = estimate) %>%
-    select(estimate, p_value) %>% 
+    select(estimate, p_value) %>%
     mutate(n_obs = nobs)
 } 
 ```
@@ -322,10 +333,10 @@ estimate_model <- function(data, formula) {
 We then create a function running all the previous functions together and therefore performing an iteration of the simulation for a given set of parameters. This function returns a one row data set with estimate, p-value, number of observations and true effect size.
 
 ```{r}
-compute_simulation <- function(data, n_days_study = 200, p_treat = 0.5, treatment_type = "RCT", percent_effect_size = 0.5, formula = "deaths_all_causes ~ treated") {
+compute_simulation <- function(data, n_days_study = 200, p_treat = 0.5, treatment_type = "RCT", percent_effect_size = 0.5, formula = deaths_all_causes ~ treated) {
   
-  dep_var <- str_extract(formula, ".+(?=\\s~)")
-  indep_var <- str_extract(formula, "(?<=~\\s).+")
+  fml <- Formula::as.Formula(formula)
+  dep_var <- paste(fml[[2]])
   
   sim_data <- data %>% 
     mutate(study_period = draw_study_period(date, n_days_study)) %>% 
@@ -341,9 +352,9 @@ compute_simulation <- function(data, n_days_study = 200, p_treat = 0.5, treatmen
     ) %>% 
     filter(!is.na(treated)) #not necessary bc dropped in lm()
     # filter(!is.na(true_treated)) #not necessary bc dropped in lm()
-  
+
   sim_output <- sim_data %>%
-    estimate_model(formula = str_c("yobs ~ ", indep_var)) %>%
+    estimate_model(formula = update(fml, yobs ~ .)) %>%
     mutate(true_effect = mean(sim_data$y1 - sim_data$y0, na.rm = TRUE))
   
   return(sim_output)
@@ -380,6 +391,9 @@ sim_param <-
   ) 
 
 write_csv(sim_param, "../Outputs/sim_param.csv")
+
+#Set manually the list of parameters one wants to test
+
 sim_param <- read_csv( "../Outputs/sim_param.csv")
 
 sim_param <- sim_param %>% 
