@@ -51,7 +51,7 @@ style_mono_light(
 )
 ```
 
-# Summary of the main questions
+## Summary of the main questions
 
 - What is the usual **power** in studies of short-term health effects of air pollution? ✔️
   
@@ -59,17 +59,21 @@ style_mono_light(
   
 - What is the impact of **missing data** on these estimates? 
 
-```{r echo=FALSE, out.width= 400, fig.align="center"} 
-knitr::include_graphics("images/pollution_paris.jpg")
-```
+## Today
   
-- Today: simulations to answer the second question
+- Discuss simulations to answer the second question
+
+- Objective: is what we are doing stupid? *ie* not interesting or incorrect $\Rightarrow$ 
+
+```{r echo=FALSE, out.width= 300, fig.align="center"} 
+knitr::include_graphics("images/bored.jpg")
+```
 
 ---
 
 ## Motivation
 
-- Effects are really small => difficult to detect
+- Effects are really small $\Rightarrow$ difficult to detect
 
 - "Fancy" techniques developed to avoid omitted variable bias but it may create another type of bias: type M and type S error
 
@@ -80,7 +84,7 @@ knitr::include_graphics("images/pollution_paris.jpg")
 - Consider RCTs, DiDs, ITSs, RDDs and later IVs and Poisson generalized additive models
 
 1. Assign treatment randomly
-1. Create the number of deaths if unit would have been treated (Y(1))
+1. Create a number of deaths if unit would have been treated (Y(1))
 1. Run our estimation
 1. Store estimates and p-values
 1. Repeat
@@ -114,82 +118,124 @@ knitr::include_graphics("images/pollution_paris.jpg")
 
 - Example: transportation strikes 
 
-- For now, treated days defined at random. Later, deviations
-
 - Compares the average number of deaths in cities with treatment to cities with no treatment on the same day, controlling for differences across cities.
+
+```{r echo=FALSE, out.width= 500, fig.align="center"} 
+knitr::include_graphics("images/treat_assign_RCT.png")
+```
+
+---
 
 ### DID
 
 - Changes in air pollution levels in a subset of cities after a given date. 
 
-- Examples change in regulations at a sub-national level 
+- Example: change in regulations at a sub-national level 
 
 - Same comparison as RCT but non-random treatment assignment 
 
-???
-
-- RCT: compare the average number of deaths or hospital admissions in cities with treatment to cities with no treatment on the same day, controlling for differences across cities.
-
----
-
-ITS
-
-Here consider interventions leading to changes in air pollution levels in a subset of cities after a given date. Examples of such interventions include an air pollution reduction policy at a sub-national level or a change in regulations at a sub-national level leading to an increase in pollution level.
-
-The overall idea of the ITS is to compare the average number of deaths or hospital admissions before and after treatment.
-RDD
-
-Here consider interventions that affect exposure to air pollution when air pollution levels reach a given threshold. Examples of such interventions include air pollution alerts: when pollution reaches a certain level, alerts are released, inviting people to reduce their exposure.
-
-The overall idea of the RDD is to compare days just below the threshold to days just above the threshold (where exposure and health impacts are thus lower). The assumption is that days just below and just above the threshold are comparable.
+```{r echo=FALSE, out.width= 600, fig.align="center"} 
+knitr::include_graphics("images/treat_assign_DID.png")
+```
 
 ---
 
-## Method
+### ITS
 
-- For the sake of the example, let's focus on a simple Poisson generalized additive model:
+- Changes in air pollution levels in all cities after a given date
 
-$$h_{ct} = \alpha + \beta_{c}p_{ct} + \boldsymbol{W_{ct}'\delta} +  \boldsymbol{C_{ct}'\gamma} + \epsilon_{ct}$$
-- Use both actual and fake data (here focus on actual data)
+- Example: change in regulations at a national level 
 
-1. Estimate the model on the existing data
-
---
-
-1. Define a "fake", known, effect $\beta_c$
-
---
-
-1. Generate noise $(\epsilon)$ and predict/generate fake hospital admission and mortality data $(h)$ based on our estimated model (1000 data sets)
-
---
-
-1. Reestimate the model to see if we recover our true value
-
---
-
-1. Compute bias, power, type I, type M, type S error
-
----
-
-- Look how our measures of interest vary with sample size and effect size.
-
-- Where do papers in the literature lie? $\to$ what problem could it be exposed to
-
-- Repeat this for each identification strategy (with different DGPs of course)
-
-- Reproduce the same analysis with fake data (*ie* generate all the data)
-
----
-
-## Definitions
-
-- **Power**: probability of finding an effect when there is actually one
-
-- Power can be low when effects are small and/or variance of the estimates is large (*eg* small sample size)
+- Compare the average number of deaths before and after treatment.
 
 ```{r echo=FALSE, out.width= 600, fig.align="center"} 
-knitr::include_graphics("images/typeMS_own.png")
+knitr::include_graphics("images/treat_assign_ITS.png")
 ```
+
+---
+
+### RDD
+
+- Interventions that affect exposure to air pollution when air pollution levels reach a given threshold 
+
+- Examples: air pollution alerts
+
+- Compare days just below the threshold to days just above the threshold 
+
+```{r echo=FALSE, out.width= 600, fig.align="center"} 
+knitr::include_graphics("images/treat_assign_RDD.png")
+```
+
+---
+
+## Varying “parameters”
+
+- Identification strategy: RCT, DID, RDD, ITS
+
+- Number of observations: length of the study, in days
+
+- Proportion of treated days: can be very small (eg the number of strikes)
+
+- Effect size
+
+- The estimation model: first no covariates. Then include different sets of covariates.
+
+- Here, ideal case: random treatment allocation, perfect compliance and homogeneous treatment effect
+
+---
+
+## Actual implementation 
+
+1. Draw study period:
+  - Number of days in the study $\to$ boolean in study/not in study
+  - Random draw
+
+1. Define the treatment: 
+  - Design and proportion of treated $\to$ boolean treated/not treated
+  - Already explained
+
+1. Creating the output if a unit is treated:
+  - Data, design and effect size $\to$ Y(1)
+  - New number of deaths = actual number of deaths + draw from a Poisson distribution (with mean equal to the number of deaths $\times$ effect size in percent)
+
+1. Estimate the model:
+  - Data and model "formula" $\to$ estimate and p_value
+  
+---
+
+1. Loop over $n_iter$ iterations:
+  - Source of variation: for each iteration, a new sample (new study period) and new treated group
+
+1. Repeat for all parameters:
+  - For each set of parameters, get $n_{iter}$ estimates and p-values
+
+1. Analysis of the results:
+  - For each set of parameters, compute average bias, p-value, power, type M and type S
+  - Can study how bias, precision, power, type M, type S evolve with the values of parameters
+
+---
+
+## Deviation from the ideal case
+
+| Allocation                  | Compliance   | Effect of the treatment  |
+|:----------------------------|:------------:|-------------------------:|
+| Random                      | Yes          | Homogeneous              |
+| Random                      | No           | Homogeneous              |
+| Correlated with covariates  | Yes          | Homogeneous              |
+| Random                      | Yes          | Heterogeneous            |
+
+- For non-random allocation:
+  
+  1. Correlation with different covariates
+  1. Of various form
+  1. Of various intensity
+
+- Variation of the treatment effect with: 
+
+  1. Time
+  1. Individuals
+  1. Value of covariates
+
+
 
 

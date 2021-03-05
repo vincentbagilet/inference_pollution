@@ -1797,42 +1797,50 @@ summary {
 
 <div id="TOC">
 <ul>
-<li><a href="#summary-of-the-main-questions">Summary of the main questions</a><ul>
+<li><a href="#summary-of-the-main-questions">Summary of the main questions</a></li>
+<li><a href="#today">Today</a></li>
 <li><a href="#motivation">Motivation</a></li>
 <li><a href="#overall-method">Overall method</a></li>
 <li><a href="#data">Data</a></li>
 <li><a href="#background-on-selected-designs">Background on selected designs</a><ul>
 <li><a href="#rct">RCT</a></li>
 <li><a href="#did">DID</a></li>
+<li><a href="#its">ITS</a></li>
+<li><a href="#rdd">RDD</a></li>
 </ul></li>
-<li><a href="#method">Method</a></li>
-<li><a href="#definitions">Definitions</a></li>
-</ul></li>
+<li><a href="#varying-parameters">Varying “parameters”</a></li>
+<li><a href="#actual-implementation">Actual implementation</a></li>
+<li><a href="#deviation-from-the-ideal-case">Deviation from the ideal case</a></li>
 </ul>
 </div>
 
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-text-begin -->
-<div id="summary-of-the-main-questions" class="section level1">
-<h1>Summary of the main questions</h1>
+<div id="summary-of-the-main-questions" class="section level2">
+<h2>Summary of the main questions</h2>
 <ul>
 <li><p>What is the usual <strong>power</strong> in studies of short-term health effects of air pollution? ✔️</p></li>
 <li><p>How do <strong>different identification strategies</strong> perform to estimate these effects?</p></li>
 <li><p>What is the impact of <strong>missing data</strong> on these estimates?</p></li>
 </ul>
+</div>
+<div id="today" class="section level2">
+<h2>Today</h2>
+<ul>
+<li><p>Discuss simulations to answer the second question</p></li>
+<li><p>Objective: is what we are doing stupid? <em>ie</em> not interesting or incorrect <span class="math inline">\(\Rightarrow\)</span></p></li>
+</ul>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<ul>
-<li>Today: simulations to answer the second question</li>
-</ul>
 <hr />
+</div>
 <div id="motivation" class="section level2">
 <h2>Motivation</h2>
 <ul>
-<li><p>Effects are really small =&gt; difficult to detect</p></li>
+<li><p>Effects are really small <span class="math inline">\(\Rightarrow\)</span> difficult to detect</p></li>
 <li><p>“Fancy” techniques developed to avoid omitted variable bias but it may create another type of bias: type M and type S error</p></li>
 <li><p>Good exercise for us, PhD students</p></li>
 </ul>
@@ -1844,7 +1852,7 @@ summary {
 </ul>
 <ol style="list-style-type: decimal">
 <li>Assign treatment randomly</li>
-<li>Create the number of deaths if unit would have been treated (Y(1))</li>
+<li>Create a number of deaths if unit would have been treated (Y(1))</li>
 <li>Run our estimation</li>
 <li>Store estimates and p-values</li>
 <li>Repeat</li>
@@ -1872,79 +1880,168 @@ summary {
 <ul>
 <li><p>Changes in air pollution levels on some random days.</p></li>
 <li><p>Example: transportation strikes</p></li>
-<li><p>For now, treated days defined at random. Later, deviations</p></li>
 <li><p>Compares the average number of deaths in cities with treatment to cities with no treatment on the same day, controlling for differences across cities.</p></li>
-</ul>
-</div>
-<div id="did" class="section level3">
-<h3>DID</h3>
-<ul>
-<li><p>Changes in air pollution levels in a subset of cities after a given date.</p></li>
-<li><p>Examples change in regulations at a sub-national level</p></li>
-<li><p>Same comparison as RCT but non-random treatment assignment</p></li>
-</ul>
-<p>???</p>
-<ul>
-<li>RCT: compare the average number of deaths or hospital admissions in cities with treatment to cities with no treatment on the same day, controlling for differences across cities.</li>
-</ul>
-<hr />
-<p>ITS</p>
-<p>Here consider interventions leading to changes in air pollution levels in a subset of cities after a given date. Examples of such interventions include an air pollution reduction policy at a sub-national level or a change in regulations at a sub-national level leading to an increase in pollution level.</p>
-<p>The overall idea of the ITS is to compare the average number of deaths or hospital admissions before and after treatment. RDD</p>
-<p>Here consider interventions that affect exposure to air pollution when air pollution levels reach a given threshold. Examples of such interventions include air pollution alerts: when pollution reaches a certain level, alerts are released, inviting people to reduce their exposure.</p>
-<p>The overall idea of the RDD is to compare days just below the threshold to days just above the threshold (where exposure and health impacts are thus lower). The assumption is that days just below and just above the threshold are comparable.</p>
-<hr />
-</div>
-</div>
-<div id="method" class="section level2">
-<h2>Method</h2>
-<ul>
-<li>For the sake of the example, let’s focus on a simple Poisson generalized additive model:</li>
-</ul>
-<p><span class="math display">\[h_{ct} = \alpha + \beta_{c}p_{ct} + \boldsymbol{W_{ct}&#39;\delta} +  \boldsymbol{C_{ct}&#39;\gamma} + \epsilon_{ct}\]</span> - Use both actual and fake data (here focus on actual data)</p>
-<ol style="list-style-type: decimal">
-<li>Estimate the model on the existing data</li>
-</ol>
-<p>–</p>
-<ol style="list-style-type: decimal">
-<li>Define a “fake”, known, effect <span class="math inline">\(\beta_c\)</span></li>
-</ol>
-<p>–</p>
-<ol style="list-style-type: decimal">
-<li>Generate noise <span class="math inline">\((\epsilon)\)</span> and predict/generate fake hospital admission and mortality data <span class="math inline">\((h)\)</span> based on our estimated model (1000 data sets)</li>
-</ol>
-<p>–</p>
-<ol style="list-style-type: decimal">
-<li>Reestimate the model to see if we recover our true value</li>
-</ol>
-<p>–</p>
-<ol style="list-style-type: decimal">
-<li>Compute bias, power, type I, type M, type S error</li>
-</ol>
-<hr />
-<ul>
-<li><p>Look how our measures of interest vary with sample size and effect size.</p></li>
-<li><p>Where do papers in the literature lie? <span class="math inline">\(\to\)</span> what problem could it be exposed to</p></li>
-<li><p>Repeat this for each identification strategy (with different DGPs of course)</p></li>
-<li><p>Reproduce the same analysis with fake data (<em>ie</em> generate all the data)</p></li>
-</ul>
-<hr />
-</div>
-<div id="definitions" class="section level2">
-<h2>Definitions</h2>
-<ul>
-<li><p><strong>Power</strong>: probability of finding an effect when there is actually one</p></li>
-<li><p>Power can be low when effects are small and/or variance of the estimates is large (<em>eg</em> small sample size)</p></li>
 </ul>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
+<hr />
+</div>
+<div id="did" class="section level3">
+<h3>DID</h3>
+<ul>
+<li><p>Changes in air pollution levels in a subset of cities after a given date.</p></li>
+<li><p>Example: change in regulations at a sub-national level</p></li>
+<li><p>Same comparison as RCT but non-random treatment assignment</p></li>
+</ul>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<hr />
+</div>
+<div id="its" class="section level3">
+<h3>ITS</h3>
+<ul>
+<li><p>Changes in air pollution levels in all cities after a given date</p></li>
+<li><p>Example: change in regulations at a national level</p></li>
+<li><p>Compare the average number of deaths before and after treatment.</p></li>
+</ul>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<hr />
+</div>
+<div id="rdd" class="section level3">
+<h3>RDD</h3>
+<ul>
+<li><p>Interventions that affect exposure to air pollution when air pollution levels reach a given threshold</p></li>
+<li><p>Examples: air pollution alerts</p></li>
+<li><p>Compare days just below the threshold to days just above the threshold</p></li>
+</ul>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<hr />
+</div>
+</div>
+<div id="varying-parameters" class="section level2">
+<h2>Varying “parameters”</h2>
+<ul>
+<li><p>Identification strategy: RCT, DID, RDD, ITS</p></li>
+<li><p>Number of observations: length of the study, in days</p></li>
+<li><p>Proportion of treated days: can be very small (eg the number of strikes)</p></li>
+<li><p>Effect size</p></li>
+<li><p>The estimation model: first no covariates. Then include different sets of covariates.</p></li>
+<li><p>Here, ideal case: random treatment allocation, perfect compliance and homogeneous treatment effect</p></li>
+</ul>
+<hr />
+</div>
+<div id="actual-implementation" class="section level2">
+<h2>Actual implementation</h2>
+<ol style="list-style-type: decimal">
+<li>Draw study period:</li>
+</ol>
+<ul>
+<li>Number of days in the study <span class="math inline">\(\to\)</span> boolean in study/not in study</li>
+<li>Random draw</li>
+</ul>
+<ol style="list-style-type: decimal">
+<li>Define the treatment:</li>
+</ol>
+<ul>
+<li>Design and proportion of treated <span class="math inline">\(\to\)</span> boolean treated/not treated</li>
+<li>Already explained</li>
+</ul>
+<ol style="list-style-type: decimal">
+<li>Creating the output if a unit is treated:</li>
+</ol>
+<ul>
+<li>Data, design and effect size <span class="math inline">\(\to\)</span> Y(1)</li>
+<li>New number of deaths = actual number of deaths + draw from a Poisson distribution (with mean equal to the number of deaths <span class="math inline">\(\times\)</span> effect size in percent)</li>
+</ul>
+<ol style="list-style-type: decimal">
+<li>Estimate the model:</li>
+</ol>
+<ul>
+<li>Data and model “formula” <span class="math inline">\(\to\)</span> estimate and p_value</li>
+</ul>
+<hr />
+<ol style="list-style-type: decimal">
+<li>Loop over <span class="math inline">\(n_iter\)</span> iterations:</li>
+</ol>
+<ul>
+<li>Source of variation: for each iteration, a new sample (new study period) and new treated group</li>
+</ul>
+<ol style="list-style-type: decimal">
+<li>Repeat for all parameters:</li>
+</ol>
+<ul>
+<li>For each set of parameters, get <span class="math inline">\(n_{iter}\)</span> estimates and p-values</li>
+</ul>
+<ol style="list-style-type: decimal">
+<li>Analysis of the results:</li>
+</ol>
+<ul>
+<li>For each set of parameters, compute average bias, p-value, power, type M and type S</li>
+<li>Can study how bias, precision, power, type M, type S evolve with the values of parameters</li>
+</ul>
+<hr />
+</div>
+<div id="deviation-from-the-ideal-case" class="section level2">
+<h2>Deviation from the ideal case</h2>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Allocation</th>
+<th align="center">Compliance</th>
+<th align="right">Effect of the treatment</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Random</td>
+<td align="center">Yes</td>
+<td align="right">Homogeneous</td>
+</tr>
+<tr class="even">
+<td align="left">Random</td>
+<td align="center">No</td>
+<td align="right">Homogeneous</td>
+</tr>
+<tr class="odd">
+<td align="left">Correlated with covariates</td>
+<td align="center">Yes</td>
+<td align="right">Homogeneous</td>
+</tr>
+<tr class="even">
+<td align="left">Random</td>
+<td align="center">Yes</td>
+<td align="right">Heterogeneous</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><p>For non-random allocation:</p>
+<ol style="list-style-type: decimal">
+<li>Correlation with different covariates</li>
+<li>Of various form</li>
+<li>Of various intensity</li>
+</ol></li>
+<li><p>Variation of the treatment effect with:</p>
+<ol style="list-style-type: decimal">
+<li>Time</li>
+<li>Individuals</li>
+<li>Value of covariates</li>
+</ol></li>
+</ul>
 <!-- rnb-text-end -->
 </div>
-</div>
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiU2ltdWxhdGlvbnMgZm9yIHNob3J0IHRlcm0gaGVhbHRoIGVmZmVjdHMgb2YgYWlyIHBvbGx1dGlvbiIKYXV0aG9yOiAiVmluY2VudCBCYWdpbGV0IC0gTGVvIFphYnJvY2tpIgpkYXRlOiAiYHIgZm9ybWF0KFN5cy50aW1lKCksICclZCAlQiwgJVknKWAiCm91dHB1dDoKICB4YXJpbmdhbjo6bW9vbl9yZWFkZXI6CiAgICBsaWJfZGlyOiBsaWJzCiAgICBjc3M6IHhhcmluZ2FuLXRoZW1lci5jc3MKICAgIG5hdHVyZToKICAgICAgY291bnRJbmNyZW1lbnRhbFNsaWRlczogbm8KICAgICAgaGlnaGxpZ2h0TGluZXM6IHllcwogICAgICBoaWdobGlnaHRTdHlsZTogZ2l0aHViCiAgc2xpZHlfcHJlc2VudGF0aW9uOgogICAgaGlnaGxpZ2h0OiBweWdtZW50cwogIGdpdGh1Yl9kb2N1bWVudDogZGVmYXVsdAogIGh0bWxfbm90ZWJvb2s6CiAgICBoaWdobGlnaHQ6IHB5Z21lbnRzCiAgICB0aGVtZTogc2ltcGxleAogICAgdG9jOiB5ZXMKICBpb3NsaWRlc19wcmVzZW50YXRpb246CiAgICBoaWdobGlnaHQ6IHB5Z21lbnRzCiAgcGRmX2RvY3VtZW50OgogICAgaW5jbHVkZXM6CiAgICAgIGluX2hlYWRlcjogVkJfbWFya2Rvd24uc3R5CiAgICBrZWVwX3RleDogeWVzCiAgaHRtbF9kb2N1bWVudDoKICAgIGhpZ2hsaWdodDogcHlnbWVudHMKICAgIHRoZW1lOiBzaW1wbGV4CiAgYmVhbWVyX3ByZXNlbnRhdGlvbjoKICAgIGhpZ2hsaWdodDogcHlnbWVudHMKICAgIHRoZW1lOiBWQl9CZWFtZXIKc3VidGl0bGU6ICLwn6aAIGxhYiBwcmVzZW50YXRpb24iCi0tLQoKYGBge3IgeGFyaW5nYW4tdGhlbWVyLCBpbmNsdWRlID0gRkFMU0V9CmxpYnJhcnkoeGFyaW5nYW50aGVtZXIpCnN0eWxlX21vbm9fbGlnaHQoCiAgYmFzZV9jb2xvciA9ICIjMDAzMTNDIiwgIzFCMjc1NAogIHRleHRfY29sb3IgPSAiIzAwMzEzQyIsCiAgYmFja2dyb3VuZF9jb2xvciA9ICIjRjlGQUY3IiwKICBoZWFkZXJfZm9udF9nb29nbGUgPSBnb29nbGVfZm9udCgiSm9zZWZpbiBTYW5zIiwgIjQwMCIpLAogIHRleHRfZm9udF9nb29nbGUgICA9IGdvb2dsZV9mb250KCJMYXRvIiwgIjQwMCIsICI0MDBpIiksCiAgaGVhZGVyX2ZvbnRfd2VpZ2h0ID0gImJvbGQiLAogIHRleHRfYm9sZF9jb2xvciA9ICIjODE0MDJDIiwgIyIjQjY3RjEwIiwKICBsaW5rX2NvbG9yID0gIiM4MTQwMkMiLAogIHRleHRfZm9udF9zaXplID0gIjIycHgiLAogIGhlYWRlcl9oMV9mb250X3NpemUgPSAiNDVweCIsCiAgaGVhZGVyX2gyX2ZvbnRfc2l6ZSA9ICIzNXB4IiwKICBoZWFkZXJfaDNfZm9udF9zaXplID0gIjI1cHgiLAogIHRleHRfc2xpZGVfbnVtYmVyX2ZvbnRfc2l6ZSA9ICIxNnB4IgopCmBgYAoKIyBTdW1tYXJ5IG9mIHRoZSBtYWluIHF1ZXN0aW9ucwoKLSBXaGF0IGlzIHRoZSB1c3VhbCAqKnBvd2VyKiogaW4gc3R1ZGllcyBvZiBzaG9ydC10ZXJtIGhlYWx0aCBlZmZlY3RzIG9mIGFpciBwb2xsdXRpb24/IOKclO+4jwogIAotIEhvdyBkbyAqKmRpZmZlcmVudCBpZGVudGlmaWNhdGlvbiBzdHJhdGVnaWVzKiogcGVyZm9ybSB0byBlc3RpbWF0ZSB0aGVzZSBlZmZlY3RzPwogIAotIFdoYXQgaXMgdGhlIGltcGFjdCBvZiAqKm1pc3NpbmcgZGF0YSoqIG9uIHRoZXNlIGVzdGltYXRlcz8gCgpgYGB7ciBlY2hvPUZBTFNFLCBvdXQud2lkdGg9IDQwMCwgZmlnLmFsaWduPSJjZW50ZXIifSAKa25pdHI6OmluY2x1ZGVfZ3JhcGhpY3MoImltYWdlcy9wb2xsdXRpb25fcGFyaXMuanBnIikKYGBgCiAgCi0gVG9kYXk6IHNpbXVsYXRpb25zIHRvIGFuc3dlciB0aGUgc2Vjb25kIHF1ZXN0aW9uCgotLS0KCiMjIE1vdGl2YXRpb24KCi0gRWZmZWN0cyBhcmUgcmVhbGx5IHNtYWxsID0+IGRpZmZpY3VsdCB0byBkZXRlY3QKCi0gIkZhbmN5IiB0ZWNobmlxdWVzIGRldmVsb3BlZCB0byBhdm9pZCBvbWl0dGVkIHZhcmlhYmxlIGJpYXMgYnV0IGl0IG1heSBjcmVhdGUgYW5vdGhlciB0eXBlIG9mIGJpYXM6IHR5cGUgTSBhbmQgdHlwZSBTIGVycm9yCgotIEdvb2QgZXhlcmNpc2UgZm9yIHVzLCBQaEQgc3R1ZGVudHMKCiMjIE92ZXJhbGwgbWV0aG9kCgotIENvbnNpZGVyIFJDVHMsIERpRHMsIElUU3MsIFJERHMgYW5kIGxhdGVyIElWcyBhbmQgUG9pc3NvbiBnZW5lcmFsaXplZCBhZGRpdGl2ZSBtb2RlbHMKCjEuIEFzc2lnbiB0cmVhdG1lbnQgcmFuZG9tbHkKMS4gQ3JlYXRlIHRoZSBudW1iZXIgb2YgZGVhdGhzIGlmIHVuaXQgd291bGQgaGF2ZSBiZWVuIHRyZWF0ZWQgKFkoMSkpCjEuIFJ1biBvdXIgZXN0aW1hdGlvbgoxLiBTdG9yZSBlc3RpbWF0ZXMgYW5kIHAtdmFsdWVzCjEuIFJlcGVhdAoxLiBDb21wdXRlIHRoZSBhdmVyYWdlIGJpYXMsIHBvd2VyLCB0eXBlIE0sIHR5cGUgUwoKLS0tCgojIyBEYXRhCgotIDE4IGNpdGllcyBpbiBGcmFuY2UgCgotIDIwMTMtMjAxOCAKCi0gSG9zcGl0YWwgYWRtaXNzaW9ucyBhbmQgZGVhdGhzIAoKLSBBaXIgcG9sbHV0aW9uIGNvbmNlbnRyYXRpb24gCgotIFdlYXRoZXIgdmFyaWFibGVzIAoKLSBDYWxlbmRhciBjb250cm9sIHZhcmlhYmxlcyAKCi0gRGFpbHkgYW5kIGNpdHkgbGV2ZWw6IGEgdW5pcXVlIG9ic2VydmF0aW9uIHBlciBkYXRlIGFuZCBwZXIgY2l0eSBpbiB0aGUgZGF0YSBzZXQKCi0tLQoKIyMgQmFja2dyb3VuZCBvbiBzZWxlY3RlZCBkZXNpZ25zCgojIyMgUkNUCgotIENoYW5nZXMgaW4gYWlyIHBvbGx1dGlvbiBsZXZlbHMgb24gc29tZSByYW5kb20gZGF5cy4gCgotIEV4YW1wbGU6IHRyYW5zcG9ydGF0aW9uIHN0cmlrZXMgCgotIEZvciBub3csIHRyZWF0ZWQgZGF5cyBkZWZpbmVkIGF0IHJhbmRvbS4gTGF0ZXIsIGRldmlhdGlvbnMKCi0gQ29tcGFyZXMgdGhlIGF2ZXJhZ2UgbnVtYmVyIG9mIGRlYXRocyBpbiBjaXRpZXMgd2l0aCB0cmVhdG1lbnQgdG8gY2l0aWVzIHdpdGggbm8gdHJlYXRtZW50IG9uIHRoZSBzYW1lIGRheSwgY29udHJvbGxpbmcgZm9yIGRpZmZlcmVuY2VzIGFjcm9zcyBjaXRpZXMuCgojIyMgRElECgotIENoYW5nZXMgaW4gYWlyIHBvbGx1dGlvbiBsZXZlbHMgaW4gYSBzdWJzZXQgb2YgY2l0aWVzIGFmdGVyIGEgZ2l2ZW4gZGF0ZS4gCgotIEV4YW1wbGVzIGNoYW5nZSBpbiByZWd1bGF0aW9ucyBhdCBhIHN1Yi1uYXRpb25hbCBsZXZlbCAKCi0gU2FtZSBjb21wYXJpc29uIGFzIFJDVCBidXQgbm9uLXJhbmRvbSB0cmVhdG1lbnQgYXNzaWdubWVudCAKCj8/PwoKLSBSQ1Q6IGNvbXBhcmUgdGhlIGF2ZXJhZ2UgbnVtYmVyIG9mIGRlYXRocyBvciBob3NwaXRhbCBhZG1pc3Npb25zIGluIGNpdGllcyB3aXRoIHRyZWF0bWVudCB0byBjaXRpZXMgd2l0aCBubyB0cmVhdG1lbnQgb24gdGhlIHNhbWUgZGF5LCBjb250cm9sbGluZyBmb3IgZGlmZmVyZW5jZXMgYWNyb3NzIGNpdGllcy4KCi0tLQoKSVRTCgpIZXJlIGNvbnNpZGVyIGludGVydmVudGlvbnMgbGVhZGluZyB0byBjaGFuZ2VzIGluIGFpciBwb2xsdXRpb24gbGV2ZWxzIGluIGEgc3Vic2V0IG9mIGNpdGllcyBhZnRlciBhIGdpdmVuIGRhdGUuIEV4YW1wbGVzIG9mIHN1Y2ggaW50ZXJ2ZW50aW9ucyBpbmNsdWRlIGFuIGFpciBwb2xsdXRpb24gcmVkdWN0aW9uIHBvbGljeSBhdCBhIHN1Yi1uYXRpb25hbCBsZXZlbCBvciBhIGNoYW5nZSBpbiByZWd1bGF0aW9ucyBhdCBhIHN1Yi1uYXRpb25hbCBsZXZlbCBsZWFkaW5nIHRvIGFuIGluY3JlYXNlIGluIHBvbGx1dGlvbiBsZXZlbC4KClRoZSBvdmVyYWxsIGlkZWEgb2YgdGhlIElUUyBpcyB0byBjb21wYXJlIHRoZSBhdmVyYWdlIG51bWJlciBvZiBkZWF0aHMgb3IgaG9zcGl0YWwgYWRtaXNzaW9ucyBiZWZvcmUgYW5kIGFmdGVyIHRyZWF0bWVudC4KUkRECgpIZXJlIGNvbnNpZGVyIGludGVydmVudGlvbnMgdGhhdCBhZmZlY3QgZXhwb3N1cmUgdG8gYWlyIHBvbGx1dGlvbiB3aGVuIGFpciBwb2xsdXRpb24gbGV2ZWxzIHJlYWNoIGEgZ2l2ZW4gdGhyZXNob2xkLiBFeGFtcGxlcyBvZiBzdWNoIGludGVydmVudGlvbnMgaW5jbHVkZSBhaXIgcG9sbHV0aW9uIGFsZXJ0czogd2hlbiBwb2xsdXRpb24gcmVhY2hlcyBhIGNlcnRhaW4gbGV2ZWwsIGFsZXJ0cyBhcmUgcmVsZWFzZWQsIGludml0aW5nIHBlb3BsZSB0byByZWR1Y2UgdGhlaXIgZXhwb3N1cmUuCgpUaGUgb3ZlcmFsbCBpZGVhIG9mIHRoZSBSREQgaXMgdG8gY29tcGFyZSBkYXlzIGp1c3QgYmVsb3cgdGhlIHRocmVzaG9sZCB0byBkYXlzIGp1c3QgYWJvdmUgdGhlIHRocmVzaG9sZCAod2hlcmUgZXhwb3N1cmUgYW5kIGhlYWx0aCBpbXBhY3RzIGFyZSB0aHVzIGxvd2VyKS4gVGhlIGFzc3VtcHRpb24gaXMgdGhhdCBkYXlzIGp1c3QgYmVsb3cgYW5kIGp1c3QgYWJvdmUgdGhlIHRocmVzaG9sZCBhcmUgY29tcGFyYWJsZS4KCi0tLQoKIyMgTWV0aG9kCgotIEZvciB0aGUgc2FrZSBvZiB0aGUgZXhhbXBsZSwgbGV0J3MgZm9jdXMgb24gYSBzaW1wbGUgUG9pc3NvbiBnZW5lcmFsaXplZCBhZGRpdGl2ZSBtb2RlbDoKCiQkaF97Y3R9ID0gXGFscGhhICsgXGJldGFfe2N9cF97Y3R9ICsgXGJvbGRzeW1ib2x7V197Y3R9J1xkZWx0YX0gKyAgXGJvbGRzeW1ib2x7Q197Y3R9J1xnYW1tYX0gKyBcZXBzaWxvbl97Y3R9JCQKLSBVc2UgYm90aCBhY3R1YWwgYW5kIGZha2UgZGF0YSAoaGVyZSBmb2N1cyBvbiBhY3R1YWwgZGF0YSkKCjEuIEVzdGltYXRlIHRoZSBtb2RlbCBvbiB0aGUgZXhpc3RpbmcgZGF0YQoKLS0KCjEuIERlZmluZSBhICJmYWtlIiwga25vd24sIGVmZmVjdCAkXGJldGFfYyQKCi0tCgoxLiBHZW5lcmF0ZSBub2lzZSAkKFxlcHNpbG9uKSQgYW5kIHByZWRpY3QvZ2VuZXJhdGUgZmFrZSBob3NwaXRhbCBhZG1pc3Npb24gYW5kIG1vcnRhbGl0eSBkYXRhICQoaCkkIGJhc2VkIG9uIG91ciBlc3RpbWF0ZWQgbW9kZWwgKDEwMDAgZGF0YSBzZXRzKQoKLS0KCjEuIFJlZXN0aW1hdGUgdGhlIG1vZGVsIHRvIHNlZSBpZiB3ZSByZWNvdmVyIG91ciB0cnVlIHZhbHVlCgotLQoKMS4gQ29tcHV0ZSBiaWFzLCBwb3dlciwgdHlwZSBJLCB0eXBlIE0sIHR5cGUgUyBlcnJvcgoKLS0tCgotIExvb2sgaG93IG91ciBtZWFzdXJlcyBvZiBpbnRlcmVzdCB2YXJ5IHdpdGggc2FtcGxlIHNpemUgYW5kIGVmZmVjdCBzaXplLgoKLSBXaGVyZSBkbyBwYXBlcnMgaW4gdGhlIGxpdGVyYXR1cmUgbGllPyAkXHRvJCB3aGF0IHByb2JsZW0gY291bGQgaXQgYmUgZXhwb3NlZCB0bwoKLSBSZXBlYXQgdGhpcyBmb3IgZWFjaCBpZGVudGlmaWNhdGlvbiBzdHJhdGVneSAod2l0aCBkaWZmZXJlbnQgREdQcyBvZiBjb3Vyc2UpCgotIFJlcHJvZHVjZSB0aGUgc2FtZSBhbmFseXNpcyB3aXRoIGZha2UgZGF0YSAoKmllKiBnZW5lcmF0ZSBhbGwgdGhlIGRhdGEpCgotLS0KCiMjIERlZmluaXRpb25zCgotICoqUG93ZXIqKjogcHJvYmFiaWxpdHkgb2YgZmluZGluZyBhbiBlZmZlY3Qgd2hlbiB0aGVyZSBpcyBhY3R1YWxseSBvbmUKCi0gUG93ZXIgY2FuIGJlIGxvdyB3aGVuIGVmZmVjdHMgYXJlIHNtYWxsIGFuZC9vciB2YXJpYW5jZSBvZiB0aGUgZXN0aW1hdGVzIGlzIGxhcmdlICgqZWcqIHNtYWxsIHNhbXBsZSBzaXplKQoKYGBge3IgZWNobz1GQUxTRSwgb3V0LndpZHRoPSA2MDAsIGZpZy5hbGlnbj0iY2VudGVyIn0gCmtuaXRyOjppbmNsdWRlX2dyYXBoaWNzKCJpbWFnZXMvdHlwZU1TX293bi5wbmciKQpgYGAKCgo=</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiU2ltdWxhdGlvbnMgZm9yIHNob3J0IHRlcm0gaGVhbHRoIGVmZmVjdHMgb2YgYWlyIHBvbGx1dGlvbiIKYXV0aG9yOiAiVmluY2VudCBCYWdpbGV0IC0gTGVvIFphYnJvY2tpIgpkYXRlOiAiYHIgZm9ybWF0KFN5cy50aW1lKCksICclZCAlQiwgJVknKWAiCm91dHB1dDoKICB4YXJpbmdhbjo6bW9vbl9yZWFkZXI6CiAgICBsaWJfZGlyOiBsaWJzCiAgICBjc3M6IHhhcmluZ2FuLXRoZW1lci5jc3MKICAgIG5hdHVyZToKICAgICAgY291bnRJbmNyZW1lbnRhbFNsaWRlczogbm8KICAgICAgaGlnaGxpZ2h0TGluZXM6IHllcwogICAgICBoaWdobGlnaHRTdHlsZTogZ2l0aHViCiAgc2xpZHlfcHJlc2VudGF0aW9uOgogICAgaGlnaGxpZ2h0OiBweWdtZW50cwogIGdpdGh1Yl9kb2N1bWVudDogZGVmYXVsdAogIGh0bWxfbm90ZWJvb2s6CiAgICBoaWdobGlnaHQ6IHB5Z21lbnRzCiAgICB0aGVtZTogc2ltcGxleAogICAgdG9jOiB5ZXMKICBpb3NsaWRlc19wcmVzZW50YXRpb246CiAgICBoaWdobGlnaHQ6IHB5Z21lbnRzCiAgcGRmX2RvY3VtZW50OgogICAgaW5jbHVkZXM6CiAgICAgIGluX2hlYWRlcjogVkJfbWFya2Rvd24uc3R5CiAgICBrZWVwX3RleDogeWVzCiAgaHRtbF9kb2N1bWVudDoKICAgIGhpZ2hsaWdodDogcHlnbWVudHMKICAgIHRoZW1lOiBzaW1wbGV4CiAgYmVhbWVyX3ByZXNlbnRhdGlvbjoKICAgIGhpZ2hsaWdodDogcHlnbWVudHMKICAgIHRoZW1lOiBWQl9CZWFtZXIKc3VidGl0bGU6ICLwn6aAIGxhYiBwcmVzZW50YXRpb24iCi0tLQoKYGBge3IgeGFyaW5nYW4tdGhlbWVyLCBpbmNsdWRlID0gRkFMU0V9CmxpYnJhcnkoeGFyaW5nYW50aGVtZXIpCnN0eWxlX21vbm9fbGlnaHQoCiAgYmFzZV9jb2xvciA9ICIjMDAzMTNDIiwgIzFCMjc1NAogIHRleHRfY29sb3IgPSAiIzAwMzEzQyIsCiAgYmFja2dyb3VuZF9jb2xvciA9ICIjRjlGQUY3IiwKICBoZWFkZXJfZm9udF9nb29nbGUgPSBnb29nbGVfZm9udCgiSm9zZWZpbiBTYW5zIiwgIjQwMCIpLAogIHRleHRfZm9udF9nb29nbGUgICA9IGdvb2dsZV9mb250KCJMYXRvIiwgIjQwMCIsICI0MDBpIiksCiAgaGVhZGVyX2ZvbnRfd2VpZ2h0ID0gImJvbGQiLAogIHRleHRfYm9sZF9jb2xvciA9ICIjODE0MDJDIiwgIyIjQjY3RjEwIiwKICBsaW5rX2NvbG9yID0gIiM4MTQwMkMiLAogIHRleHRfZm9udF9zaXplID0gIjIycHgiLAogIGhlYWRlcl9oMV9mb250X3NpemUgPSAiNDVweCIsCiAgaGVhZGVyX2gyX2ZvbnRfc2l6ZSA9ICIzNXB4IiwKICBoZWFkZXJfaDNfZm9udF9zaXplID0gIjI1cHgiLAogIHRleHRfc2xpZGVfbnVtYmVyX2ZvbnRfc2l6ZSA9ICIxNnB4IgopCmBgYAoKIyMgU3VtbWFyeSBvZiB0aGUgbWFpbiBxdWVzdGlvbnMKCi0gV2hhdCBpcyB0aGUgdXN1YWwgKipwb3dlcioqIGluIHN0dWRpZXMgb2Ygc2hvcnQtdGVybSBoZWFsdGggZWZmZWN0cyBvZiBhaXIgcG9sbHV0aW9uPyDinJTvuI8KICAKLSBIb3cgZG8gKipkaWZmZXJlbnQgaWRlbnRpZmljYXRpb24gc3RyYXRlZ2llcyoqIHBlcmZvcm0gdG8gZXN0aW1hdGUgdGhlc2UgZWZmZWN0cz8KICAKLSBXaGF0IGlzIHRoZSBpbXBhY3Qgb2YgKiptaXNzaW5nIGRhdGEqKiBvbiB0aGVzZSBlc3RpbWF0ZXM/IAoKIyMgVG9kYXkKICAKLSBEaXNjdXNzIHNpbXVsYXRpb25zIHRvIGFuc3dlciB0aGUgc2Vjb25kIHF1ZXN0aW9uCgotIE9iamVjdGl2ZTogaXMgd2hhdCB3ZSBhcmUgZG9pbmcgc3R1cGlkPyAqaWUqIG5vdCBpbnRlcmVzdGluZyBvciBpbmNvcnJlY3QgJFxSaWdodGFycm93JCAKCmBgYHtyIGVjaG89RkFMU0UsIG91dC53aWR0aD0gMzAwLCBmaWcuYWxpZ249ImNlbnRlciJ9IAprbml0cjo6aW5jbHVkZV9ncmFwaGljcygiaW1hZ2VzL2JvcmVkLmpwZyIpCmBgYAoKLS0tCgojIyBNb3RpdmF0aW9uCgotIEVmZmVjdHMgYXJlIHJlYWxseSBzbWFsbCAkXFJpZ2h0YXJyb3ckIGRpZmZpY3VsdCB0byBkZXRlY3QKCi0gIkZhbmN5IiB0ZWNobmlxdWVzIGRldmVsb3BlZCB0byBhdm9pZCBvbWl0dGVkIHZhcmlhYmxlIGJpYXMgYnV0IGl0IG1heSBjcmVhdGUgYW5vdGhlciB0eXBlIG9mIGJpYXM6IHR5cGUgTSBhbmQgdHlwZSBTIGVycm9yCgotIEdvb2QgZXhlcmNpc2UgZm9yIHVzLCBQaEQgc3R1ZGVudHMKCiMjIE92ZXJhbGwgbWV0aG9kCgotIENvbnNpZGVyIFJDVHMsIERpRHMsIElUU3MsIFJERHMgYW5kIGxhdGVyIElWcyBhbmQgUG9pc3NvbiBnZW5lcmFsaXplZCBhZGRpdGl2ZSBtb2RlbHMKCjEuIEFzc2lnbiB0cmVhdG1lbnQgcmFuZG9tbHkKMS4gQ3JlYXRlIGEgbnVtYmVyIG9mIGRlYXRocyBpZiB1bml0IHdvdWxkIGhhdmUgYmVlbiB0cmVhdGVkIChZKDEpKQoxLiBSdW4gb3VyIGVzdGltYXRpb24KMS4gU3RvcmUgZXN0aW1hdGVzIGFuZCBwLXZhbHVlcwoxLiBSZXBlYXQKMS4gQ29tcHV0ZSB0aGUgYXZlcmFnZSBiaWFzLCBwb3dlciwgdHlwZSBNLCB0eXBlIFMKCi0tLQoKIyMgRGF0YQoKLSAxOCBjaXRpZXMgaW4gRnJhbmNlIAoKLSAyMDEzLTIwMTggCgotIEhvc3BpdGFsIGFkbWlzc2lvbnMgYW5kIGRlYXRocyAKCi0gQWlyIHBvbGx1dGlvbiBjb25jZW50cmF0aW9uIAoKLSBXZWF0aGVyIHZhcmlhYmxlcyAKCi0gQ2FsZW5kYXIgY29udHJvbCB2YXJpYWJsZXMgCgotIERhaWx5IGFuZCBjaXR5IGxldmVsOiBhIHVuaXF1ZSBvYnNlcnZhdGlvbiBwZXIgZGF0ZSBhbmQgcGVyIGNpdHkgaW4gdGhlIGRhdGEgc2V0CgotLS0KCiMjIEJhY2tncm91bmQgb24gc2VsZWN0ZWQgZGVzaWducwoKIyMjIFJDVAoKLSBDaGFuZ2VzIGluIGFpciBwb2xsdXRpb24gbGV2ZWxzIG9uIHNvbWUgcmFuZG9tIGRheXMuIAoKLSBFeGFtcGxlOiB0cmFuc3BvcnRhdGlvbiBzdHJpa2VzIAoKLSBDb21wYXJlcyB0aGUgYXZlcmFnZSBudW1iZXIgb2YgZGVhdGhzIGluIGNpdGllcyB3aXRoIHRyZWF0bWVudCB0byBjaXRpZXMgd2l0aCBubyB0cmVhdG1lbnQgb24gdGhlIHNhbWUgZGF5LCBjb250cm9sbGluZyBmb3IgZGlmZmVyZW5jZXMgYWNyb3NzIGNpdGllcy4KCmBgYHtyIGVjaG89RkFMU0UsIG91dC53aWR0aD0gNTAwLCBmaWcuYWxpZ249ImNlbnRlciJ9IAprbml0cjo6aW5jbHVkZV9ncmFwaGljcygiaW1hZ2VzL3RyZWF0X2Fzc2lnbl9SQ1QucG5nIikKYGBgCgotLS0KCiMjIyBESUQKCi0gQ2hhbmdlcyBpbiBhaXIgcG9sbHV0aW9uIGxldmVscyBpbiBhIHN1YnNldCBvZiBjaXRpZXMgYWZ0ZXIgYSBnaXZlbiBkYXRlLiAKCi0gRXhhbXBsZTogY2hhbmdlIGluIHJlZ3VsYXRpb25zIGF0IGEgc3ViLW5hdGlvbmFsIGxldmVsIAoKLSBTYW1lIGNvbXBhcmlzb24gYXMgUkNUIGJ1dCBub24tcmFuZG9tIHRyZWF0bWVudCBhc3NpZ25tZW50IAoKYGBge3IgZWNobz1GQUxTRSwgb3V0LndpZHRoPSA2MDAsIGZpZy5hbGlnbj0iY2VudGVyIn0gCmtuaXRyOjppbmNsdWRlX2dyYXBoaWNzKCJpbWFnZXMvdHJlYXRfYXNzaWduX0RJRC5wbmciKQpgYGAKCi0tLQoKIyMjIElUUwoKLSBDaGFuZ2VzIGluIGFpciBwb2xsdXRpb24gbGV2ZWxzIGluIGFsbCBjaXRpZXMgYWZ0ZXIgYSBnaXZlbiBkYXRlCgotIEV4YW1wbGU6IGNoYW5nZSBpbiByZWd1bGF0aW9ucyBhdCBhIG5hdGlvbmFsIGxldmVsIAoKLSBDb21wYXJlIHRoZSBhdmVyYWdlIG51bWJlciBvZiBkZWF0aHMgYmVmb3JlIGFuZCBhZnRlciB0cmVhdG1lbnQuCgpgYGB7ciBlY2hvPUZBTFNFLCBvdXQud2lkdGg9IDYwMCwgZmlnLmFsaWduPSJjZW50ZXIifSAKa25pdHI6OmluY2x1ZGVfZ3JhcGhpY3MoImltYWdlcy90cmVhdF9hc3NpZ25fSVRTLnBuZyIpCmBgYAoKLS0tCgojIyMgUkRECgotIEludGVydmVudGlvbnMgdGhhdCBhZmZlY3QgZXhwb3N1cmUgdG8gYWlyIHBvbGx1dGlvbiB3aGVuIGFpciBwb2xsdXRpb24gbGV2ZWxzIHJlYWNoIGEgZ2l2ZW4gdGhyZXNob2xkIAoKLSBFeGFtcGxlczogYWlyIHBvbGx1dGlvbiBhbGVydHMKCi0gQ29tcGFyZSBkYXlzIGp1c3QgYmVsb3cgdGhlIHRocmVzaG9sZCB0byBkYXlzIGp1c3QgYWJvdmUgdGhlIHRocmVzaG9sZCAKCmBgYHtyIGVjaG89RkFMU0UsIG91dC53aWR0aD0gNjAwLCBmaWcuYWxpZ249ImNlbnRlciJ9IAprbml0cjo6aW5jbHVkZV9ncmFwaGljcygiaW1hZ2VzL3RyZWF0X2Fzc2lnbl9SREQucG5nIikKYGBgCgotLS0KCiMjIFZhcnlpbmcg4oCccGFyYW1ldGVyc+KAnQoKLSBJZGVudGlmaWNhdGlvbiBzdHJhdGVneTogUkNULCBESUQsIFJERCwgSVRTCgotIE51bWJlciBvZiBvYnNlcnZhdGlvbnM6IGxlbmd0aCBvZiB0aGUgc3R1ZHksIGluIGRheXMKCi0gUHJvcG9ydGlvbiBvZiB0cmVhdGVkIGRheXM6IGNhbiBiZSB2ZXJ5IHNtYWxsIChlZyB0aGUgbnVtYmVyIG9mIHN0cmlrZXMpCgotIEVmZmVjdCBzaXplCgotIFRoZSBlc3RpbWF0aW9uIG1vZGVsOiBmaXJzdCBubyBjb3ZhcmlhdGVzLiBUaGVuIGluY2x1ZGUgZGlmZmVyZW50IHNldHMgb2YgY292YXJpYXRlcy4KCi0gSGVyZSwgaWRlYWwgY2FzZTogcmFuZG9tIHRyZWF0bWVudCBhbGxvY2F0aW9uLCBwZXJmZWN0IGNvbXBsaWFuY2UgYW5kIGhvbW9nZW5lb3VzIHRyZWF0bWVudCBlZmZlY3QKCi0tLQoKIyMgQWN0dWFsIGltcGxlbWVudGF0aW9uIAoKMS4gRHJhdyBzdHVkeSBwZXJpb2Q6CiAgLSBOdW1iZXIgb2YgZGF5cyBpbiB0aGUgc3R1ZHkgJFx0byQgYm9vbGVhbiBpbiBzdHVkeS9ub3QgaW4gc3R1ZHkKICAtIFJhbmRvbSBkcmF3CgoxLiBEZWZpbmUgdGhlIHRyZWF0bWVudDogCiAgLSBEZXNpZ24gYW5kIHByb3BvcnRpb24gb2YgdHJlYXRlZCAkXHRvJCBib29sZWFuIHRyZWF0ZWQvbm90IHRyZWF0ZWQKICAtIEFscmVhZHkgZXhwbGFpbmVkCgoxLiBDcmVhdGluZyB0aGUgb3V0cHV0IGlmIGEgdW5pdCBpcyB0cmVhdGVkOgogIC0gRGF0YSwgZGVzaWduIGFuZCBlZmZlY3Qgc2l6ZSAkXHRvJCBZKDEpCiAgLSBOZXcgbnVtYmVyIG9mIGRlYXRocyA9IGFjdHVhbCBudW1iZXIgb2YgZGVhdGhzICsgZHJhdyBmcm9tIGEgUG9pc3NvbiBkaXN0cmlidXRpb24gKHdpdGggbWVhbiBlcXVhbCB0byB0aGUgbnVtYmVyIG9mIGRlYXRocyAkXHRpbWVzJCBlZmZlY3Qgc2l6ZSBpbiBwZXJjZW50KQoKMS4gRXN0aW1hdGUgdGhlIG1vZGVsOgogIC0gRGF0YSBhbmQgbW9kZWwgImZvcm11bGEiICRcdG8kIGVzdGltYXRlIGFuZCBwX3ZhbHVlCiAgCi0tLQoKMS4gTG9vcCBvdmVyICRuX2l0ZXIkIGl0ZXJhdGlvbnM6CiAgLSBTb3VyY2Ugb2YgdmFyaWF0aW9uOiBmb3IgZWFjaCBpdGVyYXRpb24sIGEgbmV3IHNhbXBsZSAobmV3IHN0dWR5IHBlcmlvZCkgYW5kIG5ldyB0cmVhdGVkIGdyb3VwCgoxLiBSZXBlYXQgZm9yIGFsbCBwYXJhbWV0ZXJzOgogIC0gRm9yIGVhY2ggc2V0IG9mIHBhcmFtZXRlcnMsIGdldCAkbl97aXRlcn0kIGVzdGltYXRlcyBhbmQgcC12YWx1ZXMKCjEuIEFuYWx5c2lzIG9mIHRoZSByZXN1bHRzOgogIC0gRm9yIGVhY2ggc2V0IG9mIHBhcmFtZXRlcnMsIGNvbXB1dGUgYXZlcmFnZSBiaWFzLCBwLXZhbHVlLCBwb3dlciwgdHlwZSBNIGFuZCB0eXBlIFMKICAtIENhbiBzdHVkeSBob3cgYmlhcywgcHJlY2lzaW9uLCBwb3dlciwgdHlwZSBNLCB0eXBlIFMgZXZvbHZlIHdpdGggdGhlIHZhbHVlcyBvZiBwYXJhbWV0ZXJzCgotLS0KCiMjIERldmlhdGlvbiBmcm9tIHRoZSBpZGVhbCBjYXNlCgp8IEFsbG9jYXRpb24gICAgICAgICAgICAgICAgICB8IENvbXBsaWFuY2UgICB8IEVmZmVjdCBvZiB0aGUgdHJlYXRtZW50ICB8Cnw6LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLXw6LS0tLS0tLS0tLS0tOnwtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tOnwKfCBSYW5kb20gICAgICAgICAgICAgICAgICAgICAgfCBZZXMgICAgICAgICAgfCBIb21vZ2VuZW91cyAgICAgICAgICAgICAgfAp8IFJhbmRvbSAgICAgICAgICAgICAgICAgICAgICB8IE5vICAgICAgICAgICB8IEhvbW9nZW5lb3VzICAgICAgICAgICAgICB8CnwgQ29ycmVsYXRlZCB3aXRoIGNvdmFyaWF0ZXMgIHwgWWVzICAgICAgICAgIHwgSG9tb2dlbmVvdXMgICAgICAgICAgICAgIHwKfCBSYW5kb20gICAgICAgICAgICAgICAgICAgICAgfCBZZXMgICAgICAgICAgfCBIZXRlcm9nZW5lb3VzICAgICAgICAgICAgfAoKLSBGb3Igbm9uLXJhbmRvbSBhbGxvY2F0aW9uOgogIAogIDEuIENvcnJlbGF0aW9uIHdpdGggZGlmZmVyZW50IGNvdmFyaWF0ZXMKICAxLiBPZiB2YXJpb3VzIGZvcm0KICAxLiBPZiB2YXJpb3VzIGludGVuc2l0eQoKLSBWYXJpYXRpb24gb2YgdGhlIHRyZWF0bWVudCBlZmZlY3Qgd2l0aDogCgogIDEuIFRpbWUKICAxLiBJbmRpdmlkdWFscwogIDEuIFZhbHVlIG9mIGNvdmFyaWF0ZXMKCgoKCg==</div>
 
 
 
