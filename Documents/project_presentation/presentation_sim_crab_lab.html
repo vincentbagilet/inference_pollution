@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Simulations for short term health effects of air pollution</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Vincent Bagilet - Leo Zabrocki" />
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Simulations for short term health effects of air pollution
+## 🦀 lab presentation
+### Vincent Bagilet - Leo Zabrocki
+### 05 March, 2021
+
+---
+
+
+
+
+# Summary of the main questions
+
+- What is the usual **power** in studies of short-term health effects of air pollution? ✔️
+  
+- How do **different identification strategies** perform to estimate these effects?
+  
+- What is the impact of **missing data** on these estimates? 
+
+&lt;img src="images/pollution_paris.jpg" width="400" style="display: block; margin: auto;" /&gt;
+  
+- Today: simulations to answer the second question
+
+---
+
+## Motivation
+
+- Effects are really small =&gt; difficult to detect
+
+- "Fancy" techniques developed to avoid omitted variable bias but it may create another type of bias: type M and type S error
+
+- Good exercise for us, PhD students
+
+## Overall method
+
+- Consider RCTs, DiDs, ITSs, RDDs and later IVs and Poisson generalized additive models
+
+1. Assign treatment randomly
+1. Create the number of deaths if unit would have been treated (Y(1))
+1. Run our estimation
+1. Store estimates and p-values
+1. Repeat
+1. Compute the average bias, power, type M, type S
+
+---
+
+## Data
+
+- 18 cities in France 
+
+- 2013-2018 
+
+- Hospital admissions and deaths 
+
+- Air pollution concentration 
+
+- Weather variables 
+
+- Calendar control variables 
+
+- Daily and city level: a unique observation per date and per city in the data set
+
+---
+
+## Background on selected designs
+
+### RCT
+
+- Changes in air pollution levels on some random days. 
+
+- Example: transportation strikes 
+
+- For now, treated days defined at random. Later, deviations
+
+- Compare the average number of deaths in cities with treatment to cities with no treatment on the same day, controlling for differences across cities.
+
+### DID
+
+- Changes in air pollution levels in a subset of cities after a given date. 
+
+- Examples change in regulations at a sub-national level 
+
+- Compare the average number of deaths in cities with treatment to cities with no treatment on the same day, controlling for differences across cities.
+
+???
+
+- RCT: compare the average number of deaths or hospital admissions in cities with treatment to cities with no treatment on the same day, controlling for differences across cities.
+
+---
+
+ITS
+
+Here consider interventions leading to changes in air pollution levels in a subset of cities after a given date. Examples of such interventions include an air pollution reduction policy at a sub-national level or a change in regulations at a sub-national level leading to an increase in pollution level.
+
+The overall idea of the ITS is to compare the average number of deaths or hospital admissions before and after treatment.
+RDD
+
+Here consider interventions that affect exposure to air pollution when air pollution levels reach a given threshold. Examples of such interventions include air pollution alerts: when pollution reaches a certain level, alerts are released, inviting people to reduce their exposure.
+
+The overall idea of the RDD is to compare days just below the threshold to days just above the threshold (where exposure and health impacts are thus lower). The assumption is that days just below and just above the threshold are comparable.
+
+---
+
+## Method
+
+- For the sake of the example, let's focus on a simple Poisson generalized additive model:
+
+`$$h_{ct} = \alpha + \beta_{c}p_{ct} + \boldsymbol{W_{ct}'\delta} +  \boldsymbol{C_{ct}'\gamma} + \epsilon_{ct}$$`
+- Use both actual and fake data (here focus on actual data)
+
+1. Estimate the model on the existing data
+
+--
+
+1. Define a "fake", known, effect `\(\beta_c\)`
+
+--
+
+1. Generate noise `\((\epsilon)\)` and predict/generate fake hospital admission and mortality data `\((h)\)` based on our estimated model (1000 data sets)
+
+--
+
+1. Reestimate the model to see if we recover our true value
+
+--
+
+1. Compute bias, power, type I, type M, type S error
+
+---
+
+- Look how our measures of interest vary with sample size and effect size.
+
+- Where do papers in the literature lie? `\(\to\)` what problem could it be exposed to
+
+- Repeat this for each identification strategy (with different DGPs of course)
+
+- Reproduce the same analysis with fake data (*ie* generate all the data)
+
+---
+
+## Definitions
+
+- **Power**: probability of finding an effect when there is actually one
+
+- Power can be low when effects are small and/or variance of the estimates is large (*eg* small sample size)
+
+&lt;img src="images/typeMS_own.png" width="600" style="display: block; margin: auto;" /&gt;
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"countIncrementalSlides": false,
+"highlightLines": true,
+"highlightStyle": "github"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
