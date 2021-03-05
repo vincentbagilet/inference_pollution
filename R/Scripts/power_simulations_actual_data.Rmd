@@ -112,8 +112,10 @@ table_cases <- "
 cat(table_cases) 
 ```
 
-- For correlation of the allocation with covariates, we can consider that it is correlated with different covariates and in different ways
-- For heterogeneous effect of the treatment, it can vary with time, indviduals and covariates
+- A non-random allocation can exist in several ways. The treatment can be correlated with one covariate, another or even several covariates. It can also be correlated with this covariates in different ways: linear or a large variety of non linear ways. Even with a settled correlation form, the intensity of the correlation can vary.
+- The heterogeneity in the treatment effect can arise from variation with time, with individuals or given the value of covariates.
+
+Deviating from the ideal case therefore yields a very large number of cases. We limit ourselves to a sample of these cases.
 
 # Actual implementation
 
@@ -300,7 +302,7 @@ create_y1 <- function(dep_var, percent_effect_size = 0.5, treatment_type = "RCT"
 ### Estimate the model
 
 We can then estimate our model and retrieve the point estimate and p-value.
-The model should be specified in a three part character-formula as follows: "y ~ x | fixed effects | cluster". If no fi
+The model should be specified in a three part formula as follows: y ~ x | fixed effects | cluster. If one does not want to set fixed effects, a 0 should be put in the second part of the formula: y ~ x | 0 | cluster.
 
 ```{r}
 estimate_model <- function(data, formula) {
