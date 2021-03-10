@@ -75,8 +75,7 @@ knitr::include_graphics("images/bored.jpg")
 
 - Effects are really small $\Rightarrow$ difficult to detect
 
-- "Fancy" techniques developed to avoid omitted variable bias but it may create another type of bias: type M and type S error
-
+- "Fancy" techniques may $\searrow$ omitted variable bias but it may create another type of bias
 - Good exercise for us, PhD students
 
 ## Overall method
@@ -199,17 +198,17 @@ knitr::include_graphics("images/treat_assign_RDD.png")
   - New number of deaths = actual number of deaths + draw from a Poisson distribution (with mean equal to the number of deaths $\times$ effect size in percent)
 
 1. Estimate the model:
-  - Data and model "formula" $\to$ estimate and p_value
+  - Data and model "formula" $\to$ estimate and p-value
   
 ---
 
-1. Loop over $n_iter$ iterations:
+5\. Loop over $n_{iter}$ iterations:
   - Source of variation: for each iteration, a new sample (new study period) and new treated group
 
-1. Repeat for all parameters:
+6\. Repeat for all parameters:
   - For each set of parameters, get $n_{iter}$ estimates and p-values
 
-1. Analysis of the results:
+7\. Analysis of the results:
   - For each set of parameters, compute average bias, p-value, power, type M and type S
   - Can study how bias, precision, power, type M, type S evolve with the values of parameters
 
