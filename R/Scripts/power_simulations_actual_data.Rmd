@@ -164,8 +164,14 @@ total_data <- pollution_data %>%
   left_join(emergency_data, by = c("city", "date")) %>% 
   left_join(mortality_data, by = c("city", "date")) %>% 
   ungroup() %>% 
-  mutate(date = ymd(date)) %>% 
-  filter(date < "2016-01-01")
+  mutate(
+    date = ymd(date),
+    city = as.factor(city), 
+    month = as.factor(month(date)), 
+    day_of_week = as.factor(wday(date)), 
+    year = as.factor(year(date))
+  ) %>% 
+  filter(date < "2016-01-01") 
 ```
 
 ## Function definitions
@@ -215,7 +221,7 @@ draw_treated_days <- function(data, p_treat = 0.5, treatment_type = "RDD_pm10") 
                   data[["date"]] >= median(data[["date"]]))
   } else if (str_starts(treatment_type, "RDD")) {
     pollutant <- str_extract(treatment_type, "(?<=_).+")
-    threshold_pos <- rbeta(1, 10, 3.5)
+    threshold_pos <- rbeta(1, 20, 2)
     treated <- data %>%
       group_by(.data$city) %>%
       mutate(
@@ -354,6 +360,32 @@ compute_simulation <- function(data, n_days_study = 200, p_treat = 0.5, treatmen
     ) %>% 
     filter(!is.na(treated)) #not necessary bc dropped in lm()
     # filter(!is.na(true_treated)) #not necessary bc dropped in lm()
+  
+  if(treatment_type == "DID") {
+    sim_data <- sim_data %>% 
+      group_by(city) %>% 
+      mutate(city_treated =  max(treated), NA) %>% 
+      ungroup() %>% 
+      group_by(date) %>% 
+      mutate(post = max(treated), NA) %>%
+      ungroup() 
+  } 
+  
+  if(treatment_type == "ITS") {
+    sim_data <- sim_data %>% 
+      group_by(city) %>% 
+      mutate(
+        t = as.numeric(date) - min(as.numeric(date)), 
+        t_post = max(0, as.numeric(date) - as.numeric(date[treated == TRUE]))
+      ) %>% 
+      ungroup()
+  } 
+
+  if(str_starts(treatment_type, "RDD")) {
+    pollutant <- str_extract(treatment_type, "(?<=_).+")
+    update(fml, . ~ . + pollutant)
+    #update formulma
+  }
 
   sim_output <- sim_data %>%
     estimate_model(formula = update(fml, yobs ~ .)) %>%
@@ -433,7 +465,7 @@ summarise_simulations <- function(data) {
     group_by(formula, treatment_type, n_days_study, p_treat, percent_effect_size) %>%
     summarise(
       power = mean(p_value <= 0.05, na.rm = TRUE)*100, 
-      bias = mean(abs((estimate - true_effect)/true_effect), na.rm = TRUE)*100,
+      bias = mean(abs((estimate - true_effect)/true_effect), na.rm = TRUE),
       average_p_value = mean(p_value, na.rm = TRUE),
       average_n_obs = mean(n_obs, na.rm = TRUE),
       type_m = mean(ifelse(p_value < 0.05, abs(estimate)/true_effect, NA), na.rm = TRUE),
