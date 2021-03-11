@@ -312,11 +312,14 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 
 ```{r}
 estimate_model <- function(data, formula) {
+  #get the different parameters from the formula
   fml <- Formula::as.Formula(formula)
-  cluster <- formula(fml, lhs = 0, rhs = 3) %>% suppressWarnings()
+  cluster <- formula(fml, lhs = 0, rhs = 3) %>% 
+    suppressWarnings() #when no cluster provided, warning
   actual_fml <- formula(fml, rhs = -3)
   se <- ifelse(cluster == ~0, "hetero", "cluster")  
   
+  #run the estimation
   est_results <- data %>% 
     feols(
       data = ., 
@@ -325,11 +328,16 @@ estimate_model <- function(data, formula) {
       se = se
     ) 
   
+  #retrieve the usefull info
   nobs <- length(est_results$residuals)
-  # 
+  
   est_results %>%
     broom::tidy(conf.int = TRUE) %>%
-    filter(term == "treatedTRUE") %>%
+    filter(
+      term %in% c(
+        "treatedTRUE", 
+        "postTRUE:city_treatedTRUE", "city_treatedTRUE:postTRUE"
+      )) %>%
     rename(p_value = p.value) %>%
     mutate(estimate = estimate) %>%
     select(estimate, p_value) %>%
@@ -362,22 +370,24 @@ compute_simulation <- function(data, n_days_study = 200, p_treat = 0.5, treatmen
     filter(!is.na(treated)) #not necessary bc dropped in lm()
     # filter(!is.na(true_treated)) #not necessary bc dropped in lm()
   
+  #for DID, need a post and a city_treated variable
   if(treatment_type == "DID") {
     sim_data <- sim_data %>%
       group_by(city) %>%
-      mutate(city_treated =  max(treated), NA) %>%
+      mutate(city_treated = as.logical(max(treated))) %>%
       ungroup() %>%
       group_by(date) %>%
-      mutate(post = max(treated), NA) %>%
+      mutate(post = as.logical(max(treated))) %>%
       ungroup()
   }
 
+  #for ITS, need a time index and time index
   if(treatment_type == "ITS") {
     sim_data <- sim_data %>%
       group_by(city) %>%
       mutate(
         t = as.numeric(date) - min(as.numeric(date)),
-        t_post = max(0, as.numeric(date) - as.numeric(date[treated == TRUE]))
+        t_post = max(0, as.numeric(date) - as.numeric(min(.data$date[treated == TRUE])))
       ) %>%
       ungroup()
   }
@@ -390,49 +400,90 @@ compute_simulation <- function(data, n_days_study = 200, p_treat = 0.5, treatmen
 } 
 
 test <- total_data %>%
-  compute_simulation(formula = "deaths_na_causes ~ treated + post + city_treated", treatment_type = "DID") 
+  compute_simulation(formula = "deaths_na_causes ~ post:city_treated", n_days_study = 700, treatment_type = "DID") 
 ````
 
 We will then loop this function to get a large number of replications of each simulation for a given set of parameters. We will also vary the values of the different parameter.
 
 ## Running the simulations
 
-We can then run the simulations. As mentioned, we want to test different sets of parameters. For each set we want to run many iterations of the simulation, `n_iter`. We thus create a table displaying in each row a set of parameters we want to have a simulation for, `sim_param`. Each set of parameter is appears `n_iter` times in `sim_param` to map over the set of parameters.
+We can then run the simulations. But first, we define the set of parameters we want to consider.
 
-To build `sim_param`, we first define the different values we want to consider for each parameter. We also build a vector of simulation ids (that we drop afterwards). Finally, we cross that with `vect_treatment_type` to get all sets of parameters for each type of treatment.
+### Defining the parameters
+
+We create a table displaying in each row a set of parameters we want to have a simulation for, `sim_param`. We will then map our function `compute_simulation` on this table.
+
+To build `sim_param`, we first define a set of baseline values for our parameters and store them in a data frame. We will then vary the values of the parameters one after the other. We thus create vectors containing the different values of the parameters we want to test.
 
 ```{r}
-# vect_n_days_study <- c(100, 250, 500, 750, 1000)
-vect_n_days_study <- 200
-vect_p_treat <- c(0.1, 0.5)
-vect_treatment_type <- c("RCT", "ITS", "RDD_pm10")
-# vect_percent_effect_size <- c(0.1, 0.5, 1)
-vect_percent_effect_size <- 0.5
-vect_formula <- c("deaths_all_causes ~ treated")
-n_iter <- 3
+sim_param_base <- tibble(
+  n_days_study = 500,
+  p_treat = 0.5,
+  percent_effect_size = 0.5, 
+  formula = "deaths_na_causes ~ treated + temperature + I(temperature^2) | city + month + year + day_of_week"
+)
 
-sim_param <- 
-  crossing(
-    vect_n_days_study,
-    vect_p_treat,
-    vect_percent_effect_size,
-    vect_formula
-  ) 
+vect_n_days_study <- c(100, 250, 500, 750, 1000)
+vect_p_treat <- c(0.1, 0.5)
+vect_percent_effect_size <- c(0.1, 0.5, 1)
+vect_formula <- c(
+  "deaths_na_causes ~ treated", 
+  "deaths_na_causes ~ treated | city",
+  "deaths_na_causes ~ treated | city + month + year + day_of_week",
+  "deaths_na_causes ~ treated + temperature + I(temperature^2) | city + month + year + day_of_week"
+)
+
+vect_of_vect_param <- c("vect_n_days_study", "vect_p_treat", "vect_percent_effect_size", "vect_formula")
+```
+
+We then want to create the actual table, varying parameters one after the other. To do so, we create a simple function `add_values_param`
+
+```{r}
+add_values_param <- function(df, vect_param) {
+  param_name <- str_remove(vect_param, "vect_")
+  
+  tib_param <- tibble(get(vect_param))
+  names(tib_param) <- param_name
+  
+  df %>% 
+    full_join(tib_param, by = param_name) %>% 
+    fill(everything())
+}
+
+sim_param_unique <- 
+  map_dfr(
+    vect_of_vect_param, 
+    add_values_param, 
+    df = sim_param_base
+  ) %>% 
+  distinct() 
+```
+
+We want to compute our simulations for this set of parameters for every design. Note that, in order to identify the effect of interest, we need to consider different types of regressions, depending on the identification strategy. 
+
+Then, for each set of parameters we want to run many iterations of the simulation, `n_iter`. We thus modify `sim_param` so that each set of parameter appears `n_iter` times. It enable us to loop directly on `sim_param`.
+
+```{r}
+vect_treatment_type <- c("RCT", "ITS", "RDD_pm10", "DID")
+
+sim_param <- sim_param_unique %>% 
+  crossing(vect_treatment_type) %>% 
+  rename(treatment_type = vect_treatment_type) %>% 
+  mutate(
+    formula = case_when(
+      treatment_type == "DID" ~ str_replace_all(formula, "treated", "treated + post + city_treated"), 
+      treatment_type == "ITS" ~ str_replace_all(formula, "treated", "treated + t + t_post"), 
+      str_starts(treatment_type, "RDD") ~ str_replace_all(formula, "treated", paste("treated + ", str_remove(treatment_type, "RDD_"))), 
+      TRUE ~ formula
+    )
+  ) %>% 
+  crossing(sim_id = 1:n_iter) %>% 
+  select(-sim_id) 
 
 write_csv(sim_param, "../Outputs/sim_param.csv")
-
-#Set manually the list of parameters one wants to test
-
-sim_param <- read_csv( "../Outputs/sim_param.csv")
-
-sim_param <- sim_param %>% 
-  crossing(
-    vect_treatment_type, 
-    vect_sim_id = 1:n_iter
-  ) %>% 
-  select(-vect_sim_id) %>% 
-  rename_with(~ str_remove_all(., "vect_"))
 ```
+
+### Actually the simulation
 
 We can then run the simulations for each set of parameter, using a `pmap_dfr` function.
 
@@ -448,6 +499,8 @@ all_simulations <- sim_param %>% cbind(simulations)
 
 saveRDS(all_simulations, "../Outputs/data_simulations.RDS")
 ```
+
+### Summarising the results
 
 We then summarize our results, computing power, type M and so on for each set of parameters.
 
