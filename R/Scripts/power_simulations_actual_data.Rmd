@@ -204,7 +204,7 @@ For each treatment, we define the proportion of treated units (`p_treat`).
 - For the GAM and IV, we only consider a subset of observations to create variation across observations
 
 ```{r}
-draw_treated_days <- function(data, p_treat = 0.5, treatment_type = "RDD_pm10") {
+draw_treated_days <- function(data, p_treat = 0.5, treatment_type = "RCT") {
   
   if (treatment_type == "RCT") {
     treated <- rbernoulli(length(data[["date"]]), p_treat)
@@ -296,7 +296,7 @@ We then create the output if a unit is treated, Y(1).
 ```{r}
 create_y1 <- function(dep_var, percent_effect_size = 0.5, treatment_type = "RCT", pollutant = NULL) {
   # y1 <- output_var*(1 + percent_effect_size/100)
-  if (str_starts("RDD_gr", ("RDD|RCT|DID|ITS"))) {
+  if (str_starts(treatment_type, ("RDD|RCT|DID|ITS"))) {
     y1 <- dep_var + rpois(length(dep_var), dep_var*percent_effect_size/100) %>% suppressWarnings()
   } else if (treatment_type == "GAM") {
     y1 <- dep_var + rpois(length(dep_var), pollutant*percent_effect_size/100) %>% suppressWarnings()
@@ -313,15 +313,16 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 ```{r}
 estimate_model <- function(data, formula) {
   fml <- Formula::as.Formula(formula)
-  cluster <- formula(fml, lhs = 0, rhs = 3)
+  cluster <- formula(fml, lhs = 0, rhs = 3) %>% suppressWarnings()
   actual_fml <- formula(fml, rhs = -3)
-    
+  se <- ifelse(cluster == ~0, "hetero", "cluster")  
+  
   est_results <- data %>% 
     feols(
       data = ., 
       fml = actual_fml, 
       cluster = cluster,
-      se = "hetero"
+      se = se
     ) 
   
   nobs <- length(est_results$residuals)
@@ -341,7 +342,7 @@ estimate_model <- function(data, formula) {
 We then create a function running all the previous functions together and therefore performing an iteration of the simulation for a given set of parameters. This function returns a one row data set with estimate, p-value, number of observations and true effect size.
 
 ```{r}
-compute_simulation <- function(data, n_days_study = 200, p_treat = 0.5, treatment_type = "RCT", percent_effect_size = 0.5, formula = deaths_all_causes ~ treated) {
+compute_simulation <- function(data, n_days_study = 200, p_treat = 0.5, treatment_type = "RCT", percent_effect_size = 0.5, formula = "deaths_all_causes ~ treated") {
   
   fml <- Formula::as.Formula(formula)
   dep_var <- paste(fml[[2]])
@@ -362,29 +363,23 @@ compute_simulation <- function(data, n_days_study = 200, p_treat = 0.5, treatmen
     # filter(!is.na(true_treated)) #not necessary bc dropped in lm()
   
   if(treatment_type == "DID") {
-    sim_data <- sim_data %>% 
-      group_by(city) %>% 
-      mutate(city_treated =  max(treated), NA) %>% 
-      ungroup() %>% 
-      group_by(date) %>% 
+    sim_data <- sim_data %>%
+      group_by(city) %>%
+      mutate(city_treated =  max(treated), NA) %>%
+      ungroup() %>%
+      group_by(date) %>%
       mutate(post = max(treated), NA) %>%
-      ungroup() 
-  } 
-  
-  if(treatment_type == "ITS") {
-    sim_data <- sim_data %>% 
-      group_by(city) %>% 
-      mutate(
-        t = as.numeric(date) - min(as.numeric(date)), 
-        t_post = max(0, as.numeric(date) - as.numeric(date[treated == TRUE]))
-      ) %>% 
       ungroup()
-  } 
+  }
 
-  if(str_starts(treatment_type, "RDD")) {
-    pollutant <- str_extract(treatment_type, "(?<=_).+")
-    update(fml, . ~ . + pollutant)
-    #update formulma
+  if(treatment_type == "ITS") {
+    sim_data <- sim_data %>%
+      group_by(city) %>%
+      mutate(
+        t = as.numeric(date) - min(as.numeric(date)),
+        t_post = max(0, as.numeric(date) - as.numeric(date[treated == TRUE]))
+      ) %>%
+      ungroup()
   }
 
   sim_output <- sim_data %>%
@@ -394,8 +389,8 @@ compute_simulation <- function(data, n_days_study = 200, p_treat = 0.5, treatmen
   return(sim_output)
 } 
 
-# test <- total_data %>%
-#   compute_simulation(formula = "deaths_all_causes ~ treated")
+test <- total_data %>%
+  compute_simulation(formula = "deaths_na_causes ~ treated + post + city_treated", treatment_type = "DID") 
 ````
 
 We will then loop this function to get a large number of replications of each simulation for a given set of parameters. We will also vary the values of the different parameter.
