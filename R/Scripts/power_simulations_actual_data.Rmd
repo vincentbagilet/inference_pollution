@@ -204,12 +204,13 @@ For each treatment, we define the proportion of treated units (`p_treat`).
 - For the GAM and IV, we only consider a subset of observations to create variation across observations
 
 ```{r}
-draw_treated_days <- function(data, p_treat = 0.5, treatment_type = "RCT") {
+draw_treated <- function(data, p_treat = 0.5, treatment_type = "RCT") {
   
   if (treatment_type == "RCT") {
     treated <- rbernoulli(length(data[["date"]]), p_treat)
   } else if (treatment_type == "ITS") {
-    treated <- (as.numeric(data[["date"]]) >= quantile(as.numeric(data[["date"]]), 1 - p_treat))
+    num_date <- as.numeric(data[["date"]])
+    treated <- (num_date >= quantile(num_date, 1 - p_treat))
   } else if (treatment_type %in% c("GAM", "IV")) {
     # treated <- TRUE
     treated <- rbernoulli(length(data[["date"]]), p_treat)
@@ -221,16 +222,16 @@ draw_treated_days <- function(data, p_treat = 0.5, treatment_type = "RCT") {
                   data[["date"]] >= median(data[["date"]]))
   } else if (str_starts(treatment_type, "RDD")) {
     pollutant <- str_extract(treatment_type, "(?<=_).+")
-    threshold_pos <- rbeta(1, 20, 2)
+    threshold_pos <- rbeta(1, 20, 2) 
     treated <- data %>%
       group_by(.data$city) %>%
       mutate(
         threshold = quantile(.data[[pollutant]], threshold_pos, names = FALSE),
-        treated = (.data[[pollutant]] >= unique(threshold)),
+        treated = (.data[[pollutant]] >= threshold),
         bw = cut_width(
           .data[[pollutant]],
           width = length(.) * 2 * p_treat,
-          center = unique(threshold)
+          center = unique(threshold) #threshold center of an interval
         ),
         treated = ifelse(
           threshold > as.numeric(str_extract(bw, "([:digit:]|\\.|-)+(?=,)")) &
@@ -254,10 +255,10 @@ test_treatment_data <- total_data %>%
     filter(study_period) %>%
     select(-study_period) %>%
     mutate(
-      treated_RCT = draw_treated_days(., 0.2, "RCT"),
-      treated_ITS = draw_treated_days(., 0.2, "ITS"),
-      treated_RDD = draw_treated_days(., 0.2, "RDD_pm10"),
-      treated_DID = draw_treated_days(., 0.2, "DID"), 
+      treated_RCT = draw_treated(., 0.2, "RCT"),
+      treated_ITS = draw_treated(., 0.2, "ITS"),
+      treated_RDD = draw_treated(., 0.2, "RDD_pm10"),
+      treated_DID = draw_treated(., 0.2, "DID"), 
       city = str_to_title(city)
     ) 
 
@@ -297,9 +298,11 @@ We then create the output if a unit is treated, Y(1).
 create_y1 <- function(dep_var, percent_effect_size = 0.5, treatment_type = "RCT", pollutant = NULL) {
   # y1 <- output_var*(1 + percent_effect_size/100)
   if (str_starts(treatment_type, ("RDD|RCT|DID|ITS"))) {
-    y1 <- dep_var + rpois(length(dep_var), dep_var*percent_effect_size/100) %>% suppressWarnings()
+    y1 <- dep_var + rpois(length(dep_var), dep_var*percent_effect_size/100) %>%
+      suppressWarnings() #warnings when is..na(dep_var) eg rpois(1, NA)
   } else if (treatment_type == "GAM") {
-    y1 <- dep_var + rpois(length(dep_var), pollutant*percent_effect_size/100) %>% suppressWarnings()
+    y1 <- dep_var + rpois(length(dep_var), pollutant*percent_effect_size/100) %>%
+      suppressWarnings()
   }
   return(y1)
 } 
@@ -350,28 +353,33 @@ estimate_model <- function(data, formula) {
 We then create a function running all the previous functions together and therefore performing an iteration of the simulation for a given set of parameters. This function returns a one row data set with estimate, p-value, number of observations and true effect size.
 
 ```{r}
-compute_simulation <- function(data, n_days_study = 200, p_treat = 0.5, treatment_type = "RCT", percent_effect_size = 0.5, formula = "deaths_all_causes ~ treated") {
+compute_simulation <- function(data,
+                               n_days_study = 200,
+                               p_treat = 0.5,
+                               treatment_type = "RCT",
+                               percent_effect_size = 0.5,
+                               formula = "deaths_all_causes ~ treated") {
   
   fml <- Formula::as.Formula(formula)
   dep_var <- paste(fml[[2]])
   
-  sim_data <- data %>% 
-    mutate(study_period = draw_study_period(date, n_days_study)) %>% 
+  sim_data <- data %>%
+    mutate(study_period = draw_study_period(date, n_days_study)) %>%
     filter(study_period) %>%
     select(-study_period) %>%
     mutate(
-      treated = draw_treated_days(., p_treat, treatment_type),
-      # true_treated = draw_treated_days(., p_treat, treatment_type),
+      treated = draw_treated(., p_treat, treatment_type),
+      # true_treated = draw_treated(., p_treat, treatment_type),
       y0 = .data[[dep_var]],
       y1 = create_y1(.data[[dep_var]], percent_effect_size),
-      yobs = y1*treated + y0*(1 - treated)
+      yobs = y1 * treated + y0 * (1 - treated)
       # yobs = y1*true_treated + y0*(1 - true_treated)
-    ) %>% 
+    ) %>%
     filter(!is.na(treated)) #not necessary bc dropped in lm()
-    # filter(!is.na(true_treated)) #not necessary bc dropped in lm()
+  # filter(!is.na(true_treated)) #not necessary bc dropped in lm()
   
   #for DID, need a post and a city_treated variable
-  if(treatment_type == "DID") {
+  if (treatment_type == "DID") {
     sim_data <- sim_data %>%
       group_by(city) %>%
       mutate(city_treated = as.logical(max(treated))) %>%
@@ -380,9 +388,9 @@ compute_simulation <- function(data, n_days_study = 200, p_treat = 0.5, treatmen
       mutate(post = as.logical(max(treated))) %>%
       ungroup()
   }
-
+  
   #for ITS, need a time index and time index
-  if(treatment_type == "ITS") {
+  if (treatment_type == "ITS") {
     sim_data <- sim_data %>%
       group_by(city) %>%
       mutate(
@@ -391,16 +399,20 @@ compute_simulation <- function(data, n_days_study = 200, p_treat = 0.5, treatmen
       ) %>%
       ungroup()
   }
-
+  
   sim_output <- sim_data %>%
     estimate_model(formula = update(fml, yobs ~ .)) %>%
     mutate(true_effect = mean(sim_data$y1 - sim_data$y0, na.rm = TRUE))
   
   return(sim_output)
-} 
+}
 
 test <- total_data %>%
-  compute_simulation(formula = "deaths_na_causes ~ post:city_treated", n_days_study = 700, treatment_type = "DID") 
+  compute_simulation(
+    formula = "deaths_na_causes ~ post:city_treated",
+    n_days_study = 700,
+    treatment_type = "DID"
+  ) 
 ````
 
 We will then loop this function to get a large number of replications of each simulation for a given set of parameters. We will also vary the values of the different parameter.
@@ -457,6 +469,8 @@ sim_param_unique <-
     df = sim_param_base
   ) %>% 
   distinct() 
+
+write_csv(sim_param_unique, "../Outputs/sim_param_unique.csv")
 ```
 
 We want to compute our simulations for this set of parameters for every design. Note that, in order to identify the effect of interest, we need to consider different types of regressions, depending on the identification strategy. 
@@ -465,25 +479,28 @@ Then, for each set of parameters we want to run many iterations of the simulatio
 
 ```{r}
 vect_treatment_type <- c("RCT", "ITS", "RDD_pm10", "DID")
+n_iter = 3
 
-sim_param <- sim_param_unique %>% 
-  crossing(vect_treatment_type) %>% 
-  rename(treatment_type = vect_treatment_type) %>% 
+sim_param <- sim_param_unique %>%
+  crossing(vect_treatment_type) %>%
+  rename(treatment_type = vect_treatment_type) %>%
   mutate(
     formula = case_when(
-      treatment_type == "DID" ~ str_replace_all(formula, "treated", "treated + post + city_treated"), 
-      treatment_type == "ITS" ~ str_replace_all(formula, "treated", "treated + t + t_post"), 
-      str_starts(treatment_type, "RDD") ~ str_replace_all(formula, "treated", paste("treated + ", str_remove(treatment_type, "RDD_"))), 
+      treatment_type == "DID" ~ str_replace_all(formula, "treated", "treated + post + city_treated"),
+      treatment_type == "ITS" ~ str_replace_all(formula, "treated", "treated + t + t_post"),
+      str_starts(treatment_type, "RDD") ~ str_replace_all(formula, "treated", paste(
+        "treated + ", str_remove(treatment_type, "RDD_")
+      )),
       TRUE ~ formula
     )
-  ) %>% 
-  crossing(sim_id = 1:n_iter) %>% 
-  select(-sim_id) 
+  ) %>%
+  crossing(sim_id = 1:n_iter) %>%
+  select(-sim_id)
 
 write_csv(sim_param, "../Outputs/sim_param.csv")
 ```
 
-### Actually the simulation
+### Running the simulation
 
 We can then run the simulations for each set of parameter, using a `pmap_dfr` function.
 
