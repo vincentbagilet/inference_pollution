@@ -184,13 +184,9 @@ This function randomly selects a starting date for the study, early enough so th
 
 ```{r}
 draw_study_period <- function(dates, n_days_study = 200) {
-  max_date <- max(dates)
-  min_date <- min(dates)
+  begin_study <- sample(seq.Date(min(dates), max(dates) - n_days_study, "day"), 1)
   
-  begin_study <- sample(seq.Date(min_date, max_date - n_days_study, "day"), 1)
-  end_study <- begin_study + n_days_study
-  
-  dplyr::between(dates, begin_study, end_study)
+  dplyr::between(dates, begin_study, begin_study + n_days_study)
 }
 ```
 
@@ -201,6 +197,7 @@ Then, we create a function to draw the treatment. This function returns a boolea
 For each treatment, we define the proportion of treated units (`p_treat`). 
 - For the DiD, to simplify, we set the beginning of the treatment as the median date. To get the desired proportion of treated units, we thus need to draw 2*`p_treat` cities.
 - For the RDD, we draw a threshold position (from a beta distribution, for no reason). For each city, we find the corresponding threshold and define a bandwidth such that `p_treat` observations of the total sample are treated. Observations outside the bandwidth get a `NA` for `treated`. Thus, after calling this function, we need to filter out observations with a `NA` for `treated`.
+- For the RDIT, we define the bandwidth such that the proportion of treated days, as compared to the overall sample size, *ie* the length of the study period, is equal to `p_treat`.
 - For the GAM and IV, we only consider a subset of observations to create variation across observations
 
 ```{r}
@@ -239,6 +236,17 @@ draw_treated <- function(data, p_treat = 0.5, treatment_type = "RCT") {
       ) %>%
       ungroup() %>%
       .$treated
+  } else if (treatment_type == "RDIT") {
+    dates <- unique(data[["date"]])
+    bw <- ceiling(p_treat * length(dates))
+  
+    date_start_treat <- sample(seq.Date(min(dates) + bw, max(dates) - bw, "day"), 1)
+    
+    treated <- (data[["date"]] >= date_start_treat)
+    treated <- ifelse(
+      data[["date"]] > date_start_treat + bw | data[["date"]] < date_start_treat - bw,
+      NA, treated
+    )
   }
   
   return(treated)
@@ -259,6 +267,7 @@ test_treatment_data <- total_data %>%
       treated_ITS = draw_treated(., 0.2, "ITS"),
       treated_RDD = draw_treated(., 0.2, "RDD_pm10"),
       treated_DID = draw_treated(., 0.2, "DID"), 
+      treated_RDIT = draw_treated(., 0.05, "RDIT"), 
       city = str_to_title(city)
     ) 
 
@@ -287,6 +296,9 @@ test_treatment_data %>%
 
 test_treatment_data %>% 
   graph_treatment_assignment("ITS")
+
+test_treatment_data %>% 
+  graph_treatment_assignment("RDIT")
 
 ```
 
