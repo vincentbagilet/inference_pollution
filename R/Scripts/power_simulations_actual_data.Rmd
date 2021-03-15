@@ -198,6 +198,7 @@ For each treatment, we define the proportion of treated units (`p_treat`).
 - For the DiD, to simplify, we set the beginning of the treatment as the median date. To get the desired proportion of treated units, we thus need to draw 2*`p_treat` cities.
 - For the RDD, we draw a threshold position (from a beta distribution, for no reason). For each city, we find the corresponding threshold and define a bandwidth such that `p_treat` observations of the total sample are treated. Observations outside the bandwidth get a `NA` for `treated`. Thus, after calling this function, we need to filter out observations with a `NA` for `treated`.
 - For the RDIT, we define the bandwidth such that the proportion of treated days, as compared to the overall sample size, *ie* the length of the study period, is equal to `p_treat`.
+- In the event study, for each city, we randomly draw a treatment starting date. To get a proportion of treated days equal to `p_treat`, we do not draw this date from the whole sample. We only consider dates close enough to the end of the study period such that, on average only `p_treat` of the data will be treated.
 - For the GAM and IV, we only consider a subset of observations to create variation across observations
 
 ```{r}
@@ -236,6 +237,18 @@ draw_treated <- function(data, p_treat = 0.5, treatment_type = "RCT") {
       ) %>%
       ungroup() %>%
       .$treated
+  } else if (treatment_type == "event") {
+    treated <- data %>%
+      group_by(.data$city) %>%
+      mutate(
+        treated = (.data$date > sample(
+          seq.Date(
+            min(.data$date) + (1 - 2*p_treat)*length(.data$date),
+            max(.data$date), "day"
+          ), 1))
+      ) %>%
+      ungroup() %>%
+      .$treated
   } else if (treatment_type == "RDIT") {
     dates <- unique(data[["date"]])
     bw <- ceiling(p_treat * length(dates))
@@ -267,7 +280,8 @@ test_treatment_data <- total_data %>%
       treated_ITS = draw_treated(., 0.2, "ITS"),
       treated_RDD = draw_treated(., 0.2, "RDD_pm10"),
       treated_DID = draw_treated(., 0.2, "DID"), 
-      treated_RDIT = draw_treated(., 0.05, "RDIT"), 
+      treated_RDIT = draw_treated(., 0.1, "RDIT"), 
+      treated_event = draw_treated(., 0.2, "event"), 
       city = str_to_title(city)
     ) 
 
@@ -299,6 +313,9 @@ test_treatment_data %>%
 
 test_treatment_data %>% 
   graph_treatment_assignment("RDIT")
+
+test_treatment_data %>% 
+  graph_treatment_assignment("event")
 
 ```
 
@@ -499,7 +516,7 @@ sim_param <- sim_param_unique %>%
   mutate(
     formula = case_when(
       treatment_type == "DID" ~ str_replace_all(formula, "treated", "treated + post + city_treated"),
-      treatment_type == "ITS" ~ str_replace_all(formula, "treated", "treated + t + t_post"),
+      treatment_type %in% c("ITS", "RDIT") ~ str_replace_all(formula, "treated", "treated + t + t_post"),
       str_starts(treatment_type, "RDD") ~ str_replace_all(formula, "treated", paste(
         "treated + ", str_remove(treatment_type, "RDD_")
       )),
