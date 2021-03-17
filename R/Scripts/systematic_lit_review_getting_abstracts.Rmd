@@ -72,7 +72,7 @@ opts_entrez <- list(use_history = TRUE)
 
 #Run a search
 search <- ft_search(query, from = "scopus", limit = 2000)
-search_entrez <- ft_search(query, from = "entrez", limit = 600, entrezopts = opts_entrez)
+search_entrez <- ft_search(query, from = "entrez", limit = 200, entrezopts = opts_entrez)
 ```
 
 The final query is thus:
@@ -122,7 +122,7 @@ metadata_lit_review <- metadata_scopus %>%
   filter(pb_doi == FALSE) %>% 
   select(-pb_doi)
 
-saveRDS(metadata_lit_review, "../Outputs/metadata_lit_review.RDS")
+# saveRDS(metadata_lit_review, "../Outputs/metadata_lit_review.RDS")
 ```
 
 # Analysis of the power in the literature
@@ -368,21 +368,50 @@ cache_options_set(full_path = "/Users/vincentbagilet/Documents/fulltext")
 # cache_options_set(full_path = "/Volumes/VincentSSD/Research_data/air_pollution/lit_review/full_texts")
 
 metadata_lit_review <- readRDS("../Outputs/metadata_lit_review.RDS")
+metadata_scopus <- readRDS("../Outputs/metadata_scopus.RDS")
 
 metadata_lit_review$doi %>% 
   ft_get(progress = TRUE)
 
+metadata_scopus$doi[1:10] %>% 
+  ft_get(from = "elsevier")
+
+"10.1016/j.scitotenv.2021.145777" 
+  
+"10.1016/j.envint.2021.106434" %>% 
+  ft_get(from = "elsevier")
+
 metadata_entrez$doi %>% 
-  ft_get(from = "entrez", progress = TRUE, type = "pdf")
+  ft_get(from = "entrez", progress = TRUE)
 ```
+
+Links to test directly whether that works
+
+```{r}
+https://api.elsevier.com/content/article/doi/10.1016/j.scitotenv.2021.145725?APIKey= 	973798cb29f35f1e72306fda025bc1ad
+
+https://api.elsevier.com/authenticate/X-ELS-APIKey=973798cb29f35f1e72306fda025bc1ad
+
+https://api.elsevier.com/content/article/doi/10.1016/j.envint.2021.106434?APIKey=97cf76b54716b952af1b960bd830356a?view=FULL
+
+https://api.elsevier.com/content/article/doi/10.1016/j.envint.2021.106434
+
+10.1016/j.envint.2021.106434
+
+https://api.elsevier.com/content/article/pii/S0048969721008445?APIKey=ff394d7bf223e93a318f64d387997d42?view=FULL
+```
+
 
 Once we have downloaded all the files, we can put them into a table format, before analyzing them.
 
 ```{r eval = FALSE}
+metadata_scopus$doi[1:10] %>% 
+  ft_get(from = "elsevier")
+
 #put text into a table format
 article_texts <- ft_table() %>% #searches for documents in the cache directory 
-  select(-paths, -ids_norm) %>% 
-  .$text 
+  select(-paths, -ids_norm) # %>% 
+#   .$text 
 
 saveRDS(article_texts, "../Outputs/article_texts.RDS")
 ```

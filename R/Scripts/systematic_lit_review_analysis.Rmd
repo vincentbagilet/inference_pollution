@@ -29,7 +29,7 @@ opts_chunk$set(fig.path = "images/",
                message = FALSE,
                warning = FALSE,
                out.width = "85%",
-               dpi = 200,
+               dpi = 500,
                fig.align = "center")  
 ```  
 
@@ -255,6 +255,16 @@ abstracts_CI %>%
   coord_flip() +
   labs(x = NULL, y = "Number of articles", title = "Number of articles studing a given pollutant", subtitle = "Comparison between articles for which an effect was detected or not") +
   scale_fill_discrete(name = "")
+
+abstracts_CI %>% 
+  unnest(pollutant) %>% 
+  filter(!is.na(pollutant)) %>% 
+  mutate(has_effect = ifelse(has_effect, "Effect detected", "Effect not detected")) %>% 
+  ggplot() +
+  geom_bar(aes(pollutant, fill = has_effect), position = "fill") +
+  coord_flip() +
+  labs(x = NULL, y = "Number of articles", title = "Number of articles studing a given pollutant", subtitle = "Comparison between articles for which an effect was detected or not") +
+  scale_fill_discrete(name = "")
 ```
 
 We do not seem to detect effects more for a pollutant than for another. Note that if an article considers several pollutants, it will appear several times in this graph.
@@ -437,7 +447,7 @@ articles_retro %>%
 
 articles_retro %>% 
   filter(prop_true_effect %in% c(0.5, 0.75, 1)) %>%  
-  # filter(typeM < 2.5) %>%
+  filter(typeM < 2.5) %>%
   ggplot(aes(x = typeM)) + 
   stat_ecdf(geom = "line") +
   # coord_flip() +
@@ -636,10 +646,10 @@ articles_low_adequate %>%
 <!--   scale_fill_discrete(name = "") -->
 <!-- ``` -->
 
-We investigate the particularities of the articles with low power. We start by reproducing the analyses used to compare articles for which we retreived an effect and those for which we did not. First, we look into the distribution of publication dates.
+We investigate the particularities of the articles with low power. We start by reproducing the analyses used to compare articles for which we retrieved an effect and those for which we did not. First, we look into the distribution of publication dates.
 
 ```{r}
-colors_mediocre <- mediocrethemes::colors_table[[which(mediocrethemes::colors_table$color == "gray"), "vector"]] %>% 
+colors_mediocre <- mediocrethemes::colors_table[[which(mediocrethemes::colors_table$color == "autumn"), "vector"]] %>% 
   strsplit(split=", ") %>% 
   unlist()
 colors_low_power <- c("Low power" = colors_mediocre[6], "Adequate power" = colors_mediocre[14])
@@ -671,6 +681,13 @@ articles_low_adequate %>%
 
 Interestingly, some journals, such as "Science of the Total Environment", the "International Journal of Occupational Medicine and Environmental Health", the "Chochrane Database of Systematic Reviews", "Environmental science and pollution research" and the "Journal of Exposure Science and Environmental epidemiology" publish large share of low power studies. On the contrary, BMJ Open publish very few low power studies.
 
+```{r}
+articles_low_adequate %>% 
+  ggplot() + 
+  geom_histogram(aes(x = pub_date, fill = low_power), position = position_fill(), bins = 10)
+```
+
+
 Here also, grouping the journals into big main themes could be more instructive.
 
 We also look into disparities
@@ -693,4 +710,45 @@ articles_low_adequate %>%
 ```
 
 There does not seem to be stark differences by pollutant type.
+
+```{r}
+articles_low_adequate %>% 
+  left_join(abstracts_more_info, by = c("doi", "abstract")) %>% 
+  unnest(outcome) %>% 
+  filter(!is.na(outcome)) %>% 
+  mutate(low_power = ifelse(low_power, "Low power", "Adequate power")) %>% 
+  # group_by(outcome) %>% 
+  # mutate(nb_outcome = n()) %>% 
+  # ungroup() %>% 
+  # mutate(outcome = reorder(outcome, nb_outcome)) %>% 
+  ggplot() +
+  geom_bar(aes(outcome, fill = low_power), position = position_fill()) +
+  # coord_flip() +
+  labs(x = NULL, y = "Number of articles", title = "Number of articles considering a given outcome", subtitle = "Comparison between articles with low and adequate power") +
+  scale_fill_manual(values = colors_low_power, name = "")
+```
+
+```{r}
+more <- abstracts_more_info %>% 
+  mutate(
+    length_study = as.numeric(str_extract(end_obs, "\\d+")) - as.numeric(str_extract(begin_obs, "\\d+"))
+  ) %>% 
+  filter(end_obs <= 2021) %>% 
+  filter(length_study >= 0)
+
+articles_low_adequate %>% 
+  left_join(more, by = c("doi", "abstract")) %>% 
+  filter(!is.na(length_study)) %>% 
+  filter(length_study < 20) %>% 
+  mutate(low_power = ifelse(low_power, "Low power", "Adequate power")) %>% 
+  ggplot() +
+  geom_bar(aes(x = length_study, fill = low_power), position = position_fill()) +
+  # coord_flip() +
+  labs(x = NULL, y = "Number of articles", title = "Number of articles considering a given outcome", subtitle = "Comparison between articles with low and adequate power") +
+  scale_fill_manual(values = colors_low_power, name = "")
+```
+
+
+
+
 
