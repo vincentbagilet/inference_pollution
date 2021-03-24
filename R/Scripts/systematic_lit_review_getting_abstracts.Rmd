@@ -120,7 +120,13 @@ metadata_lit_review <- metadata_scopus %>%
   filter(!is.na(doi)) %>% 
   mutate(pb_doi = str_detect(doi, "[<>;]")) %>% #some dois are not valid
   filter(pb_doi == FALSE) %>% 
-  select(-pb_doi)
+  select(-pb_doi) %>% 
+  group_by(doi) %>% 
+  filter(pub_date == max(pub_date, na.rm = TRUE)) %>% #some articles have been published twice
+  mutate(n_with_doi = n()) %>% 
+  filter(n_with_doi == 1 | (n_with_doi > 1 & pubmed_id == max(pubmed_id, na.rm = TRUE))) %>% #two wierd articles with separate author names, I select one randomly
+  select(-n_with_doi) %>% 
+  ungroup()
 
 # saveRDS(metadata_lit_review, "../Outputs/metadata_lit_review.RDS")
 ```

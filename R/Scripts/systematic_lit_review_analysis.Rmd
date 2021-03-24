@@ -1,5 +1,5 @@
 ---
-title: "Systematic literature review - Analysis"
+title: "Systematic literature review - Analysis of abstracts"
 author:
 - name: Vincent Bagilet
   url: https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet
@@ -52,30 +52,23 @@ set.seed(1)
 
 # Purpose of the document
 
-In the present document, we aim to conduct a systematic review of the literature on short term health effects of air pollution. The objective is two-fold: 
+One of the objectives of our paper is to evaluate whether the literature of short terms health effects of air pollution suffers from power and bias issues. 
 
-- Retrieve effect sizes and confidence intervals in order to compute power, type M and type S error in the literature
-- Get a sense of the proportion of papers in this literature discussing power and missing data issues.  
+<!-- For years, the empirical economic literature has been obsessed with unbiasedness. Researchers have developed empirical methods and techniques in a quest to retrieve unbiased estimates. Yet, due to their inherent constraints, these techniques limit the set of settings in which one can retrieve causal and unbiased estimates. They also often tend to focus on limited samples of the data, leading to a reduction in sample size? This can ultimately lead to underpowered studies. As underlined by Gelman and Carlin (2014), a lack of power is often associated with type M and type S error. In a quest for unbiasedness, practitioners use methods leading to smaller sample size which can ultimately create bias (type M and type S error). We thus aim at analysing whether the literature of short term health effects of air pollution suffers from power, type M and type S error issues.  -->
 
-# Motivation
+In this particular document, we focus mainly on the epidemiology literature. We take advantage of a somehow standardized reporting mechanism to retrieve estimates and confidence intervals from abstracts. We then implement robustness tests in order to compute the power, type M and type S error in the studied articles. We look at what would be the power, type M and type S error if the true effect was a fraction of the measured effect. 
 
-Our paper and analysis overall partly aims at evaluating whether the literature of short terms health effects of air pollution suffers from power and bias issues. For years, the empirical economic literature has been obsessed with unbiasness. Researchers have developed empirical methods and techniques in a quest to retrieve unbiased estimates. Yet, due to their inherent constraints, these techniques limit the set of settings in which one can retrieve causal and unbiased estimates. They also often tend to focus on limited samples of the data, leading to a reduction in sample size? This can ultimately lead to underpowered studies. As underlined by Gelman and Carlin (2014), a lack of power is often associated with type M and type S error. In a quest for unbiasness, practitioners use methods leading to smaller sample size which can ultimately create bias (type M and type S error). We thus aim at analysing whether the literature of short term health effects of air pollution suffers from power, type M and type S error issues. 
-
-In this particular document, we focus mainly on the epidemiology literature. We take advantage of a somehow standardized reporting mechanism to retrieve estimates and confidence intervals from abstracts. This enable us to compute design calculations.
-
-# Power analysis
-
-In this section, we implement robustness tests in order to compute the power, type M and type S error in the studied articles. We look at what would be the power, type M and type S error if the true effect was a fraction of the measured effect. We retrieved estimates and confidence intervals of articles in the literature of interest in [another document](systematic_lit_review_geting_abstracts.html). Before looking into the power analysis itself, we look at the characteristics of the articles considered.
+We retrieved estimates and confidence intervals of articles in the literature of interest in [another document](systematic_lit_review_geting_abstracts.html). Before looking into the power analysis itself, we look at the characteristics of the articles considered.
 
 <!-- write a paragraph explaining why the robustness checks make sense -->
 
-## Articles characteristics
+# Articles characteristics
 
-### Full set of articles
+## Full set of articles
 
 We retrieved the articles using the following query:
 
-'TITLE(("air pollution"  OR "air quality" OR "particulate matter" OR ozone OR "nitrogen dioxide" OR "sulfur dioxide") AND ("emergency" OR "mortality") AND NOT ("long term" or "long-term")) AND ("particulate matter" OR ozone OR "nitrogen dioxide" OR "sulfur dioxide")'
+'TITLE(("air pollution" OR "air quality" OR "particulate matter" OR ozone OR "nitrogen dioxide" OR "sulfur dioxide" OR "PM10" OR "PM2.5" OR "carbon dioxide" OR "carbon monoxide") AND ("emergency" OR "mortality" OR "stroke" OR "cerebrovascular" OR "cardiovascular" OR "death" OR "hospitalization") AND NOT ("long term" OR "long-term")) AND "short term"'
 
 ```{r}
 articles_effect <- readRDS("../Outputs/articles_effect.RDS")
@@ -96,17 +89,25 @@ abstracts %>%
 
 ```{r fig.asp = 1}
 abstracts %>%
-  unnest_tokens(word, abstract, to_lower = TRUE) %>% 
+  unnest_tokens(word, abstract, to_lower = TRUE) %>%
   anti_join(tidytext::stop_words, by = "word") %>%
+  select(doi, word) %>%
+  distinct() %>%
   count(word, sort = TRUE) %>%
-  filter(n > 1000) %>%
+  filter(n > 500) %>%
   mutate(word = reorder(word, n)) %>%
   ggplot(aes(n, word)) +
   geom_col() +
-  labs(y = NULL, title = "Main themes in the abstracts", subtitle = "Droping usual stop words") 
+  labs(
+    y = NULL,
+    title = "Main themes in the abstracts",
+    subtitle = "Droping usual stop words",
+    x = "Number of abstracts containing this word"
+  ) 
 ```
+Not all abstracts display effects and confidence intervals. We therefore want to assess whether there are noticeable differences between articles for which we retrieve confidence intervals and those for which we do not. This quick exploration will also provide additional information and descriptive statistics on the whole set of articles.
 
-### Abstracts with effects and confidence intervals
+## Abstracts with effects and confidence intervals
 
 ```{r}
 string_confint <- "((?<!(\\.|\\d))95\\s?%|\\b95\\s(per(\\s?)cent)|\\bCI(s?)\\b|\\bPI(s?)\\b|\\b(i|I)nterval|\\b(c|C)onfidence\\s(i|I)nterval|\\b(c|C)redible\\s(i|I)nterval|\\b(p|P)osterior\\s(i|I)nterval)"
@@ -117,7 +118,10 @@ abstracts_CI <- articles_effect %>%
     contains_CI = str_detect(abstract, string_confint)
   ) %>%
   group_by(title) %>% 
-  mutate(has_effect = (sum(!is.na(effect), na.rm = TRUE) > 0)) %>% 
+  mutate(
+    has_effect = (sum(!is.na(effect), na.rm = TRUE) > 0),
+    has_effect_phrase = ifelse(has_effect, "Effect detected", "Effect not detected")
+  ) %>% 
   ungroup() %>% 
   select(-effect, -low_CI, -up_CI) %>% 
   distinct()
@@ -143,7 +147,10 @@ abstracts_CI %>%
     has_effect = ifelse(has_effect, "Yes", "No")
   ) %>% 
   arrange(desc(has_effect)) %>% 
-  kable(col.names = c("Effect retreived", "Number of articles", "Proportion"), caption = "Number of articles for which at least one effect is retrieved (out of those containing the phrase 'CI')")
+  kable(
+    col.names = c("Effect retreived", "Number of articles", "Proportion"),
+    caption = "Number of articles for which at least one effect is retrieved (out of those containing the phrase 'CI')"
+  )
 ```
 
 This corresponds **to `r articles_effect %>% filter(!is.na(effect)) %>% nrow()` valid effects** and associated confidence intervals.
@@ -167,7 +174,7 @@ str_view_all(abstracts_CI$abstract[random_sentences], str_c(
 ```
 
 
-### Comparison between abstracts with and without detected effects
+## Comparison between abstracts with and without detected effects
 
 In this subsection, we investigate whether there are systematic differences between articles displaying an effect that we detected in the abstract and articles that do not display an effect or for which we did not detect the effect. 
 
@@ -175,35 +182,44 @@ We first wonder whether there are disparities in publication dates. It might be 
 
 ```{r}
 abstracts_CI %>% 
-  mutate(has_effect = ifelse(has_effect, "Effect detected", "Effect not detected")) %>% 
   ggplot() +
-  geom_density(aes(x = year(pub_date), fill = has_effect, , color = has_effect)) +
-  labs(title = "Distribution of publication year", subtitle = "Comparison between articles for which an effect is retrieved and not", x = "Publication year", y = "Density") + 
+  geom_density(aes(x = year(pub_date), fill = has_effect_phrase, color = has_effect_phrase)) +
+  labs(
+    title = "Distribution of publication year",
+    subtitle = "Comparison between articles for which an effect is retrieved and not",
+    x = "Publication year",
+    y = "Density"
+  ) + 
   scale_fill_discrete(name = "")
+
+year_first_article <- abstracts_CI %>% 
+  filter(has_effect) %>% 
+  .$pub_date %>% 
+  year() %>% 
+  min(na.rm = TRUE)
 ```
 
-Even though there are slightly more recent (2010-2020) articles for which effects are retrieved, the difference does not seem to be substantial.
+Even though there are slightly more recent (2010-2020) articles for which effects are retrieved, the difference does not seem to be substantial. The first article for which an effect is detected was published in `r year_first_article`. Not many articles were published on this topic before this date (we only find `r abstracts_CI %>% filter(year(pub_date) < year_first_article) %>% count() %>% .$n` articles) because most often air pollution has only been measured since the 1990s.
 
-We also investigate whether there are differences in the journals in which the articles are published.
+We then investigate whether there are differences in the journals in which the articles are published.
 
 ```{r fig.asp=1}
 abstracts_CI %>% 
-  mutate(has_effect = ifelse(has_effect, "Effect detected", "Effect not detected")) %>% 
-  group_by(journal) %>% 
-  mutate(nb_journal = n()) %>% 
-  ungroup() %>% 
-  mutate(journal = reorder(journal, nb_journal)) %>% 
-  filter(nb_journal > 15) %>% 
+  mutate(journal = fct_lump_n(journal, 20)) %>% 
+  filter(journal != "Other") %>% 
   ggplot() +
-  geom_bar(aes(journal, fill = has_effect)) +
-  coord_flip() +
-  labs(x = NULL, y = "Number of articles", title = "Main journals in which effeccts have been published", subtitle = "Comparison between effects detected or not") +
-  scale_fill_discrete(name = "")
+  geom_bar(aes(y = fct_rev(fct_infreq(journal)), fill = has_effect_phrase)) +
+  labs(
+    x = "Number of articles",
+    y = NULL,
+    title = "Main journals in which articles have been published",
+    subtitle = "Comparison between articles for which an effect is retrieved and not"
+  ) +
+  scale_fill_discrete(name = "") 
 ```
-
 For this analysis to be informative, we would need to cluster the journals into groups (*eg* epidemiology journals, general science journals, etc).
 
-Then, we wonder if the the themes considered in each types of abstracts differ.
+Then, we wonder if the words used in each types of abstracts differ.
 
 ```{r fig.asp=1}
 theme_effect <- abstracts_CI %>%
@@ -212,62 +228,64 @@ theme_effect <- abstracts_CI %>%
   group_by(word, has_effect) %>%
   mutate(n_articles_word = length(unique(doi))) %>% 
   ungroup() %>% 
-  select(word, has_effect, n_articles_word) %>% 
+  select(word, has_effect, has_effect_phrase, n_articles_word) %>% 
   distinct() %>% 
   group_by(word) %>% 
   mutate(tot_n_articles_word = sum(n_articles_word, na.rm = TRUE)) %>% 
   ungroup() %>% 
   filter(tot_n_articles_word > 600) %>% 
   ungroup() %>% 
-  mutate(has_effect = ifelse(has_effect, "Effect detected", "Effect not detected")) %>% 
+  # mutate(has_effect = ifelse(has_effect, "Effect detected", "Effect not detected")) %>% 
   mutate(word = reorder(word, n_articles_word)) 
 
 theme_effect %>% 
-  ggplot(aes(x = word, fill = has_effect)) +
+  ggplot(aes(x = word, fill = has_effect_phrase)) +
   geom_col(
-    data = subset(theme_effect, has_effect == "Effect detected"), 
+    data = subset(theme_effect, has_effect), 
     aes(y = n_articles_word)
   ) +
   geom_col(
-    data = subset(theme_effect, has_effect == "Effect not detected"),
+    data = subset(theme_effect, !has_effect),
     aes(y = -n_articles_word),
     position = "identity"
   ) +
   scale_y_continuous(labels = abs) +
   coord_flip() +
-  labs(x = NULL, y = "Number of abstracts containing a given word", title = "Words appearing in the more abstracts", subtitle = "Comparison between articles with and without detected effect") +
+  labs(
+    x = NULL,
+    y = "Number of abstracts containing a given word",
+    title = "Words appearing in the more abstracts",
+    subtitle = "Comparison between articles with and without detected effect"
+  ) +
   scale_fill_discrete(name = "")
 ```
 
-Apart from a few key terms, such as CI, 95 for instance, there are no huge variations in the themes. 
+Apart from a few key terms, such as CI, 95 for instance, there are no huge differences in the terms used in both types of abstracts. 
 
 ```{r fig.asp=0.7}
 abstracts_CI %>% 
   unnest(pollutant) %>% 
-  filter(!is.na(pollutant)) %>% 
-  mutate(has_effect = ifelse(has_effect, "Effect detected", "Effect not detected")) %>% 
-  group_by(pollutant) %>% 
-  mutate(nb_pollutant = n()) %>% 
-  ungroup() %>% 
-  mutate(pollutant = reorder(pollutant, nb_pollutant)) %>% 
+  filter(!is.na(pollutant)) %>%
   ggplot() +
-  geom_bar(aes(pollutant, fill = has_effect)) +
-  coord_flip() +
-  labs(x = NULL, y = "Number of articles", title = "Number of articles studing a given pollutant", subtitle = "Comparison between articles for which an effect was detected or not") +
+  geom_bar(aes(y = fct_rev(fct_infreq(pollutant)), fill = has_effect_phrase)) +
+  labs(
+    x = "Number of articles",
+    y = NULL,
+    title = "Number of articles studing a given pollutant",
+    subtitle = "Comparison between articles for which an effect was detected or not"
+  ) +
   scale_fill_discrete(name = "")
 
-abstracts_CI %>% 
-  unnest(pollutant) %>% 
-  filter(!is.na(pollutant)) %>% 
-  mutate(has_effect = ifelse(has_effect, "Effect detected", "Effect not detected")) %>% 
-  ggplot() +
-  geom_bar(aes(pollutant, fill = has_effect), position = "fill") +
-  coord_flip() +
-  labs(x = NULL, y = "Number of articles", title = "Number of articles studing a given pollutant", subtitle = "Comparison between articles for which an effect was detected or not") +
-  scale_fill_discrete(name = "")
+# abstracts_CI %>% 
+#   unnest(pollutant) %>% 
+#   filter(!is.na(pollutant)) %>% 
+#   ggplot() +
+#   geom_bar(aes(y = pollutant, fill = has_effect_phrase), position = "fill") +
+#   labs(x = NULL, y = "Number of articles", title = "Number of articles studing a given pollutant", subtitle = "Comparison between articles for which an effect was detected or not") +
+#   scale_fill_discrete(name = "")
 ```
 
-We do not seem to detect effects more for a pollutant than for another. Note that if an article considers several pollutants, it will appear several times in this graph.
+It seems that, when there are enough articles, our propensity to detect an effect does not seem to vary too much with the type of pollutant. Note that if an article considers several pollutants, it will appear several times in this graph.
 
 ```{r fig.asp=0.7}
 abstracts_CI %>% 
@@ -275,12 +293,17 @@ abstracts_CI %>%
   filter(!is.na(outcome)) %>% 
   mutate(has_effect = ifelse(has_effect, "Effect detected", "Effect not detected")) %>% 
   ggplot() +
-  geom_bar(aes(x = outcome, fill = has_effect), position = "stack") +
-  labs(x = NULL, y = "Number of articles", title = "Number of articles studing a given outcome", subtitle = "Comparison between articles for which an effect was detected or not") +
+  geom_bar(aes(x = outcome, fill = has_effect), position = "dodge") +
+  labs(
+    x = NULL,
+    y = "Number of articles",
+    title = "Number of articles studing a given outcome",
+    subtitle = "Comparison between articles for which an effect was detected or not - articles with unknown outcomes dropped"
+  ) +
   scale_fill_discrete(name = "") 
 ```
 
-Now that we have quickly compared the articles for which we retrieve an effect an those for which we don't, we can dig further into the analysis of the estimates retrieved.
+Now that we have quickly compared the articles for which we retrieve an effect an those for which we do not, we can dig further into the analysis of the estimates retrieved.
 
 ## Analysis of the effects
 
@@ -309,11 +332,17 @@ We the look into the distribution of the t-scores.
 
 ```{r}
 articles_analysis %>%
-  filter(t_score < 10) %>% 
+  filter(t_score < 10) %>%
   ggplot() +
   geom_histogram(aes(x = t_score), bins = 50) +
   geom_vline(xintercept = 1.96) +
-  labs(title = "Distribution of the t-score in estimates of the literature", subtitle = "Only considering observations with a t-score lower than 10", caption = "The vertical line represents the 1.96 usual threshold", x = "t-score", y = "Count") 
+  labs(
+    title = "Distribution of the t-score in estimates of the literature",
+    subtitle = "Only considering observations with a t-score lower than 10",
+    caption = "The vertical line represents the usual 1.96 threshold",
+    x = "t-score",
+    y = "Count"
+  ) 
 ```
 
 There seems to be some sort of bunching for t-scores above 1.96. In this analysis, we only consider estimates reported in the abstracts. Authors may only report significant estimates in their abstracts even though they also report non significant estimates in the body of the article. This might explain this bunching. We need to investigate this further in order to understand whether this bunching is evidence of publication bias. We could investigate this further by reproducing the present analysis but analyzing the full texts and not only on the abstracts. 
@@ -321,25 +350,41 @@ There seems to be some sort of bunching for t-scores above 1.96. In this analysi
 We then plot the distribution of the signal to noise ratio, *ie* the ratio of the point estimate and the width of the confidence interval.
 
 ```{r}
-articles_analysis %>% 
-  filter(signal_noise < 4) %>% 
+articles_analysis %>%
+  filter(signal_noise < 4) %>%
   ggplot() +
   geom_histogram(aes(x = signal_noise), bins = 50) +
   geom_vline(xintercept = 0.5)  +
-  labs(title = "Distribution of the signal to noise ration in estimates of the literature", subtitle = "Only considering observations with a signal to noise ration lower than 4", caption = "The vertical line represents the 0.5 usual threshold", x = "Signal to noise ration", y = "Count") 
+  labs(
+    title = "Distribution of the signal to noise ration in estimates of the literature",
+    subtitle = "Only considering observations with a signal to noise ration lower than 4",
+    caption = "The vertical line represents the usual 0.5 threshold",
+    x = "Signal to noise ration",
+    y = "Count"
+  ) 
 ```
 
 The graph is of course analogous to the previous one. It however informs us that in a large share of the studies, the magnitude of the noise is larger than the magnitude of the effect. Looking in more details into the distribution of the signal to noise ratio, we notice that for 40% of the estimates considered here, the magnitude of the noise is more important than those of the signal.
 
 ```{r}
-quantile(articles_analysis$signal_noise, seq(0, 1, 0.1)) %>% 
-  tidy() %>% 
-  kable(col.names = c("Signal to noise ratio quantile", "Signal to noise ratio"))
+quantile(articles_analysis$signal_noise, seq(0, 1, 0.1)) %>%
+  tidy() %>%
+  select(x, names) %>%
+  kable(
+    col.names = c(
+      "Signal to noise ratio",
+      "Percentage of estimates with a lower signal to noise ratio"
+    )
+  )
 ```
 
 ## Power analysis
 
-We then turn to the power analysis itself. We aim at evaluating the power, type M and type S errors for each estimate. To compute these values, we would need to know the true effect size. Yet, in general, we do not know what the true effect is. It would be particularly challenging to retrieve what is exactly measured in each analysis since there is no standardized way of reporting the results. A study may for instance claim that a 10 $\mu g/m^{3}$ increase in PM2.5 concentration leads to an increase of x% in hospital admissions over the course of a year while another study may state that a 2% increase in ozone concentration increases the number of deaths by 3 over a month. Thus, as suggested by Gelman and Carlin (2014), we consider different potential "true" effect sizes. We run robustness checks, to investigate what would be the power, type M and type S error if the true effects were only a fraction of the measured effect. The results are thus only informative. There is no reason to think *a priori* that a given effect would overestimated. Yet, if by assuming that the true effect is 3/4 of the measured effect, we find that the estimation is likely to be overestimated by a factor of 2, there might be a substantial issue with this estimate.
+We then turn to the power analysis itself. The objective is to evaluate the power, type M and type S errors for each estimate. 
+
+To compute these values, we would need to know the true effect size. Yet, in general, we do not know what the true effect is. It would be particularly challenging to retrieve what is exactly measured in each analysis since there is no standardized way of reporting the results. A study may for instance claim that a 10 $\mu g/m^{3}$ increase in PM2.5 concentration leads to an increase of x% in hospital admissions over the course of a year while another study may state that a 2% increase in ozone concentration increases the number of deaths by 3 over a month. For each estimate retrieved, even though we do not know what is measured, we can evaluate the precision with which it is estimated.
+
+To circumvent the fact that we do not know the actual effect size, we follow the strategy suggested by Gelman and Carlin (2014). We consider different potential "true" effect sizes and run robustness checks, to investigate what would be the power, type M and type S error if the true effects were only a fraction of the measured effect. The results are thus only informative. There is no reason to think *a priori* that a given effect would be overestimated. Yet, if by assuming that the true effect is 3/4 of the measured effect, we find that the estimation is likely to be overestimated by a factor of 2, there might be a substantial issue with this estimate.
 
 To do so, we use the package `retrodesign` which computes post analysis design calculations (power, type M and type S errors). We run the function `retro_desing()` for several effect sizes.
 
@@ -365,124 +410,166 @@ articles_retro <- articles_analysis %>%
     power = computed$power,
     typeS = computed$typeS,
     typeM = computed$typeM,
-    prop_true_effect = as.numeric(str_sub(prop_true_effect, 7, nchar(prop_true_effect)))
+    prop_true_effect = as.numeric(str_sub(prop_true_effect, 7, nchar(prop_true_effect))),
+    prop_true_effect_phrase = str_c(prop_true_effect*100, "% of the measured effect")
   ) %>% 
   select(-computed)
 ```
 
 ### Overal analysis
 
-In a first part, we carry out our analysis on the whole set of articles. We notice that there is some heterogeneity across articles, with some articles displaying a high power and others displaying lower power. Thus, in a second part, we will look in more details at articles displaying low power
+In a first part, we carry out our analysis on the whole set of abstracts. We notice that there is some heterogeneity across articles, some articles displaying a high power and others displaying lower power. Thus, in a second part, we will look in more details at articles displaying low power.
 
-We start by computing the average and median power, type M and type S errors.
+We start by computing the average and median power, type M and type S errors for a set of "true" effects. 
 
 ```{r}
 articles_retro %>% 
   # filter(typeM < Inf) %>% 
-  group_by(prop_true_effect) %>% 
+  group_by(prop_true_effect, prop_true_effect_phrase) %>% 
   summarise(
     mean_power = mean(power, na.rm = TRUE),
     median_power = median(power, na.rm = TRUE),
     mean_typeM = mean(typeM, na.rm = TRUE),
     median_typeM = median(typeM, na.rm = TRUE),
     mean_typeS = mean(typeS, na.rm = TRUE),
-    median_typeS = median(typeS, na.rm = TRUE)
+    median_typeS = median(typeS, na.rm = TRUE), 
+    .groups = "drop"
   ) %>% 
+  arrange(prop_true_effect) %>% 
+  select(-prop_true_effect) %>% 
   kable(col.names = c("", "Mean", "Median", "Mean", "Median", "Mean", "Median")) %>%
-  add_header_above(c("Proportion of the true effect" = 1, "Power" = 2, "Type M" = 2, "Type S" = 2))
+  add_header_above(c('"True" effect' = 1, "Power" = 2, "Type M" = 2, "Type S" = 2))
 ```
 
 Then, we explore graphically the distribution of power, type M and type S error across simulation and for different size of true effect.
 
 ```{r}
-articles_retro %>% 
-  filter(prop_true_effect %in% c(0.5, 0.75, 1)) %>% 
-  ggplot(aes(x = power)) + 
-  geom_histogram(bins = 10) +
-  facet_wrap(~ prop_true_effect) +
-  labs(title = "Distribution of power in the literature", subtitle = "If the magnitude of true effect is a fraction of the measured effect")
-  # geom_density()
+sizes_to_display <- c(0.33, 0.5, 0.75)
 
-articles_retro %>% 
-  filter(prop_true_effect %in% c(0.5, 0.75, 1)) %>% 
-  ggplot(aes(x = typeM)) + 
+articles_retro %>%
+  filter(prop_true_effect %in% sizes_to_display) %>%
+  ggplot(aes(x = power)) +
   geom_histogram(bins = 10) +
-  facet_wrap(~ prop_true_effect) +
-  labs(title = "Distribution of type M error in the literature (log scale)", subtitle = "If the magnitude of true effect is a fraction of the measured effect") +
-  scale_x_continuous(trans='log10')
+  facet_wrap( ~ prop_true_effect_phrase) +
+  labs(
+    title = "Distribution of power in the literature", 
+    subtitle = "If the magnitude of true effect is a fraction of the measured effect"
+  )
+# geom_density()
 
-articles_retro %>% 
-  filter(prop_true_effect %in% c(0.5, 0.75, 1)) %>% 
-  ggplot(aes(x = typeS)) + 
+articles_retro %>%
+  filter(prop_true_effect %in% sizes_to_display) %>%
+  ggplot(aes(x = typeM)) +
   geom_histogram(bins = 10) +
-  facet_wrap(~ prop_true_effect) +
-  labs(title = "Distribution of type S error in the literature", subtitle = "If the magnitude of true effect is a fraction of the measured effect")
+  facet_wrap( ~ prop_true_effect_phrase) +
+  labs(
+    title = "Distribution of type M error in the literature (log scale)", 
+    subtitle = "If the magnitude of true effect is a fraction of the measured effect"
+  ) +
+  scale_x_continuous(trans = 'log10')
+
+articles_retro %>%
+  filter(prop_true_effect %in% sizes_to_display) %>%
+  ggplot(aes(x = typeS)) +
+  geom_histogram(bins = 10) +
+  facet_wrap( ~ prop_true_effect_phrase) +
+  labs(
+    title = "Distribution of type S error in the literature", 
+    subtitle = "If the magnitude of true effect is a fraction of the measured effect"
+  )
 ```
 
-A large chunk of articles display high power and low rates of type M and type S error, in each robustness check. However, a non negligible number of articles display lower power and/or some evidence of type M error. Type S error do not seem to be an important issue here. We investigate potential causes for the lack of power and for the type M errors further in the next subsection.
+A large chunk of articles display high power and low rates of type M and type S error, in each robustness check. However, a non negligible number of articles display lower power and/or some evidence of type M error. Type S error does not seem to be an important issue in this literature. We investigate potential driver of low power and type M errors further in the next subsection.
 
-Note that for type M errors, due to some outliers, we used a log scale. Without the log scale and restricting our sample to type M errors lower than 2.5 (95% of our sample, even for a effect considered being one third of the true effect).
+Note that for type M errors, due to some outliers, we used a log scale. Without this log scale and restricting our sample to type M errors lower than 2.5 (95% of our sample, even when we assume that the true effect is only 1/3 of the estimated one).
 
 ```{r}
-articles_retro %>% 
-  filter(prop_true_effect %in% c(0.5, 0.75, 1)) %>%  
-  filter(typeM < 2.5) %>% 
-  ggplot(aes(x = typeM)) + 
+articles_retro %>%
+  filter(prop_true_effect %in% sizes_to_display) %>%
+  filter(typeM < 2.5) %>%
+  ggplot(aes(x = typeM)) +
   geom_histogram(bins = 10) +
-  facet_wrap(~ prop_true_effect) +
-  labs(title = "Distribution of type M error in the literature", subtitle = "If the magnitude of true effect is a fraction of the measured effect") 
+  facet_wrap( ~ prop_true_effect_phrase) +
+  labs(
+    title = "Distribution of type M error in the literature", 
+    subtitle = "If the magnitude of true effect is a fraction of the measured effect"
+  ) 
 ```
 
 We find that, even if the measured effect is the true effect, there is some risk of type M error. 
 
-A clearer way to look at the distribution of power, type M and type S errors across studies is to look at their ECDF. 
+The ECDF also provide useful information on the distribution of power, type M and type S errors across studies.
 
 ```{r}
-articles_retro %>% 
-  filter(prop_true_effect %in% c(0.5, 0.75, 1)) %>% 
-  ggplot(aes(x = power)) + 
+articles_retro %>%
+  filter(prop_true_effect %in% sizes_to_display) %>%
+  ggplot(aes(x = power)) +
   stat_ecdf(geom = "line") +
-  facet_wrap(~ prop_true_effect) +
-  labs(title = "Cumulative distribution of power in the literature", subtitle = "If the magnitude of true effect is a fraction of the measured effect", x = "Power", y = "Proportion of estimates with a smaller power")
+  facet_wrap( ~ prop_true_effect_phrase) +
+  labs(
+    title = "Empirical cumulative distribution of power in the literature",
+    subtitle = "If the magnitude of true effect is a fraction of the measured effect",
+    x = "Power",
+    y = "Proportion of estimates"
+  )
 
-articles_retro %>% 
-  filter(prop_true_effect %in% c(0.5, 0.75, 1)) %>%  
+articles_retro %>%
+  filter(prop_true_effect %in% sizes_to_display) %>%
   filter(typeM < 2.5) %>%
-  ggplot(aes(x = typeM)) + 
+  ggplot(aes(x = typeM)) +
   stat_ecdf(geom = "line") +
   # coord_flip() +
-  facet_wrap(~ prop_true_effect) +
-  labs(title = "Cumulative distribution of power in the literature", subtitle = "If the magnitude of true effect is a fraction of the measured effect", x = "Type M error", y = "Proportion of estimates with a smaller power") 
+  facet_wrap( ~ prop_true_effect_phrase) +
+  labs(
+    title = "Empirical cumulative distribution of power in the literature",
+    subtitle = "If the magnitude of true effect is a fraction of the measured effect",
+    x = "Type M error",
+    y = "Proportion of estimates"
+  )
 
-articles_retro %>% 
-  filter(prop_true_effect %in% c(0.5, 0.75, 1)) %>%  
-  ggplot(aes(x = typeS)) + 
+articles_retro %>%
+  filter(prop_true_effect %in% sizes_to_display) %>%
+  ggplot(aes(x = typeS)) +
   stat_ecdf(geom = "line") +
   # coord_flip() +
-  facet_wrap(~ prop_true_effect) +
-  labs(title = "Cumulative distribution of power in the literature", subtitle = "If the magnitude of true effect is a fraction of the measured effect", x = "Type S error", y = "Proportion of estimates with a smaller power") 
+  facet_wrap( ~ prop_true_effect_phrase) +
+  labs(
+    title = "Empirical cumulative distribution of power in the literature",
+    subtitle = "If the magnitude of true effect is a fraction of the measured effect",
+    x = "Type S error",
+    y = "Proportion of estimates"
+  ) 
 ```
 
-We notice that more than 50% of studies would be underpowered at the conventional 80% level if we considered that the true effect was half the measured effect.
+We notice that about 50% of studies would be underpowered at the conventional 80% level if we considered that the true effect was half the measured effect.
 
-Then, we look how type M and type S error evolve with power in the estimates considered.
+Then, we look how type M and type S error evolve with power for the estimates considered.
 
 ```{r}
-articles_retro %>% 
-  filter(prop_true_effect %in% c(0.5, 0.75, 1)) %>%   
+articles_retro %>%
+  filter(prop_true_effect %in% sizes_to_display) %>%
   ggplot(aes(x = power, y = typeM)) +
   geom_point() +
-  facet_wrap(~ prop_true_effect) +
-  labs(title = "Link between type M error and power in the literature", subtitle = "If the magnitude of true effect is a fraction of the measured effect", x = "Power", y = "Type M")
+  facet_wrap( ~ prop_true_effect_phrase) +
+  labs(
+    title = "Link between type M error and power in the literature",
+    subtitle = "If the magnitude of true effect is a fraction of the measured effect",
+    x = "Power",
+    y = "Type M"
+  )
 
-articles_retro %>% 
-  filter(prop_true_effect %in% c(0.5, 0.75, 1)) %>%  
+articles_retro %>%
+  filter(prop_true_effect %in% sizes_to_display) %>%
   ggplot(aes(x = power, y = typeS)) +
   geom_point() +
-  facet_wrap(~ prop_true_effect) +
-  labs(title = "Link between type S error and power in the literature", subtitle = "If the magnitude of true effect is a fraction of the measured effect", x = "Power", y = "Type S")
+  facet_wrap( ~ prop_true_effect_phrase) +
+  labs(
+    title = "Link between type S error and power in the literature",
+    subtitle = "If the magnitude of true effect is a fraction of the measured effect",
+    x = "Power",
+    y = "Type S"
+  )
 ```
-
 There is a one-to-one relationship between power and type M and type S error. Not surprisingly, type M and type S error skyrocket in studies with low power. 
 
 We then investigate how average power, type M and type S evolve as a proportion of the true effect size.
@@ -495,7 +582,11 @@ articles_retro %>%
   geom_point() +
   geom_line(linetype = "dotted", alpha = 0.7) +
   geom_hline(yintercept = 0.8, size = 0.5, linetype = "dashed", alpha = 0.7) +
-  labs(title = "Evolution of average power as a function of the 'true effect'", x = "True effect as a proportion of the measured effect") +
+  labs(
+    title = "Evolution of average power as a function of the 'true effect'", 
+    x = "True effect as a proportion of the measured effect", 
+    caption = "The dashed line represents the usual 80% power threshold"
+  ) +
   ylim(0,1)
 
 articles_retro %>% 
@@ -504,7 +595,11 @@ articles_retro %>%
   ggplot(aes(x = prop_true_effect, y = typeM)) +
   geom_point() +
   geom_line(linetype = "dotted", alpha = 0.7) +
-  labs(title = "Evolution of average type M error as a function of the 'true effect'", x = "True effect as a proportion of the measured effect", y = "Type M")
+  labs(
+    title = "Evolution of average type M error as a function of the 'true effect'", 
+    x = "True effect as a proportion of the measured effect", 
+    y = "Type M"
+  )
 
 articles_retro %>% 
   group_by(prop_true_effect) %>% 
@@ -512,43 +607,30 @@ articles_retro %>%
   ggplot(aes(x = prop_true_effect, y = typeS)) +
   geom_point() +
   geom_line(linetype = "dotted", alpha = 0.7) +
-  labs(title = "Evolution of average type S error as a function of the 'true effect'", x = "True effect as a proportion of the measured effect", y = "Type S")
+  labs(
+    title = "Evolution of average type S error as a function of the 'true effect'", 
+    x = "True effect as a proportion of the measured effect", 
+    y = "Type S"
+  )
 ```
 
-Power, type M and type S errors also skyrocket for small values of the true effect (as a proportion of the measured effect). In addition on average, if for each paper of the literature, the true effects are only three quarter of the measured effect, the power would be lower than the usual 80%. Type S error only seem to be an issue for small values of the true effect as a portion of the measured effect. Type M error seems to be more consistently problematic. The shoot up in the previous graph makes it difficult to read the values of type M error when the true effect is not a small portion of the measured effect. We therefore zoom in.
+Power, decreases and type M and type S errors skyrocket for small values of the true effect (as a proportion of the measured effect). In addition on average, if for each paper of the literature, the true effects are 3/4 of the measured effect, the power would be lower than the usual 80%. Type S error only seem to be an issue for small values of the true effect as a portion of the measured effect. Type M error seems to be more consistently problematic. The shoot up in the previous graph makes it difficult to read the values of type M error when the true effect is not a small portion of the measured effect. We therefore zoom in.
 
 ```{r}
-articles_retro %>% 
+articles_retro %>%
   filter(prop_true_effect > 0.25) %>%
-  group_by(prop_true_effect) %>% 
-  summarise(typeM = mean(typeM, na.rm = TRUE), .groups = "drop_last") %>% 
+  group_by(prop_true_effect) %>%
+  summarise(typeM = mean(typeM, na.rm = TRUE), .groups = "drop_last") %>%
   ggplot(aes(x = prop_true_effect, y = typeM)) +
   geom_point() +
   geom_line(linetype = "dotted", alpha = 0.7) +
-  labs(title = "Evolution of average type M error as a function of the 'true effect'", x = "True effect as a proportion of the measured effect", y = "Type M") +
+  labs(
+    title = "Evolution of average type M error as a function of the 'true effect'", 
+    x = "True effect as a proportion of the measured effect", 
+    y = "Type M") +
   ylim(1, 2.2)
 ```
-
-We notice that, on average in the literature, the treatment effects are overestimated, even for large values of the true effect. This result might be linked to some outliers. We therefore look into the evolution of the distribution with the proportion of effect size.
-
-```{r fig.asp=1}
-articles_retro %>% 
-  ggplot(aes(x = power, y = factor(prop_true_effect))) +
-  geom_density_ridges(color = "#00313C", fill = "#00313C", alpha = 0.3) +
-  labs(title = "Evolution of distrubtion of power as a function of the 'true effect'", x = "Power", y = "True effect as a proportion of the measured effect") 
-
-articles_retro %>% 
-  filter(typeM < 5) %>% 
-  ggplot(aes(x = typeM, y = factor(prop_true_effect))) +
-  geom_density_ridges(color = "#00313C", fill = "#00313C", alpha = 0.3) +
-  labs(title = "Evolution of distrubtion of type M error as a function of the 'true effect'", x = "Type M error", y = "True effect as a proportion of the measured effect")
-
-articles_retro %>% 
-  ggplot(aes(x = typeS, y = factor(prop_true_effect))) +
-  geom_density_ridges(color = "#00313C", fill = "#00313C", alpha = 0.3) +
-  labs(title = "Evolution of distrubtion of type M error as a function of the 'true effect'", x = "Type S error", y = "True effect as a proportion of the measured effect")
-```
-We also look into the evolution of the median effect with true effect size.
+We notice that, on average in the literature, the treatment effects are overestimated, even for large values of the true effect. This result might be linked to some outliers. We thus look at the evolution of the median effect with true effect size.
 
 ```{r}
 articles_retro %>% 
@@ -558,7 +640,10 @@ articles_retro %>%
   geom_point() +
   geom_line(linetype = "dotted", alpha = 0.7) +
   geom_hline(yintercept = 0.8, size = 0.5, linetype = "dashed", alpha = 0.7) +
-  labs(title = "Evolution of median power as a function of the 'true effect'", x = "True effect as a proportion of the measured effect") +
+  labs(
+    title = "Evolution of median power as a function of the 'true effect'", 
+    x = "True effect as a proportion of the measured effect"
+  ) +
   ylim(0,1)
 
 articles_retro %>% 
@@ -568,29 +653,69 @@ articles_retro %>%
   ggplot(aes(x = prop_true_effect, y = typeM)) +
   geom_point() +
   geom_line(linetype = "dotted", alpha = 0.7) +
-  labs(title = "Evolution of the median type M error as a function of the 'true effect'", x = "True effect as a proportion of the measured effect", y = "Type M") +
+  labs(
+    title = "Evolution of the median type M error as a function of the 'true effect'", 
+    x = "True effect as a proportion of the measured effect", 
+    y = "Type M"
+  ) +
   ylim(1, 2.2)
 ```
-
 We notice that the issue is much less important when looking at the median. This suggests some heterogeneity in terms of power in the literature.
 
+To confirm that, we look into the evolution of the distribution with the proportion of effect size.
+
+```{r fig.asp=1}
+articles_retro %>% 
+  ggplot(aes(x = power, y = factor(prop_true_effect))) +
+  geom_density_ridges(color = "#00313C", fill = "#00313C", alpha = 0.3) +
+  labs(
+    title = "Evolution of distrubtion of power as a function of the 'true effect'", 
+    x = "Power", 
+    y = "True effect as a proportion of the measured effect"
+  ) 
+
+articles_retro %>% 
+  filter(typeM < 5) %>% 
+  ggplot(aes(x = typeM, y = factor(prop_true_effect))) +
+  geom_density_ridges(color = "#00313C", fill = "#00313C", alpha = 0.3) +
+  labs(
+    title = "Evolution of distrubtion of type M error as a function of the 'true effect'", 
+    x = "Type M error", 
+    y = "True effect as a proportion of the measured effect"
+  )
+
+# articles_retro %>% 
+#   ggplot(aes(x = typeS, y = factor(prop_true_effect))) +
+#   geom_density_ridges(color = "#00313C", fill = "#00313C", alpha = 0.3) +
+#   labs(
+#     title = "Evolution of distrubtion of type M error as a function of the 'true effect'", 
+#     x = "Type S error", 
+#     y = "True effect as a proportion of the measured effect"
+#   )
+```
+
+The overal distribution of power seems almost bimodal: either the power of most is very high or it is very low.
 
 It might also be interesting to look at how power, type M and type S error evolved in time, *ie* with publication date.
 
 ```{r}
 articles_retro %>% 
-  filter(prop_true_effect %in% c(0.5, 0.75, 1)) %>% 
+  filter(prop_true_effect %in% sizes_to_display) %>% 
   group_by(year = year(pub_date), prop_true_effect) %>%
   mutate(power = mean(power, na.rm = TRUE)) %>% 
   ungroup() %>% 
   ggplot(aes(x = year, y = power)) +
   geom_point() +
   geom_smooth(size = 0.3) +
-  facet_wrap(~ prop_true_effect) +
-  labs(title = "Evolution of mean power in the literature with publication date", x = "Publication date", y = "Power")
+  facet_wrap(~ prop_true_effect_phrase) +
+  labs(
+    title = "Evolution of mean power in the literature with publication date", 
+    x = "Publication date", 
+    y = "Power"
+  )
 
 articles_retro %>% 
-  filter(prop_true_effect %in% c(0.5, 0.75, 1)) %>% 
+  filter(prop_true_effect %in% sizes_to_display) %>% 
   group_by(year = year(pub_date), prop_true_effect) %>%
   mutate(typeM = mean(typeM, na.rm = TRUE)) %>% 
   ungroup() %>% 
@@ -598,38 +723,46 @@ articles_retro %>%
   geom_point() +
   geom_smooth(size = 0.3) +
   # geom_smooth(size = 0.3, formula = y ~ x + I(x^2)) +
-  facet_wrap(~ prop_true_effect) +
-  labs(title = "Evolution of mean type M error in the literature with publication date", x = "Publication date", y = "Type M")
+  facet_wrap(~ prop_true_effect_phrase) +
+  labs(
+    title = "Evolution of mean type M error in the literature with publication date", 
+    x = "Publication date", 
+    y = "Type M"
+  )
 
 articles_retro %>% 
-  filter(prop_true_effect %in% c(0.5, 0.75, 1)) %>%  
+  filter(prop_true_effect %in% sizes_to_display) %>%  
   group_by(year = year(pub_date), prop_true_effect) %>%
   mutate(typeS = mean(typeS, na.rm = TRUE)) %>% 
   ungroup() %>% 
   ggplot(aes(x = year, y = typeS)) +
   geom_point() + 
   geom_smooth(size = 0.3) +
-  facet_wrap(~ prop_true_effect) +
-  labs(title = "Evolution of mean type S error in the literature with publication date", x = "Publication date", y = "Type S")
+  facet_wrap(~ prop_true_effect_phrase) +
+  labs(
+    title = "Evolution of mean type S error in the literature with publication date", 
+    x = "Publication date", 
+    y = "Type S"
+  )
 ```
 
 There does not seem to be a clear trend in the evolution of power and type S error. However, type M error seems to have peaked in the 2010s and to be decreasing again recently.
 
 ### Analysis of articles with low power
 
-In the previous section, we noticed that a non negligible number of studies seemed to suffer from a low power issue and associated type M error. We consider that effects for which power is lower than 80% if the true effect is 3/4 of the measured effect. 80% is the threshold usually used in power analyses but 3/4 is arbitrary and could be changed easily in a robustness check. Following this criterion, the number and proportion of estimates with low power is as follows:
+In the previous section, we noticed that a non negligible number of studies seemed to suffer from a low power issue and associated type M error. We consider that an estimate has low power if its computed power is lower than 80% if the true effect is 3/4 of the measured effect. 80% is the threshold usually used in power analyses but 3/4 is arbitrary and could be changed easily in a robustness check. Following this criterion, the number and proportion of estimates with low power is as follows:
 
 ```{r}
 articles_low_adequate <- articles_retro %>% 
   filter(prop_true_effect == 0.75) %>% 
-  mutate(low_power = (power <= 0.8)) 
+  mutate(
+    low_power = (power <= 0.8), 
+    low_power_phrase = ifelse(low_power, "Low power", "Adequate power")
+  ) 
 
 articles_low_adequate %>% 
-  count(low_power) %>% 
-  mutate(
-    prop = n/sum(n),
-    low_power = ifelse(low_power == 1, "Low power", "Adequate power")
-  ) %>% 
+  count(low_power_phrase) %>% 
+  mutate(prop = n/sum(n)) %>% 
   kable(col.names = c("Power", "Number of estimates", "Proportion"))
 ```
 <!-- Non surprisingly, most of the type M and type S errors are associated with "low power" -->
@@ -649,103 +782,159 @@ articles_low_adequate %>%
 We investigate the particularities of the articles with low power. We start by reproducing the analyses used to compare articles for which we retrieved an effect and those for which we did not. First, we look into the distribution of publication dates.
 
 ```{r}
-colors_mediocre <- mediocrethemes::colors_table[[which(mediocrethemes::colors_table$color == "autumn"), "vector"]] %>% 
-  strsplit(split=", ") %>% 
-  unlist()
-colors_low_power <- c("Low power" = colors_mediocre[6], "Adequate power" = colors_mediocre[14])
+set_mediocre_all(second_pair = TRUE)
 
 articles_low_adequate %>% 
-  mutate(low_power = ifelse(low_power, "Low power", "Adequate power")) %>%
   ggplot() +
-  geom_density(aes(x = year(pub_date), fill = low_power, color = low_power), alpha = 0.4) +
-  labs(title = "Distribution of publication year", subtitle = "Comparison between articles for with low and adequate power", x = "Publication year", y = "Density") +
-  scale_fill_manual(values = colors_low_power, name = "") +
-  scale_color_manual(values = colors_low_power, name = "")
+  geom_density(
+    aes(x = year(pub_date), fill = low_power_phrase, color = low_power_phrase),
+    alpha = 0.4
+  ) +
+  labs(
+    title = "Distribution of publication year", 
+    subtitle = "Comparison between articles for with low and adequate power", 
+    x = "Publication year", 
+    y = "Density"
+  ) +
+  scale_fill_discrete(name = "")
 ```
 It seems that less articles with low power have been published recently, in comparison to articles with adequate power. This confirms our previous finding. We then look into the distribution of articles
 
 ```{r fig.asp=1}
-articles_low_adequate %>% 
-  mutate(low_power = ifelse(low_power, "Low power", "Adequate power")) %>% 
-  group_by(journal) %>% 
-  mutate(nb_journal = n()) %>% 
-  ungroup() %>% 
-  mutate(journal = reorder(journal, nb_journal)) %>% 
-  filter(nb_journal > 15) %>% 
+articles_low_adequate %>%
+  mutate(journal = fct_lump_n(journal, 20)) %>% 
+  filter(journal != "Other") %>% 
   ggplot() +
-  geom_bar(aes(journal, fill = low_power)) +
-  coord_flip() +
-  labs(x = NULL, y = "Number of articles", title = "Main journals in which effects have been published", subtitle = "Comparison between effects that have adequate power or not") +
-  scale_fill_manual(values = colors_low_power, name = "")
+  geom_bar(aes(y = fct_rev(fct_infreq(journal)), fill = low_power_phrase)) +
+  labs(
+    x = "Number of articles",
+    y = NULL,
+    title = "Main journals in which effects have been published",
+    subtitle = "Comparison between effects that have adequate power or not"
+  ) +
+   scale_fill_discrete(name = "")
 ```
 
 Interestingly, some journals, such as "Science of the Total Environment", the "International Journal of Occupational Medicine and Environmental Health", the "Chochrane Database of Systematic Reviews", "Environmental science and pollution research" and the "Journal of Exposure Science and Environmental epidemiology" publish large share of low power studies. On the contrary, BMJ Open publish very few low power studies.
 
-```{r}
-articles_low_adequate %>% 
-  ggplot() + 
-  geom_histogram(aes(x = pub_date, fill = low_power), position = position_fill(), bins = 10)
-```
-
-
 Here also, grouping the journals into big main themes could be more instructive.
 
-We also look into disparities
+```{r}
+articles_low_adequate %>% 
+  group_by(year = year(pub_date)) %>% 
+  summarise(
+    prop_low_power = sum(low_power)/n(),
+    .groups = "drop"
+  ) %>% 
+  # filter(low_power) %>%
+  filter(year <= 2020) %>% 
+  ggplot(aes(x = year, y = prop_low_power)) + 
+  geom_point(color = "#8D0422") +
+  # geom_line(linetype = "dashed", size = 0.2) +
+  geom_smooth(color = "#8D0422", fill = "#8D0422") +
+  ylim(c(0,1)) +
+  labs(
+    title = "Evolution of the proportion of articles with low power",
+    x = "Year of publication",
+    y = "Proportion of estimates with a low power"
+  )
+```
+
+There does not seem to be a clear trend in the proportion of articles with low power. If anything it has slightly decreased in the last decade.
+
+We also look into potential disparities in terms of pollutant
 
 ```{r fig.asp=1}
 articles_low_adequate %>% 
-  left_join(abstracts_more_info, by = c("doi", "abstract")) %>% 
-  unnest(pollutant) %>% 
-  filter(!is.na(pollutant)) %>% 
-  mutate(low_power = ifelse(low_power, "Low power", "Adequate power")) %>% 
-  group_by(pollutant) %>% 
-  mutate(nb_pollutant = n()) %>% 
-  ungroup() %>% 
-  mutate(pollutant = reorder(pollutant, nb_pollutant)) %>% 
+  left_join(abstracts_more_info, by = c("doi", "abstract")) %>%
+  unnest(pollutant) %>%
+  filter(!is.na(pollutant)) %>%
   ggplot() +
-  geom_bar(aes(pollutant, fill = low_power)) +
-  coord_flip() +
-  labs(x = NULL, y = "Number of articles", title = "Number of articles studing a given pollutant", subtitle = "Comparison between articles with low and adequate power") +
-  scale_fill_manual(values = colors_low_power, name = "")
+  geom_bar(
+    aes(y = fct_rev(fct_infreq(pollutant)), fill = low_power_phrase), 
+    position = "fill"
+  ) +
+  labs(
+    x = "Proportion of articles",
+    y = NULL,
+    title = "Proportion of articles with low and adequate power",
+    subtitle = "Comparison between articles studing a different pollutants",
+    caption = "Pollutants ordered from the most frequent to the least"
+  ) +
+  scale_fill_discrete(name = "")
 ```
 
-There does not seem to be stark differences by pollutant type.
+There does not seem to be stark differences by pollutant type. 
+
+We then compare these outcomes in terms of outcome (mortality or hospital admissions).
 
 ```{r}
-articles_low_adequate %>% 
-  left_join(abstracts_more_info, by = c("doi", "abstract")) %>% 
-  unnest(outcome) %>% 
-  filter(!is.na(outcome)) %>% 
-  mutate(low_power = ifelse(low_power, "Low power", "Adequate power")) %>% 
-  # group_by(outcome) %>% 
-  # mutate(nb_outcome = n()) %>% 
-  # ungroup() %>% 
-  # mutate(outcome = reorder(outcome, nb_outcome)) %>% 
+articles_low_adequate %>%
+  left_join(abstracts_more_info, by = c("doi", "abstract")) %>%
+  unnest(outcome) %>%
+  filter(!is.na(outcome)) %>%
   ggplot() +
-  geom_bar(aes(outcome, fill = low_power), position = position_fill()) +
-  # coord_flip() +
-  labs(x = NULL, y = "Number of articles", title = "Number of articles considering a given outcome", subtitle = "Comparison between articles with low and adequate power") +
-  scale_fill_manual(values = colors_low_power, name = "")
+  geom_bar(aes(outcome, fill = low_power_phrase), position = "fill") +
+  labs(
+    x = NULL,
+    y = "Proportion of articles",
+    title = "Number of articles considering a given outcome",
+    subtitle = "Comparison between articles with low and adequate power"
+  ) +
+  scale_fill_discrete(name = "")
 ```
+There is absolutely no difference along this dimension.
+
+Finally, we wonder whether power depends on the length of the study period. It probably depends on the number of observations but since retrieving this information is difficult. We do not know how many cities are analysed in each study.
 
 ```{r}
+library(stringi)
+#Source: https://simplemaps.com/data/world-cities 
+worldcities <- read_csv("../Inputs/worldcities.csv")
+
+worldcities_clean <- worldcities %>% 
+  mutate(
+    city_regex = str_c("\\b", city_ascii, "\\b")
+  ) %>% 
+  filter(population > 500000)
+
 more <- abstracts_more_info %>% 
   mutate(
-    length_study = as.numeric(str_extract(end_obs, "\\d+")) - as.numeric(str_extract(begin_obs, "\\d+"))
+    length_study = as.numeric(str_extract(end_obs, "\\d+")) - as.numeric(str_extract(begin_obs, "\\d+")),
+    nb_cities = str_extract_all(abstract, "(?<!more\\sthan)\\d+(?=\\s?(c|C)it(y|ies))"),
+    abstract_ascii = stri_trans_general(abstract,"Latin-ASCII")
+    # abstract_ascii = str_remove_all(abstract_ascii, "-"),
   ) %>% 
+  unnest(nb_cities, keep_empty = TRUE) %>% 
+  group_by(doi) %>% 
+  mutate(nb_cities = max(nb_cities)) %>%
+  ungroup() %>% 
+  distinct() 
+  # group_by(doi) %>% 
+  # mutate(
+  #   nb_names_cities = sum(str_detect(abstract_ascii, worldcities_clean[["city_regex"]]))
+  # ) %>% 
+  # ungroup()
+
+%>% 
   filter(end_obs <= 2021) %>% 
   filter(length_study >= 0)
 
-articles_low_adequate %>% 
-  left_join(more, by = c("doi", "abstract")) %>% 
-  filter(!is.na(length_study)) %>% 
-  filter(length_study < 20) %>% 
-  mutate(low_power = ifelse(low_power, "Low power", "Adequate power")) %>% 
+articles_low_adequate %>%
+  left_join(more, by = c("doi", "abstract")) %>%
+  filter(!is.na(length_study)) %>%
+  filter(length_study < 20) %>%
+  mutate(low_power = ifelse(low_power, "Low power", "Adequate power")) %>%
   ggplot() +
   geom_bar(aes(x = length_study, fill = low_power), position = position_fill()) +
   # coord_flip() +
-  labs(x = NULL, y = "Number of articles", title = "Number of articles considering a given outcome", subtitle = "Comparison between articles with low and adequate power") +
-  scale_fill_manual(values = colors_low_power, name = "")
+  labs(
+    x = "Length of the study period (in years)",
+    y = "Number of articles",
+    title = "Number of articles considering a given outcome",
+    subtitle = "Comparison between articles with low and adequate power"
+  ) +
+  scale_fill_discrete(name = "")
 ```
 
 
