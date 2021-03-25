@@ -326,7 +326,7 @@ We then create the output if a unit is treated, Y(1).
 ```{r}
 create_y1 <- function(dep_var, percent_effect_size = 0.5, treatment_type = "RCT", pollutant = NULL) {
   # y1 <- output_var*(1 + percent_effect_size/100)
-  if (str_starts(treatment_type, ("RDD|RCT|DID|ITS"))) {
+  if (str_starts(treatment_type, ("RDD|RCT|DID|ITS|event|RDIT"))) {
     y1 <- dep_var + rpois(length(dep_var), dep_var*percent_effect_size/100) %>%
       suppressWarnings() #warnings when is..na(dep_var) eg rpois(1, NA)
   } else if (treatment_type == "GAM") {
