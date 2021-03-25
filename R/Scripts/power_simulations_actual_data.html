@@ -91,8 +91,8 @@ code span.wa { color: #545454; font-weight: bold; font-style: italic; } /* Warni
   
   
   <!--  https://schema.org/Article -->
-  <meta property="article:published" itemprop="datePublished" content="2021-03-12" />
-  <meta property="article:created" itemprop="dateCreated" content="2021-03-12" />
+  <meta property="article:published" itemprop="datePublished" content="2021-03-25" />
+  <meta property="article:created" itemprop="dateCreated" content="2021-03-25" />
   <meta name="article:author" content="Vincent Bagilet" />
   <meta name="article:author" content="Léo Zabrocki" />
   
@@ -109,7 +109,7 @@ code span.wa { color: #545454; font-weight: bold; font-style: italic; } /* Warni
   <!--radix_placeholder_rmarkdown_metadata-->
   
   <script type="text/json" id="radix-rmarkdown-metadata">
-  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","author","date","output"]}},"value":[{"type":"character","attributes":{},"value":["Power Simulation Exercise: actual data"]},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Vincent Bagilet"]},{"type":"character","attributes":{},"value":["https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet"]},{"type":"character","attributes":{},"value":["Columbia University"]},{"type":"character","attributes":{},"value":["https://www.columbia.edu/"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Léo Zabrocki"]},{"type":"character","attributes":{},"value":["https://www.parisschoolofeconomics.eu/en/"]},{"type":"character","attributes":{},"value":["Paris School of Economics"]},{"type":"character","attributes":{},"value":["https://www.parisschoolofeconomics.eu/en/"]}]}]},{"type":"character","attributes":{},"value":["2021-03-12"]},{"type":"character","attributes":{},"value":["distill::distill_article"]}]}
+  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","author","date","output"]}},"value":[{"type":"character","attributes":{},"value":["Power Simulation Exercise: actual data"]},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Vincent Bagilet"]},{"type":"character","attributes":{},"value":["https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet"]},{"type":"character","attributes":{},"value":["Columbia University"]},{"type":"character","attributes":{},"value":["https://www.columbia.edu/"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Léo Zabrocki"]},{"type":"character","attributes":{},"value":["https://www.parisschoolofeconomics.eu/en/"]},{"type":"character","attributes":{},"value":["Paris School of Economics"]},{"type":"character","attributes":{},"value":["https://www.parisschoolofeconomics.eu/en/"]}]}]},{"type":"character","attributes":{},"value":["2021-03-25"]},{"type":"character","attributes":{},"value":["distill::distill_article"]}]}
   </script>
   <!--/radix_placeholder_rmarkdown_metadata-->
   
@@ -2416,7 +2416,7 @@ distill-header .nav a {
 <!--radix_placeholder_front_matter-->
 
 <script id="distill-front-matter" type="text/json">
-{"title":"Power Simulation Exercise: actual data","authors":[{"author":"Vincent Bagilet","authorURL":"https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet","affiliation":"Columbia University","affiliationURL":"https://www.columbia.edu/","orcidID":""},{"author":"Léo Zabrocki","authorURL":"https://www.parisschoolofeconomics.eu/en/","affiliation":"Paris School of Economics","affiliationURL":"https://www.parisschoolofeconomics.eu/en/","orcidID":""}],"publishedDate":"2021-03-12T00:00:00.000+00:00","citationText":"Bagilet & Zabrocki, 2021"}
+{"title":"Power Simulation Exercise: actual data","authors":[{"author":"Vincent Bagilet","authorURL":"https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet","affiliation":"Columbia University","affiliationURL":"https://www.columbia.edu/","orcidID":""},{"author":"Léo Zabrocki","authorURL":"https://www.parisschoolofeconomics.eu/en/","affiliation":"Paris School of Economics","affiliationURL":"https://www.parisschoolofeconomics.eu/en/","orcidID":""}],"publishedDate":"2021-03-25T00:00:00.000+00:00","citationText":"Bagilet & Zabrocki, 2021"}
 </script>
 
 <!--/radix_placeholder_front_matter-->
@@ -2437,7 +2437,7 @@ distill-header .nav a {
   
 ,   Léo Zabrocki <a href="https://www.parisschoolofeconomics.eu/en/" class="uri">https://www.parisschoolofeconomics.eu/en/</a> (Paris School of Economics)<a href="https://www.parisschoolofeconomics.eu/en/" class="uri">https://www.parisschoolofeconomics.eu/en/</a>
   
-<br />2021-03-12
+<br />2021-03-25
 </div>
 
 <div class="d-article">
@@ -2446,27 +2446,31 @@ body {
 text-align: justify}
 </style>
 <h1 id="purpose-of-the-document">Purpose of the document</h1>
-<p>In this document, we carry out a simulation exercise to evaluate the performance of Randomized Control Trials (RCTs), Difference-In-Differences (DiDs), Regression Discontinuity Designs (RDDs) and Interrupted Time Series (ITS) “methods” in measuring the short-term effects of air pollution on health.</p>
-<p>Results are analysed and discussed in another document.</p>
+<p>In this document, we carry out a simulation exercise to evaluate the inference properties of different research designs aiming at measuring the short-term effects of air pollution on health. We consider different types of quasi experiments and for each associate an identification strategy.</p>
+<p>This document focuses on running the simulations. The results are analyzed and discussed in another document.</p>
 <h1 id="description-of-the-analysis">Description of the analysis</h1>
 <h2 id="data">Data</h2>
 <p>We use data from 18 cities in France over the 2013-2018 period. The data set contains records of hospital admissions and deaths, mean concentration data for various air pollutants, a bunch of weather variables and calendar control variables (such as school holidays for instance). All variables are at the daily and city level. There is therefore a unique observation per date and per city in the data set.</p>
-<h2 id="background-on-selected-designs-for-air-pollution-analyses">Background on selected designs for air pollution analyses</h2>
-<h3 id="rct">RCT</h3>
-<p>Here, we consider interventions leading to changes in air pollution levels on some random days. Examples of such interventions include transportation strikes for instance. Of course, dates are often not defined as random and are likely to be correlated with unobserved variable. In the present setting, we first consider the golden standard case in which these days are defined at random. Then, we consider deviations from this golden standard.</p>
-<p>The overall idea of the RCT is to compare the average number of deaths or hospital admissions in cities with treatment to cities with no treatment on the same day, controlling for differences across cities.</p>
-<h3 id="did">DID</h3>
+<h2 id="background-on-selected-quasi-experiments">Background on selected quasi experiments</h2>
+<p>Note that, for now we focus on quasi experiments for which treatment is binary and homogeneous, both in time and across individuals. It is also not correlated with covariates (apart in the case of the air pollution alerts in which it is correlated with the pollutant level).</p>
+<h3 id="treatment-on-random-days">Treatment on “random” days</h3>
+<p>Here, we consider interventions leading to changes in air pollution levels on some random days. Examples of such interventions include transportation strikes. Of course, dates are often not defined as random and are likely to be correlated with unobserved variables. In the present setting, we first consider the golden standard case in which these days are actually defined at random. One can think of this case as a Randomized Control Trial: it represents what would happen if an experimenter could implement a treatment increasing pollution on random days.</p>
+<p>The effect of the treatment is estimated using a RCT type of model. The overall idea of the RCT is to compare the average number of deaths or hospital admissions in cities with treatment to cities with no treatment on the same day, controlling for differences across cities.</p>
+<h3 id="national-intervention">National intervention</h3>
+<p>Here consider interventions leading to changes in air pollution levels in all cities after a given date. Examples of such interventions include an air pollution reduction policy at a national level or a change in regulations at a national level leading to an increase in pollution level.</p>
+<p>The effect of the treatment is estimated using an ITS type of model. The overall idea of the ITS is to compare the average number of deaths or hospital admissions before and after treatment.</p>
+<h3 id="sub-national-intervention">Sub-national intervention</h3>
 <p>Here, we consider interventions leading to changes in air pollution levels in a subset of cities after a given date. Examples of such interventions include an air pollution reduction policy at a sub-national level or a change in regulations at a sub-national level leading to an increase in pollution level.</p>
-<p>The overall idea of the DID is to compare the average number of deaths or hospital admissions in cities with treatment to cities with no treatment on the same day, controlling for differences across cities.</p>
-<h3 id="its">ITS</h3>
-<p>Here consider interventions leading to changes in air pollution levels in a subset of cities after a given date. Examples of such interventions include an air pollution reduction policy at a sub-national level or a change in regulations at a sub-national level leading to an increase in pollution level.</p>
-<p>The overall idea of the ITS is to compare the average number of deaths or hospital admissions before and after treatment.</p>
-<h3 id="rdd">RDD</h3>
+<p>The effect of the treatment is estimated using a DID type of model. The overall idea of the DID is to compare the average number of deaths or hospital admissions in cities with treatment to cities with no treatment on the same day, controlling for differences across cities.</p>
+<h3 id="rolling-intervention">Rolling intervention</h3>
+<p>Here, we consider interventions leading to changes in air pollution levels in a all cities but the change happens after a different date for each city. Examples of such interventions include an air pollution reduction policy at a national level whose implementation is rolled out.</p>
+<p>The effect of the treatment is also estimated using a DID type of model.</p>
+<h3 id="air-pollution-alert">Air pollution alert</h3>
 <p>Here consider interventions that affect exposure to air pollution when air pollution levels reach a given threshold. Examples of such interventions include air pollution alerts: when pollution reaches a certain level, alerts are released, inviting people to reduce their exposure.</p>
-<p>The overall idea of the RDD is to compare days just below the threshold to days just above the threshold (where exposure and health impacts are thus lower). The assumption is that days just below and just above the threshold are comparable.</p>
+<p>The effect of the treatment is estimated using a RD type of model. The overall idea of the RD is to compare days just below the threshold to days just above the threshold (where exposure and health impacts are thus lower). The assumption is that days just below and just above the threshold are comparable.</p>
 <h2 id="analysis">Analysis</h2>
 <h3 id="overall-setting">Overall setting</h3>
-<p>To sum up the analysis, the aim is to measure the performance of different designs in recovering the true effect of a treatment and to analyze characteristics of the estimates. For simplicity, consider the daily number of death as the output variable of interest for now. To do so, we proceed as follows:</p>
+<p>To sum up the analysis, the aim is to measure the inference properties of different research designs aiming at measuring the short-term effects of air pollution on health. For simplicity, consider the daily number of death as the output variable of interest for now. We proceed as follows:</p>
 <ol type="1">
 <li>We define the length of the study period, <em>ie</em> the number of observations, and draw a study period randomly.</li>
 <li>We define the treated days. In the case of the RCT, we draw <span class="math inline">\(n_{obs} \times p_{treat}\)</span> treated days, where <span class="math inline">\(p_{treat}\)</span> is the proportion of treated days. For the ITS, we draw the date at which the treatment starts. For the RDD, we define the concentration threshold above which observations are treated. For the DiD, we define the group of treated cities.</li>
@@ -2480,7 +2484,7 @@ text-align: justify}
 <h3 id="varying-parameters">Varying “parameters”</h3>
 <p>Note that there are several parameters we can vary in order to evaluate the performance of the different methods: the identification strategy, the number of observations, the proportion of treated days, the true effect size and the model. In order to limit the number of simulations and for clarity, we only modify one parameter at the time, keeping others constant. We consider the following values for these parameters:</p>
 <ul>
-<li>Identification strategy: RCT, DID, RDD (we can use several pollutants to trigger the alerts), ITS</li>
+<li>Quasi-experiment: treatment on random days, national intervention, sub-national intervention, rolling intervention, air pollution alerts (we can use several pollutants to trigger the alerts)</li>
 <li>Number of observations: we actually vary the length of the study, in days. The number of observations is approximately equal to the number of days in the study times the number of cities. We consider 100, 250, 500, 750 and 1000 days <strong>because</strong> …</li>
 <li>Proportion of treated days: 0.1, 0.5. The proportion of days treated matters since, while the number of observations can be large, the number of treated days may remain very small (<em>eg</em> the number of strikes). We choose these values <strong>because</strong> …</li>
 <li>Effect size: 0.15%, 0.5% and 1% <strong>because</strong> …</li>
@@ -2537,40 +2541,44 @@ text-align: justify}
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
 <pre><code><span class="va">draw_study_period</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">dates</span>, <span class="va">n_days_study</span> <span class="op">=</span> <span class="fl">200</span><span class="op">)</span> <span class="op">{</span>
-  <span class="va">max_date</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">dates</span><span class="op">)</span>
-  <span class="va">min_date</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">dates</span><span class="op">)</span>
+  <span class="va">begin_study</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.Date.html">seq.Date</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">dates</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">dates</span><span class="op">)</span> <span class="op">-</span> <span class="va">n_days_study</span>, <span class="st">&quot;day&quot;</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span>
   
-  <span class="va">begin_study</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.Date.html">seq.Date</a></span><span class="op">(</span><span class="va">min_date</span>, <span class="va">max_date</span> <span class="op">-</span> <span class="va">n_days_study</span>, <span class="st">&quot;day&quot;</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span>
-  <span class="va">end_study</span> <span class="op">&lt;-</span> <span class="va">begin_study</span> <span class="op">+</span> <span class="va">n_days_study</span>
-  
-  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/between.html">between</a></span><span class="op">(</span><span class="va">dates</span>, <span class="va">begin_study</span>, <span class="va">end_study</span><span class="op">)</span>
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/between.html">between</a></span><span class="op">(</span><span class="va">dates</span>, <span class="va">begin_study</span>, <span class="va">begin_study</span> <span class="op">+</span> <span class="va">n_days_study</span><span class="op">)</span>
 <span class="op">}</span>
 </code></pre>
 </div>
 </div>
 <h3 id="defining-the-treatment">Defining the treatment</h3>
 <p>Then, we create a function to draw the treatment. This function returns a boolean vector, stating whether each observation is in the treatment group or not.</p>
-<p>For each treatment, we define the proportion of treated units (<code>p_treat</code>). - For the DiD, to simplify, we set the beginning of the treatment as the median date. To get the desired proportion of treated units, we thus need to draw 2*<code>p_treat</code> cities. - For the RDD, we draw a threshold position (from a beta distribution, for no reason). For each city, we find the corresponding threshold and define a bandwidth such that <code>p_treat</code> observations of the total sample are treated. Observations outside the bandwidth get a <code>NA</code> for <code>treated</code>. Thus, after calling this function, we need to filter out observations with a <code>NA</code> for <code>treated</code>. - For the GAM and IV, we only consider a subset of observations to create variation across observations</p>
+<p>For each treatment, we define the proportion of treated units (<code>p_treat</code>). The different treatments correspond to different types of quasi-experiments. Note that we will consider some identifications strategies that will only consider restricted samples (RDD and RDIT). For coding simplicity, to get an accurate proportion of treated units, we directly restrict the sample in this function. For the RDIT, we create another type of quasi experiment (“national_short”), even though the quasi experiment is actually the same as for a national intervention.</p>
+<p>In this function, we made some simulations decisions:</p>
+<ul>
+<li>For the local intervention, to simplify, we set the beginning of the treatment as the median date. To get the desired proportion of treated units, we thus need to draw 2*<code>p_treat</code> cities.</li>
+<li>For the air pollution alert, we draw a threshold position (from a beta distribution, for no other reason than the shape of its PDF). For each city, we find the corresponding threshold and define a bandwidth such that <code>p_treat</code> observations of the total sample are treated. Observations outside the bandwidth get a <code>NA</code> for <code>treated</code>. Thus, after calling this function, we need to filter out observations with a <code>NA</code> for <code>treated</code>.</li>
+<li>In the roll out intervention, for each city, we randomly draw a treatment starting date. To get a proportion of treated days equal to <code>p_treat</code>, we do not draw this date from the whole sample. We only consider dates close enough to the end of the study period such that, on average only <code>p_treat</code> of the data will be treated.</li>
+<li>For the short national intervention (<em>ie</em> the RDIT), we define the bandwidth such that the proportion of treated days, as compared to the overall sample size, <em>ie</em> the length of the study period, is equal to <code>p_treat</code>. Note that it does not make sense to have a large <code>p_treat</code> as this would correspond to the national case. We therefore limit <code>p_treat</code> to be smaller than 0.5.</li>
+<li>For the GAM and IV, we only consider a subset of observations to create variation across iterations</li>
+</ul>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre><code><span class="va">draw_treated</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">p_treat</span> <span class="op">=</span> <span class="fl">0.5</span>, <span class="va">treatment_type</span> <span class="op">=</span> <span class="st">&quot;RCT&quot;</span><span class="op">)</span> <span class="op">{</span>
+<pre><code><span class="va">draw_treated</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">p_treat</span> <span class="op">=</span> <span class="fl">0.5</span>, <span class="va">quasi_exp</span> <span class="op">=</span> <span class="st">&quot;random_day&quot;</span><span class="op">)</span> <span class="op">{</span>
   
-  <span class="kw">if</span> <span class="op">(</span><span class="va">treatment_type</span> <span class="op">==</span> <span class="st">&quot;RCT&quot;</span><span class="op">)</span> <span class="op">{</span>
+  <span class="kw">if</span> <span class="op">(</span><span class="va">quasi_exp</span> <span class="op">==</span> <span class="st">&quot;random_days&quot;</span><span class="op">)</span> <span class="op">{</span>
     <span class="va">treated</span> <span class="op">&lt;-</span> <span class="fu">rbernoulli</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">data</span><span class="op">[[</span><span class="st">&quot;date&quot;</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>, <span class="va">p_treat</span><span class="op">)</span>
-  <span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="va">treatment_type</span> <span class="op">==</span> <span class="st">&quot;ITS&quot;</span><span class="op">)</span> <span class="op">{</span>
+  <span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="va">quasi_exp</span> <span class="op">==</span> <span class="st">&quot;national&quot;</span><span class="op">)</span> <span class="op">{</span>
     <span class="va">num_date</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="va">data</span><span class="op">[[</span><span class="st">&quot;date&quot;</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>
     <span class="va">treated</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">num_date</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/r/stats/quantile.html">quantile</a></span><span class="op">(</span><span class="va">num_date</span>, <span class="fl">1</span> <span class="op">-</span> <span class="va">p_treat</span><span class="op">)</span><span class="op">)</span>
-  <span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="va">treatment_type</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">&quot;GAM&quot;</span>, <span class="st">&quot;IV&quot;</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span>
+  <span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="va">quasi_exp</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">&quot;GAM&quot;</span>, <span class="st">&quot;IV&quot;</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span>
     <span class="co"># treated &lt;- TRUE</span>
     <span class="va">treated</span> <span class="op">&lt;-</span> <span class="fu">rbernoulli</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">data</span><span class="op">[[</span><span class="st">&quot;date&quot;</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>, <span class="va">p_treat</span><span class="op">)</span>
     <span class="va">treated</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">treated</span>, <span class="va">treated</span>, <span class="cn">NA</span><span class="op">)</span> 
-  <span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="va">treatment_type</span> <span class="op">==</span> <span class="st">&quot;DID&quot;</span><span class="op">)</span> <span class="op">{</span>
+  <span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="va">quasi_exp</span> <span class="op">==</span> <span class="st">&quot;local&quot;</span><span class="op">)</span> <span class="op">{</span>
     <span class="va">treated_cities</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">data</span><span class="op">[[</span><span class="st">&quot;city&quot;</span><span class="op">]</span><span class="op">]</span><span class="op">)</span> <span class="op">%&gt;%</span>
       <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">.</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">p_treat</span> <span class="op">*</span> <span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
     <span class="va">treated</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">data</span><span class="op">[[</span><span class="st">&quot;city&quot;</span><span class="op">]</span><span class="op">]</span> <span class="op">%in%</span> <span class="va">treated_cities</span> <span class="op">&amp;</span>
                   <span class="va">data</span><span class="op">[[</span><span class="st">&quot;date&quot;</span><span class="op">]</span><span class="op">]</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/r/stats/median.html">median</a></span><span class="op">(</span><span class="va">data</span><span class="op">[[</span><span class="st">&quot;date&quot;</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span>
-  <span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="fu">str_starts</span><span class="op">(</span><span class="va">treatment_type</span>, <span class="st">&quot;RDD&quot;</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span>
-    <span class="va">pollutant</span> <span class="op">&lt;-</span> <span class="fu">str_extract</span><span class="op">(</span><span class="va">treatment_type</span>, <span class="st">&quot;(?&lt;=_).+&quot;</span><span class="op">)</span>
+  <span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="fu">str_starts</span><span class="op">(</span><span class="va">quasi_exp</span>, <span class="st">&quot;alert&quot;</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span>
+    <span class="va">pollutant</span> <span class="op">&lt;-</span> <span class="fu">str_extract</span><span class="op">(</span><span class="va">quasi_exp</span>, <span class="st">&quot;(?&lt;=_).+&quot;</span><span class="op">)</span>
     <span class="va">threshold_pos</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Beta.html">rbeta</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">20</span>, <span class="fl">2</span><span class="op">)</span> 
     <span class="va">treated</span> <span class="op">&lt;-</span> <span class="va">data</span> <span class="op">%&gt;%</span>
       <span class="fu">group_by</span><span class="op">(</span><span class="va">.data</span><span class="op">$</span><span class="va">city</span><span class="op">)</span> <span class="op">%&gt;%</span>
@@ -2588,6 +2596,29 @@ text-align: justify}
       <span class="op">)</span> <span class="op">%&gt;%</span>
       <span class="fu">ungroup</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span>
       <span class="va">.</span><span class="op">$</span><span class="va">treated</span>
+  <span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="va">quasi_exp</span> <span class="op">==</span> <span class="st">&quot;rolling&quot;</span><span class="op">)</span> <span class="op">{</span>
+    <span class="va">treated</span> <span class="op">&lt;-</span> <span class="va">data</span> <span class="op">%&gt;%</span>
+      <span class="fu">group_by</span><span class="op">(</span><span class="va">.data</span><span class="op">$</span><span class="va">city</span><span class="op">)</span> <span class="op">%&gt;%</span>
+      <span class="fu">mutate</span><span class="op">(</span>
+        treated <span class="op">=</span> <span class="op">(</span><span class="va">.data</span><span class="op">$</span><span class="va">date</span> <span class="op">&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span>
+          <span class="fu"><a href="https://rdrr.io/r/base/seq.Date.html">seq.Date</a></span><span class="op">(</span>
+            <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">.data</span><span class="op">$</span><span class="va">date</span><span class="op">)</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="fl">2</span><span class="op">*</span><span class="va">p_treat</span><span class="op">)</span><span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">.data</span><span class="op">$</span><span class="va">date</span><span class="op">)</span>,
+            <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">.data</span><span class="op">$</span><span class="va">date</span><span class="op">)</span>, <span class="st">&quot;day&quot;</span>
+          <span class="op">)</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span>
+      <span class="op">)</span> <span class="op">%&gt;%</span>
+      <span class="fu">ungroup</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span>
+      <span class="va">.</span><span class="op">$</span><span class="va">treated</span>
+  <span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="va">quasi_exp</span> <span class="op">==</span> <span class="st">&quot;national_short&quot;</span><span class="op">)</span> <span class="op">{</span>
+    <span class="va">dates</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">data</span><span class="op">[[</span><span class="st">&quot;date&quot;</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>
+    <span class="va">bw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">floor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">p_treat</span>, <span class="fl">0.5</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">dates</span><span class="op">)</span><span class="op">)</span>
+  
+    <span class="va">date_start_treat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.Date.html">seq.Date</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">dates</span><span class="op">)</span> <span class="op">+</span> <span class="va">bw</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">dates</span><span class="op">)</span> <span class="op">-</span> <span class="va">bw</span>, <span class="st">&quot;day&quot;</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span>
+    
+    <span class="va">treated</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">data</span><span class="op">[[</span><span class="st">&quot;date&quot;</span><span class="op">]</span><span class="op">]</span> <span class="op">&gt;=</span> <span class="va">date_start_treat</span><span class="op">)</span>
+    <span class="va">treated</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span>
+      <span class="va">data</span><span class="op">[[</span><span class="st">&quot;date&quot;</span><span class="op">]</span><span class="op">]</span> <span class="op">&gt;</span> <span class="va">date_start_treat</span> <span class="op">+</span> <span class="va">bw</span> <span class="op">|</span> <span class="va">data</span><span class="op">[[</span><span class="st">&quot;date&quot;</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;</span> <span class="va">date_start_treat</span> <span class="op">-</span> <span class="va">bw</span>,
+      <span class="cn">NA</span>, <span class="va">treated</span>
+    <span class="op">)</span>
   <span class="op">}</span>
   
   <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="va">treated</span><span class="op">)</span>
@@ -2602,13 +2633,17 @@ text-align: justify}
 <p>We then create the output if a unit is treated, Y(1).</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre><code><span class="va">create_y1</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">dep_var</span>, <span class="va">percent_effect_size</span> <span class="op">=</span> <span class="fl">0.5</span>, <span class="va">treatment_type</span> <span class="op">=</span> <span class="st">&quot;RCT&quot;</span>, <span class="va">pollutant</span> <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">{</span>
+<pre><code><span class="va">create_y1</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">dep_var</span>,
+                      <span class="va">percent_effect_size</span> <span class="op">=</span> <span class="fl">0.5</span>,
+                      <span class="va">quasi_exp</span> <span class="op">=</span> <span class="st">&quot;random_days&quot;</span>,
+                      <span class="va">pollutant</span> <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">{</span>
+  
   <span class="co"># y1 &lt;- output_var*(1 + percent_effect_size/100)</span>
-  <span class="kw">if</span> <span class="op">(</span><span class="fu">str_starts</span><span class="op">(</span><span class="va">treatment_type</span>, <span class="op">(</span><span class="st">&quot;RDD|RCT|DID|ITS&quot;</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span>
-    <span class="va">y1</span> <span class="op">&lt;-</span> <span class="va">dep_var</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html">rpois</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">dep_var</span><span class="op">)</span>, <span class="va">dep_var</span><span class="op">*</span><span class="va">percent_effect_size</span><span class="op">/</span><span class="fl">100</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="kw">if</span> <span class="op">(</span><span class="fu">str_starts</span><span class="op">(</span><span class="va">quasi_exp</span>, <span class="op">(</span><span class="st">&quot;random|national|local|alert|rolling&quot;</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span>
+    <span class="va">y1</span> <span class="op">&lt;-</span> <span class="va">dep_var</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html">rpois</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">dep_var</span><span class="op">)</span>, <span class="va">dep_var</span> <span class="op">*</span> <span class="va">percent_effect_size</span> <span class="op">/</span> <span class="fl">100</span><span class="op">)</span> <span class="op">%&gt;%</span>
       <span class="fu"><a href="https://rdrr.io/r/base/warning.html">suppressWarnings</a></span><span class="op">(</span><span class="op">)</span> <span class="co">#warnings when is..na(dep_var) eg rpois(1, NA)</span>
-  <span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="va">treatment_type</span> <span class="op">==</span> <span class="st">&quot;GAM&quot;</span><span class="op">)</span> <span class="op">{</span>
-    <span class="va">y1</span> <span class="op">&lt;-</span> <span class="va">dep_var</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html">rpois</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">dep_var</span><span class="op">)</span>, <span class="va">pollutant</span><span class="op">*</span><span class="va">percent_effect_size</span><span class="op">/</span><span class="fl">100</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="va">quasi_exp</span> <span class="op">==</span> <span class="st">&quot;GAM&quot;</span><span class="op">)</span> <span class="op">{</span>
+    <span class="va">y1</span> <span class="op">&lt;-</span> <span class="va">dep_var</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html">rpois</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">dep_var</span><span class="op">)</span>, <span class="va">pollutant</span> <span class="op">*</span> <span class="va">percent_effect_size</span> <span class="op">/</span> <span class="fl">100</span><span class="op">)</span> <span class="op">%&gt;%</span>
       <span class="fu"><a href="https://rdrr.io/r/base/warning.html">suppressWarnings</a></span><span class="op">(</span><span class="op">)</span>
   <span class="op">}</span>
   <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="va">y1</span><span class="op">)</span>
@@ -2642,11 +2677,7 @@ text-align: justify}
   
   <span class="va">est_results</span> <span class="op">%&gt;%</span>
     <span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span>conf.int <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">%&gt;%</span>
-    <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span>
-      <span class="va">term</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span>
-        <span class="st">&quot;treatedTRUE&quot;</span>, 
-        <span class="st">&quot;postTRUE:city_treatedTRUE&quot;</span>, <span class="st">&quot;city_treatedTRUE:postTRUE&quot;</span>
-      <span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
+    <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">term</span> <span class="op">==</span><span class="st">&quot;treatedTRUE&quot;</span><span class="op">)</span> <span class="op">%&gt;%</span>
     <span class="fu">rename</span><span class="op">(</span>p_value <span class="op">=</span> <span class="va">p.value</span><span class="op">)</span> <span class="op">%&gt;%</span>
     <span class="fu">mutate</span><span class="op">(</span>estimate <span class="op">=</span> <span class="va">estimate</span><span class="op">)</span> <span class="op">%&gt;%</span>
     <span class="fu">select</span><span class="op">(</span><span class="va">estimate</span>, <span class="va">p_value</span><span class="op">)</span> <span class="op">%&gt;%</span>
@@ -2662,7 +2693,7 @@ text-align: justify}
 <pre><code><span class="va">compute_simulation</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>,
                                <span class="va">n_days_study</span> <span class="op">=</span> <span class="fl">200</span>,
                                <span class="va">p_treat</span> <span class="op">=</span> <span class="fl">0.5</span>,
-                               <span class="va">treatment_type</span> <span class="op">=</span> <span class="st">&quot;RCT&quot;</span>,
+                               <span class="va">quasi_exp</span> <span class="op">=</span> <span class="st">&quot;random_days&quot;</span>,
                                <span class="va">percent_effect_size</span> <span class="op">=</span> <span class="fl">0.5</span>,
                                <span class="va">formula</span> <span class="op">=</span> <span class="st">&quot;deaths_all_causes ~ treated&quot;</span><span class="op">)</span> <span class="op">{</span>
   
@@ -2674,8 +2705,8 @@ text-align: justify}
     <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">study_period</span><span class="op">)</span> <span class="op">%&gt;%</span>
     <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">study_period</span><span class="op">)</span> <span class="op">%&gt;%</span>
     <span class="fu">mutate</span><span class="op">(</span>
-      treated <span class="op">=</span> <span class="fu">draw_treated</span><span class="op">(</span><span class="va">.</span>, <span class="va">p_treat</span>, <span class="va">treatment_type</span><span class="op">)</span>,
-      <span class="co"># true_treated = draw_treated(., p_treat, treatment_type),</span>
+      treated <span class="op">=</span> <span class="fu">draw_treated</span><span class="op">(</span><span class="va">.</span>, <span class="va">p_treat</span>, <span class="va">quasi_exp</span><span class="op">)</span>,
+      <span class="co"># true_treated = draw_treated(., p_treat, quasi_exp),</span>
       y0 <span class="op">=</span> <span class="va">.data</span><span class="op">[[</span><span class="va">dep_var</span><span class="op">]</span><span class="op">]</span>,
       y1 <span class="op">=</span> <span class="fu">create_y1</span><span class="op">(</span><span class="va">.data</span><span class="op">[[</span><span class="va">dep_var</span><span class="op">]</span><span class="op">]</span>, <span class="va">percent_effect_size</span><span class="op">)</span>,
       yobs <span class="op">=</span> <span class="va">y1</span> <span class="op">*</span> <span class="va">treated</span> <span class="op">+</span> <span class="va">y0</span> <span class="op">*</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">treated</span><span class="op">)</span>
@@ -2684,8 +2715,9 @@ text-align: justify}
     <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">treated</span><span class="op">)</span><span class="op">)</span> <span class="co">#not necessary bc dropped in lm()</span>
   <span class="co"># filter(!is.na(true_treated)) #not necessary bc dropped in lm()</span>
   
-  <span class="co">#for DID, need a post and a city_treated variable</span>
-  <span class="kw">if</span> <span class="op">(</span><span class="va">treatment_type</span> <span class="op">==</span> <span class="st">&quot;DID&quot;</span><span class="op">)</span> <span class="op">{</span>
+  <span class="co">#for the local intervention, we estimate a DID </span>
+  <span class="co">#and thus need a post and a city_treated variable</span>
+  <span class="kw">if</span> <span class="op">(</span><span class="va">quasi_exp</span> <span class="op">==</span> <span class="st">&quot;local&quot;</span><span class="op">)</span> <span class="op">{</span>
     <span class="va">sim_data</span> <span class="op">&lt;-</span> <span class="va">sim_data</span> <span class="op">%&gt;%</span>
       <span class="fu">group_by</span><span class="op">(</span><span class="va">city</span><span class="op">)</span> <span class="op">%&gt;%</span>
       <span class="fu">mutate</span><span class="op">(</span>city_treated <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/logical.html">as.logical</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">treated</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
@@ -2695,8 +2727,9 @@ text-align: justify}
       <span class="fu">ungroup</span><span class="op">(</span><span class="op">)</span>
   <span class="op">}</span>
   
-  <span class="co">#for ITS, need a time index and time index</span>
-  <span class="kw">if</span> <span class="op">(</span><span class="va">treatment_type</span> <span class="op">==</span> <span class="st">&quot;ITS&quot;</span><span class="op">)</span> <span class="op">{</span>
+  <span class="co">#for the nation intervention, we estimate an ITS </span>
+  <span class="co">#and thus need a time index and time index</span>
+  <span class="kw">if</span> <span class="op">(</span><span class="fu">str_starts</span><span class="op">(</span><span class="va">quasi_exp</span>, <span class="st">&quot;national&quot;</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span>
     <span class="va">sim_data</span> <span class="op">&lt;-</span> <span class="va">sim_data</span> <span class="op">%&gt;%</span>
       <span class="fu">group_by</span><span class="op">(</span><span class="va">city</span><span class="op">)</span> <span class="op">%&gt;%</span>
       <span class="fu">mutate</span><span class="op">(</span>
@@ -2715,9 +2748,9 @@ text-align: justify}
 
 <span class="va">test</span> <span class="op">&lt;-</span> <span class="va">total_data</span> <span class="op">%&gt;%</span>
   <span class="fu">compute_simulation</span><span class="op">(</span>
-    formula <span class="op">=</span> <span class="st">&quot;deaths_na_causes ~ post:city_treated&quot;</span>,
+    formula <span class="op">=</span> <span class="st">&quot;deaths_na_causes ~ treated&quot;</span>,
     n_days_study <span class="op">=</span> <span class="fl">700</span>,
-    treatment_type <span class="op">=</span> <span class="st">&quot;DID&quot;</span>
+    quasi_exp <span class="op">=</span> <span class="st">&quot;national_short&quot;</span>
   <span class="op">)</span> 
 </code></pre>
 </div>
@@ -2781,18 +2814,19 @@ text-align: justify}
 <p>Then, for each set of parameters we want to run many iterations of the simulation, <code>n_iter</code>. We thus modify <code>sim_param</code> so that each set of parameter appears <code>n_iter</code> times. It enable us to loop directly on <code>sim_param</code>.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre><code><span class="va">vect_treatment_type</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">&quot;RCT&quot;</span>, <span class="st">&quot;ITS&quot;</span>, <span class="st">&quot;RDD_pm10&quot;</span>, <span class="st">&quot;DID&quot;</span><span class="op">)</span>
-<span class="va">n_iter</span> <span class="op">=</span> <span class="fl">3</span>
+<pre><code><span class="va">vect_quasi_exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">&quot;random_days&quot;</span>, <span class="st">&quot;national&quot;</span>, <span class="st">&quot;local&quot;</span>, <span class="st">&quot;alert_pm10&quot;</span>, <span class="st">&quot;national_short&quot;</span>, <span class="st">&quot;rolling&quot;</span><span class="op">)</span>
+<span class="va">n_iter</span> <span class="op">&lt;-</span> <span class="fl">3</span>
 
 <span class="va">sim_param</span> <span class="op">&lt;-</span> <span class="va">sim_param_unique</span> <span class="op">%&gt;%</span>
-  <span class="fu">crossing</span><span class="op">(</span><span class="va">vect_treatment_type</span><span class="op">)</span> <span class="op">%&gt;%</span>
-  <span class="fu">rename</span><span class="op">(</span>treatment_type <span class="op">=</span> <span class="va">vect_treatment_type</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">crossing</span><span class="op">(</span><span class="va">vect_quasi_exp</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">rename</span><span class="op">(</span>quasi_exp <span class="op">=</span> <span class="va">vect_quasi_exp</span><span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="fu">mutate</span><span class="op">(</span>
     formula <span class="op">=</span> <span class="fu">case_when</span><span class="op">(</span>
-      <span class="va">treatment_type</span> <span class="op">==</span> <span class="st">&quot;DID&quot;</span> <span class="op">~</span> <span class="fu">str_replace_all</span><span class="op">(</span><span class="va">formula</span>, <span class="st">&quot;treated&quot;</span>, <span class="st">&quot;treated + post + city_treated&quot;</span><span class="op">)</span>,
-      <span class="va">treatment_type</span> <span class="op">==</span> <span class="st">&quot;ITS&quot;</span> <span class="op">~</span> <span class="fu">str_replace_all</span><span class="op">(</span><span class="va">formula</span>, <span class="st">&quot;treated&quot;</span>, <span class="st">&quot;treated + t + t_post&quot;</span><span class="op">)</span>,
-      <span class="fu">str_starts</span><span class="op">(</span><span class="va">treatment_type</span>, <span class="st">&quot;RDD&quot;</span><span class="op">)</span> <span class="op">~</span> <span class="fu">str_replace_all</span><span class="op">(</span><span class="va">formula</span>, <span class="st">&quot;treated&quot;</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span>
-        <span class="st">&quot;treated + &quot;</span>, <span class="fu">str_remove</span><span class="op">(</span><span class="va">treatment_type</span>, <span class="st">&quot;RDD_&quot;</span><span class="op">)</span>
+      <span class="va">quasi_exp</span> <span class="op">==</span> <span class="st">&quot;local&quot;</span> <span class="op">~</span> <span class="fu">str_replace_all</span><span class="op">(</span><span class="va">formula</span>, <span class="st">&quot;treated&quot;</span>, <span class="st">&quot;treated + post + city_treated&quot;</span><span class="op">)</span>,
+      <span class="fu">str_starts</span><span class="op">(</span><span class="va">quasi_exp</span>, <span class="st">&quot;national&quot;</span><span class="op">)</span> <span class="op">~</span> <span class="fu">str_replace_all</span><span class="op">(</span>
+        <span class="va">formula</span>, <span class="st">&quot;treated&quot;</span>, <span class="st">&quot;treated + t + t_post&quot;</span><span class="op">)</span>,
+      <span class="fu">str_starts</span><span class="op">(</span><span class="va">quasi_exp</span>, <span class="st">&quot;alert&quot;</span><span class="op">)</span> <span class="op">~</span> <span class="fu">str_replace_all</span><span class="op">(</span><span class="va">formula</span>, <span class="st">&quot;treated&quot;</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span>
+        <span class="st">&quot;treated + &quot;</span>, <span class="fu">str_remove</span><span class="op">(</span><span class="va">quasi_exp</span>, <span class="st">&quot;alert_&quot;</span><span class="op">)</span>
       <span class="op">)</span><span class="op">)</span>,
       <span class="cn">TRUE</span> <span class="op">~</span> <span class="va">formula</span>
     <span class="op">)</span>
@@ -2815,7 +2849,9 @@ text-align: justify}
   .options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/furrr/man/furrr_options.html">furrr_options</a></span><span class="op">(</span>seed <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
 <span class="op">)</span> 
 
-<span class="va">all_simulations</span> <span class="op">&lt;-</span> <span class="va">sim_param</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">simulations</span><span class="op">)</span>
+<span class="va">all_simulations</span> <span class="op">&lt;-</span> <span class="va">sim_param</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">simulations</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">as_tibble</span><span class="op">(</span><span class="op">)</span>
 
 <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html">saveRDS</a></span><span class="op">(</span><span class="va">all_simulations</span>, <span class="st">&quot;../Outputs/data_simulations.RDS&quot;</span><span class="op">)</span>
 </code></pre>
@@ -2829,7 +2865,7 @@ text-align: justify}
 <pre><code><span class="va">summarise_simulations</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span><span class="op">)</span> <span class="op">{</span>
   
   <span class="va">data</span> <span class="op">%&gt;%</span> 
-    <span class="fu">group_by</span><span class="op">(</span><span class="va">formula</span>, <span class="va">treatment_type</span>, <span class="va">n_days_study</span>, <span class="va">p_treat</span>, <span class="va">percent_effect_size</span><span class="op">)</span> <span class="op">%&gt;%</span>
+    <span class="fu">group_by</span><span class="op">(</span><span class="va">formula</span>, <span class="va">quasi_exp</span>, <span class="va">n_days_study</span>, <span class="va">p_treat</span>, <span class="va">percent_effect_size</span><span class="op">)</span> <span class="op">%&gt;%</span>
     <span class="fu">summarise</span><span class="op">(</span>
       power <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">p_value</span> <span class="op">&lt;=</span> <span class="fl">0.05</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">*</span><span class="fl">100</span>, 
       bias <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">abs</a></span><span class="op">(</span><span class="op">(</span><span class="va">estimate</span> <span class="op">-</span> <span class="va">true_effect</span><span class="op">)</span><span class="op">/</span><span class="va">true_effect</span><span class="op">)</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,

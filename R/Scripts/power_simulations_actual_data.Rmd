@@ -33,9 +33,9 @@ opts_chunk$set(fig.path = "images/",
 
 # Purpose of the document
 
-In this document, we carry out a simulation exercise to evaluate the performance of Randomized Control Trials (RCTs), Difference-In-Differences (DiDs), Regression Discontinuity Designs (RDDs) and Interrupted Time Series (ITS) "methods" in measuring the short-term effects of air pollution on health. 
+In this document, we carry out a simulation exercise to evaluate the inference properties of different research designs aiming at measuring the short-term effects of air pollution on health. We consider different types of quasi experiments and for each associate an identification strategy. 
 
-Results are analysed and discussed in another document.
+This document focuses on running the simulations. The results are analyzed and discussed in another document.
 
 # Description of the analysis
 
@@ -43,58 +43,67 @@ Results are analysed and discussed in another document.
 
 We use data from 18 cities in France over the 2013-2018 period. The data set contains records of hospital admissions and deaths, mean concentration data for various air pollutants, a bunch of weather variables and calendar control variables (such as school holidays for instance). All variables are at the daily and city level. There is therefore a unique observation per date and per city in the data set.
 
-## Background on selected designs for air pollution analyses
+## Background on selected quasi experiments
 
-### RCT
+Note that, for now we focus on quasi experiments for which treatment is binary and homogeneous, both in time and across individuals. It is also not correlated with covariates (apart in the case of the air pollution alerts in which it is correlated with the pollutant level).
 
-Here, we consider interventions leading to changes in air pollution levels on some random days. Examples of such interventions include transportation strikes for instance. Of course, dates are often not defined as random and are likely to be correlated with unobserved variable. In the present setting, we first consider the golden standard case in which these days are defined at random. Then, we consider deviations from this golden standard.
+### Treatment on "random" days
 
-The overall idea of the RCT is to compare the average number of deaths or hospital admissions in cities with treatment to cities with no treatment on the same day, controlling for differences across cities.
+Here, we consider interventions leading to changes in air pollution levels on some random days. Examples of such interventions include transportation strikes. Of course, dates are often not defined as random and are likely to be correlated with unobserved variables. In the present setting, we first consider the golden standard case in which these days are actually defined at random. One can think of this case as a Randomized Control Trial: it represents what would happen if an  experimenter could implement a treatment increasing pollution on random days.
 
-### DID
+The effect of the treatment is estimated using a RCT type of model. The overall idea of the RCT is to compare the average number of deaths or hospital admissions in cities with treatment to cities with no treatment on the same day, controlling for differences across cities.
+
+### National intervention
+
+Here consider interventions leading to changes in air pollution levels in all cities after a given date. Examples of such interventions include an air pollution reduction policy at a national level or a change in regulations at a national level leading to an increase in pollution level. 
+
+The effect of the treatment is estimated using an ITS type of model. The overall idea of the ITS is to compare the average number of deaths or hospital admissions before and after treatment.
+
+### Sub-national intervention
 
 Here, we consider interventions leading to changes in air pollution levels in a subset of cities after a given date. Examples of such interventions include an air pollution reduction policy at a sub-national level or a change in regulations at a sub-national level leading to an increase in pollution level. 
 
-The overall idea of the DID is to compare the average number of deaths or hospital admissions in cities with treatment to cities with no treatment on the same day, controlling for differences across cities.
+The effect of the treatment is estimated using a DID type of model. The overall idea of the DID is to compare the average number of deaths or hospital admissions in cities with treatment to cities with no treatment on the same day, controlling for differences across cities.
 
-### ITS
+### Rolling intervention
 
-Here consider interventions leading to changes in air pollution levels in a subset of cities after a given date. Examples of such interventions include an air pollution reduction policy at a sub-national level or a change in regulations at a sub-national level leading to an increase in pollution level. 
+Here, we consider interventions leading to changes in air pollution levels in a all cities but the change happens after a different date for each city. Examples of such interventions include an air pollution reduction policy at a national level whose implementation is rolled out.  
 
-The overall idea of the ITS is to compare the average number of deaths or hospital admissions before and after treatment.
+The effect of the treatment is also estimated using a DID type of model. 
 
-### RDD
+### Air pollution alert
 
 Here consider interventions that affect exposure to air pollution when air pollution levels reach a given threshold. Examples of such interventions include air pollution alerts: when pollution reaches a certain level, alerts are released, inviting people to reduce their exposure.
 
-The overall idea of the RDD is to compare days just below the threshold to days just above the threshold (where exposure and health impacts are thus lower). The assumption is that days just below and just above the threshold are comparable.
+The effect of the treatment is estimated using a RD type of model. The overall idea of the RD is to compare days just below the threshold to days just above the threshold (where exposure and health impacts are thus lower). The assumption is that days just below and just above the threshold are comparable.
 
 ## Analysis
 
 ### Overall setting
 
-To sum up the analysis, the aim is to measure the performance of different designs in recovering the true effect of a treatment and to analyze characteristics of the estimates. For simplicity, consider the daily number of death as the output variable of interest for now. To do so, we proceed as follows:
+To sum up the analysis, the aim is to measure the inference properties of different research designs aiming at measuring the short-term effects of air pollution on health. For simplicity, consider the daily number of death as the output variable of interest for now. We proceed as follows:
 
-1. We define the length of the study period, *ie* the number of observations, and draw a study period randomly.
-1. We define the treated days. In the case of the RCT, we draw $n_{obs} \times p_{treat}$ treated days, where $p_{treat}$ is the proportion of treated days. For the ITS, we draw the date at which the treatment starts. For the RDD, we define the concentration threshold above which observations are treated. For the DiD, we define the group of treated cities.
-1. We choose a true effect size, $\beta_0$, representing the percentage change in the number of deaths in response to the treatment.
-1. We create fake death counts ($Y_{obs}$), accounting for the "true" effect of the treatment:  
-$Y_{obs} = h_{ct}^{fake} = (1 + \beta_0 T_{ct}) h_{ct}$ where $h_{ct}$ represents the daily number of deaths or emergency admissions, for a given city $c$ at time $t$, $T_{ct}$ the treatment variable which is equal to 1 if the city $c$ is treated at time $t$ and zero otherwise. 
-1. We estimate our model and retrieve $\hat{\beta}$ and the associated p-value.
-1. We run the steps 4 to 6 $n_{iter}$ times and compare our estimated effects $\hat{\beta}$ to the true effect $\beta_0$. We compute the average bias, type M, type S and power.
+1. We define the length of the study period, *ie* the number of observations, and a true effect size, $\beta_0$, representing the percentage change in the number of deaths in response to the treatment.
+1. We draw a study period randomly
+1. We define the treated days, *ie* we define a treatment variable $T_{ct}$ equal to 1 if the city $c$ is treated at time $t$ and zero otherwise. 
+1. We compute the number of deaths when treated for each  observation ($Y(1)$) based on the "true" effect of the treatment. We then derive $Y_{obs} = Y(0) × (1-T) + Y(1) × T$.
+1. We estimate our model with $Y_{obs}$ as a dependent variable and retrieve $\hat{\beta}$ and the associated p-value.
+1. We run the steps 2 to 5 $n_{iter}$ times.
+1. We compute the average bias, type M, type S and power.
 
-In the potential outcome framework, we have $Y_{ct}(0)$, the number of deaths if a city $c$ is not treated at time $t$ equal to $h_{ct}$ and $Y_{ct}(1)$, the number of deaths if this city is treated, equal to $(1 + \beta_0)h_{ct}$. We build our setting, so that we can "observe" both outcomes. The estimation is performed on the fake observed data $Y_{obs} = h^{fake}$ and we have
-$Y_{obs} = Y(0) × (1-T) + Y(1) × T$. 
+<!-- In the potential outcome framework, we have $Y_{ct}(0)$, the number of deaths if a city $c$ is not treated at time $t$ equal to $h_{ct}$ and $Y_{ct}(1)$, the number of deaths if this city is treated, equal to $(1 + \beta_0)h_{ct}$. We build our setting, so that we can "observe" both outcomes. The estimation is performed on the fake observed data $Y_{obs} = h^{fake}$ and we have -->
+<!-- $Y_{obs} = Y(0) × (1-T) + Y(1) × T$.  -->
 
 ### Varying "parameters"
 
-Note that there are several parameters we can vary in order to evaluate the performance of the different methods: the identification strategy, the number of observations, the proportion of treated days, the true effect size and the model. In order to limit the number of simulations and for clarity, we only modify one parameter at the time, keeping others constant. We consider the following values for these parameters:
+Note that there are several parameters we can vary in order to evaluate the performance of the different methods: the identification strategy, the number of observations, the proportion of treated days, the true effect size and the model. In order to limit the number of simulations and for clarity, we only modify one parameter at the time, keeping others constant and equal to a baseline value. When we vary a parameter, we consider the following values:
 
-- Identification strategy: RCT, DID, RDD (we can use several pollutants to trigger the alerts), ITS
 - Number of observations: we actually vary the length of the study, in days. The number of observations is approximately equal to the number of days in the study times the number of cities. We consider 100, 250, 500, 750 and 1000 days **because** ...
 - Proportion of treated days: 0.1, 0.5. The proportion of days treated matters since, while the number of observations can be large, the number of treated days may remain very small (*eg* the number of strikes). We choose these values **because** ...
 - Effect size: 0.15%, 0.5% and 1% **because** ...
 - The estimation model: we first do not include covariates, only fixed effects. We then include include different sets of covariates.
+
+We consider this set of parameters for each quasi-experiment.
 
 ### Deviation from the ideal case
 
@@ -144,8 +153,6 @@ library(furrr) # for parallel computing
 future::plan(multicore)
 library(mediocrethemes)
 
-source(here::here("R", "Scripts", "script_custom_ggplot_theme.R"))
-
 set_mediocre_all()
 ```
 
@@ -194,32 +201,35 @@ draw_study_period <- function(dates, n_days_study = 200) {
 
 Then, we create a function to draw the treatment. This function returns a boolean vector, stating whether each observation is in the treatment group or not.
 
-For each treatment, we define the proportion of treated units (`p_treat`). 
-- For the DiD, to simplify, we set the beginning of the treatment as the median date. To get the desired proportion of treated units, we thus need to draw 2*`p_treat` cities.
-- For the RDD, we draw a threshold position (from a beta distribution, for no reason). For each city, we find the corresponding threshold and define a bandwidth such that `p_treat` observations of the total sample are treated. Observations outside the bandwidth get a `NA` for `treated`. Thus, after calling this function, we need to filter out observations with a `NA` for `treated`.
-- For the RDIT, we define the bandwidth such that the proportion of treated days, as compared to the overall sample size, *ie* the length of the study period, is equal to `p_treat`.
-- In the event study, for each city, we randomly draw a treatment starting date. To get a proportion of treated days equal to `p_treat`, we do not draw this date from the whole sample. We only consider dates close enough to the end of the study period such that, on average only `p_treat` of the data will be treated.
-- For the GAM and IV, we only consider a subset of observations to create variation across observations
+For each treatment, we define the proportion of treated units (`p_treat`). The different treatments correspond to different types of quasi-experiments. Note that we will consider some identifications strategies that will only consider restricted samples (RDD and RDIT). For coding simplicity, to get an accurate proportion of treated units, we directly restrict the sample in this function. For the RDIT, we create another type of quasi experiment ("national_short"), even though the quasi experiment is actually the same as for a national intervention.
+
+In this function, we made some simulations decisions: 
+
+- For the local intervention, to simplify, we set the beginning of the treatment as the median date. To get the desired proportion of treated units, we thus need to draw 2*`p_treat` cities.
+- For the air pollution alert, we draw a threshold position (from a beta distribution, for no other reason than the shape of its PDF). For each city, we find the corresponding threshold and define a bandwidth such that `p_treat` observations of the total sample are treated. Observations outside the bandwidth get a `NA` for `treated`. Thus, after calling this function, we need to filter out observations with a `NA` for `treated`.
+- In the roll out intervention, for each city, we randomly draw a treatment starting date. To get a proportion of treated days equal to `p_treat`, we do not draw this date from the whole sample. We only consider dates close enough to the end of the study period such that, on average only `p_treat` of the data will be treated.
+- For the short national intervention (*ie* the RDIT), we define the bandwidth such that the proportion of treated days, as compared to the overall sample size, *ie* the length of the study period, is equal to `p_treat`. Note that it does not make sense to have a large `p_treat` as this would correspond to the national case. We therefore limit `p_treat` to be smaller than 0.5.
+- For the GAM and IV, we only consider a subset of observations to create variation across iterations
 
 ```{r}
-draw_treated <- function(data, p_treat = 0.5, treatment_type = "RCT") {
+draw_treated <- function(data, p_treat = 0.5, quasi_exp = "random_day") {
   
-  if (treatment_type == "RCT") {
+  if (quasi_exp == "random_days") {
     treated <- rbernoulli(length(data[["date"]]), p_treat)
-  } else if (treatment_type == "ITS") {
+  } else if (quasi_exp == "national") {
     num_date <- as.numeric(data[["date"]])
     treated <- (num_date >= quantile(num_date, 1 - p_treat))
-  } else if (treatment_type %in% c("GAM", "IV")) {
+  } else if (quasi_exp %in% c("GAM", "IV")) {
     # treated <- TRUE
     treated <- rbernoulli(length(data[["date"]]), p_treat)
     treated <- ifelse(treated, treated, NA) 
-  } else if (treatment_type == "DID") {
+  } else if (quasi_exp == "local") {
     treated_cities <- unique(data[["city"]]) %>%
       sample(size = round(length(.) * min(p_treat * 2, 1)))
     treated <- (data[["city"]] %in% treated_cities &
                   data[["date"]] >= median(data[["date"]]))
-  } else if (str_starts(treatment_type, "RDD")) {
-    pollutant <- str_extract(treatment_type, "(?<=_).+")
+  } else if (str_starts(quasi_exp, "alert")) {
+    pollutant <- str_extract(quasi_exp, "(?<=_).+")
     threshold_pos <- rbeta(1, 20, 2) 
     treated <- data %>%
       group_by(.data$city) %>%
@@ -237,7 +247,7 @@ draw_treated <- function(data, p_treat = 0.5, treatment_type = "RCT") {
       ) %>%
       ungroup() %>%
       .$treated
-  } else if (treatment_type == "event") {
+  } else if (quasi_exp == "rolling") {
     treated <- data %>%
       group_by(.data$city) %>%
       mutate(
@@ -249,9 +259,9 @@ draw_treated <- function(data, p_treat = 0.5, treatment_type = "RCT") {
       ) %>%
       ungroup() %>%
       .$treated
-  } else if (treatment_type == "RDIT") {
+  } else if (quasi_exp == "national_short") {
     dates <- unique(data[["date"]])
-    bw <- ceiling(p_treat * length(dates))
+    bw <- floor(min(p_treat, 0.5) * length(dates))
   
     date_start_treat <- sample(seq.Date(min(dates) + bw, max(dates) - bw, "day"), 1)
     
@@ -276,46 +286,55 @@ test_treatment_data <- total_data %>%
     filter(study_period) %>%
     select(-study_period) %>%
     mutate(
-      treated_RCT = draw_treated(., 0.2, "RCT"),
-      treated_ITS = draw_treated(., 0.2, "ITS"),
-      treated_RDD = draw_treated(., 0.2, "RDD_pm10"),
-      treated_DID = draw_treated(., 0.2, "DID"), 
-      treated_RDIT = draw_treated(., 0.1, "RDIT"), 
-      treated_event = draw_treated(., 0.2, "event"), 
+      treated_random_days = draw_treated(., 0.2, "random_days"),
+      treated_national = draw_treated(., 0.2, "national"),
+      treated_alert = draw_treated(., 0.2, "alert_pm10"),
+      treated_local = draw_treated(., 0.2, "local"), 
+      treated_national_short = draw_treated(., 0.8, "national_short"), 
+      treated_rolling = draw_treated(., 0.2, "rolling"), 
       city = str_to_title(city)
     ) 
 
 graph_treatment_assignment <- function(data, method) {
+  data[["alert"]] <- (method == "alert")
+  y_lab <- ifelse(method == "alert", "PM10 concentration level (in mug/m3)", "Daily number of deaths")
+  subtitle <- ifelse(method == "alert", "PM10 concentration", "number of deaths")
+  
   data %>% 
+    mutate(outcome = ifelse(alert, pm10, deaths_na_causes)) %>%
     rename(Treated = .data[[paste("treated", method, sep = "_")]]) %>% 
     ggplot() +
-    geom_point(aes(x = date, y = pm10, color = Treated), size = 0.3) +
-    facet_wrap(~city) +
+    geom_point(aes(x = date, y = outcome, color = Treated), size = 0.3) +
+    facet_wrap(~city, scales = "free") +
     labs(
-      title = paste("Treatment assignation for", method), 
-      subtitle = "Evolution of PM10 concentration in time for each city",
+      title = paste(
+        "Treatment assignation for a", 
+        str_replace_all(method, "_", " "), 
+        "intervention"
+      ), 
+      subtitle = paste("Evolution of the", subtitle, "in time for each city"),
       x = "Date", 
-      y = "PM10 concentration level (in mug/m3)"
+      y = y_lab
     )
 } 
 
 test_treatment_data %>% 
-  graph_treatment_assignment("RCT")
+  graph_treatment_assignment("random_days")
 
 test_treatment_data %>% 
-  graph_treatment_assignment("RDD")
+  graph_treatment_assignment("alert")
 
 test_treatment_data %>% 
-  graph_treatment_assignment("DID")
+  graph_treatment_assignment("local")
 
 test_treatment_data %>% 
-  graph_treatment_assignment("ITS")
+  graph_treatment_assignment("national")
 
 test_treatment_data %>% 
-  graph_treatment_assignment("RDIT")
+  graph_treatment_assignment("national_short")
 
 test_treatment_data %>% 
-  graph_treatment_assignment("event")
+  graph_treatment_assignment("rolling")
 
 ```
 
@@ -324,13 +343,17 @@ test_treatment_data %>%
 We then create the output if a unit is treated, Y(1).
 
 ```{r}
-create_y1 <- function(dep_var, percent_effect_size = 0.5, treatment_type = "RCT", pollutant = NULL) {
+create_y1 <- function(dep_var,
+                      percent_effect_size = 0.5,
+                      quasi_exp = "random_days",
+                      pollutant = NULL) {
+  
   # y1 <- output_var*(1 + percent_effect_size/100)
-  if (str_starts(treatment_type, ("RDD|RCT|DID|ITS|event|RDIT"))) {
-    y1 <- dep_var + rpois(length(dep_var), dep_var*percent_effect_size/100) %>%
+  if (str_starts(quasi_exp, ("random|national|local|alert|rolling"))) {
+    y1 <- dep_var + rpois(length(dep_var), dep_var * percent_effect_size / 100) %>%
       suppressWarnings() #warnings when is..na(dep_var) eg rpois(1, NA)
-  } else if (treatment_type == "GAM") {
-    y1 <- dep_var + rpois(length(dep_var), pollutant*percent_effect_size/100) %>%
+  } else if (quasi_exp == "GAM") {
+    y1 <- dep_var + rpois(length(dep_var), pollutant * percent_effect_size / 100) %>%
       suppressWarnings()
   }
   return(y1)
@@ -365,11 +388,7 @@ estimate_model <- function(data, formula) {
   
   est_results %>%
     broom::tidy(conf.int = TRUE) %>%
-    filter(
-      term %in% c(
-        "treatedTRUE", 
-        "postTRUE:city_treatedTRUE", "city_treatedTRUE:postTRUE"
-      )) %>%
+    filter(term =="treatedTRUE") %>%
     rename(p_value = p.value) %>%
     mutate(estimate = estimate) %>%
     select(estimate, p_value) %>%
@@ -385,7 +404,7 @@ We then create a function running all the previous functions together and theref
 compute_simulation <- function(data,
                                n_days_study = 200,
                                p_treat = 0.5,
-                               treatment_type = "RCT",
+                               quasi_exp = "random_days",
                                percent_effect_size = 0.5,
                                formula = "deaths_all_causes ~ treated") {
   
@@ -397,8 +416,8 @@ compute_simulation <- function(data,
     filter(study_period) %>%
     select(-study_period) %>%
     mutate(
-      treated = draw_treated(., p_treat, treatment_type),
-      # true_treated = draw_treated(., p_treat, treatment_type),
+      treated = draw_treated(., p_treat, quasi_exp),
+      # true_treated = draw_treated(., p_treat, quasi_exp),
       y0 = .data[[dep_var]],
       y1 = create_y1(.data[[dep_var]], percent_effect_size),
       yobs = y1 * treated + y0 * (1 - treated)
@@ -407,8 +426,9 @@ compute_simulation <- function(data,
     filter(!is.na(treated)) #not necessary bc dropped in lm()
   # filter(!is.na(true_treated)) #not necessary bc dropped in lm()
   
-  #for DID, need a post and a city_treated variable
-  if (treatment_type == "DID") {
+  #for the local intervention, we estimate a DID 
+  #and thus need a post and a city_treated variable
+  if (quasi_exp == "local") {
     sim_data <- sim_data %>%
       group_by(city) %>%
       mutate(city_treated = as.logical(max(treated))) %>%
@@ -418,8 +438,9 @@ compute_simulation <- function(data,
       ungroup()
   }
   
-  #for ITS, need a time index and time index
-  if (treatment_type == "ITS") {
+  #for the nation intervention, we estimate an ITS 
+  #and thus need a time index and time index
+  if (str_starts(quasi_exp, "national")) {
     sim_data <- sim_data %>%
       group_by(city) %>%
       mutate(
@@ -438,9 +459,9 @@ compute_simulation <- function(data,
 
 test <- total_data %>%
   compute_simulation(
-    formula = "deaths_na_causes ~ post:city_treated",
+    formula = "deaths_na_causes ~ treated",
     n_days_study = 700,
-    treatment_type = "DID"
+    quasi_exp = "national_short"
   ) 
 ````
 
@@ -454,7 +475,7 @@ We can then run the simulations. But first, we define the set of parameters we w
 
 We create a table displaying in each row a set of parameters we want to have a simulation for, `sim_param`. We will then map our function `compute_simulation` on this table.
 
-To build `sim_param`, we first define a set of baseline values for our parameters and store them in a data frame. We will then vary the values of the parameters one after the other. We thus create vectors containing the different values of the parameters we want to test.
+To build `sim_param`, we first define a set of baseline values for our parameters and store them in a data frame, `sim_param_base`. We will then vary the values of the parameters one after the other. We thus create vectors containing the different values of the parameters we want to test.
 
 ```{r}
 sim_param_base <- tibble(
@@ -473,13 +494,12 @@ vect_formula <- c(
   "deaths_na_causes ~ treated | city + month + year + day_of_week",
   "deaths_na_causes ~ treated + temperature + I(temperature^2) | city + month + year + day_of_week"
 )
-
-vect_of_vect_param <- c("vect_n_days_study", "vect_p_treat", "vect_percent_effect_size", "vect_formula")
 ```
 
-We then want to create the actual table, varying parameters one after the other. To do so, we create a simple function `add_values_param`
+We then want to create the actual table, varying parameters one after the other. To do so, we create a simple function `add_values_param`. This function adds the values of a parameter contained in a vector. We can then map this function on all the vectors of parameters of interest.
 
 ```{r}
+#adds all values in vect_param
 add_values_param <- function(df, vect_param) {
   param_name <- str_remove(vect_param, "vect_")
   
@@ -490,6 +510,8 @@ add_values_param <- function(df, vect_param) {
     full_join(tib_param, by = param_name) %>% 
     fill(everything())
 }
+
+vect_of_vect_param <- c("vect_n_days_study", "vect_p_treat", "vect_percent_effect_size", "vect_formula")
 
 sim_param_unique <- 
   map_dfr(
@@ -502,23 +524,24 @@ sim_param_unique <-
 write_csv(sim_param_unique, "../Outputs/sim_param_unique.csv")
 ```
 
-We want to compute our simulations for this set of parameters for every design. Note that, in order to identify the effect of interest, we need to consider different types of regressions, depending on the identification strategy. 
+We want to compute our simulations for this set of parameters for every quasi experiment. Note that, in order to identify the effect of interest, we consider different types of models, depending on the identification strategy considered for each quasi experiment.
 
-Then, for each set of parameters we want to run many iterations of the simulation, `n_iter`. We thus modify `sim_param` so that each set of parameter appears `n_iter` times. It enable us to loop directly on `sim_param`.
+Then, for each set of parameters we want to run many iterations of the simulation, `n_iter`. We thus modify `sim_param` so that each set of parameter appears `n_iter` times. It will enable us to loop `compute_simulation` directly on `sim_param`.
 
 ```{r}
-vect_treatment_type <- c("RCT", "ITS", "RDD_pm10", "DID")
-n_iter = 3
+vect_quasi_exp <- c("random_days", "national", "local", "alert_pm10", "national_short", "rolling")
+n_iter <- 3
 
 sim_param <- sim_param_unique %>%
-  crossing(vect_treatment_type) %>%
-  rename(treatment_type = vect_treatment_type) %>%
+  crossing(vect_quasi_exp) %>%
+  rename(quasi_exp = vect_quasi_exp) %>%
   mutate(
     formula = case_when(
-      treatment_type == "DID" ~ str_replace_all(formula, "treated", "treated + post + city_treated"),
-      treatment_type %in% c("ITS", "RDIT") ~ str_replace_all(formula, "treated", "treated + t + t_post"),
-      str_starts(treatment_type, "RDD") ~ str_replace_all(formula, "treated", paste(
-        "treated + ", str_remove(treatment_type, "RDD_")
+      quasi_exp == "local" ~ str_replace_all(formula, "treated", "treated + post + city_treated"),
+      str_starts(quasi_exp, "national") ~ str_replace_all(
+        formula, "treated", "treated + t + t_post"),
+      str_starts(quasi_exp, "alert") ~ str_replace_all(formula, "treated", paste(
+        "treated + ", str_remove(quasi_exp, "alert_")
       )),
       TRUE ~ formula
     )
@@ -541,22 +564,22 @@ simulations <- future_pmap_dfr(
   .options = furrr_options(seed = TRUE)
 ) 
 
-all_simulations <- sim_param %>% cbind(simulations)
+all_simulations <- sim_param %>% 
+  cbind(simulations) %>% 
+  as_tibble()
 
 saveRDS(all_simulations, "../Outputs/data_simulations.RDS")
 ```
 
 ### Summarising the results
 
-We then summarize our results, computing power, type M and so on for each set of parameters.
-
-Once we have estimates and p-values for each iteration and each set of parameters, we will be able to compute the statistics of interest (power, type M error, etc) for each set of parameters. The function `summarise_simulations` does just that. Note that it takes as input a data frame produced with `compute_simulation` (or a mapped version of this function).
+We then summarize our results, computing power, type M and so on for each set of parameters using he function `summarise_simulations`. Note that this function can only take as input a data frame produced by `compute_simulation` (or a mapped version of this function).
 
 ```{r eval=FALSE}
 summarise_simulations <- function(data) {
   
   data %>% 
-    group_by(formula, treatment_type, n_days_study, p_treat, percent_effect_size) %>%
+    group_by(formula, quasi_exp, n_days_study, p_treat, percent_effect_size) %>%
     summarise(
       power = mean(p_value <= 0.05, na.rm = TRUE)*100, 
       bias = mean(abs((estimate - true_effect)/true_effect), na.rm = TRUE),
