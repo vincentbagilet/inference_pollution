@@ -286,7 +286,7 @@ test_treatment_data <- total_data %>%
     filter(study_period) %>%
     select(-study_period) %>%
     mutate(
-      treated_random_days = draw_treated(., 0.2, "random_days"),
+      treated_random_days = draw_treated(., 0.05, "random_days"),
       treated_national = draw_treated(., 0.2, "national"),
       treated_alert = draw_treated(., 0.2, "alert_pm10"),
       treated_local = draw_treated(., 0.2, "local"), 
@@ -308,7 +308,7 @@ graph_treatment_assignment <- function(data, method) {
     facet_wrap(~city, scales = "free") +
     labs(
       title = paste(
-        "Treatment assignation for a", 
+        "Treatment assignment for a", 
         str_replace_all(method, "_", " "), 
         "intervention"
       ), 
@@ -480,13 +480,13 @@ To build `sim_param`, we first define a set of baseline values for our parameter
 ```{r}
 sim_param_base <- tibble(
   n_days_study = 500,
-  p_treat = 0.5,
+  p_treat = 0.2,
   percent_effect_size = 0.5, 
   formula = "deaths_na_causes ~ treated + temperature + I(temperature^2) | city + month + year + day_of_week"
 )
 
 vect_n_days_study <- c(100, 250, 500, 750, 1000)
-vect_p_treat <- c(0.1, 0.5)
+vect_p_treat <- c(0.01, 0.2)
 vect_percent_effect_size <- c(0.1, 0.5, 1)
 vect_formula <- c(
   "deaths_na_causes ~ treated", 
@@ -529,25 +529,28 @@ We want to compute our simulations for this set of parameters for every quasi ex
 Then, for each set of parameters we want to run many iterations of the simulation, `n_iter`. We thus modify `sim_param` so that each set of parameter appears `n_iter` times. It will enable us to loop `compute_simulation` directly on `sim_param`.
 
 ```{r}
-vect_quasi_exp <- c("random_days", "national", "local", "alert_pm10", "national_short", "rolling")
-n_iter <- 3
+vect_quasi_exp <- c("random_days", "national", "local", "alert_pm10")#, "national_short", "rolling")
+n_iter <- 5
 
 sim_param <- sim_param_unique %>%
   crossing(vect_quasi_exp) %>%
   rename(quasi_exp = vect_quasi_exp) %>%
   mutate(
     formula = case_when(
-      quasi_exp == "local" ~ str_replace_all(formula, "treated", "treated + post + city_treated"),
+      quasi_exp == "local" ~ str_replace_all(formula, "treated", 
+                                             "treated + post + city_treated"),
       str_starts(quasi_exp, "national") ~ str_replace_all(
-        formula, "treated", "treated + t + t_post"),
+        formula, "treated", 
+        "treated + t + t_post"),
       str_starts(quasi_exp, "alert") ~ str_replace_all(formula, "treated", paste(
         "treated + ", str_remove(quasi_exp, "alert_")
       )),
       TRUE ~ formula
     )
   ) %>%
-  crossing(sim_id = 1:n_iter) %>%
-  select(-sim_id)
+  crossing(rep_id = 1:n_iter) %>%
+  select(-rep_id) %>% 
+  mutate(sim_id = row_number())
 
 write_csv(sim_param, "../Outputs/sim_param.csv")
 ```
@@ -557,16 +560,21 @@ write_csv(sim_param, "../Outputs/sim_param.csv")
 We can then run the simulations for each set of parameter, using a `pmap_dfr` function.
 
 ```{r eval=FALSE}
+tic()
 simulations <- future_pmap_dfr(
-  sim_param, 
+  sim_param %>% select(-sim_id), 
   compute_simulation, 
   data = total_data,
+  .id = "sim_id",
   .options = furrr_options(seed = TRUE)
 ) 
+toc()
 
-all_simulations <- sim_param %>% 
-  cbind(simulations) %>% 
-  as_tibble()
+all_simulations <- simulations %>% 
+  as_tibble() %>% 
+  mutate(sim_id = as.numeric(sim_id)) %>% 
+  left_join(sim_param, by = "sim_id") %>% 
+  select(-sim_id)
 
 saveRDS(all_simulations, "../Outputs/data_simulations.RDS")
 ```
