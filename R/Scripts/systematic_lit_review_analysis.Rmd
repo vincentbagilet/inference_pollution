@@ -391,6 +391,7 @@ To do so, we use the package `retrodesign` which computes post analysis design c
 ```{r}
 articles_retro <- articles_analysis %>% 
   mutate(
+    retro_low = as_tibble(retro_design(low_CI, se)),
     retro_0.01 = as_tibble(retro_design(effect*0.01, se)),
     retro_0.05 = as_tibble(retro_design(effect*0.05, se)),
     retro_0.1 = as_tibble(retro_design(effect*0.1, se)),
@@ -413,7 +414,8 @@ articles_retro <- articles_analysis %>%
     prop_true_effect = as.numeric(str_sub(prop_true_effect, 7, nchar(prop_true_effect))),
     prop_true_effect_phrase = str_c(prop_true_effect*100, "% of the measured effect")
   ) %>% 
-  select(-computed)
+  select(-computed) %>% 
+  filter(typeM < Inf) 
 ```
 
 ### Overal analysis
@@ -424,7 +426,7 @@ We start by computing the average and median power, type M and type S errors for
 
 ```{r}
 articles_retro %>% 
-  # filter(typeM < Inf) %>% 
+  # filter(typeM < Inf) %>%
   group_by(prop_true_effect, prop_true_effect_phrase) %>% 
   summarise(
     mean_power = mean(power, na.rm = TRUE),
@@ -436,12 +438,18 @@ articles_retro %>%
     .groups = "drop"
   ) %>% 
   arrange(prop_true_effect) %>% 
-  select(-prop_true_effect) %>% 
+  select(-prop_true_effect) %>%
+  mutate(
+    prop_true_effect_phrase = ifelse(
+      is.na(prop_true_effect_phrase), 
+      "Lower bound of the CI", 
+      prop_true_effect_phrase)
+  ) %>% 
   kable(col.names = c("", "Mean", "Median", "Mean", "Median", "Mean", "Median")) %>%
   add_header_above(c('"True" effect' = 1, "Power" = 2, "Type M" = 2, "Type S" = 2))
 ```
 
-Then, we explore graphically the distribution of power, type M and type S error across simulation and for different size of true effect.
+Then, we explore graphically the distribution of power, type M and type S error across simulation and for different magnitudes of the true effect.
 
 ```{r}
 sizes_to_display <- c(0.33, 0.5, 0.75)
@@ -498,6 +506,26 @@ articles_retro %>%
 
 We find that, even if the measured effect is the true effect, there is some risk of type M error. 
 
+Alternatively, we can also look at what would be the power, type M and type S if the true effect was equal to the lower bound of the confidence interval. 
+
+```{r}
+articles_retro %>% 
+  filter(typeM < 5) %>% 
+  filter(is.na(prop_true_effect)) %>% 
+  mutate(prop_true_effect = "low_CI") %>% 
+  pivot_longer(power:typeM, names_to = "design_stat") %>% 
+  ggplot(aes(x = value)) +
+  geom_histogram(bins = 10) +
+  facet_wrap( ~ design_stat, scales = "free") +
+  labs(
+    x = "", 
+    y = "Number of estimates",
+    title = "Distribution of design statistics in the literature", 
+    subtitle = "If the magnitude of true effect is equal to the lower bound of the CI"
+  ) 
+```
+
+
 The ECDF also provide useful information on the distribution of power, type M and type S errors across studies.
 
 ```{r}
@@ -506,11 +534,13 @@ articles_retro %>%
   ggplot(aes(x = power)) +
   stat_ecdf(geom = "line") +
   facet_wrap( ~ prop_true_effect_phrase) +
+  geom_vline(xintercept = 0.8, linetype = "dashed", size = 0.3) +
   labs(
     title = "Empirical cumulative distribution of power in the literature",
     subtitle = "If the magnitude of true effect is a fraction of the measured effect",
     x = "Power",
-    y = "Proportion of estimates"
+    y = "Proportion of estimates", 
+    caption = "The dashed line represents the usual 80% power threshold"
   )
 
 articles_retro %>%
@@ -542,6 +572,28 @@ articles_retro %>%
 ```
 
 We notice that about 50% of studies would be underpowered at the conventional 80% level if we considered that the true effect was half the measured effect.
+
+For ECDFs too we can look at what would be the power, type M and type S error if the true effect was equal to the lower bound of the confidence interval.
+
+```{r}
+articles_retro %>% 
+  filter(typeM < 5) %>%
+  filter(is.na(prop_true_effect)) %>% 
+  mutate(prop_true_effect = "low_CI") %>% 
+  pivot_longer(power:typeM, names_to = "design_stat") %>% 
+  ggplot(aes(x = value)) +
+  stat_ecdf(geom = "line") +
+  # geom_hline(yintercept = 0.5) +
+  coord_flip() +
+  facet_wrap( ~ design_stat, scales = "free") +
+  labs(
+    x = "", 
+    y = "Proportion of estimates",
+    title = "Empirical cumulative distribution of design statistics in the literature", 
+    subtitle = "If the magnitude of true effect is equal to the lower bound of the CI"
+  ) 
+```
+
 
 Then, we look how type M and type S error evolve with power for the estimates considered.
 
@@ -660,6 +712,7 @@ articles_retro %>%
   ) +
   ylim(1, 2.2)
 ```
+
 We notice that the issue is much less important when looking at the median. This suggests some heterogeneity in terms of power in the literature.
 
 To confirm that, we look into the evolution of the distribution with the proportion of effect size.
@@ -798,6 +851,7 @@ articles_low_adequate %>%
   ) +
   scale_fill_discrete(name = "")
 ```
+
 It seems that less articles with low power have been published recently, in comparison to articles with adequate power. This confirms our previous finding. We then look into the distribution of articles
 
 ```{r fig.asp=1}
@@ -885,57 +939,57 @@ articles_low_adequate %>%
 ```
 There is absolutely no difference along this dimension.
 
-Finally, we wonder whether power depends on the length of the study period. It probably depends on the number of observations but since retrieving this information is difficult. We do not know how many cities are analysed in each study.
+<!-- Finally, we wonder whether power depends on the length of the study period. It probably depends on the number of observations but since retrieving this information is difficult. We do not know how many cities are analysed in each study. -->
 
-```{r}
-library(stringi)
-#Source: https://simplemaps.com/data/world-cities 
-worldcities <- read_csv("../Inputs/worldcities.csv")
+<!-- ```{r} -->
+<!-- library(stringi) -->
+<!-- #Source: https://simplemaps.com/data/world-cities  -->
+<!-- worldcities <- read_csv("../Inputs/worldcities.csv") -->
 
-worldcities_clean <- worldcities %>% 
-  mutate(
-    city_regex = str_c("\\b", city_ascii, "\\b")
-  ) %>% 
-  filter(population > 500000)
+<!-- worldcities_clean <- worldcities %>%  -->
+<!--   mutate( -->
+<!--     city_regex = str_c("\\b", city_ascii, "\\b") -->
+<!--   ) %>%  -->
+<!--   filter(population > 500000) -->
 
-more <- abstracts_more_info %>% 
-  mutate(
-    length_study = as.numeric(str_extract(end_obs, "\\d+")) - as.numeric(str_extract(begin_obs, "\\d+")),
-    nb_cities = str_extract_all(abstract, "(?<!more\\sthan)\\d+(?=\\s?(c|C)it(y|ies))"),
-    abstract_ascii = stri_trans_general(abstract,"Latin-ASCII")
-    # abstract_ascii = str_remove_all(abstract_ascii, "-"),
-  ) %>% 
-  unnest(nb_cities, keep_empty = TRUE) %>% 
-  group_by(doi) %>% 
-  mutate(nb_cities = max(nb_cities)) %>%
-  ungroup() %>% 
-  distinct() 
-  # group_by(doi) %>% 
-  # mutate(
-  #   nb_names_cities = sum(str_detect(abstract_ascii, worldcities_clean[["city_regex"]]))
-  # ) %>% 
-  # ungroup()
+<!-- more <- abstracts_more_info %>%  -->
+<!--   mutate( -->
+<!--     length_study = as.numeric(str_extract(end_obs, "\\d+")) - as.numeric(str_extract(begin_obs, "\\d+")), -->
+<!--     nb_cities = str_extract_all(abstract, "(?<!more\\sthan)\\d+(?=\\s?(c|C)it(y|ies))"), -->
+<!--     abstract_ascii = stri_trans_general(abstract,"Latin-ASCII") -->
+<!--     # abstract_ascii = str_remove_all(abstract_ascii, "-"), -->
+<!--   ) %>%  -->
+<!--   unnest(nb_cities, keep_empty = TRUE) %>%  -->
+<!--   group_by(doi) %>%  -->
+<!--   mutate(nb_cities = max(nb_cities)) %>% -->
+<!--   ungroup() %>%  -->
+<!--   distinct()  -->
+<!--   # group_by(doi) %>%  -->
+<!--   # mutate( -->
+<!--   #   nb_names_cities = sum(str_detect(abstract_ascii, worldcities_clean[["city_regex"]])) -->
+<!--   # ) %>%  -->
+<!--   # ungroup() -->
 
-%>% 
-  filter(end_obs <= 2021) %>% 
-  filter(length_study >= 0)
+<!-- %>%  -->
+<!--   filter(end_obs <= 2021) %>%  -->
+<!--   filter(length_study >= 0) -->
 
-articles_low_adequate %>%
-  left_join(more, by = c("doi", "abstract")) %>%
-  filter(!is.na(length_study)) %>%
-  filter(length_study < 20) %>%
-  mutate(low_power = ifelse(low_power, "Low power", "Adequate power")) %>%
-  ggplot() +
-  geom_bar(aes(x = length_study, fill = low_power), position = position_fill()) +
-  # coord_flip() +
-  labs(
-    x = "Length of the study period (in years)",
-    y = "Number of articles",
-    title = "Number of articles considering a given outcome",
-    subtitle = "Comparison between articles with low and adequate power"
-  ) +
-  scale_fill_discrete(name = "")
-```
+<!-- articles_low_adequate %>% -->
+<!--   left_join(more, by = c("doi", "abstract")) %>% -->
+<!--   filter(!is.na(length_study)) %>% -->
+<!--   filter(length_study < 20) %>% -->
+<!--   mutate(low_power = ifelse(low_power, "Low power", "Adequate power")) %>% -->
+<!--   ggplot() + -->
+<!--   geom_bar(aes(x = length_study, fill = low_power), position = position_fill()) + -->
+<!--   # coord_flip() + -->
+<!--   labs( -->
+<!--     x = "Length of the study period (in years)", -->
+<!--     y = "Number of articles", -->
+<!--     title = "Number of articles considering a given outcome", -->
+<!--     subtitle = "Comparison between articles with low and adequate power" -->
+<!--   ) + -->
+<!--   scale_fill_discrete(name = "") -->
+<!-- ``` -->
 
 
 
