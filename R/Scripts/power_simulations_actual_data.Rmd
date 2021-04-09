@@ -485,6 +485,8 @@ sim_param_base <- tibble(
   formula = "deaths_na_causes ~ treated + temperature + I(temperature^2) | city + month + year + day_of_week"
 )
 
+write_csv(sim_param_base, "../Outputs/sim_param_base.csv")
+
 vect_n_days_study <- c(100, 250, 500, 750, 1000)
 vect_p_treat <- c(0.01, 0.2)
 vect_percent_effect_size <- c(0.1, 0.5, 1)
@@ -520,8 +522,6 @@ sim_param_unique <-
     df = sim_param_base
   ) %>% 
   distinct() 
-
-write_csv(sim_param_unique, "../Outputs/sim_param_unique.csv")
 ```
 
 We want to compute our simulations for this set of parameters for every quasi experiment. Note that, in order to identify the effect of interest, we consider different types of models, depending on the identification strategy considered for each quasi experiment.
@@ -529,8 +529,8 @@ We want to compute our simulations for this set of parameters for every quasi ex
 Then, for each set of parameters we want to run many iterations of the simulation, `n_iter`. We thus modify `sim_param` so that each set of parameter appears `n_iter` times. It will enable us to loop `compute_simulation` directly on `sim_param`.
 
 ```{r}
-vect_quasi_exp <- c("random_days", "national", "local", "alert_pm10")#, "national_short", "rolling")
-n_iter <- 5
+vect_quasi_exp <- c("random_days", "national", "local", "national_short", "rolling") #, "alert_pm10"
+n_iter <- 250
 
 sim_param <- sim_param_unique %>%
   crossing(vect_quasi_exp) %>%
@@ -552,7 +552,7 @@ sim_param <- sim_param_unique %>%
   select(-rep_id) %>% 
   mutate(sim_id = row_number())
 
-write_csv(sim_param, "../Outputs/sim_param.csv")
+# write_csv(sim_param, "../Outputs/sim_param.csv")
 ```
 
 ### Running the simulation
@@ -576,7 +576,7 @@ all_simulations <- simulations %>%
   left_join(sim_param, by = "sim_id") %>% 
   select(-sim_id)
 
-saveRDS(all_simulations, "../Outputs/data_simulations.RDS")
+# saveRDS(all_simulations, "../Outputs/data_simulations.RDS")
 ```
 
 ### Summarising the results
@@ -613,6 +613,51 @@ saveRDS(summary_simulations, "../Outputs/summary_simulations.RDS")
 
 
 
+# Heatmap
 
+```{r}
+n_iter <- 3
 
+vect_n_days_study <- seq(500, 1000, 100)
+vect_percent_effect_size <- seq(0.5, 1.5, 0.1)
+
+sim_param_heatmap <- sim_param_base %>% 
+  select(-n_days_study, -percent_effect_size) %>% 
+  crossing(vect_n_days_study, vect_percent_effect_size) %>%
+  rename_with( ~ str_remove(., "vect_")) %>%
+  crossing(rep_id = 1:n_iter) %>%
+  select(-rep_id) %>% 
+  mutate(sim_id = row_number())
+
+tic()
+simulations <- future_pmap_dfr(
+  sim_param_heatmap %>% select(-sim_id), 
+  compute_simulation, 
+  data = total_data,
+  .id = "sim_id",
+  .options = furrr_options(seed = TRUE)
+) 
+toc()
+
+all_simulations_heatmap <- simulations %>% 
+  as_tibble() %>% 
+  mutate(sim_id = as.numeric(sim_id)) %>% 
+  left_join(sim_param_heatmap, by = "sim_id") %>% 
+  select(-sim_id) %>% 
+  mutate(quasi_exp = "random_days")
+
+# saveRDS(all_simulations_heatmap, "../Outputs/data_simulations_heatmap.RDS")
+all_simulations_heatmap <- readRDS("../Outputs/data_simulations_heatmap.RDS")
+
+summary_simulations_heatmap <- summarise_simulations(all_simulations_heatmap)
+
+summary_simulations_heatmap %>% 
+  filter(percent_effect_size > 0.4 & n_days_study > 400) %>%
+  ggplot(aes(x = n_days_study, y = percent_effect_size)) + 
+  geom_raster(aes(fill = type_m)) + # , interpolate = TRUE) +
+  # geom_contour(aes(z = type_m)) +
+  coord_fixed(ratio = 1000) +
+  scale_fill_continuous(limits = c(1, NA))
+
+```
 

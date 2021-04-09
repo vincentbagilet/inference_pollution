@@ -1,0 +1,120 @@
+---
+title: "Analysis of power simulations: actual data"
+author:
+  - name: Vincent Bagilet 
+    url: https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet
+    affiliation: Columbia University
+    affiliation_url: https://www.columbia.edu/
+  - name: Léo Zabrocki 
+    url: https://www.parisschoolofeconomics.eu/en/
+    affiliation: Paris School of Economics
+    affiliation_url: https://www.parisschoolofeconomics.eu/en/
+date: "`r Sys.Date()`"
+output: distill::distill_article
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+```{r setup, include=FALSE, results='hide', warning=FALSE}
+library(knitr)
+opts_chunk$set(fig.path = "images/",
+               cache.path = "cache/",
+               cache = FALSE,
+               echo = TRUE, #set to false to hide code
+               message = FALSE,
+               warning = FALSE,
+               out.width = "85%",
+               dpi = 200,
+               fig.align = "center")  
+```  
+
+# Purpose of the document
+
+In this document, we analyze the results of our simulations.
+
+# Loads
+
+First, we load the results of our simulations and useful packages.
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+library(tidyverse) 
+library(readr)
+library(mediocrethemes)
+
+set_mediocre_all()
+
+summary_simulations <- readRDS("../Outputs/summary_simulations.RDS")
+sim_param_base <- read_csv("../Outputs/sim_param_base.csv")
+```
+
+# Quick analysis
+
+First, we graph of the evolution of type M, type S and power for each quasi-experiment as a function of different parameters, holding other parameters constant. This function takes as input a "summary_simulations" type of data frame.
+
+```{r}
+graph_evol_by_exp <- function(df, var_param = "n_days_study", stat = "power") {
+  
+  var_param_name <- str_replace_all(var_param, "_", " ")
+  stat_name <- str_replace_all(stat, "_", " ")
+  
+  #considering baseline values
+  df_filtered <- df %>% 
+    filter(str_detect(formula, "temperature")) #to only consider the model with all covariates
+  
+  if (var_param != "p_treat") {
+    df_filtered <- df_filtered %>% 
+      filter(p_treat == sim_param_base[["p_treat"]])
+  } 
+  if (var_param != "n_days_study") {
+    df_filtered <- df_filtered %>% 
+      filter(n_days_study == sim_param_base[["n_days_study"]])
+  } 
+  if (var_param != "percent_effect_size") {
+    df_filtered <- df_filtered %>% 
+      filter(percent_effect_size == sim_param_base[["percent_effect_size"]])
+  }
+  
+  #graph itself
+  graph <- df_filtered %>% 
+    mutate(
+      quasi_exp = str_to_sentence(str_replace_all(quasi_exp, "_", " "))
+    ) %>% 
+    ggplot(aes(x = .data[[var_param]], y = .data[[stat]])) + #, color = .data[[quasi_exp]] + 
+    geom_point() +
+    geom_line(linetype = "dashed", size = 0.1) +
+    facet_wrap(~ quasi_exp) +
+    ylim(c(0, ifelse(stat == "power", 100, NA))) +
+    labs(
+      title = paste(
+        str_to_title(stat_name), ifelse(stat == "power", "increases", "decreases"),
+        "with", var_param_name
+      ),
+      subtitle = "Comparison across quasi-experiments",
+      x = var_param_name,
+      y = str_to_title(stat_name)
+    ) 
+    # theme(legend.position = "none")
+  
+  return(graph)
+} 
+
+# graph_evol_by_exp(summary_simulations)
+```
+
+We then plot all the graphs. To do so, we create a tibble containing every  parameter and statistics we want to plot and map our function on this tibble.
+
+```{r}
+param_by_exp <- crossing(
+  var_param =  c("n_days_study", "percent_effect_size", "p_treat"),
+  stat = c("power", "type_m", "type_s")
+)
+
+pmap(param_by_exp, graph_evol_by_exp, df = summary_simulations)
+```
+
+
+
+
