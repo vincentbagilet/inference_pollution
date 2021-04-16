@@ -68,7 +68,7 @@ graph_evol_by_exp <- function(df, var_param = "n_days_study", stat = "power") {
     df_filtered <- df_filtered %>% 
       filter(p_treat == sim_param_base[["p_treat"]])
   } 
-  if (var_param != "n_days_study") {
+  if (!(var_param %in% c("n_days_study", "average_n_obs"))) {
     df_filtered <- df_filtered %>% 
       filter(n_days_study == sim_param_base[["n_days_study"]])
   } 
@@ -107,14 +107,53 @@ graph_evol_by_exp <- function(df, var_param = "n_days_study", stat = "power") {
 We then plot all the graphs. To do so, we create a tibble containing every  parameter and statistics we want to plot and map our function on this tibble.
 
 ```{r}
-param_by_exp <- crossing(
-  var_param =  c("n_days_study", "percent_effect_size", "p_treat"),
-  stat = c("power", "type_m", "type_s")
-)
+stat <- c("power", "type_m", "type_s")
+var_param <-  c("n_days_study", "average_n_obs", "percent_effect_size", "p_treat")
+
+param_by_exp <- crossing(stat, var_param)
 
 pmap(param_by_exp, graph_evol_by_exp, df = summary_simulations)
 ```
 
+We can also plot the graphs for each parameter separately, for a better readability.
 
+## Length study
 
+```{r}
+map(
+  stat, 
+  graph_evol_by_exp, 
+  df = summary_simulations, 
+  var_param = "n_days_study"
+)
+
+map(
+  stat, 
+  graph_evol_by_exp, 
+  df = summary_simulations, 
+  var_param = "average_n_obs"
+)
+```
+
+## Effect size
+
+```{r}
+map(
+  stat, 
+  graph_evol_by_exp, 
+  df = summary_simulations, 
+  var_param = "percent_effect_size"
+)
+```
+
+## Proportion of treated days
+
+```{r}
+map(
+  stat, 
+  graph_evol_by_exp, 
+  df = summary_simulations, 
+  var_param = "p_treat"
+)
+```
 
