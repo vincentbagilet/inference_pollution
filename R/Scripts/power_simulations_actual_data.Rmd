@@ -280,7 +280,7 @@ draw_treated <- function(data, p_treat = 0.5, quasi_exp = "random_day") {
 
 Both to verify that everything works well and for illustration, we can make quick plots:
 
-```{r include=FALSE}
+```{r eval=FALSE, include=FALSE}
 test_treatment_data <- total_data %>% 
   mutate(study_period = draw_study_period(date, 500)) %>% 
     filter(study_period) %>%
@@ -345,13 +345,13 @@ We then create the output if a unit is treated, Y(1).
 ```{r}
 create_y1 <- function(dep_var,
                       percent_effect_size = 0.5,
-                      quasi_exp = "random_days",
-                      pollutant = NULL) {
+                      quasi_exp = "random_days") {
   
   # y1 <- output_var*(1 + percent_effect_size/100)
   if (str_starts(quasi_exp, ("random|national|local|alert|rolling"))) {
-    y1 <- dep_var + rpois(length(dep_var), dep_var * percent_effect_size / 100) %>%
-      suppressWarnings() #warnings when is..na(dep_var) eg rpois(1, NA)
+    y1 <- dep_var + 
+      rpois(length(dep_var), mean(dep_var, na.rm = TRUE) * percent_effect_size / 100) %>%
+      suppressWarnings() #warnings when is.na(dep_var) eg rpois(1, NA)
   } else if (quasi_exp == "GAM") {
     y1 <- dep_var + rpois(length(dep_var), pollutant * percent_effect_size / 100) %>%
       suppressWarnings()
@@ -389,11 +389,12 @@ estimate_model <- function(data, formula) {
   est_results %>%
     broom::tidy(conf.int = TRUE) %>%
     filter(term =="treatedTRUE") %>%
-    rename(p_value = p.value) %>%
-    mutate(estimate = estimate) %>%
-    select(estimate, p_value) %>%
+    rename(p_value = p.value, se = std.error) %>%
+    select(estimate, p_value, se) %>%
     mutate(n_obs = nobs)
 } 
+
+# estimate_model(total_data, "deaths_na_causes ~ temperature")
 ```
 
 ### Computing simulations
@@ -415,11 +416,11 @@ compute_simulation <- function(data,
     mutate(study_period = draw_study_period(date, n_days_study)) %>%
     filter(study_period) %>%
     select(-study_period) %>%
+    rename(y0 = .data[[dep_var]]) %>% 
     mutate(
       treated = draw_treated(., p_treat, quasi_exp),
       # true_treated = draw_treated(., p_treat, quasi_exp),
-      y0 = .data[[dep_var]],
-      y1 = create_y1(.data[[dep_var]], percent_effect_size),
+      y1 = create_y1(y0, percent_effect_size),
       yobs = y1 * treated + y0 * (1 - treated)
       # yobs = y1*true_treated + y0*(1 - true_treated)
     ) %>%
@@ -436,23 +437,34 @@ compute_simulation <- function(data,
       group_by(date) %>%
       mutate(post = as.logical(max(treated))) %>%
       ungroup()
-  }
-  
+    
+    true_effect <- sim_data %>% 
+      filter(post, city_treated) %>% 
+      summarise(mean(y1 - y0, na.rm = TRUE)) %>% 
+      as.numeric()
+  } else if (str_starts(quasi_exp, "national")) {
   #for the nation intervention, we estimate an ITS 
   #and thus need a time index and time index
-  if (str_starts(quasi_exp, "national")) {
     sim_data <- sim_data %>%
-      group_by(city) %>%
       mutate(
-        t = as.numeric(date) - min(as.numeric(date)),
-        t_post = max(0, as.numeric(date) - as.numeric(min(.data$date[treated == TRUE])))
-      ) %>%
-      ungroup()
+        date_num = as.numeric(date),
+        t = date_num - min(date_num),
+        t_post = date_num - as.numeric(min(.data$date[treated == TRUE])),
+        t_post = ifelse(t_post < 0, 0, t_post)
+      )
+    
+    true_effect <- sim_data %>% 
+      filter(t_post > 0) %>% 
+      summarise(mean(y1 - y0, na.rm = TRUE)) %>% 
+      as.numeric()
+  } else {
+    true_effect <- mean(sim_data$y1 - sim_data$y0, na.rm = TRUE)
   }
   
   sim_output <- sim_data %>%
     estimate_model(formula = update(fml, yobs ~ .)) %>%
-    mutate(true_effect = mean(sim_data$y1 - sim_data$y0, na.rm = TRUE))
+    mutate(true_effect = true_effect)
+        
   
   return(sim_output)
 }
@@ -460,8 +472,8 @@ compute_simulation <- function(data,
 test <- total_data %>%
   compute_simulation(
     formula = "deaths_na_causes ~ treated",
-    n_days_study = 700,
-    quasi_exp = "national_short"
+    n_days_study = 400,
+    quasi_exp = "local"
   ) 
 ````
 
@@ -530,7 +542,7 @@ Then, for each set of parameters we want to run many iterations of the simulatio
 
 ```{r}
 vect_quasi_exp <- c("random_days", "national", "local", "national_short", "rolling") #, "alert_pm10"
-n_iter <- 250
+n_iter <- 100
 
 sim_param <- sim_param_unique %>%
   crossing(vect_quasi_exp) %>%
@@ -550,6 +562,7 @@ sim_param <- sim_param_unique %>%
   ) %>%
   crossing(rep_id = 1:n_iter) %>%
   select(-rep_id) %>% 
+  # filter(n_days_study == 1000) %>% 
   mutate(sim_id = row_number())
 
 # write_csv(sim_param, "../Outputs/sim_param.csv")
@@ -591,13 +604,14 @@ summarise_simulations <- function(data) {
     summarise(
       power = mean(p_value <= 0.05, na.rm = TRUE)*100, 
       bias = mean(abs((estimate - true_effect)/true_effect), na.rm = TRUE),
-      average_p_value = mean(p_value, na.rm = TRUE),
+      # average_p_value = mean(p_value, na.rm = TRUE),
       average_n_obs = mean(n_obs, na.rm = TRUE),
-      type_m = mean(ifelse(p_value < 0.05, abs(estimate)/true_effect, NA), na.rm = TRUE),
-      type_s = sum(ifelse(p_value < 0.05, sign(estimate) != sign(true_effect), NA), na.rm = TRUE)/n()*100,
+      type_m = mean(ifelse(p_value <= 0.05, abs(estimate)/true_effect, NA), na.rm = TRUE),
+      type_s = sum(ifelse(p_value <= 0.05, sign(estimate) != sign(true_effect), NA), na.rm = TRUE)/n()*100,
+      test_bias = mean(estimate/true_effect),
       .groups	= "drop"
     ) %>% 
-    ungroup()
+    ungroup() 
 } 
 ```
 
@@ -606,58 +620,58 @@ We then run this function.
 ```{r eval=FALSE}
 summary_simulations <- summarise_simulations(all_simulations)
 
-saveRDS(summary_simulations, "../Outputs/summary_simulations.RDS")
+# saveRDS(summary_simulations, "../Outputs/summary_simulations.RDS")
 ```
 
 
 
 
 
-# Heatmap
+<!-- # Heatmap -->
 
-```{r}
-n_iter <- 3
+<!-- ```{r} -->
+<!-- n_iter <- 3 -->
 
-vect_n_days_study <- seq(500, 1000, 100)
-vect_percent_effect_size <- seq(0.5, 1.5, 0.1)
+<!-- vect_n_days_study <- seq(500, 1000, 100) -->
+<!-- vect_percent_effect_size <- seq(0.5, 1.5, 0.1) -->
 
-sim_param_heatmap <- sim_param_base %>% 
-  select(-n_days_study, -percent_effect_size) %>% 
-  crossing(vect_n_days_study, vect_percent_effect_size) %>%
-  rename_with( ~ str_remove(., "vect_")) %>%
-  crossing(rep_id = 1:n_iter) %>%
-  select(-rep_id) %>% 
-  mutate(sim_id = row_number())
+<!-- sim_param_heatmap <- sim_param_base %>%  -->
+<!--   select(-n_days_study, -percent_effect_size) %>%  -->
+<!--   crossing(vect_n_days_study, vect_percent_effect_size) %>% -->
+<!--   rename_with( ~ str_remove(., "vect_")) %>% -->
+<!--   crossing(rep_id = 1:n_iter) %>% -->
+<!--   select(-rep_id) %>%  -->
+<!--   mutate(sim_id = row_number()) -->
 
-tic()
-simulations <- future_pmap_dfr(
-  sim_param_heatmap %>% select(-sim_id), 
-  compute_simulation, 
-  data = total_data,
-  .id = "sim_id",
-  .options = furrr_options(seed = TRUE)
-) 
-toc()
+<!-- tic() -->
+<!-- simulations <- future_pmap_dfr( -->
+<!--   sim_param_heatmap %>% select(-sim_id),  -->
+<!--   compute_simulation,  -->
+<!--   data = total_data, -->
+<!--   .id = "sim_id", -->
+<!--   .options = furrr_options(seed = TRUE) -->
+<!-- )  -->
+<!-- toc() -->
 
-all_simulations_heatmap <- simulations %>% 
-  as_tibble() %>% 
-  mutate(sim_id = as.numeric(sim_id)) %>% 
-  left_join(sim_param_heatmap, by = "sim_id") %>% 
-  select(-sim_id) %>% 
-  mutate(quasi_exp = "random_days")
+<!-- all_simulations_heatmap <- simulations %>%  -->
+<!--   as_tibble() %>%  -->
+<!--   mutate(sim_id = as.numeric(sim_id)) %>%  -->
+<!--   left_join(sim_param_heatmap, by = "sim_id") %>%  -->
+<!--   select(-sim_id) %>%  -->
+<!--   mutate(quasi_exp = "random_days") -->
 
-# saveRDS(all_simulations_heatmap, "../Outputs/data_simulations_heatmap.RDS")
-all_simulations_heatmap <- readRDS("../Outputs/data_simulations_heatmap.RDS")
+<!-- # saveRDS(all_simulations_heatmap, "../Outputs/data_simulations_heatmap.RDS") -->
+<!-- all_simulations_heatmap <- readRDS("../Outputs/data_simulations_heatmap.RDS") -->
 
-summary_simulations_heatmap <- summarise_simulations(all_simulations_heatmap)
+<!-- summary_simulations_heatmap <- summarise_simulations(all_simulations_heatmap) -->
 
-summary_simulations_heatmap %>% 
-  filter(percent_effect_size > 0.4 & n_days_study > 400) %>%
-  ggplot(aes(x = n_days_study, y = percent_effect_size)) + 
-  geom_raster(aes(fill = type_m)) + # , interpolate = TRUE) +
-  # geom_contour(aes(z = type_m)) +
-  coord_fixed(ratio = 1000) +
-  scale_fill_continuous(limits = c(1, NA))
+<!-- summary_simulations_heatmap %>%  -->
+<!--   filter(percent_effect_size > 0.4 & n_days_study > 400) %>% -->
+<!--   ggplot(aes(x = n_days_study, y = percent_effect_size)) +  -->
+<!--   geom_raster(aes(fill = type_m)) + # , interpolate = TRUE) + -->
+<!--   # geom_contour(aes(z = type_m)) + -->
+<!--   coord_fixed(ratio = 1000) + -->
+<!--   scale_fill_continuous(limits = c(1, NA)) -->
 
-```
+<!-- ``` -->
 
