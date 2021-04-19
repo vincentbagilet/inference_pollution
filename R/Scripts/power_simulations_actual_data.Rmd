@@ -522,7 +522,7 @@ add_values_param <- function(df, vect_param) {
   
   df %>% 
     full_join(tib_param, by = param_name) %>% 
-    fill(everything())
+    fill(everything(), .direction = "downup")
 }
 
 vect_of_vect_param <- c("vect_n_days_study", "vect_p_treat", "vect_percent_effect_size", "vect_formula")
@@ -533,7 +533,7 @@ sim_param_unique <-
     add_values_param, 
     df = sim_param_base
   ) %>% 
-  distinct() 
+  distinct() #bc base parameters appear twice
 ```
 
 We want to compute our simulations for this set of parameters for every quasi experiment. Note that, in order to identify the effect of interest, we consider different types of models, depending on the identification strategy considered for each quasi experiment.
@@ -541,12 +541,13 @@ We want to compute our simulations for this set of parameters for every quasi ex
 Then, for each set of parameters we want to run many iterations of the simulation, `n_iter`. We thus modify `sim_param` so that each set of parameter appears `n_iter` times. It will enable us to loop `compute_simulation` directly on `sim_param`.
 
 ```{r}
-vect_quasi_exp <- c("random_days", "national", "local", "national_short", "rolling") #, "alert_pm10"
-n_iter <- 100
+vect_quasi_exp <- c("random_days", "national", "local")#, "national_short", "rolling") #, "alert_pm10"
+n_iter <- 25
 
 sim_param <- sim_param_unique %>%
   crossing(vect_quasi_exp) %>%
   rename(quasi_exp = vect_quasi_exp) %>%
+  # mutate(p_treat = ifelse(str_starts(quasi_exp "alert"), p_treat/10, p_treat) %>% 
   mutate(
     formula = case_when(
       quasi_exp == "local" ~ str_replace_all(formula, "treated", 
@@ -555,7 +556,7 @@ sim_param <- sim_param_unique %>%
         formula, "treated", 
         "treated + t + t_post"),
       str_starts(quasi_exp, "alert") ~ str_replace_all(formula, "treated", paste(
-        "treated + ", str_remove(quasi_exp, "alert_")
+        "treated +", str_remove(quasi_exp, "alert_")
       )),
       TRUE ~ formula
     )
@@ -563,7 +564,7 @@ sim_param <- sim_param_unique %>%
   crossing(rep_id = 1:n_iter) %>%
   select(-rep_id) %>% 
   # filter(n_days_study == 1000) %>% 
-  mutate(sim_id = row_number())
+  mutate(sim_id = row_number()) #for merging with compute_simulation() results
 
 # write_csv(sim_param, "../Outputs/sim_param.csv")
 ```
@@ -603,12 +604,13 @@ summarise_simulations <- function(data) {
     group_by(formula, quasi_exp, n_days_study, p_treat, percent_effect_size) %>%
     summarise(
       power = mean(p_value <= 0.05, na.rm = TRUE)*100, 
-      bias = mean(abs((estimate - true_effect)/true_effect), na.rm = TRUE),
       # average_p_value = mean(p_value, na.rm = TRUE),
       average_n_obs = mean(n_obs, na.rm = TRUE),
-      type_m = mean(ifelse(p_value <= 0.05, abs(estimate)/true_effect, NA), na.rm = TRUE),
+      type_m = mean(ifelse(p_value <= 0.05, abs(estimate/true_effect), NA), na.rm = TRUE),
       type_s = sum(ifelse(p_value <= 0.05, sign(estimate) != sign(true_effect), NA), na.rm = TRUE)/n()*100,
-      test_bias = mean(estimate/true_effect),
+      mse = mean((estimate - true_effect)^2, na.rm = TRUE),
+      normalized_bias = mean(abs((estimate - true_effect/true_effect)), na.rm = TRUE),
+      estimate_true_ratio = mean(abs(estimate/true_effect), na.rm = TRUE),
       .groups	= "drop"
     ) %>% 
     ungroup() 
