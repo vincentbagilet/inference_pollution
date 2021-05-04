@@ -43,7 +43,7 @@ This document focuses on running the simulations. The results are analyzed and d
 
 We use data from 18 cities in France over the 2013-2018 period. The data set contains records of hospital admissions and deaths, mean concentration data for various air pollutants, a bunch of weather variables and calendar control variables (such as school holidays for instance). All variables are at the daily and city level. There is therefore a unique observation per date and per city in the data set.
 
-## Background on selected quasi experiments
+## Background on selected quasi-experiments
 
 Note that, for now we focus on quasi experiments for which treatment is binary and homogeneous, both in time and across individuals. It is also not correlated with covariates (apart in the case of the air pollution alerts in which it is correlated with the pollutant level).
 
@@ -190,10 +190,14 @@ First, we create a function to randomly draw a study period of a given length. F
 This function randomly selects a starting date for the study, early enough so that the study can actually last the number of days chosen, and returns a boolean vector indicating whether each date is in the study or not.
 
 ```{r}
-draw_study_period <- function(dates, n_days_study = 200) {
+draw_study_period <- function(data, n_days_study = 200) {
+  dates <- data[["date"]]
   begin_study <- sample(seq.Date(min(dates), max(dates) - n_days_study, "day"), 1)
   
-  dplyr::between(dates, begin_study, begin_study + n_days_study)
+  data[["study_period"]] <-
+    dplyr::between(dates, begin_study, begin_study + n_days_study)
+  
+  return(data)
 }
 ```
 
@@ -215,23 +219,23 @@ In this function, we made some simulations decisions:
 draw_treated <- function(data, p_treat = 0.5, quasi_exp = "random_day") {
   
   if (quasi_exp == "random_days") {
-    treated <- rbernoulli(length(data[["date"]]), p_treat)
+    data[["treated"]] <- rbernoulli(length(data[["date"]]), p_treat)
   } else if (quasi_exp == "national") {
     num_date <- as.numeric(data[["date"]])
-    treated <- (num_date >= quantile(num_date, 1 - p_treat))
+    data[["treated"]] <- (num_date >= quantile(num_date, 1 - p_treat))
   } else if (quasi_exp %in% c("GAM", "IV")) {
     # treated <- TRUE
     treated <- rbernoulli(length(data[["date"]]), p_treat)
-    treated <- ifelse(treated, treated, NA) 
+    data[["treated"]] <- ifelse(treated, treated, NA) 
   } else if (quasi_exp == "local") {
     treated_cities <- unique(data[["city"]]) %>%
       sample(size = round(length(.) * min(p_treat * 2, 1)))
-    treated <- (data[["city"]] %in% treated_cities &
+    data[["treated"]] <- (data[["city"]] %in% treated_cities &
                   data[["date"]] >= median(data[["date"]]))
   } else if (str_starts(quasi_exp, "alert")) {
     pollutant <- str_extract(quasi_exp, "(?<=_).+")
     threshold_pos <- rbeta(1, 20, 2) 
-    treated <- data %>%
+    data <- data %>%
       group_by(.data$city) %>%
       mutate(
         threshold = quantile(.data[[pollutant]], threshold_pos, names = FALSE),
@@ -245,10 +249,10 @@ draw_treated <- function(data, p_treat = 0.5, quasi_exp = "random_day") {
           threshold > as.numeric(str_extract(bw, "([:digit:]|\\.|-)+(?=,)")) &
             threshold < as.numeric(str_extract(bw, "(?<=,)([:digit:]|\\.)+")), treated, NA)
       ) %>%
-      ungroup() %>%
-      .$treated
+      select(-bw, -threshold) %>% 
+      ungroup()
   } else if (quasi_exp == "rolling") {
-    treated <- data %>%
+    data <- data %>%
       group_by(.data$city) %>%
       mutate(
         treated = (.data$date > sample(
@@ -257,22 +261,28 @@ draw_treated <- function(data, p_treat = 0.5, quasi_exp = "random_day") {
             max(.data$date), "day"
           ), 1))
       ) %>%
-      ungroup() %>%
-      .$treated
+      ungroup() 
   } else if (quasi_exp == "national_short") {
     dates <- unique(data[["date"]])
     bw <- floor(min(p_treat, 0.5) * length(dates))
   
     date_start_treat <- sample(seq.Date(min(dates) + bw, max(dates) - bw, "day"), 1)
     
-    treated <- (data[["date"]] >= date_start_treat)
-    treated <- ifelse(
-      data[["date"]] > date_start_treat + bw | data[["date"]] < date_start_treat - bw,
-      NA, treated
-    )
+    # treated <- (data[["date"]] >= date_start_treat)
+    # data[["treated"]] <- ifelse(
+    #   data[["date"]] > date_start_treat + bw | data[["date"]] < date_start_treat - bw,
+    #   NA, treated
+    # )
+    data <- data %>%
+      mutate(
+        treated = ifelse(
+          .data[["date"]] > date_start_treat + bw |
+            .data[["date"]] < date_start_treat - bw,
+                         NA, (.data[["date"]] >= date_start_treat))
+      )
   }
   
-  return(treated)
+  return(data)
   # data <- data %>% mutate(treated = treated)
   # return(data)
 }
@@ -281,19 +291,26 @@ draw_treated <- function(data, p_treat = 0.5, quasi_exp = "random_day") {
 Both to verify that everything works well and for illustration, we can make quick plots:
 
 ```{r eval=FALSE, include=FALSE}
+draw_treated_exp <- function(data, p_treat, quasi_exp) {
+  data <- draw_treated(data, p_treat, quasi_exp)
+  
+  data[[paste("treated", quasi_exp, sep = "_")]] <- data[["treated"]]
+  
+  return(data)
+}
+
 test_treatment_data <- total_data %>% 
-  mutate(study_period = draw_study_period(date, 500)) %>% 
-    filter(study_period) %>%
-    select(-study_period) %>%
-    mutate(
-      treated_random_days = draw_treated(., 0.05, "random_days"),
-      treated_national = draw_treated(., 0.2, "national"),
-      treated_alert = draw_treated(., 0.2, "alert_pm10"),
-      treated_local = draw_treated(., 0.2, "local"), 
-      treated_national_short = draw_treated(., 0.8, "national_short"), 
-      treated_rolling = draw_treated(., 0.2, "rolling"), 
-      city = str_to_title(city)
-    ) 
+  draw_study_period(500) %>% 
+  filter(study_period) %>%
+  select(-study_period) %>%
+  draw_treated_exp(0.05, "random_days") %>% 
+  draw_treated_exp(0.2, "national") %>% 
+  draw_treated_exp(0.2, "local") %>% 
+  draw_treated_exp(0.08, "national_short") %>% 
+  draw_treated_exp(0.2, "rolling") %>% 
+  draw_treated(0.2, "alert_pm10") %>% 
+  rename(treated_alert = treated) %>% 
+  mutate(city = str_to_title(city)) 
 
 graph_treatment_assignment <- function(data, method) {
   data[["alert"]] <- (method == "alert")
@@ -343,20 +360,20 @@ test_treatment_data %>%
 We then create the output if a unit is treated, Y(1).
 
 ```{r}
-create_y1 <- function(dep_var,
+create_y1 <- function(data,
                       percent_effect_size = 0.5,
                       quasi_exp = "random_days") {
   
   # y1 <- output_var*(1 + percent_effect_size/100)
   if (str_starts(quasi_exp, ("random|national|local|alert|rolling"))) {
-    y1 <- dep_var + 
-      rpois(length(dep_var), mean(dep_var, na.rm = TRUE) * percent_effect_size / 100) %>%
+    data[["y1"]] <- data[["y0"]] + 
+      rpois(length(data[["y0"]]), mean(data[["y0"]], na.rm = TRUE) * percent_effect_size / 100) %>%
       suppressWarnings() #warnings when is.na(dep_var) eg rpois(1, NA)
   } else if (quasi_exp == "GAM") {
     y1 <- dep_var + rpois(length(dep_var), pollutant * percent_effect_size / 100) %>%
       suppressWarnings()
   }
-  return(y1)
+  return(data)
 } 
 ```
 
@@ -383,7 +400,7 @@ estimate_model <- function(data, formula) {
       se = se
     ) 
   
-  #retrieve the usefull info
+  #retrieve the useful info
   nobs <- length(est_results$residuals)
   
   est_results %>%
@@ -413,14 +430,13 @@ compute_simulation <- function(data,
   dep_var <- paste(fml[[2]])
   
   sim_data <- data %>%
-    mutate(study_period = draw_study_period(date, n_days_study)) %>%
+    draw_study_period(n_days_study) %>%
     filter(study_period) %>%
     select(-study_period) %>%
-    rename(y0 = .data[[dep_var]]) %>% 
+    rename(y0 = .data[[dep_var]]) %>%
+    draw_treated(p_treat, quasi_exp) %>% 
+    create_y1(percent_effect_size, quasi_exp) %>% 
     mutate(
-      treated = draw_treated(., p_treat, quasi_exp),
-      # true_treated = draw_treated(., p_treat, quasi_exp),
-      y1 = create_y1(y0, percent_effect_size),
       yobs = y1 * treated + y0 * (1 - treated)
       # yobs = y1*true_treated + y0*(1 - true_treated)
     ) %>%
