@@ -364,14 +364,12 @@ create_y1 <- function(data,
                       percent_effect_size = 0.5,
                       quasi_exp = "random_days") {
   
-  # y1 <- output_var*(1 + percent_effect_size/100)
   if (str_starts(quasi_exp, ("random|national|local|alert|rolling"))) {
     data[["y1"]] <- data[["y0"]] + 
       rpois(length(data[["y0"]]), mean(data[["y0"]], na.rm = TRUE) * percent_effect_size / 100) %>%
       suppressWarnings() #warnings when is.na(dep_var) eg rpois(1, NA)
-  } else if (quasi_exp == "GAM") {
-    y1 <- dep_var + rpois(length(dep_var), pollutant * percent_effect_size / 100) %>%
-      suppressWarnings()
+  } else if (quasi_exp == "all") {
+    data[["y1"]] <- data[["y0"]]*exp(percent_effect_size*data[["pm_10"]])
   }
   return(data)
 } 
@@ -558,7 +556,7 @@ Then, for each set of parameters we want to run many iterations of the simulatio
 
 ```{r}
 vect_quasi_exp <- c("random_days", "national", "local")#, "national_short", "rolling") #, "alert_pm10"
-n_iter <- 25
+n_iter <- 5
 
 sim_param <- sim_param_unique %>%
   crossing(vect_quasi_exp) %>%
