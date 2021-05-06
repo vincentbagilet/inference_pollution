@@ -357,22 +357,36 @@ test_treatment_data %>%
 
 ### Creating the output if a unit is treated
 
-We then create the output if a unit is treated, Y(1).
+We then create the output if a unit is treated, Y(1). We use different methods to generate fake health data: 
+
+- For binary treatments, we draw 
+- For the OLS, we build a generative model that creates fake data based on the formula given.
 
 ```{r}
 create_y1 <- function(data,
                       percent_effect_size = 0.5,
-                      quasi_exp = "random_days") {
+                      quasi_exp = "random_days",
+                      formula) {
   
   if (str_starts(quasi_exp, ("random|national|local|alert|rolling"))) {
     data[["y1"]] <- data[["y0"]] + 
       rpois(length(data[["y0"]]), mean(data[["y0"]], na.rm = TRUE) * percent_effect_size / 100) %>%
       suppressWarnings() #warnings when is.na(dep_var) eg rpois(1, NA)
-  } else if (quasi_exp == "all") {
-    data[["y1"]] <- data[["y0"]]*exp(percent_effect_size*data[["pm_10"]])
+  } else if (str_starts(quasi_exp, "OLS")) {
+    pollutant <- str_extract(quasi_exp, "(?<=_).+")
+    fml <- Formula::as.Formula(formula)
+    actual_fml <- formula(fml, rhs = -3)
+    
+    reg <- feols(data = data, fml = actual_fml) 
+    reg$coefficients[[pollutant]] <- percent_effect_size/100
+    res <- reg$residuals
+    data[["y1"]] <- round(exp(predict(reg, data) + 
+                   rnorm(res, mean(res), sd = sd(res))))
   }
   return(data)
 } 
+
+# create_y1(total_data, quasi_exp = "OLS_pm10", formula = "log(deaths_all_causes) ~ pm10 + temperature | city + day_of_week + month^year") %>% select(deaths_all_causes, y1)
 ```
 
 ### Estimate the model
@@ -403,7 +417,7 @@ estimate_model <- function(data, formula) {
   
   est_results %>%
     broom::tidy(conf.int = TRUE) %>%
-    filter(term =="treatedTRUE") %>%
+    filter(term == "treatedTRUE") %>%
     rename(p_value = p.value, se = std.error) %>%
     select(estimate, p_value, se) %>%
     mutate(n_obs = nobs)
