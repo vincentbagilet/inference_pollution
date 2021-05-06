@@ -939,57 +939,93 @@ articles_low_adequate %>%
 ```
 There is absolutely no difference along this dimension.
 
-<!-- Finally, we wonder whether power depends on the length of the study period. It probably depends on the number of observations but since retrieving this information is difficult. We do not know how many cities are analysed in each study. -->
+### Length of the study period
 
-<!-- ```{r} -->
-<!-- library(stringi) -->
-<!-- #Source: https://simplemaps.com/data/world-cities  -->
-<!-- worldcities <- read_csv("../Inputs/worldcities.csv") -->
+Finally, we wonder whether power depends on the length of the study period. It probably depends on the number of observations but since retrieving this information is difficult. We do not know how many cities are analysed in each study.
 
-<!-- worldcities_clean <- worldcities %>%  -->
-<!--   mutate( -->
-<!--     city_regex = str_c("\\b", city_ascii, "\\b") -->
-<!--   ) %>%  -->
-<!--   filter(population > 500000) -->
+```{r}
+# library(stringi)
+#Source: https://simplemaps.com/data/world-cities
+worldcities <- read_csv("../Inputs/worldcities.csv")
 
-<!-- more <- abstracts_more_info %>%  -->
-<!--   mutate( -->
-<!--     length_study = as.numeric(str_extract(end_obs, "\\d+")) - as.numeric(str_extract(begin_obs, "\\d+")), -->
-<!--     nb_cities = str_extract_all(abstract, "(?<!more\\sthan)\\d+(?=\\s?(c|C)it(y|ies))"), -->
-<!--     abstract_ascii = stri_trans_general(abstract,"Latin-ASCII") -->
-<!--     # abstract_ascii = str_remove_all(abstract_ascii, "-"), -->
-<!--   ) %>%  -->
-<!--   unnest(nb_cities, keep_empty = TRUE) %>%  -->
-<!--   group_by(doi) %>%  -->
-<!--   mutate(nb_cities = max(nb_cities)) %>% -->
-<!--   ungroup() %>%  -->
-<!--   distinct()  -->
-<!--   # group_by(doi) %>%  -->
-<!--   # mutate( -->
-<!--   #   nb_names_cities = sum(str_detect(abstract_ascii, worldcities_clean[["city_regex"]])) -->
-<!--   # ) %>%  -->
-<!--   # ungroup() -->
+worldcities_large <- worldcities %>%
+  mutate(
+    city_regex = str_c("\\b", city_ascii, "\\b"),
+    city_regex = str_to_lower(city_regex)
+  ) %>%
+  filter(population > 500000)
 
-<!-- %>%  -->
-<!--   filter(end_obs <= 2021) %>%  -->
-<!--   filter(length_study >= 0) -->
+text_to_date <- function(date_text) {
+  year <-  str_remove_all(date_text, "[^\\d]")
+  month <- match(str_remove_all(date_text, "[\\d\\s]"), month.name)
+  month <- ifelse(is.na(month), "01", month)
+  date <- dmy(str_c("01-", str_pad(month, width = 2, pad = 0), "-", year))
+  return(date)
+}
 
-<!-- articles_low_adequate %>% -->
-<!--   left_join(more, by = c("doi", "abstract")) %>% -->
-<!--   filter(!is.na(length_study)) %>% -->
-<!--   filter(length_study < 20) %>% -->
-<!--   mutate(low_power = ifelse(low_power, "Low power", "Adequate power")) %>% -->
-<!--   ggplot() + -->
-<!--   geom_bar(aes(x = length_study, fill = low_power), position = position_fill()) + -->
-<!--   # coord_flip() + -->
-<!--   labs( -->
-<!--     x = "Length of the study period (in years)", -->
-<!--     y = "Number of articles", -->
-<!--     title = "Number of articles considering a given outcome", -->
-<!--     subtitle = "Comparison between articles with low and adequate power" -->
-<!--   ) + -->
-<!--   scale_fill_discrete(name = "") -->
-<!-- ``` -->
+number_word <- tibble(
+  number = 1:5000, 
+  word = english::words(1:5000)
+)
+
+abstracts_numbers <- abstracts_more_info %>% 
+  select(abstract, doi) %>% 
+  unnest_tokens(word, abstract) %>%
+  left_join(number_word, by = "word") %>%
+  mutate(word = ifelse(!is.na(number), number, word)) %>% 
+  select(-number) %>% 
+  group_by(doi) %>% 
+  summarize(abstract_numbers = str_c(word, collapse = " ")) %>%
+  ungroup()
+
+more <- abstracts_more_info %>%
+  mutate(
+    begin_obs = text_to_date(begin_obs),
+    end_obs = text_to_date(end_obs),
+    length_study = time_length(end_obs - begin_obs, unit = "days"),
+    length_study = ifelse(length_study < 0 | end_obs > today(), NA, length_study)
+  ) %>% 
+  select(-begin_obs, -end_obs) %>% 
+  # a vague attempt to replace "one" by 1
+  
+  # %>% 
+  mutate(
+    nb_many_cities = str_extract_all(
+      abstract, 
+      # "(?<!more\\sthan)\\d+(?=\\s?(c|C)it(y|ies))"
+      "\\d+(?=\\s?(c|C)it(y|ies))"
+    ),
+    abstract_ascii = stringi::stri_trans_general(abstract,"Latin-ASCII") %>% str_to_lower()
+    # abstract_ascii = str_remove_all(abstract_ascii, "-"),
+  ) %>%
+  unnest(nb_many_cities, keep_empty = TRUE) %>%
+  group_by(doi) %>%
+  mutate(nb_many_cities = max(nb_many_cities)) %>%
+  ungroup() %>%
+  distinct() %>% 
+  group_by(doi) %>%
+  mutate(
+    nb_names_cities = sum(str_detect(abstract_ascii, worldcities_large[["city_regex"]]))
+  ) %>%
+  ungroup() 
+
+
+articles_low_adequate %>%
+  left_join(more, by = c("doi", "abstract")) %>%
+  filter(!is.na(length_study)) %>%
+  filter(length_study < 20) %>%
+  mutate(low_power = ifelse(low_power, "Low power", "Adequate power")) %>%
+  ggplot() +
+  geom_bar(aes(x = length_study, fill = low_power), position = position_fill()) +
+  # coord_flip() +
+  labs(
+    x = "Length of the study period (in years)",
+    y = "Number of articles",
+    title = "Number of articles considering a given outcome",
+    subtitle = "Comparison between articles with low and adequate power"
+  ) +
+  scale_fill_discrete(name = "")
+```
 
 
 

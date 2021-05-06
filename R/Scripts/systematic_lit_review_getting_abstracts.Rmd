@@ -307,25 +307,162 @@ str_view_all(no_effect$sentence, "lom")
 
 ## Retreiving additional information
 
-It might also be interesting to information about the type of pollutant considered in the study, the study period, the number of observations or p-values and the type of outcome studied (mortality, emergency admissions, stroke, cerebrovascular or cardiovascular diseases). We also use regex to recover these information.
+It might also be interesting to information about the type of pollutant considered in the study, the study period, the number of observations or p-values and the type of outcome studied (mortality, emergency admissions, stroke, cerebrovascular or cardiovascular diseases). We also use regex to recover this information.
 
 ```{r}
-month_regex <- "\\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|(Nov|Dec)(?:ember)?)"
-date_regex <- str_c("(",month_regex, "\\s){0,1}(19|20)\\d{2}")
-
+#To start on the right foot, a bit of cleaning
 abstracts_more_info <- abstracts %>% 
   mutate(
     abstract = str_replace_all(abstract, "·", ".")
   ) %>% 
-  select(doi, abstract, title) %>%
+  select(doi, abstract)
+```
+
+
+### Length of the study period
+
+We first detect begin and end dates for the period of study and compute the length of study, after transforming the text data to a date format using the function `text_to_date`.
+
+
+```{r}
+month_regex <- "\\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|(Nov|Dec)(?:ember)?)"
+date_regex <- str_c("(", month_regex, "\\s){0,1}(19|20)\\d{2}")
+
+text_to_date <- function(date_text) {
+  year <-  str_remove_all(date_text, "[^\\d]")
+  month <- match(str_remove_all(date_text, "[\\d\\s]"), month.name)
+  month <- ifelse(is.na(month), "01", month)
+  date <- dmy(str_c("01-", str_pad(month, width = 2, pad = 0), "-", year))
+  return(date)
+}
+
+abstracts_length_study <- abstracts_more_info %>%
   mutate(
-    dates_obs = str_extract_all(abstract, str_c(date_regex, "( to |\\s?—\\s?|\\s?-\\s?| and )", date_regex))
+    dates_obs = str_extract_all(
+      abstract, 
+      str_c("(", date_regex, "|", month_regex, ")( to |\\s?—\\s?|\\s?-\\s?| and )", date_regex)
+    )
   ) %>% 
   unnest(dates_obs, keep_empty = TRUE) %>%
   separate(dates_obs, into = c("begin_obs", "end_obs"), "( to |\\s?—\\s?|\\s?-\\s?| and )") %>% 
+  mutate(#when begin_obs and end_obs are in the same year, 
+    #we only get the month for begin_obs
+    begin_obs = ifelse(
+      !str_detect(begin_obs, "\\d"), 
+      paste(begin_obs, str_remove_all(end_obs, "[^\\d]")),
+      begin_obs)
+  ) %>%
+  mutate(
+    begin_obs = text_to_date(begin_obs),
+    end_obs = text_to_date(end_obs),
+    length_study = time_length(end_obs - begin_obs, unit = "days"),
+    length_study = ifelse(length_study < 0 | end_obs > today(), NA, length_study)
+  ) %>% 
+  select(doi, length_study) %>% 
+  distinct()
+```
+
+
+We then try to detect the number of cities considered in each abstract. To do so, we use two different techniques:
+
+- We see whether the abstract uses phrases such as "in 34 cities" and retrieve this 34. We also convert all text-numbers (*eg* "one") into their numerical values. When we get several numbers, we take a conservative approach and only keep the largest one.
+- We count the number of cities names appearing uniquely in each abstract. To do so, we use a database of cities names. We restrict our sample to large cities. 
+
+
+```{r}
+number_word <- tibble(
+  number = 1:5000, 
+  word = english::words(1:5000)
+)
+
+abstracts_numbers <- abstracts %>% 
+  select(abstract, doi) %>% 
+  unnest_tokens(word, abstract) %>%
+  left_join(number_word, by = "word") %>%
+  mutate(word = ifelse(!is.na(number), number, word)) %>% 
+  select(-number) %>% 
+  group_by(doi) %>% 
+  summarize(abstract = str_c(word, collapse = " ")) %>%
+  ungroup() %>% 
+  mutate(abstract = str_remove_all(abstract, "-"))
+
+#Source: https://simplemaps.com/data/world-cities
+worldcities <- read_csv("../Inputs/worldcities.csv")
+
+worldcities_large <- worldcities %>%
+  mutate(
+    city_regex = str_c("\\b", city_ascii, "\\b"),
+    city_regex = str_to_lower(city_regex),
+    city_regex = str_remove_all(city_regex, "-")
+  ) %>%
+  filter(population > 500000)
+
+abstracts_number_cities <- abstracts_numbers %>% 
+   mutate(
+    nb_many_cities = str_extract_all(
+      abstract, 
+      # "(?<!more\\sthan)\\d+(?=\\s?(c|C)it(y|ies))"
+      "\\d+(?=\\s?(c|C)it(y|ies))"
+    ),
+    abstract_ascii = stringi::stri_trans_general(abstract,"Latin-ASCII") %>% str_to_lower(),
+    abstract_ascii = str_remove_all(abstract_ascii, "-")
+  ) %>%
+  unnest(nb_many_cities, keep_empty = TRUE) %>%
+  mutate(nb_many_cities = as.numeric(nb_many_cities)) %>% 
+  group_by(doi) %>%
+  mutate(nb_many_cities = max(nb_many_cities)) %>%
+  ungroup() %>%
+  distinct() %>% 
+  group_by(doi) %>%
+  mutate(
+    nb_names_cities = str_extract_all(abstract_ascii, worldcities_large[["city_regex"]]) %>% 
+      as_vector() %>% 
+      unique() %>% 
+      length()
+  ) %>%
+  ungroup() %>% 
+  group_by(doi) %>% 
+  mutate(
+    nb_cities = max(nb_many_cities, nb_names_cities, na.rm = TRUE),
+    nb_cities = ifelse(nb_cities == 0, NA, nb_cities)
+  ) %>% 
+  ungroup() %>% 
+  select(doi, nb_cities) %>% 
+  distinct()
+```
+
+Finally, we combine these two information to compute the number of observations. We also retrieve the number of observations directly from the abstract when it is obviously stated.
+
+```{r}
+abstracts_more_info <- abstracts_more_info %>% 
+  right_join(abstracts_length_study) %>% 
+  right_join(abstracts_number_cities) %>% 
+  mutate(
+    n_obs_stated = str_extract_all(
+      abstract, 
+      "(?<=(\\bn\\s?= ))[,\\d\\s]{1,10}|[,\\d\\s]{1,8}(?=(\\sobservations))"
+    )
+  ) %>% 
+  unnest(n_obs_stated, keep_empty = TRUE) %>%
+  mutate(
+    n_obs_stated = as.numeric(str_remove_all(n_obs_stated, ",")), 
+    n_obs_computed = nb_cities*length_study
+  )  
+  # group_by(doi) %>% 
+  # mutate(
+  #   nb_obs = max(n_obs_stated, n_obs_computed, na.rm = TRUE)
+  # ) %>% 
+  # ungroup()
+```
+
+
+
+```{r}
+
+
+%>% 
   mutate(
     p_value = str_extract_all(abstract, "(?<=\\b(p|P|p-value|p value)\\s?)[=<]\\s?[\\d.]+"),
-    n_obs = str_extract_all(abstract, "(?<=(\\bn\\s?= ))[\\d,]{1,10}|[\\d,]{1,8}(?=(\\sobservations))"),
     pollutant = str_extract_all(abstract, "(\\bPM\\s?2(\\.|,)5|\\bPM\\s?10|\\bO\\s?3\\b|\\b(o|O)zone\\b|\\b(P|p)articulate\\s(M|m)atter\\b|\\bNO\\s?2|\\b(n|N)itrogen\\s?(d|D)ioxide\\b|\\bNO\\b|\\b(n|N)itrogen\\s?(o|O)xide\\b|\\bNO\\s?(x|X)\\b|\\bSO\\s?2|\\bCO\\b|\\bBC\\b|\\b(A|a)ir\\s(Q|q)uality\\s(I|i)ndex\\b)")
   ) %>% 
   unnest(pollutant, keep_empty = TRUE) %>% 
@@ -360,6 +497,8 @@ abstracts_more_info <- abstracts %>%
 
 saveRDS(abstracts_more_info, "../Outputs/abstracts_more_info.RDS")
 ```
+
+
 
 
 # Analysis of papers dealing with power and missingness issues
