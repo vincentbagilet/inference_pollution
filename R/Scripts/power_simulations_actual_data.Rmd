@@ -154,32 +154,10 @@ future::plan(multicore)
 library(mediocrethemes)
 
 set_mediocre_all()
+
+us_data <- readRDS(here::here("R", "Inputs", "nmmaps_data_simulations.rds"))
 ```
 
-
-```{r include=FALSE}
-pollution_data <- readRDS(here::here("R", "Outputs", "data_daily_imputed.rds")) %>% 
-  ungroup() %>% 
-  mutate(
-    city = tolower(city),
-    city = str_remove_all(city, "[\\s-]")
-  )
-emergency_data <- readRDS(here::here("R", "Outputs", "emergency_data.rds"))
-mortality_data <- readRDS(here::here("R", "Outputs", "mortality_data.rds"))
-
-total_data <- pollution_data %>% 
-  left_join(emergency_data, by = c("city", "date")) %>% 
-  left_join(mortality_data, by = c("city", "date")) %>% 
-  ungroup() %>% 
-  mutate(
-    date = ymd(date),
-    city = as.factor(city), 
-    month = as.factor(month(date)), 
-    day_of_week = as.factor(wday(date)), 
-    year = as.factor(year(date))
-  ) %>% 
-  filter(date < "2016-01-01") 
-```
 
 ## Function definitions
 
@@ -190,7 +168,7 @@ First, we create a function to randomly draw a study period of a given length. F
 This function randomly selects a starting date for the study, early enough so that the study can actually last the number of days chosen, and returns a boolean vector indicating whether each date is in the study or not.
 
 ```{r}
-draw_study_period <- function(data, n_days_study = 200) {
+draw_study_period <- function(data, n_days_study = 200, n_cities = 66) {
   dates <- data[["date"]]
   begin_study <- sample(seq.Date(min(dates), max(dates) - n_days_study, "day"), 1)
   
@@ -423,7 +401,7 @@ estimate_model <- function(data, formula) {
     mutate(n_obs = nobs)
 } 
 
-# estimate_model(total_data, "deaths_na_causes ~ temperature")
+# estimate_model(total_data, "resp_total ~ temperature")
 ```
 
 ### Computing simulations
@@ -497,9 +475,9 @@ compute_simulation <- function(data,
   return(sim_output)
 }
 
-test <- total_data %>%
+test <- us_data_clean %>%
   compute_simulation(
-    formula = "deaths_na_causes ~ treated",
+    formula = "resp_total ~ treated",
     n_days_study = 400,
     quasi_exp = "local"
   ) 
@@ -522,7 +500,7 @@ sim_param_base <- tibble(
   n_days_study = 500,
   p_treat = 0.2,
   percent_effect_size = 0.5, 
-  formula = "deaths_na_causes ~ treated + temperature + I(temperature^2) | city + month + year + day_of_week"
+  formula = "resp_total ~ treated + temperature + I(temperature^2) | city + month + year + day_of_week"
 )
 
 write_csv(sim_param_base, "../Outputs/sim_param_base.csv")
@@ -531,10 +509,10 @@ vect_n_days_study <- c(100, 250, 500, 750, 1000)
 vect_p_treat <- c(0.01, 0.2)
 vect_percent_effect_size <- c(0.1, 0.5, 1)
 vect_formula <- c(
-  "deaths_na_causes ~ treated", 
-  "deaths_na_causes ~ treated | city",
-  "deaths_na_causes ~ treated | city + month + year + day_of_week",
-  "deaths_na_causes ~ treated + temperature + I(temperature^2) | city + month + year + day_of_week"
+  "resp_total ~ treated", 
+  "resp_total ~ treated | city",
+  "resp_total ~ treated | city + month + year + day_of_week",
+  "resp_total ~ treated + temperature + I(temperature^2) | city + month + year + day_of_week"
 )
 ```
 
@@ -570,7 +548,7 @@ Then, for each set of parameters we want to run many iterations of the simulatio
 
 ```{r}
 vect_quasi_exp <- c("random_days", "national", "local")#, "national_short", "rolling") #, "alert_pm10"
-n_iter <- 5
+n_iter <- 100
 
 sim_param <- sim_param_unique %>%
   crossing(vect_quasi_exp) %>%
@@ -606,7 +584,7 @@ tic()
 simulations <- future_pmap_dfr(
   sim_param %>% select(-sim_id), 
   compute_simulation, 
-  data = total_data,
+  data = us_data_clean,
   .id = "sim_id",
   .options = furrr_options(seed = TRUE)
 ) 
