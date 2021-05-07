@@ -615,10 +615,10 @@ We want to compute our simulations for this set of parameters for every quasi ex
 Then, for each set of parameters we want to run many iterations of the simulation, `n_iter`. We thus modify `sim_param` so that each set of parameter appears `n_iter` times. It will enable us to loop `compute_simulation` directly on `sim_param`.
 
 ```{r}
-vect_quasi_exp <- c("random_days", "national", "local", "national_short", "rolling", "none") #, "alert_co"
+vect_quasi_exp <- c("random_days", "national", "local", "alert_co", "national_short", "rolling", "none") #, "alert_co"
 n_iter <- 1
 
-sim_param <- sim_param_unique %>%
+sim_param_to_edit <- sim_param_unique %>%
   crossing(vect_quasi_exp) %>%
   rename(quasi_exp = vect_quasi_exp) %>%
   # mutate(p_treat = ifelse(str_starts(quasi_exp "alert"), p_treat/10, p_treat) %>% 
@@ -642,7 +642,13 @@ sim_param <- sim_param_unique %>%
       id_method == "OLS" ~ str_replace_all(formula, "treated", "co"),
       TRUE ~ formula
     )
-  ) %>%
+  ) 
+
+write_csv(sim_param_to_edit, "../Outputs/sim_param_to_edit.csv")
+#Here, check everything and edit by hand
+# sim_param_edited <- read_csv("../Outputs/sim_param_edited.csv")
+
+sim_param <- sim_param_edited %>%
   crossing(rep_id = 1:n_iter) %>%
   select(-rep_id) %>% 
   mutate(sim_id = row_number()) #for merging with compute_simulation() results
