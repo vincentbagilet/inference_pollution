@@ -240,7 +240,7 @@ draw_treated <- function(data, p_treat = 0.5, quasi_exp = "random_day") {
   } else if (quasi_exp == "national") {
     num_date <- as.numeric(data[["date"]])
     data[["treated"]] <- (num_date >= quantile(num_date, 1 - p_treat))
-  } else if (str_starts(quasi_exp, "OLS")) {
+  } else if (quasi_exp == "none") {
     data[["treated"]] <- TRUE
   } else if (quasi_exp == "local") {
     treated_cities <- unique(data[["city"]]) %>%
@@ -364,16 +364,24 @@ We then create the output if a unit is treated, Y(1). We use different methods t
 - For binary treatments, we draw 
 - For the OLS, we build a generative model that creates fake data based on the formula given.
 
+We also create a short function to detect a pollutant among independent variables of a formula. We also use this function later.
+
 ```{r}
+find_pollutant <- function(formula) {
+    pollutants_list <- c("co", "pm10", "pm2.5", "no")
+    pollutant <- pollutants_list[pollutants_list %in% all.vars(formula[[3]])]
+    return(pollutant)
+}
+
 create_y1 <- function(data,
                       percent_effect_size = 0.5,
-                      quasi_exp = "random_days",
+                      id_method = "RCT", 
                       formula) {
   
   fml <- Formula::as.Formula(formula)
   
-  if (str_starts(quasi_exp, ("random|national|local|alert|rolling"))) {
-    dep_var <- paste(fml[[2]])
+  if (id_method %in% c("RCT", "DID", "ITS", "RDIT", "RDD")) {
+    dep_var <- all.vars(fml[[2]])
     
     data[["y1"]] <- data[[dep_var]] + 
       rpois(
@@ -381,11 +389,11 @@ create_y1 <- function(data,
         mean(data[[dep_var]], na.rm = TRUE) * percent_effect_size / 100
       ) %>%
       suppressWarnings() #warnings when is.na(dep_var) eg rpois(1, NA)
-  } else if (str_starts(quasi_exp, "OLS")) {
-    pollutant <- str_extract(quasi_exp, "(?<=_).+")
+  } else if (id_method == "OLS") {
     actual_fml <- formula(fml, rhs = -3)
+    pollutant <- find_pollutant(actual_fml)
     
-    reg <- feols(data = data, fml = actual_fml) 
+    reg <- feols(data = data, fml = actual_fml, combine.quick=FALSE) 
     reg$coefficients[[pollutant]] <- percent_effect_size/100
     res <- reg$residuals
     
@@ -395,7 +403,7 @@ create_y1 <- function(data,
   return(data)
 } 
 
-# create_y1(total_data, quasi_exp = "OLS_co", formula = "log(resp_total) ~ co + temperature | city + day_of_week + month^year") %>% select(resp_total, y1)
+# create_y1(us_data, id_method = "OLS", formula = "log(resp_total) ~ co + temperature | city") %>% select(resp_total, y1)
 ```
 
 ### Estimate the model
@@ -413,9 +421,9 @@ estimate_model <- function(data, formula) {
   se <- ifelse(cluster == ~0, "hetero", "cluster")
   
   param_of_interest <- ifelse(
-    sum(str_detect("treated", paste(actual_fml))), 
+    "treated" %in% all.vars(actual_fml[[3]]), 
     "treatedTRUE", 
-    "co"
+    find_pollutant(actual_fml)
   )
   
   #run the estimation
@@ -450,30 +458,25 @@ compute_simulation <- function(data,
                                n_days = 500,
                                n_cities = 66, 
                                p_treat = 0.5,
-                               quasi_exp = "random_days",
                                percent_effect_size = 0.5,
+                               quasi_exp = "random_days",
+                               id_method = "RCT", 
                                formula = "resp_total ~ treated") {
   
   fml <- Formula::as.Formula(formula)
-  dep_var <- ifelse(
-    paste(fml[[2]][2]) != "NULL", 
-    paste(fml[[2]][2]), #not to select the log
-    paste(fml[[2]])
-  )
+  dep_var <- all.vars(fml[[2]]) 
   
   sim_data <- data %>%
     select_study_period(n_days, n_cities) %>%
     mutate(y0 = .data[[dep_var]]) %>%
     draw_treated(p_treat, quasi_exp) %>% 
-    create_y1(percent_effect_size, quasi_exp, fml) %>% 
+    create_y1(percent_effect_size, id_method, fml) %>% 
     mutate(
       yobs = y1 * treated + y0 * (1 - treated)
     ) %>%
     filter(!is.na(treated)) #not necessary bc dropped in lm()
   
-  #for the local intervention, we estimate a DID 
-  #and thus need a post and a city_treated variable
-  if (quasi_exp == "local") {
+  if (id_method == "DID") {
     sim_data <- sim_data %>%
       group_by(city) %>%
       mutate(city_treated = as.logical(max(treated))) %>%
@@ -486,9 +489,7 @@ compute_simulation <- function(data,
       filter(post, city_treated) %>% 
       summarise(mean(y1 - y0, na.rm = TRUE)) %>% 
       as.numeric()
-  } else if (str_starts(quasi_exp, "national")) {
-  #for the nation intervention, we estimate an ITS 
-  #and thus need a time index and time index
+  } else if (id_method %in% c("ITS", "RDIT")) {
     sim_data <- sim_data %>%
       mutate(
         date_num = as.numeric(date),
@@ -501,7 +502,7 @@ compute_simulation <- function(data,
       filter(t_post > 0) %>% 
       summarise(mean(y1 - y0, na.rm = TRUE)) %>% 
       as.numeric()
-  } else if (str_starts(quasi_exp, "OLS")) {
+  } else if (id_method == "OLS") {
     true_effect <- percent_effect_size
   } else { 
     true_effect <- mean(sim_data$y1 - sim_data$y0, na.rm = TRUE)
@@ -518,7 +519,8 @@ compute_simulation <- function(data,
 test <- us_data %>%
   compute_simulation(
     formula = "log(resp_total) ~ co + temperature | city",
-    quasi_exp = "OLS_co",
+    quasi_exp = "none",
+    id_method = "OLS",
     n_days = 500
     # quasi_exp = "local"
   ) 
@@ -589,20 +591,27 @@ Then, for each set of parameters we want to run many iterations of the simulatio
 
 ```{r}
 vect_quasi_exp <- c("random_days", "national", "local")#, "national_short", "rolling") #, "alert_co"
-n_iter <- 100
+n_iter <- 1
 
 sim_param <- sim_param_unique %>%
   crossing(vect_quasi_exp) %>%
   rename(quasi_exp = vect_quasi_exp) %>%
   # mutate(p_treat = ifelse(str_starts(quasi_exp "alert"), p_treat/10, p_treat) %>% 
   mutate(
+    id_method = case_when(
+      quasi_exp == "random_days" ~ "RCT",
+      quasi_exp == "local" ~ "DID",
+      str_starts(quasi_exp, "national") ~ "ITS",
+      str_starts(quasi_exp, "alert") ~ "RDD",
+      quasi_exp == "none" ~ "OLS"
+    ),
     formula = case_when(
-      quasi_exp == "local" ~ str_replace_all(formula, "treated", 
+      id_method == "DID" ~ str_replace_all(formula, "treated", 
                                              "treated + post + city_treated"),
-      str_starts(quasi_exp, "national") ~ str_replace_all(
+      id_method == "ITS" ~ str_replace_all(
         formula, "treated", 
         "treated + t + t_post"),
-      str_starts(quasi_exp, "alert") ~ str_replace_all(formula, "treated", paste(
+      id_method == "RDD" ~ str_replace_all(formula, "treated", paste(
         "treated +", str_remove(quasi_exp, "alert_")
       )),
       TRUE ~ formula
@@ -610,7 +619,6 @@ sim_param <- sim_param_unique %>%
   ) %>%
   crossing(rep_id = 1:n_iter) %>%
   select(-rep_id) %>% 
-  # filter(n_days == 1000) %>% 
   mutate(sim_id = row_number()) #for merging with compute_simulation() results
 
 # write_csv(sim_param, "../Outputs/sim_param.csv")
