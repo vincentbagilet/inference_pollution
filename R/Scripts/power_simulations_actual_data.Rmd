@@ -630,6 +630,10 @@ sim_param_to_edit <- sim_param_unique %>%
       str_starts(quasi_exp, "alert") ~ "RDD",
       quasi_exp == "none" ~ "OLS"
     ),
+    formula = ifelse(
+      id_method == "OLS", 
+      str_c("log(", str_extract(formula, ".+(?=\\s~)"), ") ~ ", str_extract(formula, "(?<=~\\s).+")), 
+      formula),
     formula = case_when(
       id_method == "DID" ~ str_replace_all(formula, "treated", 
                                              "treated + post + city_treated"),
