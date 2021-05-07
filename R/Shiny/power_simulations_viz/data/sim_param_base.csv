@@ -1,2 +1,2 @@
 n_days_study,p_treat,percent_effect_size,formula
-500,0.2,0.5,deaths_na_causes ~ treated + temperature + I(temperature^2) | city + month + year + day_of_week
+500,0.2,0.5,resp_total ~ treated + temperature + I(temperature^2) | city + month + year + day_of_week

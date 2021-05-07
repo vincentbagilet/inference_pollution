@@ -156,6 +156,26 @@ library(mediocrethemes)
 set_mediocre_all()
 
 us_data <- readRDS(here::here("R", "Inputs", "nmmaps_data_simulations.rds"))
+
+states <- tibble(state = state.name, abbreviation = state.abb)
+
+us_data <- us_data %>% 
+  mutate(
+    month = as.factor(month(date)), 
+    day_of_week = as.factor(wday(date)), 
+    year = as.factor(year(date))
+  ) %>% 
+  rename(
+    temperature = temperature_average,
+    state = state_name
+  ) %>%  
+  select(-weekday) %>% 
+  left_join(states, by = "state") %>% 
+  mutate(
+    city = as.factor(str_c(city_name, abbreviation, sep = ", "))
+  ) %>% 
+  select(-abbreviation, -city_name) %>% 
+  select(city, date, everything()) 
 ```
 
 
@@ -170,11 +190,23 @@ This function randomly selects a starting date for the study, early enough so th
 ```{r}
 draw_study_period <- function(data, n_days_study = 200, n_cities = 66) {
   dates <- data[["date"]]
-  begin_study <- sample(seq.Date(min(dates), max(dates) - n_days_study, "day"), 1)
+  err_proof_n_days_study <- min(n_days_study, unique(dates))
+  cities <- data[["city"]]
+  err_proof_n_cities <- min(n_cities, length(unique(cities)))
   
-  data[["study_period"]] <-
+  begin_study <- sample(
+    seq.Date(
+      min(dates), 
+      max(dates) - err_proof_n_days_study, 
+      "day"
+    ), 1)
+  
+  dates_kept <-
     dplyr::between(dates, begin_study, begin_study + n_days_study)
   
+  cities_kept <- cities %in% sample(levels(cities), size = err_proof_n_cities)
+  
+  data[["study_period"]] <- (dates_kept & cities_kept)
   return(data)
 }
 ```
@@ -202,9 +234,7 @@ draw_treated <- function(data, p_treat = 0.5, quasi_exp = "random_day") {
     num_date <- as.numeric(data[["date"]])
     data[["treated"]] <- (num_date >= quantile(num_date, 1 - p_treat))
   } else if (quasi_exp %in% c("GAM", "IV")) {
-    # treated <- TRUE
-    treated <- rbernoulli(length(data[["date"]]), p_treat)
-    data[["treated"]] <- ifelse(treated, treated, NA) 
+    data[["treated"]] <- TRUE
   } else if (quasi_exp == "local") {
     treated_cities <- unique(data[["city"]]) %>%
       sample(size = round(length(.) * min(p_treat * 2, 1)))
@@ -217,17 +247,14 @@ draw_treated <- function(data, p_treat = 0.5, quasi_exp = "random_day") {
       group_by(.data$city) %>%
       mutate(
         threshold = quantile(.data[[pollutant]], threshold_pos, names = FALSE),
-        treated = (.data[[pollutant]] >= threshold),
-        bw = cut_width(
-          .data[[pollutant]],
-          width = length(.) * 2 * p_treat,
-          center = unique(threshold) #threshold center of an interval
-        ),
+        bw_high = quantile(.data[[pollutant]], min(threshold_pos + p_treat, 1), names = FALSE),
         treated = ifelse(
-          threshold > as.numeric(str_extract(bw, "([:digit:]|\\.|-)+(?=,)")) &
-            threshold < as.numeric(str_extract(bw, "(?<=,)([:digit:]|\\.)+")), treated, NA)
+          .data[[pollutant]] > bw_high | .data[[pollutant]] < threshold - (bw_high - threshold), 
+          NA, 
+          (.data[[pollutant]] >= threshold)
+        )
       ) %>%
-      select(-bw, -threshold) %>% 
+      select(-bw_high, -threshold) %>% 
       ungroup()
   } else if (quasi_exp == "rolling") {
     data <- data %>%
@@ -246,11 +273,6 @@ draw_treated <- function(data, p_treat = 0.5, quasi_exp = "random_day") {
   
     date_start_treat <- sample(seq.Date(min(dates) + bw, max(dates) - bw, "day"), 1)
     
-    # treated <- (data[["date"]] >= date_start_treat)
-    # data[["treated"]] <- ifelse(
-    #   data[["date"]] > date_start_treat + bw | data[["date"]] < date_start_treat - bw,
-    #   NA, treated
-    # )
     data <- data %>%
       mutate(
         treated = ifelse(
@@ -261,8 +283,6 @@ draw_treated <- function(data, p_treat = 0.5, quasi_exp = "random_day") {
   }
   
   return(data)
-  # data <- data %>% mutate(treated = treated)
-  # return(data)
 }
 ```
 
@@ -277,26 +297,25 @@ draw_treated_exp <- function(data, p_treat, quasi_exp) {
   return(data)
 }
 
-test_treatment_data <- total_data %>% 
-  draw_study_period(500) %>% 
+test_treatment_data <- us_data %>% 
+  draw_study_period(n_days_study = 500, n_cities = 6) %>% 
   filter(study_period) %>%
   select(-study_period) %>%
-  draw_treated_exp(0.05, "random_days") %>% 
-  draw_treated_exp(0.2, "national") %>% 
+  draw_treated_exp(0.05, "random_days")%>% 
+  draw_treated_exp(0.2, "national") %>%
   draw_treated_exp(0.2, "local") %>% 
-  draw_treated_exp(0.08, "national_short") %>% 
+  draw_treated_exp(0.05, "national_short") %>% 
   draw_treated_exp(0.2, "rolling") %>% 
-  draw_treated(0.2, "alert_pm10") %>% 
-  rename(treated_alert = treated) %>% 
-  mutate(city = str_to_title(city)) 
+  draw_treated(0.04, "alert_co") %>% 
+  rename(treated_alert = treated)  
 
 graph_treatment_assignment <- function(data, method) {
   data[["alert"]] <- (method == "alert")
-  y_lab <- ifelse(method == "alert", "PM10 concentration level (in mug/m3)", "Daily number of deaths")
-  subtitle <- ifelse(method == "alert", "PM10 concentration", "number of deaths")
+  y_lab <- ifelse(method == "alert", "CO concentration level (in mug/m3)", "Daily number of deaths")
+  subtitle <- ifelse(method == "alert", "CO concentration", "number of deaths")
   
   data %>% 
-    mutate(outcome = ifelse(alert, pm10, deaths_na_causes)) %>%
+    mutate(outcome = ifelse(alert, co, resp_total)) %>%
     rename(Treated = .data[[paste("treated", method, sep = "_")]]) %>% 
     ggplot() +
     geom_point(aes(x = date, y = outcome, color = Treated), size = 0.3) +
@@ -364,7 +383,7 @@ create_y1 <- function(data,
   return(data)
 } 
 
-# create_y1(total_data, quasi_exp = "OLS_pm10", formula = "log(deaths_all_causes) ~ pm10 + temperature | city + day_of_week + month^year") %>% select(deaths_all_causes, y1)
+# create_y1(total_data, quasi_exp = "OLS_co", formula = "log(resp_total) ~ co + temperature | city + day_of_week + month^year") %>% select(deaths_all_causes, y1)
 ```
 
 ### Estimate the model
@@ -475,7 +494,7 @@ compute_simulation <- function(data,
   return(sim_output)
 }
 
-test <- us_data_clean %>%
+test <- us_data %>%
   compute_simulation(
     formula = "resp_total ~ treated",
     n_days_study = 400,
@@ -547,7 +566,7 @@ We want to compute our simulations for this set of parameters for every quasi ex
 Then, for each set of parameters we want to run many iterations of the simulation, `n_iter`. We thus modify `sim_param` so that each set of parameter appears `n_iter` times. It will enable us to loop `compute_simulation` directly on `sim_param`.
 
 ```{r}
-vect_quasi_exp <- c("random_days", "national", "local")#, "national_short", "rolling") #, "alert_pm10"
+vect_quasi_exp <- c("random_days", "national", "local")#, "national_short", "rolling") #, "alert_co"
 n_iter <- 100
 
 sim_param <- sim_param_unique %>%
@@ -584,7 +603,7 @@ tic()
 simulations <- future_pmap_dfr(
   sim_param %>% select(-sim_id), 
   compute_simulation, 
-  data = us_data_clean,
+  data = us_data,
   .id = "sim_id",
   .options = furrr_options(seed = TRUE)
 ) 
