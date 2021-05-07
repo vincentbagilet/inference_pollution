@@ -183,31 +183,34 @@ us_data <- us_data %>%
 
 ### Drawing the study period
 
-First, we create a function to randomly draw a study period of a given length. For simplicity, we choose to have the same study period for each city. This also seems realistic; a study focusing on several cities would probably consider a unique study period. 
+First, we create a function to randomly select a study period of a given length. This function also randomly selects a given number of cities to consider. For simplicity, we choose to have the same temporal study period for each city. This also seems realistic; a study focusing on several cities would probably consider a unique study period. 
 
-This function randomly selects a starting date for the study, early enough so that the study can actually last the number of days chosen, and returns a boolean vector indicating whether each date is in the study or not.
+This function randomly selects a starting date for the study, early enough so that the study can actually last the number of days chosen. It then  randomly draws a given number of cities and filters out observations outside of the study period. It returns a data set with only the desired number of cities and days.
 
 ```{r}
-draw_study_period <- function(data, n_days_study = 200, n_cities = 66) {
+select_study_period <- function(data, n_days = 500, n_cities = 66) {
   dates <- data[["date"]]
-  err_proof_n_days_study <- min(n_days_study, unique(dates))
+  err_proof_n_days <- min(n_days, unique(dates))
   cities <- data[["city"]]
   err_proof_n_cities <- min(n_cities, length(unique(cities)))
   
   begin_study <- sample(
     seq.Date(
       min(dates), 
-      max(dates) - err_proof_n_days_study, 
+      max(dates) - err_proof_n_days, 
       "day"
     ), 1)
   
-  dates_kept <-
-    dplyr::between(dates, begin_study, begin_study + n_days_study)
+  dates_kept <- dplyr::between(
+    dates, 
+    begin_study, 
+    begin_study + err_proof_n_days
+  )
   
   cities_kept <- cities %in% sample(levels(cities), size = err_proof_n_cities)
   
-  data[["study_period"]] <- (dates_kept & cities_kept)
-  return(data)
+  data_study <- data[(dates_kept & cities_kept),]
+  return(data_study)
 }
 ```
 
@@ -298,9 +301,7 @@ draw_treated_exp <- function(data, p_treat, quasi_exp) {
 }
 
 test_treatment_data <- us_data %>% 
-  draw_study_period(n_days_study = 500, n_cities = 6) %>% 
-  filter(study_period) %>%
-  select(-study_period) %>%
+  select_study_period(n_days = 500, n_cities = 6) %>% 
   draw_treated_exp(0.05, "random_days")%>% 
   draw_treated_exp(0.2, "national") %>%
   draw_treated_exp(0.2, "local") %>% 
@@ -429,7 +430,8 @@ We then create a function running all the previous functions together and theref
 
 ```{r}
 compute_simulation <- function(data,
-                               n_days_study = 200,
+                               n_days = 500,
+                               n_cities = 66, 
                                p_treat = 0.5,
                                quasi_exp = "random_days",
                                percent_effect_size = 0.5,
@@ -439,9 +441,7 @@ compute_simulation <- function(data,
   dep_var <- paste(fml[[2]])
   
   sim_data <- data %>%
-    draw_study_period(n_days_study) %>%
-    filter(study_period) %>%
-    select(-study_period) %>%
+    select_study_period(n_days, n_cities) %>%
     rename(y0 = .data[[dep_var]]) %>%
     draw_treated(p_treat, quasi_exp) %>% 
     create_y1(percent_effect_size, quasi_exp) %>% 
@@ -497,7 +497,7 @@ compute_simulation <- function(data,
 test <- us_data %>%
   compute_simulation(
     formula = "resp_total ~ treated",
-    n_days_study = 400,
+    n_days = 500,
     quasi_exp = "local"
   ) 
 ````
@@ -516,7 +516,7 @@ To build `sim_param`, we first define a set of baseline values for our parameter
 
 ```{r}
 sim_param_base <- tibble(
-  n_days_study = 500,
+  n_days = 500,
   p_treat = 0.2,
   percent_effect_size = 0.5, 
   formula = "resp_total ~ treated + temperature + I(temperature^2) | city + month + year + day_of_week"
@@ -524,7 +524,7 @@ sim_param_base <- tibble(
 
 write_csv(sim_param_base, "../Outputs/sim_param_base.csv")
 
-vect_n_days_study <- c(100, 250, 500, 750, 1000)
+vect_n_days <- c(100, 250, 500, 750, 1000)
 vect_p_treat <- c(0.01, 0.2)
 vect_percent_effect_size <- c(0.1, 0.5, 1)
 vect_formula <- c(
@@ -550,7 +550,7 @@ add_values_param <- function(df, vect_param) {
     fill(everything(), .direction = "downup")
 }
 
-vect_of_vect_param <- c("vect_n_days_study", "vect_p_treat", "vect_percent_effect_size", "vect_formula")
+vect_of_vect_param <- c("vect_n_days", "vect_p_treat", "vect_percent_effect_size", "vect_formula")
 
 sim_param_unique <- 
   map_dfr(
@@ -588,7 +588,7 @@ sim_param <- sim_param_unique %>%
   ) %>%
   crossing(rep_id = 1:n_iter) %>%
   select(-rep_id) %>% 
-  # filter(n_days_study == 1000) %>% 
+  # filter(n_days == 1000) %>% 
   mutate(sim_id = row_number()) #for merging with compute_simulation() results
 
 # write_csv(sim_param, "../Outputs/sim_param.csv")
@@ -626,7 +626,7 @@ We then summarize our results, computing power, type M and so on for each set of
 summarise_simulations <- function(data) {
   
   data %>% 
-    group_by(formula, quasi_exp, n_days_study, p_treat, percent_effect_size) %>%
+    group_by(formula, quasi_exp, n_days, p_treat, percent_effect_size) %>%
     summarise(
       power = mean(p_value <= 0.05, na.rm = TRUE)*100, 
       # average_p_value = mean(p_value, na.rm = TRUE),
@@ -659,12 +659,12 @@ summary_simulations <- summarise_simulations(all_simulations)
 <!-- ```{r} -->
 <!-- n_iter <- 3 -->
 
-<!-- vect_n_days_study <- seq(500, 1000, 100) -->
+<!-- vect_n_days <- seq(500, 1000, 100) -->
 <!-- vect_percent_effect_size <- seq(0.5, 1.5, 0.1) -->
 
 <!-- sim_param_heatmap <- sim_param_base %>%  -->
-<!--   select(-n_days_study, -percent_effect_size) %>%  -->
-<!--   crossing(vect_n_days_study, vect_percent_effect_size) %>% -->
+<!--   select(-n_days, -percent_effect_size) %>%  -->
+<!--   crossing(vect_n_days, vect_percent_effect_size) %>% -->
 <!--   rename_with( ~ str_remove(., "vect_")) %>% -->
 <!--   crossing(rep_id = 1:n_iter) %>% -->
 <!--   select(-rep_id) %>%  -->
@@ -693,8 +693,8 @@ summary_simulations <- summarise_simulations(all_simulations)
 <!-- summary_simulations_heatmap <- summarise_simulations(all_simulations_heatmap) -->
 
 <!-- summary_simulations_heatmap %>%  -->
-<!--   filter(percent_effect_size > 0.4 & n_days_study > 400) %>% -->
-<!--   ggplot(aes(x = n_days_study, y = percent_effect_size)) +  -->
+<!--   filter(percent_effect_size > 0.4 & n_days > 400) %>% -->
+<!--   ggplot(aes(x = n_days, y = percent_effect_size)) +  -->
 <!--   geom_raster(aes(fill = type_m)) + # , interpolate = TRUE) + -->
 <!--   # geom_contour(aes(z = type_m)) + -->
 <!--   coord_fixed(ratio = 1000) + -->
