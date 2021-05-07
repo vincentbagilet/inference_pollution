@@ -77,6 +77,10 @@ Here consider interventions that affect exposure to air pollution when air pollu
 
 The effect of the treatment is estimated using a RD type of model. The overall idea of the RD is to compare days just below the threshold to days just above the threshold (where exposure and health impacts are thus lower). The assumption is that days just below and just above the threshold are comparable.
 
+### Instrumental variable
+
+Binary treatment (thermal inversion, high/low wind speed etc) 
+
 ## Analysis
 
 ### Overall setting
@@ -236,7 +240,7 @@ draw_treated <- function(data, p_treat = 0.5, quasi_exp = "random_day") {
   } else if (quasi_exp == "national") {
     num_date <- as.numeric(data[["date"]])
     data[["treated"]] <- (num_date >= quantile(num_date, 1 - p_treat))
-  } else if (quasi_exp %in% c("GAM", "IV")) {
+  } else if (str_starts(quasi_exp, "OLS")) {
     data[["treated"]] <- TRUE
   } else if (quasi_exp == "local") {
     treated_cities <- unique(data[["city"]]) %>%
@@ -366,25 +370,32 @@ create_y1 <- function(data,
                       quasi_exp = "random_days",
                       formula) {
   
+  fml <- Formula::as.Formula(formula)
+  
   if (str_starts(quasi_exp, ("random|national|local|alert|rolling"))) {
-    data[["y1"]] <- data[["y0"]] + 
-      rpois(length(data[["y0"]]), mean(data[["y0"]], na.rm = TRUE) * percent_effect_size / 100) %>%
+    dep_var <- paste(fml[[2]])
+    
+    data[["y1"]] <- data[[dep_var]] + 
+      rpois(
+        length(data[[dep_var]]), 
+        mean(data[[dep_var]], na.rm = TRUE) * percent_effect_size / 100
+      ) %>%
       suppressWarnings() #warnings when is.na(dep_var) eg rpois(1, NA)
   } else if (str_starts(quasi_exp, "OLS")) {
     pollutant <- str_extract(quasi_exp, "(?<=_).+")
-    fml <- Formula::as.Formula(formula)
     actual_fml <- formula(fml, rhs = -3)
     
     reg <- feols(data = data, fml = actual_fml) 
     reg$coefficients[[pollutant]] <- percent_effect_size/100
     res <- reg$residuals
+    
     data[["y1"]] <- round(exp(predict(reg, data) + 
                    rnorm(res, mean(res), sd = sd(res))))
   }
   return(data)
 } 
 
-# create_y1(total_data, quasi_exp = "OLS_co", formula = "log(resp_total) ~ co + temperature | city + day_of_week + month^year") %>% select(deaths_all_causes, y1)
+# create_y1(total_data, quasi_exp = "OLS_co", formula = "log(resp_total) ~ co + temperature | city + day_of_week + month^year") %>% select(resp_total, y1)
 ```
 
 ### Estimate the model
@@ -399,7 +410,13 @@ estimate_model <- function(data, formula) {
   cluster <- formula(fml, lhs = 0, rhs = 3) %>% 
     suppressWarnings() #when no cluster provided, warning
   actual_fml <- formula(fml, rhs = -3)
-  se <- ifelse(cluster == ~0, "hetero", "cluster")  
+  se <- ifelse(cluster == ~0, "hetero", "cluster")
+  
+  param_of_interest <- ifelse(
+    sum(str_detect("treated", paste(actual_fml))), 
+    "treatedTRUE", 
+    "co"
+  )
   
   #run the estimation
   est_results <- data %>% 
@@ -415,13 +432,13 @@ estimate_model <- function(data, formula) {
   
   est_results %>%
     broom::tidy(conf.int = TRUE) %>%
-    filter(term == "treatedTRUE") %>%
+    filter(term == param_of_interest) %>%
     rename(p_value = p.value, se = std.error) %>%
     select(estimate, p_value, se) %>%
     mutate(n_obs = nobs)
 } 
 
-# estimate_model(total_data, "resp_total ~ temperature")
+# estimate_model(us_data, "resp_total ~ co + temperature | city")
 ```
 
 ### Computing simulations
@@ -435,22 +452,24 @@ compute_simulation <- function(data,
                                p_treat = 0.5,
                                quasi_exp = "random_days",
                                percent_effect_size = 0.5,
-                               formula = "deaths_all_causes ~ treated") {
+                               formula = "resp_total ~ treated") {
   
   fml <- Formula::as.Formula(formula)
-  dep_var <- paste(fml[[2]])
+  dep_var <- ifelse(
+    paste(fml[[2]][2]) != "NULL", 
+    paste(fml[[2]][2]), #not to select the log
+    paste(fml[[2]])
+  )
   
   sim_data <- data %>%
     select_study_period(n_days, n_cities) %>%
-    rename(y0 = .data[[dep_var]]) %>%
+    mutate(y0 = .data[[dep_var]]) %>%
     draw_treated(p_treat, quasi_exp) %>% 
-    create_y1(percent_effect_size, quasi_exp) %>% 
+    create_y1(percent_effect_size, quasi_exp, fml) %>% 
     mutate(
       yobs = y1 * treated + y0 * (1 - treated)
-      # yobs = y1*true_treated + y0*(1 - true_treated)
     ) %>%
     filter(!is.na(treated)) #not necessary bc dropped in lm()
-  # filter(!is.na(true_treated)) #not necessary bc dropped in lm()
   
   #for the local intervention, we estimate a DID 
   #and thus need a post and a city_treated variable
@@ -482,7 +501,9 @@ compute_simulation <- function(data,
       filter(t_post > 0) %>% 
       summarise(mean(y1 - y0, na.rm = TRUE)) %>% 
       as.numeric()
-  } else {
+  } else if (str_starts(quasi_exp, "OLS")) {
+    true_effect <- percent_effect_size
+  } else { 
     true_effect <- mean(sim_data$y1 - sim_data$y0, na.rm = TRUE)
   }
   
@@ -496,9 +517,10 @@ compute_simulation <- function(data,
 
 test <- us_data %>%
   compute_simulation(
-    formula = "resp_total ~ treated",
-    n_days = 500,
-    quasi_exp = "local"
+    formula = "log(resp_total) ~ co + temperature | city",
+    quasi_exp = "OLS_co",
+    n_days = 500
+    # quasi_exp = "local"
   ) 
 ````
 
