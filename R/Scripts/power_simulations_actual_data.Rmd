@@ -451,7 +451,60 @@ estimate_model <- function(data, formula) {
 
 ### Computing simulations
 
-We then create a function running all the previous functions together and therefore performing an iteration of the simulation for a given set of parameters. This function returns a one row data set with estimate, p-value, number of observations and true effect size.
+We then want to compute simulations by running all the previous functions together. Yet, for the DiD and the ITS/RDIT, we first need to create additional dummy variables (`post` and `city_treated` for the DiD and `t` and `t_post` for the ITS/RDIT). We thus write a function which does so, `add_post_vars`:
+
+```{r}
+add_post_vars <- function(data, id_method) {
+  if (id_method == "DID") {
+    out_data <- data %>%
+      group_by(city) %>%
+      mutate(city_treated = as.logical(max(treated))) %>%
+      ungroup() %>%
+      group_by(date) %>%
+      mutate(post = as.logical(max(treated))) %>%
+      ungroup()
+  } else if (id_method %in% c("ITS", "RDIT")) {
+    out_data <- data %>%
+      mutate(
+        date_num = as.numeric(date),
+        t = date_num - min(date_num),
+        t_post = date_num - as.numeric(min(.data$date[treated == TRUE])),
+        t_post = ifelse(t_post < 0, 0, t_post)
+      )
+  } else { 
+    out_data <- data
+  }
+  
+  return(out_data)
+}
+```
+
+We also need to compute the true effect for each simulation. The different identification methods aims to identify different estimands (ATE, ATET, etc). We 
+
+```{r}
+compute_true_effect <- function(data, id_method, percent_effect_size) {
+  effect_size <- percent_effect_size
+  if (id_method == "DID") {#ATET
+    true_effect <- data %>% 
+      filter(post, city_treated) %>% 
+      summarise(mean(y1 - y0, na.rm = TRUE)) %>% 
+      as.numeric()
+  } else if (id_method %in% c("ITS", "RDIT")) {#ATET
+    true_effect <- data %>% 
+      filter(t_post > 0) %>% 
+      summarise(mean(y1 - y0, na.rm = TRUE)) %>% 
+      as.numeric()
+  } else if (id_method == "OLS") {
+    true_effect <- effect_size
+  } else {#ATE
+    true_effect <- mean(data$y1 - data$y0, na.rm = TRUE)
+  }
+  
+  return(true_effect)
+}
+```
+
+We can now create a function running all the previous functions together and therefore performing an iteration of the simulation for a given set of parameters. This function returns a one row data set with estimate, p-value, number of observations and true effect size. 
 
 ```{r}
 compute_simulation <- function(data,
@@ -474,44 +527,14 @@ compute_simulation <- function(data,
     mutate(
       yobs = y1 * treated + y0 * (1 - treated)
     ) %>%
-    filter(!is.na(treated)) #not necessary bc dropped in lm()
-  
-  if (id_method == "DID") {
-    sim_data <- sim_data %>%
-      group_by(city) %>%
-      mutate(city_treated = as.logical(max(treated))) %>%
-      ungroup() %>%
-      group_by(date) %>%
-      mutate(post = as.logical(max(treated))) %>%
-      ungroup()
-    
-    true_effect <- sim_data %>% 
-      filter(post, city_treated) %>% 
-      summarise(mean(y1 - y0, na.rm = TRUE)) %>% 
-      as.numeric()
-  } else if (id_method %in% c("ITS", "RDIT")) {
-    sim_data <- sim_data %>%
-      mutate(
-        date_num = as.numeric(date),
-        t = date_num - min(date_num),
-        t_post = date_num - as.numeric(min(.data$date[treated == TRUE])),
-        t_post = ifelse(t_post < 0, 0, t_post)
-      )
-    
-    true_effect <- sim_data %>% 
-      filter(t_post > 0) %>% 
-      summarise(mean(y1 - y0, na.rm = TRUE)) %>% 
-      as.numeric()
-  } else if (id_method == "OLS") {
-    true_effect <- percent_effect_size
-  } else { 
-    true_effect <- mean(sim_data$y1 - sim_data$y0, na.rm = TRUE)
-  }
+    filter(!is.na(treated)) %>% #not necessary bc dropped in lm()
+    add_post_vars(id_method) 
   
   sim_output <- sim_data %>%
-    estimate_model(formula = update(fml, yobs ~ .)) %>%
-    mutate(true_effect = true_effect)
-        
+    estimate_model(formula = update(fml, yobs ~ .)) %>% 
+    mutate(
+      true_effect = compute_true_effect(sim_data, id_method, percent_effect_size)
+    )
   
   return(sim_output)
 }
@@ -519,8 +542,8 @@ compute_simulation <- function(data,
 test <- us_data %>%
   compute_simulation(
     formula = "log(resp_total) ~ co + temperature | city",
-    quasi_exp = "none",
-    id_method = "OLS",
+    quasi_exp = "local",
+    id_method = "DID",
     n_days = 500
     # quasi_exp = "local"
   ) 
