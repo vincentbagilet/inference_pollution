@@ -482,10 +482,9 @@ estimate_model <- function(data, formula) {
   pasted_formula <- paste(str_c(fml)[[2]], str_c(fml)[[1]], str_c(fml)[[3]])
   
   param_of_interest <- 
-    ifelse(str_count(pasted_formula, "\\|") == 2, str_c("fit", find_pollutant(fml), sep = "_"), 
+    ifelse(str_count(pasted_formula, "\\|") == 2, #if IV (ie 3 parts rhs in formula)
+           str_c("fit", find_pollutant(fml), sep = "_"), 
            ifelse("treated" %in% all.vars(fml), "treatedTRUE", find_pollutant(fml)))
-  
-  print(param_of_interest)
   
   #run the estimation
   est_results <- data %>% 
