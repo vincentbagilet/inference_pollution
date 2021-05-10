@@ -441,9 +441,10 @@ create_y1 <- function(data,
         mean(data[[dep_var]], na.rm = TRUE) * percent_effect_size / 100
       ) %>%
       suppressWarnings() #warnings when is.na(dep_var) eg rpois(1, NA)
-  } else if (id_method == "OLS") {
+  } else if (id_method %in% c("OLS", "IV")) {
     actual_fml <- formula(fml, rhs = -3)
     pollutant <- find_pollutant(actual_fml)
+    pollutant <- ifelse(id_method == "IV", str_c("fit_", pollutant), pollutant)
     
     reg <- feols(data = data, fml = actual_fml, combine.quick=FALSE) 
     reg$coefficients[[pollutant]] <- percent_effect_size/100
@@ -451,20 +452,13 @@ create_y1 <- function(data,
     
     data[["y1"]] <- round(exp(predict(reg, data) + 
                    rnorm(res, mean(res), sd = sd(res))))
-  } else if (id_method == "IV") {
-    actual_fml <- formula(fml, rhs = -3)
-    pollutant <- find_pollutant(actual_fml)
-    
-    reg <- feols(data = data, fml = actual_fml, combine.quick=FALSE) 
-    reg$coefficients[[pollutant]] <- percent_effect_size/100
-    res <- reg$residuals
-    
-    data[["y1"]] <- round(exp(predict(reg, data) + 
-                   rnorm(res, mean(res), sd = sd(res))))
-  }
+  } 
+  
   return(data)
 } 
 
+us_data %>% 
+  draw_treated() 
 # create_y1(us_data, id_method = "OLS", formula = "log(resp_total) ~ co + temperature | city") %>% select(resp_total, y1)
 ```
 
@@ -689,11 +683,14 @@ sim_param_to_edit <- sim_param_unique %>%
       quasi_exp == "random_days" ~ "RCT",
       quasi_exp %in% c("local", "rolling") ~ "DID",
       str_starts(quasi_exp, "national") ~ "ITS",
-      str_starts(quasi_exp, "alert") ~ "RDD",
-      quasi_exp == "none" ~ "OLS"
+      str_starts(quasi_exp, "alert") ~ "RDD"
     ),
+    id_method = ifelse(quasi_exp == "none",  list(c("IV","OLS")), id_method)
+  ) %>% 
+  unnest(id_method) %>% 
+  mutate(
     formula = ifelse(
-      id_method == "OLS", 
+      id_method %in% c("OLS", "IV"), 
       str_c("log(", str_extract(formula, ".+(?=\\s~)"), ") ~ ", str_extract(formula, "(?<=~\\s).+")), 
       formula),
     formula = case_when(
@@ -706,6 +703,10 @@ sim_param_to_edit <- sim_param_unique %>%
         "treated +", str_remove(quasi_exp, "alert_")
       )),
       id_method == "OLS" ~ str_replace_all(formula, "treated", "co"),
+      id_method == "IV" ~ paste(
+        str_remove_all(formula, "(\\+\\s)?\\btreated\\b(\\s\\+)?"),
+        "| co ~ treated"
+        ),
       TRUE ~ formula
     )
   ) 
