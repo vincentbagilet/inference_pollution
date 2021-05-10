@@ -237,7 +237,7 @@ us_data <- us_data %>%
 
 ## Function definitions
 
-### Drawing the study period
+### Selecting the study period
 
 First, we create a function to randomly select a study period of a given length. This function also randomly selects a given number of cities to consider. For simplicity, we choose to have the same temporal study period for each city. This also seems realistic; a study focusing on several cities would probably consider a unique study period. 
 
@@ -285,7 +285,7 @@ In this function, we made some simulations decisions:
 - For the GAM and IV, we only consider a subset of observations to create variation across iterations
 
 ```{r}
-draw_treated <- function(data, p_treat = 0.5, quasi_exp = "random_day") {
+draw_treated <- function(data, p_treat = 0.5, quasi_exp = "random_days") {
   
   if (quasi_exp == "random_days") {
     data[["treated"]] <- rbernoulli(length(data[["date"]]), p_treat)
@@ -418,10 +418,12 @@ We then create the output if a unit is treated, Y(1). We use different methods t
 
 We also create a short function to detect a pollutant among independent variables of a formula. We also use this function later.
 
+For the IV, we include the intensity of the IV in the method name. This is not very clean coding style as we should have created a new parameter. Yet, it makes the code much simpler and ultimately much clearer.
+
 ```{r}
 find_pollutant <- function(formula) {
     pollutants_list <- c("co", "pm10", "pm2.5", "no")
-    pollutant <- pollutants_list[pollutants_list %in% all.vars(formula[[3]])]
+    pollutant <- pollutants_list[pollutants_list %in% all.vars(formula)]
     return(pollutant)
 }
 
@@ -433,7 +435,7 @@ create_y1 <- function(data,
   fml <- Formula::as.Formula(formula)
   
   if (id_method %in% c("RCT", "DID", "ITS", "RDIT", "RDD")) {
-    dep_var <- all.vars(fml[[2]])
+    dep_var <- all.vars(fml)[[1]]
     
     data[["y1"]] <- data[[dep_var]] + 
       rpois(
@@ -441,12 +443,21 @@ create_y1 <- function(data,
         mean(data[[dep_var]], na.rm = TRUE) * percent_effect_size / 100
       ) %>%
       suppressWarnings() #warnings when is.na(dep_var) eg rpois(1, NA)
-  } else if (id_method %in% c("OLS", "IV")) {
-    actual_fml <- formula(fml, rhs = -3)
-    pollutant <- find_pollutant(actual_fml)
-    pollutant <- ifelse(id_method == "IV", str_c("fit_", pollutant), pollutant)
+  } else if (str_starts(id_method, "OLS|IV")) {
+    # actual_fml <- formula(fml, rhs = -3)
+    pollutant <- find_pollutant(fml)
     
-    reg <- feols(data = data, fml = actual_fml, combine.quick=FALSE) 
+    reg <- feols(data = data, fml = fml, combine.quick=FALSE) 
+    
+    if (str_starts(id_method, "IV")) {
+      iv_intensity <- as.numeric(str_extract(id_method, "(?<=_).+"))
+      data[[pollutant]] <- 
+        data[[pollutant]] + 
+        iv_intensity*data[["treated"]] + 
+        rnorm(data[[pollutant]], 0, 0.5)
+      pollutant <- str_c("fit_", pollutant)
+    } 
+    
     reg$coefficients[[pollutant]] <- percent_effect_size/100
     res <- reg$residuals
     
@@ -457,9 +468,7 @@ create_y1 <- function(data,
   return(data)
 } 
 
-us_data %>% 
-  draw_treated() 
-# create_y1(us_data, id_method = "OLS", formula = "log(resp_total) ~ co + temperature | city") %>% select(resp_total, y1)
+# create_y1(draw_treated(us_data), id_method = "IV_0.05", formula = "log(resp_total) ~  temperature | city | co ~ treated") %>% select(resp_total, y1)
 ```
 
 ### Estimate the model
@@ -471,23 +480,24 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 estimate_model <- function(data, formula) {
   #get the different parameters from the formula
   fml <- Formula::as.Formula(formula)
-  cluster <- formula(fml, lhs = 0, rhs = 3) %>% 
-    suppressWarnings() #when no cluster provided, warning
-  actual_fml <- formula(fml, rhs = -3)
-  se <- ifelse(cluster == ~0, "hetero", "cluster")
+  # cluster <- formula(fml, lhs = 0, rhs = 3) %>% 
+  #   suppressWarnings() #when no cluster provided, warning
+  # actual_fml <- formula(fml, rhs = -3)
+  # se <- ifelse(cluster == ~0, "hetero", "cluster")
+  se <- "hetero"
   
   param_of_interest <- ifelse(
-    "treated" %in% all.vars(actual_fml[[3]]), 
+    "treated" %in% all.vars(fml), 
     "treatedTRUE", 
-    find_pollutant(actual_fml)
+    find_pollutant(fml)
   )
   
   #run the estimation
   est_results <- data %>% 
     feols(
       data = ., 
-      fml = actual_fml, 
-      cluster = cluster,
+      fml = fml, 
+      # cluster = cluster,
       se = se
     ) 
   
@@ -573,8 +583,8 @@ compute_simulation <- function(data,
                                formula = "resp_total ~ treated") {
   
   fml <- Formula::as.Formula(formula)
-  dep_var <- all.vars(fml[[2]]) 
-  
+  dep_var <- all.vars(fml)[1]
+
   sim_data <- data %>%
     select_study_period(n_days, n_cities) %>%
     mutate(y0 = .data[[dep_var]]) %>%
@@ -586,8 +596,14 @@ compute_simulation <- function(data,
     filter(!is.na(treated)) %>% #not necessary bc dropped in lm()
     add_post_vars(id_method) 
   
+  updated_fml <- ifelse(
+    str_starts(id_method, "IV|OLS"),
+    formula,
+    str_replace(formula, ".+(?=~)", "yobs ")
+  )
+
   sim_output <- sim_data %>%
-    estimate_model(formula = update(fml, yobs ~ .)) %>% 
+    estimate_model(formula = updated_fml) %>% 
     mutate(
       true_effect = compute_true_effect(sim_data, id_method, percent_effect_size)
     )
@@ -595,11 +611,12 @@ compute_simulation <- function(data,
   return(sim_output)
 }
 
-test <- us_data %>%
+test <- us_data %>% 
+  draw_treated() %>% 
   compute_simulation(
-    formula = "log(resp_total) ~ co + temperature | city",
-    quasi_exp = "local",
-    id_method = "DID",
+    formula = "resp_total ~ temperature | city | co ~ treated",
+    quasi_exp = "random_days",
+    id_method = "IV_0.5",
     n_days = 500
     # quasi_exp = "local"
   ) 
@@ -680,17 +697,22 @@ sim_param_to_edit <- sim_param_unique %>%
   # mutate(p_treat = ifelse(str_starts(quasi_exp "alert"), p_treat/10, p_treat) %>% 
   mutate(
     id_method = case_when(
-      quasi_exp == "random_days" ~ "RCT",
+      # quasi_exp == "random_days" ~ "RCT",
       quasi_exp %in% c("local", "rolling") ~ "DID",
       str_starts(quasi_exp, "national") ~ "ITS",
-      str_starts(quasi_exp, "alert") ~ "RDD"
+      str_starts(quasi_exp, "alert") ~ "RDD",
+      quasi_exp == "none" ~ "OLS",
     ),
-    id_method = ifelse(quasi_exp == "none",  list(c("IV","OLS")), id_method)
+    id_method = ifelse(
+      quasi_exp == "random_days", 
+      list(c("RCT","IV_0.2")), 
+      id_method
+    )
   ) %>% 
   unnest(id_method) %>% 
   mutate(
     formula = ifelse(
-      id_method %in% c("OLS", "IV"), 
+      str_starts(id_method, "OLS|IV"), 
       str_c("log(", str_extract(formula, ".+(?=\\s~)"), ") ~ ", str_extract(formula, "(?<=~\\s).+")), 
       formula),
     formula = case_when(
@@ -703,13 +725,14 @@ sim_param_to_edit <- sim_param_unique %>%
         "treated +", str_remove(quasi_exp, "alert_")
       )),
       id_method == "OLS" ~ str_replace_all(formula, "treated", "co"),
-      id_method == "IV" ~ paste(
+      str_starts(id_method, "IV") ~ paste(
         str_remove_all(formula, "(\\+\\s)?\\btreated\\b(\\s\\+)?"),
         "| co ~ treated"
         ),
       TRUE ~ formula
     )
-  ) 
+  ) %>% 
+  filter(!str_detect(formula, "~\\s{0,2}\\|"))
 
 write_csv(sim_param_to_edit, "../Outputs/sim_param_to_edit.csv")
 #Here, check everything and edit by hand
