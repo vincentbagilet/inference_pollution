@@ -478,27 +478,21 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 
 ```{r}
 estimate_model <- function(data, formula) {
-  #get the different parameters from the formula
   fml <- Formula::as.Formula(formula)
-  # cluster <- formula(fml, lhs = 0, rhs = 3) %>% 
-  #   suppressWarnings() #when no cluster provided, warning
-  # actual_fml <- formula(fml, rhs = -3)
-  # se <- ifelse(cluster == ~0, "hetero", "cluster")
-  se <- "hetero"
+  pasted_formula <- paste(str_c(fml)[[2]], str_c(fml)[[1]], str_c(fml)[[3]])
   
-  param_of_interest <- ifelse(
-    "treated" %in% all.vars(fml), 
-    "treatedTRUE", 
-    find_pollutant(fml)
-  )
+  param_of_interest <- 
+    ifelse(str_count(pasted_formula, "\\|") == 2, str_c("fit", find_pollutant(fml), sep = "_"), 
+           ifelse("treated" %in% all.vars(fml), "treatedTRUE", find_pollutant(fml)))
+  
+  print(param_of_interest)
   
   #run the estimation
   est_results <- data %>% 
     feols(
       data = ., 
       fml = fml, 
-      # cluster = cluster,
-      se = se
+      se = "hetero"
     ) 
   
   #retrieve the useful info
@@ -614,9 +608,9 @@ compute_simulation <- function(data,
 test <- us_data %>% 
   draw_treated() %>% 
   compute_simulation(
-    formula = "resp_total ~ temperature | city | co ~ treated",
+    formula = "resp_total ~ co + temperature | city",
     quasi_exp = "random_days",
-    id_method = "IV_0.5",
+    id_method = "OLS",
     n_days = 500
     # quasi_exp = "local"
   ) 
@@ -697,7 +691,6 @@ sim_param_to_edit <- sim_param_unique %>%
   # mutate(p_treat = ifelse(str_starts(quasi_exp "alert"), p_treat/10, p_treat) %>% 
   mutate(
     id_method = case_when(
-      # quasi_exp == "random_days" ~ "RCT",
       quasi_exp %in% c("local", "rolling") ~ "DID",
       str_starts(quasi_exp, "national") ~ "ITS",
       str_starts(quasi_exp, "alert") ~ "RDD",
