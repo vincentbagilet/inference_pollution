@@ -1,0 +1,125 @@
+---
+title: "Retrieving full texts"
+author: "Vincent Bagilet"
+date: "5/11/2021"
+output: html_document
+---
+
+
+# Analysis of papers dealing with power and missingness issues
+
+## Retreiving the full texts
+
+We then download the full texts (using the `ft_get` functions). The full texts are stored in an xml format in the cache directory. Note that due to my IP address being located outside of Columbia, I cannot access the texts from Scopus.
+
+```{r eval = FALSE}
+#set folder to store downloads
+cache_options_set(full_path = "/Users/vincentbagilet/Documents/fulltext")
+# cache_options_set(full_path = "/Volumes/VincentSSD/Research_data/air_pollution/lit_review/full_texts")
+
+metadata_lit_review <- readRDS("../Outputs/metadata_lit_review.RDS")
+metadata_scopus <- readRDS("../Outputs/metadata_scopus.RDS")
+
+metadata_lit_review$doi %>% 
+  ft_get(progress = TRUE)
+
+metadata_scopus$doi[1:10] %>% 
+  ft_get(from = "elsevier")
+
+"10.1016/j.scitotenv.2021.145777" 
+  
+"10.1016/j.envint.2021.106434" %>% 
+  ft_get(from = "elsevier")
+
+metadata_entrez$doi %>% 
+  ft_get(from = "entrez", progress = TRUE)
+```
+
+Links to test directly whether that works
+
+```{r}
+https://api.elsevier.com/content/article/doi/10.1016/j.scitotenv.2021.145725?APIKey= 	973798cb29f35f1e72306fda025bc1ad
+
+https://api.elsevier.com/authenticate/X-ELS-APIKey=973798cb29f35f1e72306fda025bc1ad
+
+https://api.elsevier.com/content/article/doi/10.1016/j.envint.2021.106434?APIKey=97cf76b54716b952af1b960bd830356a?view=FULL
+
+https://api.elsevier.com/content/article/doi/10.1016/j.envint.2021.106434
+
+10.1016/j.envint.2021.106434
+
+https://api.elsevier.com/content/article/pii/S0048969721008445?APIKey=ff394d7bf223e93a318f64d387997d42?view=FULL
+```
+
+
+Once we have downloaded all the files, we can put them into a table format, before analyzing them.
+
+```{r eval = FALSE}
+metadata_scopus$doi[1:10] %>% 
+  ft_get(from = "elsevier")
+
+#put text into a table format
+article_texts <- ft_table() %>% #searches for documents in the cache directory 
+  select(-paths, -ids_norm) # %>% 
+#   .$text 
+
+saveRDS(article_texts, "../Outputs/article_texts.RDS")
+```
+
+## Analysis
+
+To analyse the texts, we first start by simply exploring the proportion of articles mentioning the words "missing" and "power".
+
+```{r eval = FALSE}
+readRDS("../Outputs/article_texts.RDS")
+
+article_texts %>%
+  summarise(
+    contains_missing = sum(str_detect(text, pattern = "\\bmissing"))/n(), #could put a vector with various terms
+    contains_power = sum(str_detect(text, pattern = "\\bpower\\b"))/n() #statistical power
+  )
+```
+
+<!-- # Test with rentrez package -->
+
+<!-- ```{r} -->
+<!-- querry_entrez <- "((air pollution[TITL]  OR air quality[TITL] OR particulate matter[TITL] OR ozone[TITL] OR nitrogen dioxide[TITL] OR sulfur dioxide[TITL]) AND (emergency[TITL] OR mortality[TITL])) AND (particulate matter[TIAB] OR ozone[TIAB] OR nitrogen dioxide[TIAB] OR sulfur dioxide[TIAB])" -->
+
+<!-- rentrez_search <- entrez_search(db = "pubmed", term = querry_entrez, use_history = TRUE) -->
+<!-- rentrez_ids <- rentrez_search$ids %>% as.numeric() -->
+
+<!-- rentrez_texts <- entrez_fetch(db = "pubmed", id = rentrez_ids, rettype = "xml") -->
+
+<!-- t <- rentrez_texts %>% -->
+<!--   xmlParse() %>% -->
+<!--   xmlToList() -->
+
+<!-- retrieve_abstract <- function(lis) { -->
+<!--   df <- lis$MedlineCitation$Article$Abstract %>% -->
+<!--   map_df(., data.frame) %>% -->
+<!--   as.tibble() %>% -->
+<!--   distinct() -->
+
+<!--   # %>% -->
+<!--   # filter(!is.na(text)) %>% -->
+<!--   # select(-3) -->
+
+<!--   return(df) -->
+<!-- } -->
+
+<!-- out <- map_df(t, retrieve_abstract) -->
+
+<!-- r <- t$PubmedArticle$MedlineCitation$Article$Abstract %>% -->
+<!--   map_df(., data.frame) %>% -->
+<!--   as.tibble() %>% -->
+<!--   distinct() %>% -->
+<!--   filter(!is.na(text)) %>% -->
+<!--   select(-3) -->
+
+<!-- t$PubmedArticle$MedlineCitation$Article -->
+<!-- ``` -->
+
+
+
+
+

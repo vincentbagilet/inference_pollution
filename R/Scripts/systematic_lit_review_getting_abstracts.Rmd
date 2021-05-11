@@ -25,7 +25,7 @@ library(knitr)
 opts_chunk$set(fig.path = "images/",
                cache.path = "cache/",
                cache = FALSE,
-               echo = FALSE, #set to false to hide code
+               echo = TRUE, #set to false to hide code
                message = FALSE,
                warning = FALSE,
                out.width = "85%",
@@ -49,13 +49,14 @@ set.seed(1)
 
 # Purpose of the document
 
-In the present document, we retrieve abstracts and full texts for our systematic review of the literature on short term health effects of air pollution. 
+In the present document, we retrieve abstracts for our systematic review of the literature on short term health effects of air pollution. 
 
 # Selecting articles and retrieving metadata
 
-We use the [`fulltext`](https://books.ropensci.org/fulltext/) package to get the abstract and full text of each article corresponding to our search query. This set of articles might be too restrictive and we may want to broaden our scope later. 
+We use the [`fulltext`](https://books.ropensci.org/fulltext/) package to get the abstract of each article corresponding to our search query. 
+<!-- This set of articles might be too restrictive and we may want to broaden our scope later.  -->
 
-To begin with, we focus on articles published on Scopus and Pubmed. To access Scopus API, one needs to register to get an API key (stored in the .Renviron) for Elsevier and a Crossref TDM API key. Note that downloading of full texts may not work if one is not connected directly to their institution internet network. Pubmed articles are accessed via Entrez. An API key enables to increase the number of requests per seconds from 3 to 10. More information on authentication is available on [the `fulltext` manual](https://books.ropensci.org/fulltext/authentication.html).
+We focus on articles published on Scopus and Pubmed. To access Scopus API, one needs to register to get an API key (stored in the .Renviron) for Elsevier and a Crossref TDM API key. Note that downloading of full texts may not work if one is not connected directly to their institution internet network. Pubmed articles are accessed via Entrez. An API key enables to increase the number of requests per seconds from 3 to 10. More information on authentication is available on [the `fulltext` manual](https://books.ropensci.org/fulltext/authentication.html).
 
 ## Set of articles to consider
 
@@ -307,11 +308,11 @@ str_view_all(no_effect$sentence, "lom")
 
 ## Retreiving additional information
 
-It might also be interesting to information about the type of pollutant considered in the study, the study period, the number of observations or p-values and the type of outcome studied (mortality, emergency admissions, stroke, cerebrovascular or cardiovascular diseases). We also use regex to recover this information.
+It might also be interesting to information about the type of pollutant considered in the study, the study period, the number of observations or the type of outcome studied (mortality, emergency admissions, stroke, cerebrovascular or cardiovascular diseases). We also use regex to recover this information.
 
 ```{r}
 #To start on the right foot, a bit of cleaning
-abstracts_more_info <- abstracts %>% 
+abstracts_only <- abstracts %>% 
   mutate(
     abstract = str_replace_all(abstract, "·", ".")
   ) %>% 
@@ -322,7 +323,6 @@ abstracts_more_info <- abstracts %>%
 ### Length of the study period
 
 We first detect begin and end dates for the period of study and compute the length of study, after transforming the text data to a date format using the function `text_to_date`.
-
 
 ```{r}
 month_regex <- "\\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|(Nov|Dec)(?:ember)?)"
@@ -336,7 +336,7 @@ text_to_date <- function(date_text) {
   return(date)
 }
 
-abstracts_length_study <- abstracts_more_info %>%
+abstracts_length_study <- abstracts_only %>%
   mutate(
     dates_obs = str_extract_all(
       abstract, 
@@ -362,6 +362,7 @@ abstracts_length_study <- abstracts_more_info %>%
   distinct()
 ```
 
+### Number of cities considered
 
 We then try to detect the number of cities considered in each abstract. To do so, we use two different techniques:
 
@@ -375,8 +376,7 @@ number_word <- tibble(
   word = english::words(1:5000)
 )
 
-abstracts_numbers <- abstracts %>% 
-  select(abstract, doi) %>% 
+abstracts_numbers <- abstracts_only %>% 
   unnest_tokens(word, abstract) %>%
   left_join(number_word, by = "word") %>%
   mutate(word = ifelse(!is.na(number), number, word)) %>% 
@@ -399,7 +399,7 @@ worldcities_large <- worldcities %>%
 
 abstracts_number_cities <- abstracts_numbers %>% 
    mutate(
-    nb_many_cities = str_extract_all(
+    n_many_cities = str_extract_all(
       abstract, 
       # "(?<!more\\sthan)\\d+(?=\\s?(c|C)it(y|ies))"
       "\\d+(?=\\s?(c|C)it(y|ies))"
@@ -407,15 +407,15 @@ abstracts_number_cities <- abstracts_numbers %>%
     abstract_ascii = stringi::stri_trans_general(abstract,"Latin-ASCII") %>% str_to_lower(),
     abstract_ascii = str_remove_all(abstract_ascii, "-")
   ) %>%
-  unnest(nb_many_cities, keep_empty = TRUE) %>%
-  mutate(nb_many_cities = as.numeric(nb_many_cities)) %>% 
+  unnest(n_many_cities, keep_empty = TRUE) %>%
+  mutate(n_many_cities = as.numeric(n_many_cities)) %>% 
   group_by(doi) %>%
-  mutate(nb_many_cities = max(nb_many_cities)) %>%
+  mutate(n_many_cities = max(n_many_cities)) %>%
   ungroup() %>%
   distinct() %>% 
   group_by(doi) %>%
   mutate(
-    nb_names_cities = str_extract_all(abstract_ascii, worldcities_large[["city_regex"]]) %>% 
+    n_names_cities = str_extract_all(abstract_ascii, worldcities_large[["city_regex"]]) %>% 
       as_vector() %>% 
       unique() %>% 
       length()
@@ -423,44 +423,32 @@ abstracts_number_cities <- abstracts_numbers %>%
   ungroup() %>% 
   group_by(doi) %>% 
   mutate(
-    nb_cities = max(nb_many_cities, nb_names_cities, na.rm = TRUE),
-    nb_cities = ifelse(nb_cities == 0, NA, nb_cities)
+    n_cities = max(n_many_cities, n_names_cities, na.rm = TRUE),
+    n_cities = ifelse(n_cities == 0, NA, n_cities)
   ) %>% 
   ungroup() %>% 
-  select(doi, nb_cities) %>% 
+  select(doi, n_cities) %>% 
   distinct()
 ```
 
-Finally, we combine these two information to compute the number of observations. We also retrieve the number of observations directly from the abstract when it is obviously stated.
+### Number of observations
+
+Finally, we combine these two information to compute the number of observations. 
 
 ```{r}
-abstracts_more_info <- abstracts_more_info %>% 
-  right_join(abstracts_length_study) %>% 
-  right_join(abstracts_number_cities) %>% 
-  mutate(
-    n_obs_stated = str_extract_all(
-      abstract, 
-      "(?<=(\\bn\\s?= ))[,\\d\\s]{1,10}|[,\\d\\s]{1,8}(?=(\\sobservations))"
-    )
-  ) %>% 
-  unnest(n_obs_stated, keep_empty = TRUE) %>%
-  mutate(
-    n_obs_stated = as.numeric(str_remove_all(n_obs_stated, ",")), 
-    n_obs_computed = nb_cities*length_study
-  )  
-  # group_by(doi) %>% 
-  # mutate(
-  #   nb_obs = max(n_obs_stated, n_obs_computed, na.rm = TRUE)
-  # ) %>% 
-  # ungroup()
+abstracts_n_obs <- abstracts %>% 
+  left_join(abstracts_length_study, by = "doi") %>% 
+  left_join(abstracts_number_cities, by = "doi") %>% 
+  mutate(n_obs = n_cities*length_study)
 ```
 
+### Pollutant and outcome studied
 
+We then recover, when possible, the pollutant and outcome considered. 
+We retrieve pollutants and outcome that are mentioned in the abstract. Importantly, we recognize that some pollutants and outcome may be mentioned in an abstract even though the corresponding study does not run any analysis on these pollutants and outcomes. We however assume that it is rather unlikely that a study on cardiovascular diseases due to particulate matter pollution will talk about ozone in its abstract. Note that there are sometimes several pollutants and outcomes per abstract. 
 
 ```{r}
-
-
-%>% 
+abstracts_more_info <- abstracts_n_obs %>% 
   mutate(
     p_value = str_extract_all(abstract, "(?<=\\b(p|P|p-value|p value)\\s?)[=<]\\s?[\\d.]+"),
     pollutant = str_extract_all(abstract, "(\\bPM\\s?2(\\.|,)5|\\bPM\\s?10|\\bO\\s?3\\b|\\b(o|O)zone\\b|\\b(P|p)articulate\\s(M|m)atter\\b|\\bNO\\s?2|\\b(n|N)itrogen\\s?(d|D)ioxide\\b|\\bNO\\b|\\b(n|N)itrogen\\s?(o|O)xide\\b|\\bNO\\s?(x|X)\\b|\\bSO\\s?2|\\bCO\\b|\\bBC\\b|\\b(A|a)ir\\s(Q|q)uality\\s(I|i)ndex\\b)")
@@ -497,123 +485,5 @@ abstracts_more_info <- abstracts_more_info %>%
 
 saveRDS(abstracts_more_info, "../Outputs/abstracts_more_info.RDS")
 ```
-
-
-
-
-# Analysis of papers dealing with power and missingness issues
-
-## Retreiving the full texts
-
-We then download the full texts (using the `ft_get` functions). The full texts are stored in an xml format in the cache directory. Note that due to my IP address being located outside of Columbia, I cannot access the texts from Scopus.
-
-```{r eval = FALSE}
-#set folder to store downloads
-cache_options_set(full_path = "/Users/vincentbagilet/Documents/fulltext")
-# cache_options_set(full_path = "/Volumes/VincentSSD/Research_data/air_pollution/lit_review/full_texts")
-
-metadata_lit_review <- readRDS("../Outputs/metadata_lit_review.RDS")
-metadata_scopus <- readRDS("../Outputs/metadata_scopus.RDS")
-
-metadata_lit_review$doi %>% 
-  ft_get(progress = TRUE)
-
-metadata_scopus$doi[1:10] %>% 
-  ft_get(from = "elsevier")
-
-"10.1016/j.scitotenv.2021.145777" 
-  
-"10.1016/j.envint.2021.106434" %>% 
-  ft_get(from = "elsevier")
-
-metadata_entrez$doi %>% 
-  ft_get(from = "entrez", progress = TRUE)
-```
-
-Links to test directly whether that works
-
-```{r}
-https://api.elsevier.com/content/article/doi/10.1016/j.scitotenv.2021.145725?APIKey= 	973798cb29f35f1e72306fda025bc1ad
-
-https://api.elsevier.com/authenticate/X-ELS-APIKey=973798cb29f35f1e72306fda025bc1ad
-
-https://api.elsevier.com/content/article/doi/10.1016/j.envint.2021.106434?APIKey=97cf76b54716b952af1b960bd830356a?view=FULL
-
-https://api.elsevier.com/content/article/doi/10.1016/j.envint.2021.106434
-
-10.1016/j.envint.2021.106434
-
-https://api.elsevier.com/content/article/pii/S0048969721008445?APIKey=ff394d7bf223e93a318f64d387997d42?view=FULL
-```
-
-
-Once we have downloaded all the files, we can put them into a table format, before analyzing them.
-
-```{r eval = FALSE}
-metadata_scopus$doi[1:10] %>% 
-  ft_get(from = "elsevier")
-
-#put text into a table format
-article_texts <- ft_table() %>% #searches for documents in the cache directory 
-  select(-paths, -ids_norm) # %>% 
-#   .$text 
-
-saveRDS(article_texts, "../Outputs/article_texts.RDS")
-```
-
-## Analysis
-
-To analyse the texts, we first start by simply exploring the proportion of articles mentioning the words "missing" and "power".
-
-```{r eval = FALSE}
-readRDS("../Outputs/article_texts.RDS")
-
-article_texts %>%
-  summarise(
-    contains_missing = sum(str_detect(text, pattern = "\\bmissing"))/n(), #could put a vector with various terms
-    contains_power = sum(str_detect(text, pattern = "\\bpower\\b"))/n() #statistical power
-  )
-```
-
-<!-- # Test with rentrez package -->
-
-<!-- ```{r} -->
-<!-- querry_entrez <- "((air pollution[TITL]  OR air quality[TITL] OR particulate matter[TITL] OR ozone[TITL] OR nitrogen dioxide[TITL] OR sulfur dioxide[TITL]) AND (emergency[TITL] OR mortality[TITL])) AND (particulate matter[TIAB] OR ozone[TIAB] OR nitrogen dioxide[TIAB] OR sulfur dioxide[TIAB])" -->
-
-<!-- rentrez_search <- entrez_search(db = "pubmed", term = querry_entrez, use_history = TRUE) -->
-<!-- rentrez_ids <- rentrez_search$ids %>% as.numeric() -->
-
-<!-- rentrez_texts <- entrez_fetch(db = "pubmed", id = rentrez_ids, rettype = "xml") -->
-
-<!-- t <- rentrez_texts %>% -->
-<!--   xmlParse() %>% -->
-<!--   xmlToList() -->
-
-<!-- retrieve_abstract <- function(lis) { -->
-<!--   df <- lis$MedlineCitation$Article$Abstract %>% -->
-<!--   map_df(., data.frame) %>% -->
-<!--   as.tibble() %>% -->
-<!--   distinct() -->
-
-<!--   # %>% -->
-<!--   # filter(!is.na(text)) %>% -->
-<!--   # select(-3) -->
-
-<!--   return(df) -->
-<!-- } -->
-
-<!-- out <- map_df(t, retrieve_abstract) -->
-
-<!-- r <- t$PubmedArticle$MedlineCitation$Article$Abstract %>% -->
-<!--   map_df(., data.frame) %>% -->
-<!--   as.tibble() %>% -->
-<!--   distinct() %>% -->
-<!--   filter(!is.na(text)) %>% -->
-<!--   select(-3) -->
-
-<!-- t$PubmedArticle$MedlineCitation$Article -->
-<!-- ``` -->
-
-
 
 
