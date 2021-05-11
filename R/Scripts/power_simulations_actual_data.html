@@ -91,8 +91,8 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   
   
   <!--  https://schema.org/Article -->
-  <meta property="article:published" itemprop="datePublished" content="2021-05-10" />
-  <meta property="article:created" itemprop="dateCreated" content="2021-05-10" />
+  <meta property="article:published" itemprop="datePublished" content="2021-05-11" />
+  <meta property="article:created" itemprop="dateCreated" content="2021-05-11" />
   <meta name="article:author" content="Vincent Bagilet" />
   <meta name="article:author" content="Léo Zabrocki" />
   
@@ -109,7 +109,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <!--radix_placeholder_rmarkdown_metadata-->
   
   <script type="text/json" id="radix-rmarkdown-metadata">
-  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","author","date","output"]}},"value":[{"type":"character","attributes":{},"value":["Power Simulation Exercise: actual data"]},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Vincent Bagilet"]},{"type":"character","attributes":{},"value":["https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet"]},{"type":"character","attributes":{},"value":["Columbia University"]},{"type":"character","attributes":{},"value":["https://www.columbia.edu/"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Léo Zabrocki"]},{"type":"character","attributes":{},"value":["https://www.parisschoolofeconomics.eu/en/"]},{"type":"character","attributes":{},"value":["Paris School of Economics"]},{"type":"character","attributes":{},"value":["https://www.parisschoolofeconomics.eu/en/"]}]}]},{"type":"character","attributes":{},"value":["2021-05-10"]},{"type":"character","attributes":{},"value":["distill::distill_article"]}]}
+  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","author","date","output"]}},"value":[{"type":"character","attributes":{},"value":["Power Simulation Exercise: actual data"]},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Vincent Bagilet"]},{"type":"character","attributes":{},"value":["https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet"]},{"type":"character","attributes":{},"value":["Columbia University"]},{"type":"character","attributes":{},"value":["https://www.columbia.edu/"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Léo Zabrocki"]},{"type":"character","attributes":{},"value":["https://www.parisschoolofeconomics.eu/en/"]},{"type":"character","attributes":{},"value":["Paris School of Economics"]},{"type":"character","attributes":{},"value":["https://www.parisschoolofeconomics.eu/en/"]}]}]},{"type":"character","attributes":{},"value":["2021-05-11"]},{"type":"character","attributes":{},"value":["distill::distill_article"]}]}
   </script>
   <!--/radix_placeholder_rmarkdown_metadata-->
   
@@ -2458,7 +2458,7 @@ distill-header .nav a {
 <!--radix_placeholder_front_matter-->
 
 <script id="distill-front-matter" type="text/json">
-{"title":"Power Simulation Exercise: actual data","authors":[{"author":"Vincent Bagilet","authorURL":"https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet","affiliation":"Columbia University","affiliationURL":"https://www.columbia.edu/","orcidID":""},{"author":"Léo Zabrocki","authorURL":"https://www.parisschoolofeconomics.eu/en/","affiliation":"Paris School of Economics","affiliationURL":"https://www.parisschoolofeconomics.eu/en/","orcidID":""}],"publishedDate":"2021-05-10T00:00:00.000+00:00","citationText":"Bagilet & Zabrocki, 2021"}
+{"title":"Power Simulation Exercise: actual data","authors":[{"author":"Vincent Bagilet","authorURL":"https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet","affiliation":"Columbia University","affiliationURL":"https://www.columbia.edu/","orcidID":""},{"author":"Léo Zabrocki","authorURL":"https://www.parisschoolofeconomics.eu/en/","affiliation":"Paris School of Economics","affiliationURL":"https://www.parisschoolofeconomics.eu/en/","orcidID":""}],"publishedDate":"2021-05-11T00:00:00.000+00:00","citationText":"Bagilet & Zabrocki, 2021"}
 </script>
 
 <!--/radix_placeholder_front_matter-->
@@ -2479,7 +2479,7 @@ distill-header .nav a {
   
 ,   Léo Zabrocki <a href="https://www.parisschoolofeconomics.eu/en/" class="uri">https://www.parisschoolofeconomics.eu/en/</a> (Paris School of Economics)<a href="https://www.parisschoolofeconomics.eu/en/" class="uri">https://www.parisschoolofeconomics.eu/en/</a>
   
-<br />2021-05-10
+<br />2021-05-11
 </div>
 
 <div class="d-article">
@@ -2604,7 +2604,7 @@ text-align: justify}
 <h2 id="loading-and-formatting-data">Loading and Formatting Data</h2>
 <p>We load the packages and the data and wrangle it into a format well suited for this analysis.</p>
 <h2 id="function-definitions">Function definitions</h2>
-<h3 id="drawing-the-study-period">Drawing the study period</h3>
+<h3 id="selecting-the-study-period">Selecting the study period</h3>
 <p>First, we create a function to randomly select a study period of a given length. This function also randomly selects a given number of cities to consider. For simplicity, we choose to have the same temporal study period for each city. This also seems realistic; a study focusing on several cities would probably consider a unique study period.</p>
 <p>This function randomly selects a starting date for the study, early enough so that the study can actually last the number of days chosen. It then randomly draws a given number of cities and filters out observations outside of the study period. It returns a data set with only the desired number of cities and days.</p>
 <div class="layout-chunk" data-layout="l-body">
@@ -2649,7 +2649,7 @@ text-align: justify}
 </ul>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class="va">draw_treated</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">p_treat</span> <span class="op">=</span> <span class="fl">0.5</span>, <span class="va">quasi_exp</span> <span class="op">=</span> <span class="st">&quot;random_day&quot;</span><span class="op">)</span> <span class="op">{</span>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="va">draw_treated</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">p_treat</span> <span class="op">=</span> <span class="fl">0.5</span>, <span class="va">quasi_exp</span> <span class="op">=</span> <span class="st">&quot;random_days&quot;</span><span class="op">)</span> <span class="op">{</span>
   
   <span class="kw">if</span> <span class="op">(</span><span class="va">quasi_exp</span> <span class="op">==</span> <span class="st">&quot;random_days&quot;</span><span class="op">)</span> <span class="op">{</span>
     <span class="va">data</span><span class="op">[[</span><span class="st">&quot;treated&quot;</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu">rbernoulli</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">data</span><span class="op">[[</span><span class="st">&quot;date&quot;</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>, <span class="va">p_treat</span><span class="op">)</span>
@@ -2718,11 +2718,12 @@ text-align: justify}
 <li>For the OLS, we build a generative model that creates fake data based on the formula given.</li>
 </ul>
 <p>We also create a short function to detect a pollutant among independent variables of a formula. We also use this function later.</p>
+<p>For the IV, we include the intensity of the IV in the method name. This is not very clean coding style as we should have created a new parameter. Yet, it makes the code much simpler and ultimately much clearer.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class="va">find_pollutant</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">formula</span><span class="op">)</span> <span class="op">{</span>
     <span class="va">pollutants_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">&quot;co&quot;</span>, <span class="st">&quot;pm10&quot;</span>, <span class="st">&quot;pm2.5&quot;</span>, <span class="st">&quot;no&quot;</span><span class="op">)</span>
-    <span class="va">pollutant</span> <span class="op">&lt;-</span> <span class="va">pollutants_list</span><span class="op">[</span><span class="va">pollutants_list</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/allnames.html">all.vars</a></span><span class="op">(</span><span class="va">formula</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">]</span>
+    <span class="va">pollutant</span> <span class="op">&lt;-</span> <span class="va">pollutants_list</span><span class="op">[</span><span class="va">pollutants_list</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/allnames.html">all.vars</a></span><span class="op">(</span><span class="va">formula</span><span class="op">)</span><span class="op">]</span>
     <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="va">pollutant</span><span class="op">)</span>
 <span class="op">}</span>
 
@@ -2734,39 +2735,44 @@ text-align: justify}
   <span class="va">fml</span> <span class="op">&lt;-</span> <span class="fu">Formula</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/Formula/man/Formula.html">as.Formula</a></span><span class="op">(</span><span class="va">formula</span><span class="op">)</span>
   
   <span class="kw">if</span> <span class="op">(</span><span class="va">id_method</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">&quot;RCT&quot;</span>, <span class="st">&quot;DID&quot;</span>, <span class="st">&quot;ITS&quot;</span>, <span class="st">&quot;RDIT&quot;</span>, <span class="st">&quot;RDD&quot;</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span>
-    <span class="va">dep_var</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/allnames.html">all.vars</a></span><span class="op">(</span><span class="va">fml</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>
+    <span class="va">dep_var</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/allnames.html">all.vars</a></span><span class="op">(</span><span class="va">fml</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>
     
-    <span class="va">data</span><span class="op">[[</span><span class="st">&quot;y1&quot;</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">data</span><span class="op">[[</span><span class="va">dep_var</span><span class="op">]</span><span class="op">]</span> <span class="op">+</span> 
-      <span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html">rpois</a></span><span class="op">(</span>
-        <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">data</span><span class="op">[[</span><span class="va">dep_var</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>, 
-        <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">data</span><span class="op">[[</span><span class="va">dep_var</span><span class="op">]</span><span class="op">]</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">*</span> <span class="va">percent_effect_size</span> <span class="op">/</span> <span class="fl">100</span>
-      <span class="op">)</span> <span class="op">%&gt;%</span>
-      <span class="fu"><a href="https://rdrr.io/r/base/warning.html">suppressWarnings</a></span><span class="op">(</span><span class="op">)</span> <span class="co">#warnings when is.na(dep_var) eg rpois(1, NA)</span>
-  <span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="va">id_method</span> <span class="op">==</span> <span class="st">&quot;OLS&quot;</span><span class="op">)</span> <span class="op">{</span>
-    <span class="va">actual_fml</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/formula.html">formula</a></span><span class="op">(</span><span class="va">fml</span>, rhs <span class="op">=</span> <span class="op">-</span><span class="fl">3</span><span class="op">)</span>
-    <span class="va">pollutant</span> <span class="op">&lt;-</span> <span class="fu">find_pollutant</span><span class="op">(</span><span class="va">actual_fml</span><span class="op">)</span>
+    <span class="va">data</span> <span class="op">&lt;-</span> <span class="va">data</span> <span class="op">%&gt;%</span> 
+      <span class="fu">group_by</span><span class="op">(</span><span class="va">.data</span><span class="op">$</span><span class="va">city</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+      <span class="fu">mutate</span><span class="op">(</span>
+        y1 <span class="op">=</span> <span class="va">.data</span><span class="op">[[</span><span class="va">dep_var</span><span class="op">]</span><span class="op">]</span> <span class="op">+</span> 
+          <span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html">rpois</a></span><span class="op">(</span>
+            <span class="fu">n</span><span class="op">(</span><span class="op">)</span>,
+            <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">.data</span><span class="op">[[</span><span class="va">dep_var</span><span class="op">]</span><span class="op">]</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">*</span> <span class="va">percent_effect_size</span> <span class="op">/</span> <span class="fl">100</span>
+          <span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/base/warning.html">suppressWarnings</a></span><span class="op">(</span><span class="op">)</span> <span class="co">#warnings when is.na(dep_var) eg rpois(1, NA)</span>
+      <span class="op">)</span> <span class="op">%&gt;%</span> 
+      <span class="fu">ungroup</span><span class="op">(</span><span class="op">)</span>
     
-    <span class="va">reg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://lrberge.github.io/fixest/reference/feols.html">feols</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">data</span>, fml <span class="op">=</span> <span class="va">actual_fml</span>, combine.quick<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span> 
+  <span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="fu">str_starts</span><span class="op">(</span><span class="va">id_method</span>, <span class="st">&quot;OLS|IV&quot;</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span>
+    <span class="va">pollutant</span> <span class="op">&lt;-</span> <span class="fu">find_pollutant</span><span class="op">(</span><span class="va">fml</span><span class="op">)</span>
+    
+    <span class="va">reg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://lrberge.github.io/fixest/reference/feols.html">feols</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">data</span>, fml <span class="op">=</span> <span class="va">fml</span>, combine.quick<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span> 
+    
+    <span class="kw">if</span> <span class="op">(</span><span class="fu">str_starts</span><span class="op">(</span><span class="va">id_method</span>, <span class="st">&quot;IV&quot;</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span>
+      <span class="va">iv_intensity</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="fu">str_extract</span><span class="op">(</span><span class="va">id_method</span>, <span class="st">&quot;(?&lt;=_).+&quot;</span><span class="op">)</span><span class="op">)</span>
+      <span class="va">data</span><span class="op">[[</span><span class="va">pollutant</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> 
+        <span class="va">data</span><span class="op">[[</span><span class="va">pollutant</span><span class="op">]</span><span class="op">]</span> <span class="op">+</span> 
+        <span class="va">iv_intensity</span><span class="op">*</span><span class="va">data</span><span class="op">[[</span><span class="st">&quot;treated&quot;</span><span class="op">]</span><span class="op">]</span> <span class="op">+</span> 
+        <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="va">data</span><span class="op">[[</span><span class="va">pollutant</span><span class="op">]</span><span class="op">]</span>, <span class="fl">0</span>, <span class="fl">0.5</span><span class="op">)</span>
+      <span class="va">pollutant</span> <span class="op">&lt;-</span> <span class="fu">str_c</span><span class="op">(</span><span class="st">&quot;fit_&quot;</span>, <span class="va">pollutant</span><span class="op">)</span>
+    <span class="op">}</span> 
+    
     <span class="va">reg</span><span class="op">$</span><span class="va">coefficients</span><span class="op">[[</span><span class="va">pollutant</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">percent_effect_size</span><span class="op">/</span><span class="fl">100</span>
     <span class="va">res</span> <span class="op">&lt;-</span> <span class="va">reg</span><span class="op">$</span><span class="va">residuals</span>
     
     <span class="va">data</span><span class="op">[[</span><span class="st">&quot;y1&quot;</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html">exp</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span><span class="op">(</span><span class="va">reg</span>, <span class="va">data</span><span class="op">)</span> <span class="op">+</span> 
                    <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="va">res</span>, <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span>, sd <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
-  <span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="va">id_method</span> <span class="op">==</span> <span class="st">&quot;IV&quot;</span><span class="op">)</span> <span class="op">{</span>
-    <span class="va">actual_fml</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/formula.html">formula</a></span><span class="op">(</span><span class="va">fml</span>, rhs <span class="op">=</span> <span class="op">-</span><span class="fl">3</span><span class="op">)</span>
-    <span class="va">pollutant</span> <span class="op">&lt;-</span> <span class="fu">find_pollutant</span><span class="op">(</span><span class="va">actual_fml</span><span class="op">)</span>
-    
-    <span class="va">reg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://lrberge.github.io/fixest/reference/feols.html">feols</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">data</span>, fml <span class="op">=</span> <span class="va">actual_fml</span>, combine.quick<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span> 
-    <span class="va">reg</span><span class="op">$</span><span class="va">coefficients</span><span class="op">[[</span><span class="va">pollutant</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">percent_effect_size</span><span class="op">/</span><span class="fl">100</span>
-    <span class="va">res</span> <span class="op">&lt;-</span> <span class="va">reg</span><span class="op">$</span><span class="va">residuals</span>
-    
-    <span class="va">data</span><span class="op">[[</span><span class="st">&quot;y1&quot;</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html">exp</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span><span class="op">(</span><span class="va">reg</span>, <span class="va">data</span><span class="op">)</span> <span class="op">+</span> 
-                   <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="va">res</span>, <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span>, sd <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
-  <span class="op">}</span>
+  <span class="op">}</span> 
+  
   <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span>
 <span class="op">}</span> 
 
-<span class="co"># create_y1(us_data, id_method = &quot;OLS&quot;, formula = &quot;log(resp_total) ~ co + temperature | city&quot;) %&gt;% select(resp_total, y1)</span>
+<span class="co"># create_y1(draw_treated(nmmaps_data), id_method = &quot;IV_0.05&quot;, formula = &quot;log(resp_total) ~  temperature | city | co ~ treated&quot;) %&gt;% select(resp_total, y1)</span>
 </code></pre>
 </div>
 </div>
@@ -2775,27 +2781,17 @@ text-align: justify}
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class="va">estimate_model</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">formula</span><span class="op">)</span> <span class="op">{</span>
-  <span class="co">#get the different parameters from the formula</span>
   <span class="va">fml</span> <span class="op">&lt;-</span> <span class="fu">Formula</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/Formula/man/Formula.html">as.Formula</a></span><span class="op">(</span><span class="va">formula</span><span class="op">)</span>
-  <span class="va">cluster</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/formula.html">formula</a></span><span class="op">(</span><span class="va">fml</span>, lhs <span class="op">=</span> <span class="fl">0</span>, rhs <span class="op">=</span> <span class="fl">3</span><span class="op">)</span> <span class="op">%&gt;%</span> 
-    <span class="fu"><a href="https://rdrr.io/r/base/warning.html">suppressWarnings</a></span><span class="op">(</span><span class="op">)</span> <span class="co">#when no cluster provided, warning</span>
-  <span class="va">actual_fml</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/formula.html">formula</a></span><span class="op">(</span><span class="va">fml</span>, rhs <span class="op">=</span> <span class="op">-</span><span class="fl">3</span><span class="op">)</span>
-  <span class="va">se</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">cluster</span> <span class="op">==</span> <span class="op">~</span><span class="fl">0</span>, <span class="st">&quot;hetero&quot;</span>, <span class="st">&quot;cluster&quot;</span><span class="op">)</span>
+  <span class="va">pasted_formula</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="fu">str_c</span><span class="op">(</span><span class="va">fml</span><span class="op">)</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span>, <span class="fu">str_c</span><span class="op">(</span><span class="va">fml</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>, <span class="fu">str_c</span><span class="op">(</span><span class="va">fml</span><span class="op">)</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>
   
-  <span class="va">param_of_interest</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span>
-    <span class="st">&quot;treated&quot;</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/allnames.html">all.vars</a></span><span class="op">(</span><span class="va">actual_fml</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>, 
-    <span class="st">&quot;treatedTRUE&quot;</span>, 
-    <span class="fu">find_pollutant</span><span class="op">(</span><span class="va">actual_fml</span><span class="op">)</span>
-  <span class="op">)</span>
+  <span class="co">#the param of interest varies across identification methods</span>
+  <span class="va">param_of_interest</span> <span class="op">&lt;-</span> 
+    <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="fu">str_count</span><span class="op">(</span><span class="va">pasted_formula</span>, <span class="st">&quot;\\|&quot;</span><span class="op">)</span> <span class="op">==</span> <span class="fl">2</span>, <span class="co">#if IV (ie 3 parts rhs in formula)</span>
+           <span class="fu">str_c</span><span class="op">(</span><span class="st">&quot;fit&quot;</span>, <span class="fu">find_pollutant</span><span class="op">(</span><span class="va">fml</span><span class="op">)</span>, sep <span class="op">=</span> <span class="st">&quot;_&quot;</span><span class="op">)</span>, 
+           <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="st">&quot;treated&quot;</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/allnames.html">all.vars</a></span><span class="op">(</span><span class="va">fml</span><span class="op">)</span>, <span class="st">&quot;treatedTRUE&quot;</span>, <span class="fu">find_pollutant</span><span class="op">(</span><span class="va">fml</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
   
   <span class="co">#run the estimation</span>
-  <span class="va">est_results</span> <span class="op">&lt;-</span> <span class="va">data</span> <span class="op">%&gt;%</span> 
-    <span class="fu"><a href="https://lrberge.github.io/fixest/reference/feols.html">feols</a></span><span class="op">(</span>
-      data <span class="op">=</span> <span class="va">.</span>, 
-      fml <span class="op">=</span> <span class="va">actual_fml</span>, 
-      cluster <span class="op">=</span> <span class="va">cluster</span>,
-      se <span class="op">=</span> <span class="va">se</span>
-    <span class="op">)</span> 
+  <span class="va">est_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://lrberge.github.io/fixest/reference/feols.html">feols</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">data</span>, fml <span class="op">=</span> <span class="va">fml</span>, se <span class="op">=</span> <span class="st">&quot;hetero&quot;</span><span class="op">)</span> 
   
   <span class="co">#retrieve the useful info</span>
   <span class="va">nobs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">est_results</span><span class="op">$</span><span class="va">residuals</span><span class="op">)</span>
@@ -2808,7 +2804,7 @@ text-align: justify}
     <span class="fu">mutate</span><span class="op">(</span>n_obs <span class="op">=</span> <span class="va">nobs</span><span class="op">)</span>
 <span class="op">}</span> 
 
-<span class="co"># estimate_model(us_data, &quot;resp_total ~ co + temperature | city&quot;)</span>
+<span class="co"># estimate_model(nmmaps_data, &quot;resp_total ~ co + temperature | city&quot;)</span>
 </code></pre>
 </div>
 </div>
@@ -2881,8 +2877,8 @@ text-align: justify}
                                <span class="va">formula</span> <span class="op">=</span> <span class="st">&quot;resp_total ~ treated&quot;</span><span class="op">)</span> <span class="op">{</span>
   
   <span class="va">fml</span> <span class="op">&lt;-</span> <span class="fu">Formula</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/Formula/man/Formula.html">as.Formula</a></span><span class="op">(</span><span class="va">formula</span><span class="op">)</span>
-  <span class="va">dep_var</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/allnames.html">all.vars</a></span><span class="op">(</span><span class="va">fml</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">)</span> 
-  
+  <span class="va">dep_var</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/allnames.html">all.vars</a></span><span class="op">(</span><span class="va">fml</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>
+
   <span class="va">sim_data</span> <span class="op">&lt;-</span> <span class="va">data</span> <span class="op">%&gt;%</span>
     <span class="fu">select_study_period</span><span class="op">(</span><span class="va">n_days</span>, <span class="va">n_cities</span><span class="op">)</span> <span class="op">%&gt;%</span>
     <span class="fu">mutate</span><span class="op">(</span>y0 <span class="op">=</span> <span class="va">.data</span><span class="op">[[</span><span class="va">dep_var</span><span class="op">]</span><span class="op">]</span><span class="op">)</span> <span class="op">%&gt;%</span>
@@ -2894,8 +2890,14 @@ text-align: justify}
     <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">treated</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="co">#not necessary bc dropped in lm()</span>
     <span class="fu">add_post_vars</span><span class="op">(</span><span class="va">id_method</span><span class="op">)</span> 
   
+  <span class="va">updated_fml</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span>
+    <span class="fu">str_starts</span><span class="op">(</span><span class="va">id_method</span>, <span class="st">&quot;IV|OLS&quot;</span><span class="op">)</span>,
+    <span class="va">formula</span>,
+    <span class="fu">str_replace</span><span class="op">(</span><span class="va">formula</span>, <span class="st">&quot;.+(?=~)&quot;</span>, <span class="st">&quot;yobs &quot;</span><span class="op">)</span>
+  <span class="op">)</span>
+
   <span class="va">sim_output</span> <span class="op">&lt;-</span> <span class="va">sim_data</span> <span class="op">%&gt;%</span>
-    <span class="fu">estimate_model</span><span class="op">(</span>formula <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html">update</a></span><span class="op">(</span><span class="va">fml</span>, <span class="va">yobs</span> <span class="op">~</span> <span class="va">.</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+    <span class="fu">estimate_model</span><span class="op">(</span>formula <span class="op">=</span> <span class="va">updated_fml</span><span class="op">)</span> <span class="op">%&gt;%</span> 
     <span class="fu">mutate</span><span class="op">(</span>
       true_effect <span class="op">=</span> <span class="fu">compute_true_effect</span><span class="op">(</span><span class="va">sim_data</span>, <span class="va">id_method</span>, <span class="va">percent_effect_size</span><span class="op">)</span>
     <span class="op">)</span>
@@ -2903,11 +2905,12 @@ text-align: justify}
   <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="va">sim_output</span><span class="op">)</span>
 <span class="op">}</span>
 
-<span class="va">test</span> <span class="op">&lt;-</span> <span class="va">us_data</span> <span class="op">%&gt;%</span>
+<span class="va">test</span> <span class="op">&lt;-</span> <span class="va">nmmaps_data</span> <span class="op">%&gt;%</span> 
   <span class="fu">compute_simulation</span><span class="op">(</span>
-    formula <span class="op">=</span> <span class="st">&quot;log(resp_total) ~ co + temperature | city&quot;</span>,
-    quasi_exp <span class="op">=</span> <span class="st">&quot;local&quot;</span>,
-    id_method <span class="op">=</span> <span class="st">&quot;DID&quot;</span>,
+    data <span class="op">=</span> <span class="va">.</span>,
+    formula <span class="op">=</span> <span class="st">&quot;resp_total ~ treated + temperature | city&quot;</span>,
+    quasi_exp <span class="op">=</span> <span class="st">&quot;random_days&quot;</span>,
+    id_method <span class="op">=</span> <span class="st">&quot;RCT&quot;</span>,
     n_days <span class="op">=</span> <span class="fl">500</span>
     <span class="co"># quasi_exp = &quot;local&quot;</span>
   <span class="op">)</span> 
@@ -2927,7 +2930,7 @@ text-align: justify}
   n_cities <span class="op">=</span> <span class="fl">66</span>,
   p_treat <span class="op">=</span> <span class="fl">0.2</span>,
   percent_effect_size <span class="op">=</span> <span class="fl">0.5</span>, 
-  formula <span class="op">=</span> <span class="st">&quot;resp_total ~ treated + temperature + I(temperature^2) | city + month + year + day_of_week&quot;</span>
+  formula <span class="op">=</span> <span class="st">&quot;resp_total ~ treated + temperature + I(temperature^2) | city + month + year + weekday&quot;</span>
 <span class="op">)</span>
 
 <span class="fu"><a href="https://readr.tidyverse.org/reference/write_delim.html">write_csv</a></span><span class="op">(</span><span class="va">sim_param_base</span>, <span class="st">&quot;../Outputs/sim_param_base.csv&quot;</span><span class="op">)</span>
@@ -2939,8 +2942,8 @@ text-align: justify}
 <span class="va">vect_formula</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span>
   <span class="st">&quot;resp_total ~ treated&quot;</span>, 
   <span class="st">&quot;resp_total ~ treated | city&quot;</span>,
-  <span class="st">&quot;resp_total ~ treated | city + month + year + day_of_week&quot;</span>,
-  <span class="st">&quot;resp_total ~ treated + temperature + I(temperature^2) | city + month + year + day_of_week&quot;</span>
+  <span class="st">&quot;resp_total ~ treated | city + month + year + weekday&quot;</span>,
+  <span class="st">&quot;resp_total ~ treated + temperature + I(temperature^2) | city + month + year + weekday&quot;</span>
 <span class="op">)</span>
 </code></pre>
 </div>
@@ -2985,14 +2988,21 @@ text-align: justify}
   <span class="co"># mutate(p_treat = ifelse(str_starts(quasi_exp &quot;alert&quot;), p_treat/10, p_treat) %&gt;% </span>
   <span class="fu">mutate</span><span class="op">(</span>
     id_method <span class="op">=</span> <span class="fu">case_when</span><span class="op">(</span>
-      <span class="va">quasi_exp</span> <span class="op">==</span> <span class="st">&quot;random_days&quot;</span> <span class="op">~</span> <span class="st">&quot;RCT&quot;</span>,
       <span class="va">quasi_exp</span> <span class="op">%in%</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">&quot;local&quot;</span>, <span class="st">&quot;rolling&quot;</span><span class="op">)</span> <span class="op">~</span> <span class="st">&quot;DID&quot;</span>,
       <span class="fu">str_starts</span><span class="op">(</span><span class="va">quasi_exp</span>, <span class="st">&quot;national&quot;</span><span class="op">)</span> <span class="op">~</span> <span class="st">&quot;ITS&quot;</span>,
       <span class="fu">str_starts</span><span class="op">(</span><span class="va">quasi_exp</span>, <span class="st">&quot;alert&quot;</span><span class="op">)</span> <span class="op">~</span> <span class="st">&quot;RDD&quot;</span>,
-      <span class="va">quasi_exp</span> <span class="op">==</span> <span class="st">&quot;none&quot;</span> <span class="op">~</span> <span class="st">&quot;OLS&quot;</span>
+      <span class="va">quasi_exp</span> <span class="op">==</span> <span class="st">&quot;none&quot;</span> <span class="op">~</span> <span class="st">&quot;OLS&quot;</span>,
     <span class="op">)</span>,
+    id_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span>
+      <span class="va">quasi_exp</span> <span class="op">==</span> <span class="st">&quot;random_days&quot;</span>, 
+      <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">&quot;RCT&quot;</span>,<span class="st">&quot;IV_0.2&quot;</span><span class="op">)</span><span class="op">)</span>, 
+      <span class="va">id_method</span>
+    <span class="op">)</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">unnest</span><span class="op">(</span><span class="va">id_method</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">mutate</span><span class="op">(</span>
     formula <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span>
-      <span class="va">id_method</span> <span class="op">==</span> <span class="st">&quot;OLS&quot;</span>, 
+      <span class="fu">str_starts</span><span class="op">(</span><span class="va">id_method</span>, <span class="st">&quot;OLS|IV&quot;</span><span class="op">)</span>, 
       <span class="fu">str_c</span><span class="op">(</span><span class="st">&quot;log(&quot;</span>, <span class="fu">str_extract</span><span class="op">(</span><span class="va">formula</span>, <span class="st">&quot;.+(?=\\s~)&quot;</span><span class="op">)</span>, <span class="st">&quot;) ~ &quot;</span>, <span class="fu">str_extract</span><span class="op">(</span><span class="va">formula</span>, <span class="st">&quot;(?&lt;=~\\s).+&quot;</span><span class="op">)</span><span class="op">)</span>, 
       <span class="va">formula</span><span class="op">)</span>,
     formula <span class="op">=</span> <span class="fu">case_when</span><span class="op">(</span>
@@ -3005,9 +3015,14 @@ text-align: justify}
         <span class="st">&quot;treated +&quot;</span>, <span class="fu">str_remove</span><span class="op">(</span><span class="va">quasi_exp</span>, <span class="st">&quot;alert_&quot;</span><span class="op">)</span>
       <span class="op">)</span><span class="op">)</span>,
       <span class="va">id_method</span> <span class="op">==</span> <span class="st">&quot;OLS&quot;</span> <span class="op">~</span> <span class="fu">str_replace_all</span><span class="op">(</span><span class="va">formula</span>, <span class="st">&quot;treated&quot;</span>, <span class="st">&quot;co&quot;</span><span class="op">)</span>,
+      <span class="fu">str_starts</span><span class="op">(</span><span class="va">id_method</span>, <span class="st">&quot;IV&quot;</span><span class="op">)</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span>
+        <span class="fu">str_remove_all</span><span class="op">(</span><span class="va">formula</span>, <span class="st">&quot;(\\+\\s)?\\btreated\\b(\\s\\+)?&quot;</span><span class="op">)</span>,
+        <span class="st">&quot;| co ~ treated&quot;</span>
+        <span class="op">)</span>,
       <span class="cn">TRUE</span> <span class="op">~</span> <span class="va">formula</span>
     <span class="op">)</span>
-  <span class="op">)</span> 
+  <span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu">str_detect</span><span class="op">(</span><span class="va">formula</span>, <span class="st">&quot;~\\s{0,2}\\|&quot;</span><span class="op">)</span><span class="op">)</span>
 
 <span class="fu"><a href="https://readr.tidyverse.org/reference/write_delim.html">write_csv</a></span><span class="op">(</span><span class="va">sim_param_to_edit</span>, <span class="st">&quot;../Outputs/sim_param_to_edit.csv&quot;</span><span class="op">)</span>
 <span class="co">#Here, check everything and edit by hand</span>
@@ -3030,7 +3045,7 @@ text-align: justify}
 <span class="va">simulations</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/furrr/man/future_map2.html">future_pmap_dfr</a></span><span class="op">(</span>
   <span class="va">sim_param</span> <span class="op">%&gt;%</span> <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">sim_id</span><span class="op">)</span>, 
   <span class="va">compute_simulation</span>, 
-  data <span class="op">=</span> <span class="va">us_data</span>,
+  data <span class="op">=</span> <span class="va">nmmaps_data</span>,
   .id <span class="op">=</span> <span class="st">&quot;sim_id&quot;</span>,
   .options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/furrr/man/furrr_options.html">furrr_options</a></span><span class="op">(</span>seed <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
 <span class="op">)</span> 

@@ -212,8 +212,12 @@ library(mediocrethemes)
 set_mediocre_all()
 
 nmmaps_data <- readRDS(here::here("R", "Inputs", "nmmaps_data_simulations.rds"))
-```
 
+nmmaps_data <- nmmaps_data %>% 
+  mutate(
+    city = as.factor(city)
+  ) 
+```
 
 ## Function definitions
 
@@ -417,14 +421,18 @@ create_y1 <- function(data,
   if (id_method %in% c("RCT", "DID", "ITS", "RDIT", "RDD")) {
     dep_var <- all.vars(fml)[[1]]
     
-    data[["y1"]] <- data[[dep_var]] + 
-      rpois(
-        length(data[[dep_var]]), 
-        mean(data[[dep_var]], na.rm = TRUE) * percent_effect_size / 100
-      ) %>%
-      suppressWarnings() #warnings when is.na(dep_var) eg rpois(1, NA)
+    data <- data %>% 
+      group_by(.data$city) %>% 
+      mutate(
+        y1 = .data[[dep_var]] + 
+          rpois(
+            n(),
+            mean(.data[[dep_var]], na.rm = TRUE) * percent_effect_size / 100
+          ) %>% suppressWarnings() #warnings when is.na(dep_var) eg rpois(1, NA)
+      ) %>% 
+      ungroup()
+    
   } else if (str_starts(id_method, "OLS|IV")) {
-    # actual_fml <- formula(fml, rhs = -3)
     pollutant <- find_pollutant(fml)
     
     reg <- feols(data = data, fml = fml, combine.quick=FALSE) 
@@ -581,11 +589,11 @@ compute_simulation <- function(data,
 }
 
 test <- nmmaps_data %>% 
-  draw_treated() %>% 
   compute_simulation(
-    formula = "resp_total ~ co + temperature | city",
+    data = .,
+    formula = "resp_total ~ treated + temperature | city",
     quasi_exp = "random_days",
-    id_method = "OLS",
+    id_method = "RCT",
     n_days = 500
     # quasi_exp = "local"
   ) 
