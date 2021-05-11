@@ -211,27 +211,7 @@ library(mediocrethemes)
 
 set_mediocre_all()
 
-us_data <- readRDS(here::here("R", "Inputs", "nmmaps_data_simulations.rds"))
-
-states <- tibble(state = state.name, abbreviation = state.abb)
-
-us_data <- us_data %>% 
-  mutate(
-    month = as.factor(month(date)), 
-    day_of_week = as.factor(wday(date)), 
-    year = as.factor(year(date))
-  ) %>% 
-  rename(
-    temperature = temperature_average,
-    state = state_name
-  ) %>%  
-  select(-weekday) %>% 
-  left_join(states, by = "state") %>% 
-  mutate(
-    city = as.factor(str_c(city_name, abbreviation, sep = ", "))
-  ) %>% 
-  select(-abbreviation, -city_name) %>% 
-  select(city, date, everything()) 
+nmmaps_data <- readRDS(here::here("R", "Inputs", "nmmaps_data_simulations.rds"))
 ```
 
 
@@ -356,7 +336,7 @@ draw_treated_exp <- function(data, p_treat, quasi_exp) {
   return(data)
 }
 
-test_treatment_data <- us_data %>% 
+test_treatment_data <- nmmaps_data %>% 
   select_study_period(n_days = 500, n_cities = 6) %>% 
   draw_treated_exp(0.05, "random_days")%>% 
   draw_treated_exp(0.2, "national") %>%
@@ -468,7 +448,7 @@ create_y1 <- function(data,
   return(data)
 } 
 
-# create_y1(draw_treated(us_data), id_method = "IV_0.05", formula = "log(resp_total) ~  temperature | city | co ~ treated") %>% select(resp_total, y1)
+# create_y1(draw_treated(nmmaps_data), id_method = "IV_0.05", formula = "log(resp_total) ~  temperature | city | co ~ treated") %>% select(resp_total, y1)
 ```
 
 ### Estimate the model
@@ -481,18 +461,14 @@ estimate_model <- function(data, formula) {
   fml <- Formula::as.Formula(formula)
   pasted_formula <- paste(str_c(fml)[[2]], str_c(fml)[[1]], str_c(fml)[[3]])
   
+  #the param of interest varies across identification methods
   param_of_interest <- 
     ifelse(str_count(pasted_formula, "\\|") == 2, #if IV (ie 3 parts rhs in formula)
            str_c("fit", find_pollutant(fml), sep = "_"), 
            ifelse("treated" %in% all.vars(fml), "treatedTRUE", find_pollutant(fml)))
   
   #run the estimation
-  est_results <- data %>% 
-    feols(
-      data = ., 
-      fml = fml, 
-      se = "hetero"
-    ) 
+  est_results <- feols(data = data, fml = fml, se = "hetero") 
   
   #retrieve the useful info
   nobs <- length(est_results$residuals)
@@ -505,7 +481,7 @@ estimate_model <- function(data, formula) {
     mutate(n_obs = nobs)
 } 
 
-# estimate_model(us_data, "resp_total ~ co + temperature | city")
+# estimate_model(nmmaps_data, "resp_total ~ co + temperature | city")
 ```
 
 ### Computing simulations
@@ -604,7 +580,7 @@ compute_simulation <- function(data,
   return(sim_output)
 }
 
-test <- us_data %>% 
+test <- nmmaps_data %>% 
   draw_treated() %>% 
   compute_simulation(
     formula = "resp_total ~ co + temperature | city",
@@ -633,7 +609,7 @@ sim_param_base <- tibble(
   n_cities = 66,
   p_treat = 0.2,
   percent_effect_size = 0.5, 
-  formula = "resp_total ~ treated + temperature + I(temperature^2) | city + month + year + day_of_week"
+  formula = "resp_total ~ treated + temperature + I(temperature^2) | city + month + year + weekday"
 )
 
 write_csv(sim_param_base, "../Outputs/sim_param_base.csv")
@@ -645,8 +621,8 @@ vect_percent_effect_size <- c(0.1, 0.5, 1)
 vect_formula <- c(
   "resp_total ~ treated", 
   "resp_total ~ treated | city",
-  "resp_total ~ treated | city + month + year + day_of_week",
-  "resp_total ~ treated + temperature + I(temperature^2) | city + month + year + day_of_week"
+  "resp_total ~ treated | city + month + year + weekday",
+  "resp_total ~ treated + temperature + I(temperature^2) | city + month + year + weekday"
 )
 ```
 
@@ -747,7 +723,7 @@ tic()
 simulations <- future_pmap_dfr(
   sim_param %>% select(-sim_id), 
   compute_simulation, 
-  data = us_data,
+  data = nmmaps_data,
   .id = "sim_id",
   .options = furrr_options(seed = TRUE)
 ) 
