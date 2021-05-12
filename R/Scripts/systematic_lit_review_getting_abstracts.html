@@ -91,8 +91,8 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   
   
   <!--  https://schema.org/Article -->
-  <meta property="article:published" itemprop="datePublished" content="2021-05-11" />
-  <meta property="article:created" itemprop="dateCreated" content="2021-05-11" />
+  <meta property="article:published" itemprop="datePublished" content="2021-05-12" />
+  <meta property="article:created" itemprop="dateCreated" content="2021-05-12" />
   <meta name="article:author" content="Vincent Bagilet" />
   <meta name="article:author" content="Léo Zabrocki" />
   
@@ -109,7 +109,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <!--radix_placeholder_rmarkdown_metadata-->
   
   <script type="text/json" id="radix-rmarkdown-metadata">
-  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","author","date","output"]}},"value":[{"type":"character","attributes":{},"value":["Systematic literature review - Getting abstracts"]},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Vincent Bagilet"]},{"type":"character","attributes":{},"value":["https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet"]},{"type":"character","attributes":{},"value":["Columbia University"]},{"type":"character","attributes":{},"value":["https://www.columbia.edu/"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Léo Zabrocki"]},{"type":"character","attributes":{},"value":["https://www.parisschoolofeconomics.eu/en/"]},{"type":"character","attributes":{},"value":["Paris School of Economics"]},{"type":"character","attributes":{},"value":["https://www.parisschoolofeconomics.eu/en/"]}]}]},{"type":"character","attributes":{},"value":["2021-05-11"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article","html_notebook"]}},"value":[{"type":"character","attributes":{},"value":["default"]},{"type":"character","attributes":{},"value":["default"]}]}]}
+  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","author","date","output"]}},"value":[{"type":"character","attributes":{},"value":["Systematic literature review - Getting abstracts"]},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Vincent Bagilet"]},{"type":"character","attributes":{},"value":["https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet"]},{"type":"character","attributes":{},"value":["Columbia University"]},{"type":"character","attributes":{},"value":["https://www.columbia.edu/"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Léo Zabrocki"]},{"type":"character","attributes":{},"value":["https://www.parisschoolofeconomics.eu/en/"]},{"type":"character","attributes":{},"value":["Paris School of Economics"]},{"type":"character","attributes":{},"value":["https://www.parisschoolofeconomics.eu/en/"]}]}]},{"type":"character","attributes":{},"value":["2021-05-12"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article","html_notebook"]}},"value":[{"type":"character","attributes":{},"value":["default"]},{"type":"character","attributes":{},"value":["default"]}]}]}
   </script>
   <!--/radix_placeholder_rmarkdown_metadata-->
   
@@ -3391,7 +3391,7 @@ distill-header .nav a {
 <!--radix_placeholder_front_matter-->
 
 <script id="distill-front-matter" type="text/json">
-{"title":"Systematic literature review - Getting abstracts","authors":[{"author":"Vincent Bagilet","authorURL":"https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet","affiliation":"Columbia University","affiliationURL":"https://www.columbia.edu/","orcidID":""},{"author":"Léo Zabrocki","authorURL":"https://www.parisschoolofeconomics.eu/en/","affiliation":"Paris School of Economics","affiliationURL":"https://www.parisschoolofeconomics.eu/en/","orcidID":""}],"publishedDate":"2021-05-11T00:00:00.000+00:00","citationText":"Bagilet & Zabrocki, 2021"}
+{"title":"Systematic literature review - Getting abstracts","authors":[{"author":"Vincent Bagilet","authorURL":"https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet","affiliation":"Columbia University","affiliationURL":"https://www.columbia.edu/","orcidID":""},{"author":"Léo Zabrocki","authorURL":"https://www.parisschoolofeconomics.eu/en/","affiliation":"Paris School of Economics","affiliationURL":"https://www.parisschoolofeconomics.eu/en/","orcidID":""}],"publishedDate":"2021-05-12T00:00:00.000+00:00","citationText":"Bagilet & Zabrocki, 2021"}
 </script>
 
 <!--/radix_placeholder_front_matter-->
@@ -3412,7 +3412,7 @@ distill-header .nav a {
   
 ,   Léo Zabrocki <a href="https://www.parisschoolofeconomics.eu/en/" class="uri">https://www.parisschoolofeconomics.eu/en/</a> (Paris School of Economics)<a href="https://www.parisschoolofeconomics.eu/en/" class="uri">https://www.parisschoolofeconomics.eu/en/</a>
   
-<br />2021-05-11
+<br />2021-05-12
 </div>
 
 <div class="d-article">
@@ -3421,86 +3421,315 @@ body {
 text-align: justify}
 </style>
 <h1 id="purpose-of-the-document">Purpose of the document</h1>
-<p>In the present document, we retrieve abstracts and full texts for our systematic review of the literature on short term health effects of air pollution.</p>
+<p>In the present document, we retrieve abstracts for our systematic review of the literature on short term health effects of air pollution, focusing mainly on the epidemiology literature. We take advantage of a somehow standardized reporting mechanism to retrieve point estimates and confidence intervals from the abstracts using REGular EXPressions (regex).</p>
+<p>The algorithm we wrote is not perfect: it probably does not detect all estimates and may pick up some incorrect point estimates and/or standard error. However, based on quick non-systematic checks we ran, these potential issues seem very limited. Retrieving all this information via careful reading of the abstracts would have been extremely cumbersome. This systematic analysis is an important time saver. Importantly, the analysis carried out for this literature could be easily replicated for another literature, based on the code used and described in this document.</p>
 <h1 id="selecting-articles-and-retrieving-metadata">Selecting articles and retrieving metadata</h1>
-<p>We use the <a href="https://books.ropensci.org/fulltext/"><code>fulltext</code></a> package to get the abstract and full text of each article corresponding to our search query. This set of articles might be too restrictive and we may want to broaden our scope later.</p>
-<p>To begin with, we focus on articles published on Scopus and Pubmed. To access Scopus API, one needs to register to get an API key (stored in the .Renviron) for Elsevier and a Crossref TDM API key. Note that downloading of full texts may not work if one is not connected directly to their institution internet network. Pubmed articles are accessed via Entrez. An API key enables to increase the number of requests per seconds from 3 to 10. More information on authentication is available on <a href="https://books.ropensci.org/fulltext/authentication.html">the <code>fulltext</code> manual</a>.</p>
+<p>We use the <a href="https://books.ropensci.org/fulltext/"><code>fulltext</code></a> package to get the abstract of each article corresponding to our search query. <!-- This set of articles might be too restrictive and we may want to broaden our scope later.  --></p>
+<p>We focus on articles published on Scopus and Pubmed. To access Scopus API, one needs to register to get an API key (stored in the .Renviron) for Elsevier and a Crossref TDM API key. <!-- Note that downloading of full texts may not work if one is not connected directly to their institution internet network.  --> Pubmed articles are accessed via Entrez. An API key enables to increase the number of requests per seconds from 3 to 10. More information on authentication is available on <a href="https://books.ropensci.org/fulltext/authentication.html">the <code>fulltext</code> manual</a>.</p>
 <h2 id="set-of-articles-to-consider">Set of articles to consider</h2>
-<p>First of all, we need to clearly define the set of articles we want to consider in this analysis. Our baseline search query is:</p>
-<p>‘“air pollution” AND (“emergency” OR “mortality”) AND (“particulate matter” OR ozone OR “nitrogen dioxyde” OR “sulfur dioxide”)’.</p>
-<p>This returns about 57000 articles (without accounting for duplicates in between journals). This number being rather large, we want to narrow it down. To focus on the epidemiological literature, we add the query term <code>poisson</code>. To get causal analyses, we add the term <code>causal</code>.</p>
+<p>First of all, we need to clearly define the set of articles we want to consider in this analysis. Our search query is:</p>
+<p>‘TITLE((“air pollution” OR “air quality” OR “particulate matter” OR ozone OR “nitrogen dioxide” OR “sulfur dioxide” OR “PM10” OR “PM2.5” OR “carbon dioxide” OR “carbon monoxide”) AND (“emergency” OR “mortality” OR “stroke” OR “cerebrovascular” OR “cardiovascular” OR “death” OR “hospitalization”) AND NOT (“long term” OR “long-term”)) AND “short term”’</p>
 <div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class="va">query</span> <span class="op">&lt;-</span> <span class="st">&#39;TITLE((&quot;air pollution&quot; OR &quot;air quality&quot; OR &quot;particulate matter&quot; OR ozone OR &quot;nitrogen dioxide&quot; OR &quot;sulfur dioxide&quot; OR &quot;PM10&quot; OR &quot;PM2.5&quot; OR &quot;carbon dioxide&quot; OR &quot;carbon monoxide&quot;) AND (&quot;emergency&quot; OR &quot;mortality&quot; OR &quot;stroke&quot; OR &quot;cerebrovascular&quot; OR &quot;cardiovascular&quot; OR &quot;death&quot; OR &quot;hospitalization&quot;) AND NOT (&quot;long term&quot; OR &quot;long-term&quot;)) AND &quot;short term&quot;&#39;</span>
 
+<span class="va">opts_entrez</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>use_history <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
+
+<span class="co">#Run a search</span>
+<span class="va">search</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://docs.ropensci.org/fulltext/reference/ft_search.html">ft_search</a></span><span class="op">(</span><span class="va">query</span>, from <span class="op">=</span> <span class="st">&quot;scopus&quot;</span>, limit <span class="op">=</span> <span class="fl">2000</span><span class="op">)</span>
+<span class="va">search_entrez</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://docs.ropensci.org/fulltext/reference/ft_search.html">ft_search</a></span><span class="op">(</span><span class="va">query</span>, from <span class="op">=</span> <span class="st">&quot;entrez&quot;</span>, limit <span class="op">=</span> <span class="fl">200</span>, entrezopts <span class="op">=</span> <span class="va">opts_entrez</span><span class="op">)</span>
+</code></pre>
 </div>
-<p>The final query is thus:</p>
-<p>‘TITLE((“air pollution” OR “air quality” OR “particulate matter” OR ozone OR “nitrogen dioxide” OR “sulfur dioxide”) AND (“emergency” OR “mortality”) AND NOT (“long term” or “long-term”)) AND (“particulate matter” OR ozone OR “nitrogen dioxide” OR “sulfur dioxide”)’</p>
-<p>Then, we retrieve the related metadata. The metadata from different sources having different shapes, we only select a few relevant columns to build an overall metadata set.</p>
+</div>
+<p>We then retrieve and wrangle the related metadata. The metadata from different sources having different shapes, we only select a few relevant columns to build an overall metadata set.</p>
 <div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class="va">metadata_scopus</span> <span class="op">&lt;-</span> <span class="va">search</span><span class="op">$</span><span class="va">scopus</span><span class="op">$</span><span class="va">data</span> <span class="op">%&gt;%</span> 
+  <span class="fu">as_tibble</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">rename_all</span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu">str_remove_all</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">.</span><span class="op">)</span>, <span class="st">&quot;prism:|dc:&quot;</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">rename_all</span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu">str_replace_all</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">.</span><span class="op">)</span>, <span class="st">&quot;-&quot;</span>, <span class="st">&quot;_&quot;</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">select</span><span class="op">(</span><span class="va">doi</span>, <span class="va">title</span>, <span class="va">creator</span>, <span class="va">publicationName</span>, <span class="va">pubmed_id</span>, <span class="va">coverDate</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">rename</span><span class="op">(</span>
+    authors <span class="op">=</span> <span class="va">creator</span>,
+    journal <span class="op">=</span> <span class="va">publicationName</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">mutate</span><span class="op">(</span>
+    pubmed_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="op">!</span><span class="fu">str_detect</span><span class="op">(</span><span class="va">pubmed_id</span>, <span class="st">&quot;[0-9]{7}&quot;</span><span class="op">)</span>, <span class="cn">NA</span>, <span class="va">pubmed_id</span><span class="op">)</span>,
+    pub_date <span class="op">=</span> <span class="fu"><a href="http://lubridate.tidyverse.org/reference/ymd.html">ymd</a></span><span class="op">(</span><span class="va">coverDate</span><span class="op">)</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">coverDate</span><span class="op">)</span>
 
+<span class="fu"><a href="https://rdrr.io/r/base/readRDS.html">saveRDS</a></span><span class="op">(</span><span class="va">metadata_scopus</span>, <span class="st">&quot;../Outputs/metadata_scopus.RDS&quot;</span><span class="op">)</span>
+
+<span class="va">metadata_entrez</span> <span class="op">&lt;-</span> <span class="va">search_entrez</span><span class="op">$</span><span class="va">entrez</span><span class="op">$</span><span class="va">data</span> <span class="op">%&gt;%</span> <span class="co">#search_entrez$entrez$data </span>
+  <span class="fu">as_tibble</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="co"># rename(id = uid) %&gt;% </span>
+  <span class="fu">select</span><span class="op">(</span><span class="va">doi</span>, <span class="va">title</span>, <span class="va">authors</span>, <span class="va">fulljournalname</span>, <span class="va">pmid</span>, <span class="va">pubdate</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">rename</span><span class="op">(</span>
+    journal <span class="op">=</span> <span class="va">fulljournalname</span>,
+    pubmed_id <span class="op">=</span> <span class="va">pmid</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">mutate</span><span class="op">(</span>
+    pubmed_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="op">!</span><span class="fu">str_detect</span><span class="op">(</span><span class="va">pubmed_id</span>, <span class="st">&quot;[0-9]{7}&quot;</span><span class="op">)</span>, <span class="cn">NA</span>, <span class="va">pubmed_id</span><span class="op">)</span>,
+    pub_date <span class="op">=</span> <span class="fu"><a href="http://lubridate.tidyverse.org/reference/ymd.html">ymd</a></span><span class="op">(</span><span class="va">pubdate</span><span class="op">)</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">pubdate</span><span class="op">)</span>
+
+<span class="fu"><a href="https://rdrr.io/r/base/readRDS.html">saveRDS</a></span><span class="op">(</span><span class="va">metadata_entrez</span>, <span class="st">&quot;../Outputs/metadata_entrez.RDS&quot;</span><span class="op">)</span>
+
+<span class="va">metadata_lit_review</span> <span class="op">&lt;-</span> <span class="va">metadata_scopus</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">rbind</a></span><span class="op">(</span><span class="va">metadata_entrez</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">doi</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">mutate</span><span class="op">(</span>pb_doi <span class="op">=</span> <span class="fu">str_detect</span><span class="op">(</span><span class="va">doi</span>, <span class="st">&quot;[&lt;&gt;;]&quot;</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="co">#some dois are not valid</span>
+  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">pb_doi</span> <span class="op">==</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">pb_doi</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">group_by</span><span class="op">(</span><span class="va">doi</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">pub_date</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">pub_date</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="co">#some articles have been published twice</span>
+  <span class="fu">mutate</span><span class="op">(</span>n_with_doi <span class="op">=</span> <span class="fu">n</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">n_with_doi</span> <span class="op">==</span> <span class="fl">1</span> <span class="op">|</span> <span class="op">(</span><span class="va">n_with_doi</span> <span class="op">&gt;</span> <span class="fl">1</span> <span class="op">&amp;</span> <span class="va">pubmed_id</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">pubmed_id</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="co">#two weird articles with separate author names, I select one randomly</span>
+  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">n_with_doi</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">ungroup</span><span class="op">(</span><span class="op">)</span>
+
+<span class="co"># saveRDS(metadata_lit_review, &quot;../Outputs/metadata_lit_review.RDS&quot;)</span>
+</code></pre>
 </div>
-<h1 id="analysis-of-the-power-in-the-literature">Analysis of the power in the literature</h1>
-<h2 id="retreiving-abstracts">Retreiving abstracts</h2>
-<p>First, we focus on the abstracts and download them.</p>
-<p>There is no <code>fulltext</code> function to access abstracts from Entrez. Therefore, using the DOI, we get the abstracts from Semantic Scholar. We also access Scopus abstracts from Semantic Scholar since, due to my IP address being located outside of Columbia, I cannot access the texts and abstracts from Scopus.</p>
+</div>
+<h1 id="retreiving-abstracts">Retreiving abstracts</h1>
+<p>There is no <code>fulltext</code> function to access abstracts from Entrez. Therefore, using the DOI, we get the abstracts from Semantic Scholar. We also access Scopus abstracts from Semantic Scholar since, due to an IP address constraint we cannot access the texts and abstracts from Scopus.</p>
 <p>In Semantic Scholar, there is a rate limit of 100 articles per 5 min or 20 articles per minute. We therefore need to pause the system to be able to download everything. In addition, some DOIs are not valid so we filtered them out in a previous step (<code>pb_doi</code>).<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
 <div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class="va">get_abstracts</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">doi</span><span class="op">)</span> <span class="op">{</span>
+  <span class="va">vect_doi</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">doi</span><span class="op">)</span>
+  <span class="va">number_periods</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">vect_doi</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span> <span class="op">%/%</span> <span class="fl">20</span>
+  <span class="va">abs</span> <span class="op">&lt;-</span> <span class="cn">NULL</span>
 
-</div>
-<h2 id="retreiving-effects-and-confidence-interavals">Retreiving effects and confidence interavals</h2>
-<div class="layout-chunk" data-layout="l-body">
+  <span class="fu"><a href="https://rdrr.io/r/base/message.html">message</a></span><span class="op">(</span><span class="fu">str_c</span><span class="op">(</span><span class="st">&quot;Total downloading time: &quot;</span>, <span class="va">number_periods</span>, <span class="st">&quot;min&quot;</span><span class="op">)</span><span class="op">)</span>
+  
+  <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">0</span><span class="op">:</span><span class="va">number_periods</span><span class="op">)</span> <span class="op">{</span>
+    
+    <span class="va">doi_period</span> <span class="op">&lt;-</span> <span class="va">vect_doi</span><span class="op">[</span><span class="op">(</span><span class="fl">20</span><span class="op">*</span><span class="va">i</span><span class="op">+</span><span class="fl">1</span><span class="op">)</span><span class="op">:</span><span class="op">(</span><span class="fl">20</span><span class="op">*</span><span class="op">(</span><span class="va">i</span><span class="op">+</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">]</span>
+    <span class="va">doi_period</span> <span class="op">&lt;-</span> <span class="va">doi_period</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">doi_period</span><span class="op">)</span><span class="op">]</span>
+    
+    <span class="va">skip_to_next</span> <span class="op">&lt;-</span> <span class="cn">FALSE</span> <span class="co">#to handle issues, using tryCatch</span>
+    
+    <span class="va">possible_error</span> <span class="op">&lt;-</span> <span class="kw"><a href="https://rdrr.io/r/base/conditions.html">tryCatch</a></span><span class="op">(</span>
+      <span class="va">abs_period</span> <span class="op">&lt;-</span> <span class="va">doi_period</span> <span class="op">%&gt;%</span>
+        <span class="fu"><a href="https://docs.ropensci.org/fulltext/reference/ft_abstract.html">ft_abstract</a></span><span class="op">(</span>from <span class="op">=</span> <span class="st">&quot;semanticscholar&quot;</span><span class="op">)</span> <span class="op">%&gt;%</span>
+        <span class="va">.</span><span class="op">$</span><span class="va">semanticscholar</span> <span class="op">%&gt;%</span>
+        <span class="fu">as_tibble</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span>
+        <span class="fu">unnest</span><span class="op">(</span>cols <span class="op">=</span> <span class="fu">everything</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
+        <span class="fu">pivot_longer</span><span class="op">(</span><span class="fu">everything</span><span class="op">(</span><span class="op">)</span>, names_to <span class="op">=</span> <span class="st">&quot;doi&quot;</span>, values_to <span class="op">=</span> <span class="st">&quot;abstract&quot;</span><span class="op">)</span> <span class="op">%&gt;%</span>
+        <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">doi</span> <span class="op">!=</span> <span class="va">abstract</span><span class="op">)</span>,
+      error <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">e</span><span class="op">)</span> <span class="va">e</span>
+    <span class="op">)</span>
+    
+    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/class.html">inherits</a></span><span class="op">(</span><span class="va">possible_error</span>, <span class="st">&quot;error&quot;</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span>
+      <span class="kw"><a href="https://rdrr.io/r/base/warning.html">warning</a></span><span class="op">(</span>
+        <span class="fu">str_c</span><span class="op">(</span><span class="st">&quot;The abstracts for the following articles could not be downloaded: &quot;</span>,
+              <span class="fu">str_c</span><span class="op">(</span><span class="va">doi_period</span>, collapse <span class="op">=</span> <span class="st">&quot;,&quot;</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
+      <span class="kw">next</span>
+    <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span>
+       <span class="va">abs</span> <span class="op">&lt;-</span> <span class="va">abs</span> <span class="op">%&gt;%</span>
+        <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">rbind</a></span><span class="op">(</span><span class="va">abs_period</span><span class="op">)</span>
+    <span class="op">}</span>
+    
+    <span class="kw">if</span> <span class="op">(</span><span class="va">i</span> <span class="op">&lt;</span> <span class="va">number_periods</span> <span class="op">&amp;</span> <span class="va">number_periods</span> <span class="op">!=</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span>
+      <span class="fu"><a href="https://rdrr.io/r/base/message.html">message</a></span><span class="op">(</span><span class="fu">str_c</span><span class="op">(</span><span class="st">&quot;Remaining time: &quot;</span>, <span class="op">(</span><span class="va">number_periods</span> <span class="op">-</span> <span class="va">i</span><span class="op">)</span>, <span class="st">&quot;min&quot;</span><span class="op">)</span><span class="op">)</span>
+      <span class="fu"><a href="https://rdrr.io/r/base/Sys.sleep.html">Sys.sleep</a></span><span class="op">(</span><span class="fl">63</span><span class="op">)</span>
+    <span class="op">}</span>
+  <span class="op">}</span> 
+  
+  <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="va">abs</span><span class="op">)</span>
+<span class="op">}</span>
 
+<span class="va">abstracts</span> <span class="op">&lt;-</span> <span class="va">metadata_lit_review</span> <span class="op">%&gt;%</span>
+  <span class="fu">distinct</span><span class="op">(</span><span class="va">title</span>, .keep_all <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="va">.</span><span class="op">$</span><span class="va">doi</span> <span class="op">%&gt;%</span> 
+  <span class="fu">get_abstracts</span><span class="op">(</span><span class="op">)</span>  <span class="op">%&gt;%</span> 
+  <span class="fu">left_join</span><span class="op">(</span><span class="va">metadata_lit_review</span>, by <span class="op">=</span> <span class="st">&quot;doi&quot;</span><span class="op">)</span> 
+
+<span class="co"># saveRDS(abstracts, &quot;../Outputs/abstracts.RDS&quot;)</span>
+</code></pre>
 </div>
-<p>Then we want to extract the effects, odds ratio and associated confidence intervals in the abstracts. Part of the literature, display directly effects and confidence intervals in their abstracts.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> We thus consider these abstracts (about 684 abstracts) and identify effects and CIs as follows:</p>
+</div>
+<h1 id="retreiving-effects-and-confidence-interavals">Retreiving effects and confidence interavals</h1>
+<p>Now that we have retrieved the abstracts, we want to extract the effects and associated confidence intervals. Part of the literature, displays directly effects and 95% confidence intervals in their abstracts.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> We identify effects and CIs as follows:</p>
 <ul>
-<li>CI: any couple of numbers following by less than 4 characters a string describing a confidence interval (“95%”, “CI”, “confidence interval”). We also consider confidence intervals of the shape “(-8.7, 54.7)”: it needs to have a shape “(number separator number)” and needs to be preceded by a number less than 5 characters away.</li>
-<li>Effect: the first number preceding by less than 30 characters a similar string describing a confidence interval (we do not consider “95%”).</li>
+<li>CI: any couple of numbers following by less than 4 characters a string describing a confidence interval (“95%”, “CI”, “confidence interval”). We also consider confidence intervals of the shape “(-8.7, 54.7)”: it needs to have a shape “(number separator number)” and needs to be preceded by a number, less than 5 characters away.</li>
+<li>Effect: the first number preceding by less than 30 characters a similar string describing a confidence interval (apart numbers used to describe the “95” of a 95% CI).</li>
 </ul>
 <div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class="va">string_confint</span> <span class="op">&lt;-</span> <span class="fu">str_c</span><span class="op">(</span>
+  <span class="st">&quot;((?&lt;!(\\.|\\d))95\\s?%|(?&lt;!(\\.|\\d))95\\s(per(\\s?)cent)|&quot;</span>,
+  <span class="st">&quot;\\bCI(s?)\\b|\\bPI(s?)\\b|\\b(i|I)nterval|&quot;</span>,
+  <span class="st">&quot;\\b(c|C)onfidence\\s(i|I)nterval|\\b(c|C)redible\\s(i|I)nterval|&quot;</span>, 
+  <span class="st">&quot;\\b(p|P)osterior\\s(i|I)nterval)&quot;</span>
+  <span class="op">)</span>
+<span class="va">num_confint</span> <span class="op">&lt;-</span> <span class="st">&quot;(-\\s?|−\\s?)?[\\d\\.]{1,7}[–\\s:;,%\\-to\\‐-]{1,5}(-\\s?|−\\s?)?[\\d\\.]{1,7}&quot;</span>
+<span class="va">num_effect</span> <span class="op">&lt;-</span> <span class="st">&quot;(-\\s?|−\\s?)?[\\d\\.]{1,7}&quot;</span>
 
+<span class="va">detected_effects</span> <span class="op">&lt;-</span> <span class="va">abstracts</span> <span class="op">%&gt;%</span>
+  <span class="fu">mutate</span><span class="op">(</span>
+    abstract <span class="op">=</span> <span class="fu">str_replace_all</span><span class="op">(</span><span class="va">abstract</span>, <span class="st">&quot;·&quot;</span>, <span class="st">&quot;.&quot;</span><span class="op">)</span>,
+    abstract <span class="op">=</span> <span class="fu">str_replace_all</span><span class="op">(</span><span class="va">abstract</span>, <span class="st">&quot;C.I.&quot;</span>, <span class="st">&quot;CI&quot;</span><span class="op">)</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">select</span><span class="op">(</span><span class="va">doi</span>, <span class="va">abstract</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://rdrr.io/pkg/tidytext/man/unnest_tokens.html">unnest_tokens</a></span><span class="op">(</span>
+    <span class="va">sentence</span>,
+    <span class="va">abstract</span>,
+    token <span class="op">=</span> <span class="st">&quot;sentences&quot;</span>,
+    to_lower <span class="op">=</span> <span class="cn">FALSE</span>,
+    drop <span class="op">=</span> <span class="cn">FALSE</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">mutate</span><span class="op">(</span>
+    <span class="co"># contains_CI = str_detect(sentence, string_confint),</span>
+    sentence <span class="op">=</span> <span class="fu">str_replace_all</span><span class="op">(</span>
+      <span class="va">sentence</span>,
+      <span class="st">&quot;(?&lt;=(?&lt;!\\.)(?&lt;!\\d)\\d{1,4}),(?=(\\d{3}(?!\\.)))&quot;</span>,
+      <span class="st">&quot;&quot;</span>
+    <span class="op">)</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="co"># filter(contains_CI) %&gt;%</span>
+  <span class="fu">mutate</span><span class="op">(</span>
+    CI <span class="op">=</span> <span class="fu">str_extract_all</span><span class="op">(</span>
+      <span class="va">sentence</span>,
+      <span class="fu">str_c</span><span class="op">(</span>
+        <span class="st">&quot;((?&lt;=&quot;</span>, <span class="va">string_confint</span>, <span class="st">&quot;[^\\d]{0,4})&quot;</span>, <span class="va">num_confint</span>,<span class="st">&quot;)|&quot;</span>,
+        <span class="st">&quot;(?&lt;=&quot;</span>, <span class="va">num_effect</span>,<span class="st">&quot;[^\\d\\.]{0,5})&quot;</span>, 
+        <span class="st">&quot;(?&lt;=(\\(|\\[))&quot;</span>, <span class="va">num_confint</span>,<span class="st">&quot;(?=%?[\\)\\];])&quot;</span>
+      <span class="op">)</span>
+    <span class="op">)</span>,
+    effect <span class="op">=</span> <span class="fu">str_extract_all</span><span class="op">(</span>
+      <span class="va">sentence</span>,
+      <span class="fu">str_c</span><span class="op">(</span>
+        <span class="va">num_effect</span>,
+        <span class="st">&quot;(?=[^\\d\\.]{0,30}([^\\.\\d]&quot;</span>, <span class="va">string_confint</span>,<span class="st">&quot;))(?&lt;!\\b95)|&quot;</span>,
+        <span class="va">num_effect</span>,
+        <span class="st">&quot;(?=[^\\d\\.]{0,5}(\\(|\\[)&quot;</span>, <span class="va">num_confint</span>, <span class="st">&quot;(?=%?[\\)\\];]))(?&lt;![^\\.\\d]95)&quot;</span>
+      <span class="op">)</span>
+    <span class="op">)</span>
+  <span class="op">)</span> 
+</code></pre>
 </div>
-<p>These lines of code return a set of confidence intervals and effect for each sentence containing the phrase (“CI”, “confidence interval”, etc). We could improve this code by linking directly each effect to its confidence interval. For now, if we do not detect the same number of effects and confidence interval in a sentence, we drop the sentence, even though there are 5 pairs of effect-CI and only one of them is badly detected.</p>
+</div>
+<p>These lines of code return a set of confidence intervals and effects for each sentence containing the phrase (“CI”, “confidence interval”, etc). <!-- We could improve this code by linking directly each effect to its confidence interval.  --> For now, if we do not detect the same number of effects and confidence interval in a sentence, we drop the sentence, even though there are 5 pairs of effect-CI and only one of them is badly detected.</p>
 <p>Note that some problems might remain with our estimates and CIs detected. Yet, a vast majority of estimates are correctly detected. Here are examples of the confidence intervals and effects detected using our current method:</p>
 <div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class="va">sentences_with_CI</span> <span class="op">&lt;-</span> <span class="va">detected_effects</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">CI</span> <span class="op">!=</span> <span class="st">&quot;character(0)&quot;</span> <span class="op">&amp;</span> <span class="va">effect</span> <span class="op">!=</span> <span class="st">&quot;character(0)&quot;</span><span class="op">)</span>
+<span class="va">random_sentences</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">sentences_with_CI</span><span class="op">$</span><span class="va">sentence</span><span class="op">)</span>, <span class="fl">5</span><span class="op">)</span>
+<span class="fu">str_view_all</span><span class="op">(</span>
+  <span class="va">sentences_with_CI</span><span class="op">$</span><span class="va">sentence</span><span class="op">[</span><span class="va">random_sentences</span><span class="op">]</span>,
+  <span class="fu">str_c</span><span class="op">(</span>
+    <span class="va">num_effect</span>,
+    <span class="st">&quot;(?=[^\\d\\.]{0,17}([^\\.\\d]&quot;</span>, <span class="va">string_confint</span>, <span class="st">&quot;))(?&lt;!\\b95)|&quot;</span>,
+    <span class="va">num_effect</span>,
+    <span class="st">&quot;(?=[^\\d\\.]{0,5}(\\(|\\[)&quot;</span>, <span class="va">num_confint</span>, <span class="st">&quot;(?=%?[\\)\\];]))(?&lt;![^\\.\\d]95)&quot;</span>,
+    <span class="st">&quot;|((?&lt;=&quot;</span>, <span class="va">string_confint</span>, <span class="st">&quot;[^\\d]{0,4})&quot;</span>, <span class="va">num_confint</span>,<span class="st">&quot;)|&quot;</span>,
+    <span class="st">&quot;(?&lt;=&quot;</span>, <span class="va">num_effect</span>,<span class="st">&quot;[^\\d\\.]{0,5})(?&lt;=(\\(|\\[))&quot;</span>, <span class="va">num_confint</span>, <span class="st">&quot;(?=%?[\\)\\];])&quot;</span>
+  <span class="op">)</span>
+<span class="op">)</span>
+</code></pre>
+</div>
 <div id="htmlwidget-2a0dd1ba32e0541469b5" style="width:960px;height:100%;" class="str_view html-widget"></div>
-<script type="application/json" data-for="htmlwidget-2a0dd1ba32e0541469b5">{"x":{"html":"<ul>\n  <li>The pooled estimates (percentage changes) of mortality from circulatory and respiratory causes for Asian dust days vs. non-Asian dust days were <span class='match'>2.33<\/span>% [95% confidence interval (CI): <span class='match'>0.76, 3.93<\/span>] increase at lag 0 and <span class='match'>3.99<\/span>% (95% CI: <span class='match'>0.08, 8.06<\/span>) increase at lag 3, respectively.<\/li>\n  <li>The increase in risk of deaths from PM(10) to lag 9 was 8.25% in the total male population (95%CI: <span class='match'>0.86-16.18<\/span>%) and <span class='match'>10.80<\/span>% (95%CI: <span class='match'>2.18-20.15<\/span>%) in elderly men.<\/li>\n  <li>The PM2.5 effect estimates were greater in elderly people (≥65 years old) with the difference approaching statistical significance (percentage change <span class='match'>0.78<\/span>, 95% CI <span class='match'>0.03%–1.54<\/span>% in patients ≥65 years old; percentage change <span class='match'>0.32<\/span>, 95% CI <span class='match'>-0.38%–1.03<\/span>% in patients Conclusion Short-term elevation in outdoor PM2.5 concentrations was associated with increased emergency admissions for PUB, particularly in elderly people.<\/li>\n  <li>The estimated increase in the relative rate of death from all causes was <span class='match'>0.51<\/span> percent (95 percent posterior interval, <span class='match'>0.07 to 0.93<\/span> percent) for each increase in the PM10 level of 10 microg per cubic meter.<\/li>\n  <li>Results We found that each 10 µg/m3 increment of PM2.5 concentration (1-day lagged) was associated with an increased risk of EDVs for STEMI (OR <span class='match'>1.05<\/span>; 95% CI, <span class='match'>1.00–1.11<\/span>).<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-2a0dd1ba32e0541469b5">{"x":{"html":"<ul>\n  <li>Mixed results were found on lung function parameters, and a meta-analysis including two studies with comparable methodology showed a trend towards reduced maximum flow rate at functional residual capacity of <span class='match'>−34.59<\/span> mL/s (95% CI <span class='match'>−72.81 to 3.63<\/span>, p=0.08) in 1-month-old infants born to women who smoked during pregnancy.<\/li>\n  <li>Ambient NO2 pollution interquartile range increase (IQR) on the day of admission and previous day (lag 0–1) in patients below 65 years of age increase the risk of ACS equal to <span class='match'>24<\/span>% (95% CI <span class='match'>0.96–1.60<\/span>).<\/li>\n  <li>We estimated a hazard ratio (HR) of <span class='match'>1.053<\/span> [95% confidence interval (CI): <span class='match'>1.041, 1.065<\/span>] per 10-μg/m3 change in PM2.5 after pooling the three cohort-specific hazard ratios, with some variation between cohorts (1.041 for the 1991 and 1996 cohorts and 1.084 for the 2001 cohort).<\/li>\n  <li>RESULTS: For the totla mortality except the external ones, a significant impact of black smoke (RR 10 m g/m3: <span class='match'>1.013<\/span>; CI95% <span class='match'>1.003 to 1.023<\/span>) and for CO 24 h (RR 1 mg/m3: <span class='match'>1.024<\/span>; CI95% <span class='match'>1.003 to 1.046<\/span>) was found.<\/li>\n  <li>Also for males, statistically significant results were observed in the case of PM2.5 exposure lagged by 5 days (OR = <span class='match'>1.003<\/span>, 95% CI: <span class='match'>1.000-1.038<\/span>) and sulfur dioxide (SO2) exposure lagged by 1 and 2 days (OR = <span class='match'>1.016<\/span>, 95% CI: <span class='match'>1.000-1.031<\/span> and OR = <span class='match'>1.018<\/span>, 95% CI: <span class='match'>1.002-1.033<\/span>).<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
 </div>
 <p>Once the effects and CI are identified, some wrangling is necessary in order to get the data into a usable format. We also choose to <strong>drop effects which do not fall into the CI</strong> (62 estimates) in order to get rid off most of the poorly detected effects-CIs.</p>
 <div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class="va">effects_and_CI</span> <span class="op">&lt;-</span> <span class="va">detected_effects</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lengths.html">lengths</a></span><span class="op">(</span><span class="va">effect</span><span class="op">)</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/lengths.html">lengths</a></span><span class="op">(</span><span class="va">CI</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="co">#if number of effects != nb of CI for a sentence,</span>
+  <span class="co">#can&#39;t attribute effects to CI so, drop sentence</span>
+  <span class="fu">unnest</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">effect</span>, <span class="va">CI</span><span class="op">)</span>, keep_empty <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">mutate</span><span class="op">(</span>CI <span class="op">=</span> <span class="fu">str_remove_all</span><span class="op">(</span><span class="va">CI</span>, <span class="st">&quot;\\s&quot;</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="co"># separate(CI, into = c(&quot;low_CI&quot;, &quot;up_CI&quot;), &quot;([\\s,]+)|(?&lt;!^)[-–]&quot;) %&gt;% </span>
+  <span class="fu">separate</span><span class="op">(</span><span class="va">CI</span>, into <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">&quot;low_CI&quot;</span>, <span class="st">&quot;up_CI&quot;</span><span class="op">)</span>, <span class="st">&quot;(?&lt;!^)[–:;,%\\-to\\‐]{1,5}&quot;</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">mutate</span><span class="op">(</span><span class="fu">across</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">&quot;effect&quot;</span>, <span class="st">&quot;low_CI&quot;</span>, <span class="st">&quot;up_CI&quot;</span><span class="op">)</span>, .fns <span class="op">=</span> <span class="va">as.numeric</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">mutate</span><span class="op">(</span>
+    low_CI <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">up_CI</span><span class="op">)</span>, <span class="cn">NA</span>, <span class="va">low_CI</span><span class="op">)</span>,
+    up_CI <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">low_CI</span><span class="op">)</span>, <span class="cn">NA</span>, <span class="va">up_CI</span><span class="op">)</span>,
+    effect <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">low_CI</span><span class="op">)</span>, <span class="cn">NA</span>, <span class="va">effect</span><span class="op">)</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">select</span><span class="op">(</span><span class="va">doi</span>, <span class="va">effect</span>, <span class="va">low_CI</span>, <span class="va">up_CI</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">effect</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>  
+  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">effect</span> <span class="op">&gt;</span> <span class="va">low_CI</span> <span class="op">&amp;</span> <span class="va">effect</span> <span class="op">&lt;</span> <span class="va">up_CI</span><span class="op">)</span>
 
+<span class="fu"><a href="https://rdrr.io/r/base/readRDS.html">saveRDS</a></span><span class="op">(</span><span class="va">effects_and_CI</span>, <span class="st">&quot;../Outputs/effects_and_CI.RDS&quot;</span><span class="op">)</span>
+</code></pre>
 </div>
-<div class="layout-chunk" data-layout="l-body">
-<table>
-<caption><span id="tab:unnamed-chunk-9">Table 1: </span>Number of articles for which at least one effect is retrieved (out of those containing the phrase CI)</caption>
-<thead>
-<tr class="header">
-<th style="text-align: left;">Effect retreived</th>
-<th style="text-align: right;">Number of articles</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">No</td>
-<td style="text-align: right;">88</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Yes</td>
-<td style="text-align: right;">596</td>
-</tr>
-</tbody>
-</table>
-<div id="htmlwidget-ed4906484ed42468d86d" style="width:960px;height:100%;" class="str_view html-widget"></div>
-<script type="application/json" data-for="htmlwidget-ed4906484ed42468d86d">{"x":{"html":"<ul>\n  <li>Conditional logistic regression models were used to obtain the odds ratio (OR) and 95% confidence interval (CI) associated with a 5 ppb increase in NO2 concentration for the 19735 ED visits identified.<\/li>\n  <li>RESULTS While the cold season returned insignificant estimates, the warm season showed statistically significant associations: a 10 ppb increase in ozone was associated with 0.7% increase in circulatory mortality with a 95% posterior interval of 0.2%, 1.1%.<\/li>\n  <li>Seven of 18 species exhibited significantly greater carbon increment (CI) in tree boles as N deposition increased, though the magnitude of the effect was quite small in most California forests.<\/li>\n  <li>However, increases in CI were substantial in the coastal ecosections of central and northern California where precipitation and fog exposure are greatest.<\/li>\n  <li>Don) Endl.) trees exhibited the strongest CI response to N deposition.<\/li>\n  <li>Our model results imply a mean CI increase of 4.2 kg ha−1 yr−1 of C per kg ha−1 yr−1 of N deposition statewide versus 13.6 in the Central and Northern California Coast ecosections, where > 50% of the trees are redwood or tanoak (Lithocarpus densiflorus (Hook.<\/li>\n  <li>The combined effect of N and S deposition and ozone exposure statewide is a net increase in bole CI.<\/li>\n  <li>Multivariate Cox regression models were used to estimate relative risks (RRs) and 95% confidence intervals (CI).<\/li>\n  <li>We estimated hazard ratios (HRs) and 95% confidence intervals (CI) to evaluate lifetime use of coal types and stoves in the home in relation to risk of IHD and stroke mortality.<\/li>\n  <li>The present study assessed air quality and its association with human mortality rates during the lockdown by estimating changes observed in air pollutants (CO, NO2, O3, SO2, PM10 and PM2.5) between the lockdown (April 1–May 31) and prelockdown (January 1–March 31) periods, as well as by comparing the air quality data of lockdown period with the same interval of previous 5 years (2015–2019).<\/li>\n  <li>Greenness was associated with lower natural-cause (RR: 0.95, 95% CI: 0.94, 0.96 per IQR) and cause-specific mortality.<\/li>\n  <li>Conditional logistic regression models estimated odds ratios (OR) with 95% confidence intervals (CI) for presentations in relation to supposed influencers, adjusting for confounders.<\/li>\n  <li>Cox proportional hazards models were used to estimate hazard ratios (HRs) and 95% confidence intervals (CIs) in regression models that included up to six criteria pollutants; four spatial decompositions of PM2.5; and two- and five-year lagged mean PM2.5 exposures in the temporally-decomposed cohorts.<\/li>\n  <li>Poisson-based interrupted time series analysis was employed to estimate the relative risk (RR) and 95% confidence interval (CI).<\/li>\n  <li>This study showed that there may exist positive and significant excess death risks due to the synergism between high temperature and air pollution in the total population for all pollutants (95% lower confidence intervals of all RERIs>0 or near 0).<\/li>\n  <li>Conditional logistic regression models were used to obtain the odds ratio (OR) and 95% confidence interval (CI) associated with an interquartile (IQR) increase in ozone.<\/li>\n  <li>The lower bound of the 95% CIs exceeded unity for all concentrations in the 1991 cohort, for concentrations above 2 μg/m3 in the 1996 cohort, and above 5 μg/m3 in the 2001 cohort.<\/li>\n  <li>Single lag models and distributed lag models were extensively compared, specifically in terms of lag interval, and adjustment for temporal trend.<\/li>\n  <li>A time-stratified case-crossover design with conditional Poisson regression analysis was used to estimate the relative risks (RRs) and 95% confidence intervals (CIs) of visits while adjusting for temperature.<\/li>\n  <li>We used Monte Carlo simulations to obtain empirical confidence intervals (eCIs), quantifying the uncertainty in CRFs and the variability across ensemble members (i.e., 3 predictions of future climate and air quality from slightly different starting conditions) of the global model.<\/li>\n  <li>Conditional logistic regression was applied to calculate odds ratios (OR) and 95% confidence intervals (95% CI).<\/li>\n  <li>We used generalized addictive model (GAM) to estimate relative risks (RRs) and 95% confidence intervals (CIs) for the association of these four air pollutants with daily mortality.<\/li>\n  <li>Simulation studies under several realistic assumptions about the measurement error model and about the correlation structure of the repeated exposure measurements were conducted to assess the finite sample properties of this new method, and found that the method has good performance in terms of finite sample bias reduction and nominal confidence interval coverage.<\/li>\n  <li>Proportional hazards models were used to estimate hazard ratios and 95% confidence intervals between PM2.5 (per 10 µg/m3) and heart disease mortality using the full sample and the sample adults, which have information on additional health variables.<\/li>\n  <li>We estimate the percent increase in non-accidental mortality per 10 μg/m3 increase in PM2.5 concentration and constructed corresponding 95% credible interval (CI.<\/li>\n  <li>We investigated the association between daily emergency ambulance calls (EC) for paroxysmal atrial fibrillation (AF) that occurred during the time intervals of 8:00–13:59, 14:00–21:59, and 22:00–7:59, and weather conditions and exposure to CO and PM10.<\/li>\n  <li>We used a case-crossover study design and conditional logistic regression models with odds ratios (ORs), and 95% confidence intervals (CIs) for evaluating the associations between the environmental factors and COPD-associated ED visits.<\/li>\n  <li>Multivariable Cox proportional hazards modelling estimated HRs and 95% CIs of BC death in relation to PM2.5 exposure.<\/li>\n  <li>The percent increase and 95% confidence interval (CI) were calculated for each interquartile range (IQR) increment in the concentration of each air pollutant.<\/li>\n  <li>Main outcome measures Per cent increase in daily respiratory mortality rate (MR) per interquartile range (IQR) increase of PM10 concentration and corresponding 95% confidence interval (CI) in single-pollutant and multipollutant (including NOx, CO) models.<\/li>\n  <li>However, GAMM+BMA gave slightly but noticeable wider CIs for the single-pollutant model (−1.09 to 4.28 vs −1.08 to 3.93) and the PCs-based model (−2.23 to 4.07 vs −2.03 vs 3.88).<\/li>\n  <li>The CIs of the multiple-pollutant model from two methods are similar, that is, −1.12 to 4.85 versus −1.11 versus 4.83.<\/li>\n  <li>We conducted random effect meta-analyses and mixed-effect meta-regression analyses using retrieved summary effect estimates and 95% confidence intervals (CIs) and some characteristics of selected studies.<\/li>\n  <li>Deaths occurring between 1991 and 2009 were identified through record linkages and Cox proportional hazard models were used to estimate hazard ratios (and 95% confidence intervals) for interquartile changes in exposure adjusting for individual-level covariates and indirect-adjustment for smoking and obesity.<\/li>\n  <li>Every 10 μg/m3 increase in PM2.5 concentration at lag0 was associated with an increase in ERV, as follows: 0.23% for total respiratory disease (95% confidence interval [CI]: 0.11%-0.34%), 0.19% for upper respiratory tract infection (URTI) (95%CI: 0.04%-0.35%), 0.34% for lower respiratory tract infection (LRTI) (95%CI: 0.14%-0.53%) and 1.46% for acute exacerbation of chronic obstructive pulmonary disease (AECOPD) (95%CI: 0.13%-2.79%).<\/li>\n  <li>Associations were generally small with confidence intervals that spanned 0% and tended to be negative for cardiovascular mortality and positive for respiratory mortality.<\/li>\n  <li>An estimated 220 years of life were lost by people who died in 2010/11 as a result of ship exhaust-related exposure (95% CIβ: 140-290, where CIβ is the uncertainty in the concentration-response coefficient only).<\/li>\n  <li>Use of 0.1% sulfur fuel at berth would reduce the population weighted-mean concentration of PM2.5 related to ship exhaust by 25% and result in a gain of 390 life-years over a twenty year period (95% CIβ: 260-520).<\/li>\n  <li>Summary ORs and 95% CIs were calculated to evaluate the relationship between short-term exposure to PM with aerodynamic diameters ≤ 2.5 μm (PM2.5) and COPD hospitalizations and mortality.<\/li>\n  <li>We then used conditional logistic regression to estimate odds ratios (ORs) and 95 confidence intervals (CIs).<\/li>\n  <li>The risk was expressed as relative risk (RR) per one standard deviation of each air pollutant and its 95% confidence interval (95% CI).<\/li>\n  <li>Cox regression analysis was performed (hazard ratios, HRs, 95% CI) using linear terms for the exposures (5th-95th percentiles difference).<\/li>\n  <li>Odds ratios (OR) and their corresponding 95% confidence intervals (95%CI) for ED visits associated with increase by one unit of risk index were calculated employing conditional logistic regression.<\/li>\n  <li>The rate ratios for the source-specific health associations from the 10 imputed source contribution time series were combined, resulting in health associations with inflated confidence intervals to better account for exposure uncertainty.<\/li>\n  <li>Furthermore, the uncertainty analysis shows that the confidence interval of all causes mortality is much larger than that for specific causes, probably due to the accumulated uncertainty of generating datasets and sample size.<\/li>\n  <li>The confidence interval of ozone-related all cause premature mortality is narrower than the PM2.5-related all cause mortality, due to its smaller standard deviation of the concentration-mortality response factor.<\/li>\n  <li>Relative risks (RRs) and 95% confidence interval (CI) were calculated using fixed-effect or random-effects models when appropriate.<\/li>\n  <li>RESULTS Odds ratios and their 95% confidence interval have been calculated for 1 unit increase in their interquartile range for lags (the time between air pollutant measurement and exposure-response) 0-8 days.<\/li>\n  <li>Odds ratios (ORs) and their corresponding 95% confidence intervals (CIs) for ED visits associated with increased (by one unit) levels of AQHI were calculated by applying conditional logistic regression.RESULTS: Positive and statistically significant results were observed between AQHI levels and ED visits for asthma.<\/li>\n  <li>Nous avons appliqué une régression logistique conditionnelle pour calculer les rapports de cotes (RC) et leurs intervalles de confiance (IC) à 95 % correspondants pour les visites aux urgences associées à des niveaux accrus (d’une unité) de la CAS.RÉSULTATS: Des résultats positifs et significatifs ont été observés entre les niveaux de la CAS et les visites aux urgences dues à l’asthme.<\/li>\n  <li>Relative risk (RR) and 95% confidence interval (95% CI) were estimated using a time series Poisson model, adjusting for day of week, public holidays, daily mean temperature and relative humidity.<\/li>\n  <li>ORs and their 95% confidence intervals (95% CI) were reported in relation to an increase in the interquartile range (IQR = 17.9 ppb) of the ground-level ozone.ResultsOverall, 48 252 ED visits due to LRD were identified, of which 53% were made by males.<\/li>\n  <li>We find global mean surface PM2.5 and health-relevant O3 (defined as the maximum 6-month mean of 1-h daily maximum O3 in a year) have increased by 8 ± 0.16 μg m−3 and 30 ± 0.16 ppbv (results reported as annual average ±standard deviation of 10-yr model simulations), respectively, over this industrial period as a result of combined changes in emissions of air pollutants (EMIS), climate (CI) and CH4 concentrations (TCH4).<\/li>\n  <li>EMIS, CI and TCH4 cause global population-weighted average PM2.5 (O3) to change by +7.5 ± 0.19 μg m−3 (+25 ± 0.30 ppbv), +0.4 ± 0.17 μg m−3 (+0.5 ± 0.28 ppbv), and 0.04 ± 0.24 μg m−3 (+4.3 ± 0.33 ppbv), respectively.<\/li>\n  <li>Most air pollution mortality is driven by changes in emissions of short-lived air pollutants and their precursors (95% and 85% of mortalities from PM2.5 and O3 respectively).<\/li>\n  <li>We calculated percentage changes of cardiovascular emergency room visits, together with 95% confidence intervals (CI), in association with an interquartile range (IQR, difference between the third and first quartile) increase of 11-day or 2-day moving average number or mass concentration of particulate matter within each size fraction, assuming linear effects.<\/li>\n  <li>Combined estimates and their 95%CI were tested by RevMan 5, and Funnel plots were used for the bias analysis.<\/li>\n  <li>A case-crossover design was used to compute the odds ratio (OR) and its 95% confidence interval (CI) of a skin emergency when two exposure doses differed by a predefined unit (here, interquartile range of daily ozone concentration = 14 ppb).<\/li>\n  <li>Presenting continuous confidence intervals that exclude the discrete possibility of zero misrepresents what is currently known (and not known) about the hypothesized causal relation between changes in PM(2.5) levels and changes in mortality rates, suggesting greater certainty about projected health benefits than is justified.<\/li>\n  <li>Conditional logistic regression models were applied to estimate the odds ratios (ORs) and their respective 95% confidence intervals (CIs).<\/li>\n  <li>Odds ratios and their corresponding 95% confidence intervals were estimated using conditional logistic regression, and were adjusted for the confounding influence of daily number of influenza ED visits and weather variables using natural spline functions.ResultsStatistically significant associations were observed between ambient air pollution levels and ED visits for asthma in Windsor.<\/li>\n  <li>Des rapports de cote (RC) accompagnés d’intervalle de confiance à 95% ont été générés en utilisant la régression logistique conditionnelle et ont été ajustés pour les facteurs confondants d’admissions quotidiennes à l’urgence pour un diagnostique d’influenza et des variables climatiques en utilisant des fonctions splines naturelles.RésultatsDes associations statistiquement significatives ont été observés entre les polluants atmosphériques et les admissions à l’urgence pour de l’asthme à Windsor.<\/li>\n  <li>The strongest association was found for particle NC in the size range 0.03-0.1 μm (7.1% increase in daily mortality with a 95%-confidence interval of 2.9%-11.5%, per an increase of 6250 particles/cm3).<\/li>\n  <li>Although the analytical results from air pollution models show increasingly better prediction ability of longer time-intervals (r2 = 0.012, p<0.001 in a 7-day model), a very weak negative association between elderly mortality and air pollution is observed.<\/li>\n  <li>Reported odds ratios (OR) and 95% confidence intervals are for mortality on event days compared with non-event days.<\/li>\n  <li>As for confidence intervals, we argue that VOLY is at least 25000 € and at the most 100000 €.<\/li>\n  <li>This paper focuses on constrained confidence intervals in the context of environmental time series studies where one seeks to ascertain the effects of ambient air pollution on human mortality.<\/li>\n  <li>If the regression parameter representing such effects is non-negative, corresponding to a belief that more pollution cannot be beneficial, a desirable goal is to produce a constrained confidence interval for the parameter which is entirely non-negative.<\/li>\n  <li>The large number of constrained CIs that contain zero is an indication that for the majority of the 100 cities there is not enough evidence to conclude a positive association between air pollution and mortality.<\/li>\n  <li>Conditional logistic regression analysis with the subject’s identification number as a stratum variable was used to obtain odds ratios (ORs) and their corresponding 95% confidence intervals after adjustment for meteorological factors.<\/li>\n  <li>Case-crossover design was applied to estimate odds ratio (OR, and 95% confidence interval) per one interquartile range (IQR) increase in ozone concentration (IQR = 14.0 ppb).<\/li>\n  <li>The odds ratios and their confidence intervals for adverse health effects were estimated.<\/li>\n  <li>The emphasis in earlier studies based on NMMAPS has been on the reporting of “national” effects, together with prediction intervals that suggest that these national values are precisely estimated.<\/li>\n  <li>In general, the experts agreed with published studies for the best estimate of all-cause mortality from PM2.5; however, as would be expected, they gave confidence intervals that were several times broader than the statistical confidence intervals taken directly from the most frequently cited published studies.<\/li>\n  <li>A 95% credible set which defines an interval having a 0.95 posterior probability of containing the parameter for each covariate was calculated from Markov Chain Monte Carlo simulations.<\/li>\n  <li>The 95% credible sets are (-0.286, -0.097) for household income, (0.034, 0.144) for traffic air pollution effect, (0.419, 1.495) for emission density of monitored point source polluters, (0.413, 1.522) for simple point density of point source polluters without emission data, and (-0.289,-0.031) for greenness.<\/li>\n  <li>Air pollution covariates have positive effects (the 95% credible sets cover positive values).<\/li>\n  <li>Odds ratios and their corresponding 95% confidence intervals were estimated using conditional logistic regression with adjustment for temperature, relative humidity and seasonal epidemics of viral related respiratory disease.ResultsPositive associations for asthma visits with outdoor air pollution levels were observed between April and September, but were absent during the remainder of the year.<\/li>\n  <li>The effects appeared to increase at nitrogen dioxide levels higher than 40 micro g/m(3) in the youngest age group and with a linear effect in the interval 20-60 micro g/m(3) for the oldest.<\/li>\n  <li>Conditional logistic regression was used to estimate the odds ratios (ORs) and their 95% confidence intervals in relation to an increase in the interquartile range (IQR) of each pollutant.<\/li>\n  <li>When applying these approaches to adjusting for seasonal and long-term trends we find that the Study’s estimates for the national average effect of PM10 at lag 1 on mortality vary over approximately a twofold range, with 95% posterior intervals always excluding zero risk.<\/li>\n  <li>Proportional hazards regression models were used to determine their relative risk of death (RR) and 95% confidence interval (CI) during 1973–2002 by county of residence.<\/li>\n  <li>Since 95% of circulating vitamin D is derived from current or stored products of photosynthesis, which may be nonexistent or minimal much of the year above 37°N or below 37°S, attenuation of UVB by atmospheric aerosols and clouds may have a greater than expected adverse effect on human health.<\/li>\n  <li>On average across cities, we found that a 10ppb increase in summer ozone level over the previous week is associated with a 1.25 per cent increase in CVDRESP mortality (95 per cent posterior regions: 0.47, 2.03).<\/li>\n  <li>RESULTS The risk ratios for an increase of 10 microg/m3 in SPM concentrations adjusted for SO2, NO2, CO, Ox, temperature, and humidity were 1.0077 for all causes of mortality, 1.0109 for respiratory diseases, and 1.0091 for cardiovascular diseases, and the lower limits of the 95% confidence intervals for the risk ratios were greater than one for all cases.<\/li>\n  <li>Confidence intervals narrowed slightly for all groups investigated.<\/li>\n  <li>Cardiopulmonary mortality was associated with living near a major road (relative risk 1.95, 95% CI 1.09-3.52) and, less consistently, with the estimated ambient background concentration (1.34, 0.68-2.64).<\/li>\n  <li>Se calcularon riesgos relativos (RR) e intervalos de confianza al 95% (IC95%) para incrementos de contaminante de 10 m gr/m³.<\/li>\n  <li>An increase to the mean level of 1-h maximum O3 (36 ppb) was associated with a 21% increase over the mean number of daily ER visits (95% confidence interval [CI]: 8 to 34%).<\/li>\n  <li>Separately, the association of In(TSP) with total daily mortality was positive but not significant (4% increase in mortality with each doubling in TSP; 95% CI = -2%-11%).<\/li>\n  <li>On average, mean effect ranged from 2-7% of all deaths during the nonepisodic winters in Greater London, but the 95% confidence intervals of these estimates overlapped for all model specifications examined.<\/li>\n  <li>Relative risks and 95% confidence intervals were calculated using the random-effects models.<\/li>\n  <li>Contrast-induced nephropathy (CIN) or contrast-induced acute kidney injury (CI-AKI) is an iatrogenic acute kidney injury observed after intravascular administration of contrast media for intravascular diagnostic procedures or therapeutic angiographic intervention.<\/li>\n  <li>The odds ratio, relative risk and mean differences were pooled with a 95% CI using the generic inverse variance method.<\/li>\n  <li>Results from subgroup analyses also indicate a multiple-day lag trend and bigger significant health effects during longer day intervals.<\/li>\n  <li>The summary relative risk (RR) and 95% confidence intervals (95%CI) were also calculated to assess the association between the PM2.5 and MI.<\/li>\n  <li>The relative risk (RR) and 95% confidence interval (CI) of each specific event were calculated in association with the ambient conditions.<\/li>\n  <li>We included studies if their design was longitudinal; the exposure of interest was measured green space; the endpoint of interest was all-cause mortality; they provided a risk estimate (ie, a hazard ratio [HR]) and the corresponding 95% CI for the association between green space exposure and all-cause mortality; and they used normalised difference vegetation index (NDVI) as their green space exposure definition.<\/li>\n  <li>Pulmonary function tests were performed and two prognostic indices [Gender, Age, Physiology (GAP) and Composite Physiologic Index (CI] calculated, both at diagnosis and after the 12 month treatment.<\/li>\n  <li>We used mean differences (MDs) and 95% confidence intervals (CIs ) as the metrics for treatment effects, and the random-effects model for meta-analyses.<\/li>\n  <li>A meta-analysis was conducted using a random-effects model, including only studies that presented odds ratios, relative risks, or percentage changes, along with 95% confidence intervals (CIs).<\/li>\n  <li>We used log-binomial regression to estimate prevalence ratios (PR) and 95% confidence intervals (95% CI) for cross-sectional associations between both ambient and blood styrene levels and self-reported neurologic symptoms.<\/li>\n  <li>Percentile 95% of THQ due to benzene (4.973) and o-xylene (1.272) was higher than a value of 1.<\/li>\n  <li>Percentile 95% excessive cancer risk (ECR) for benzene (1.25 × 106) and ethylbenzene (1.11 × 106) was higher than a value of 1.00 × 106.<\/li>\n  <li>Individual and pooled ORs and associated 95% CIs will be calculated as well as between-study heterogeneity.<\/li>\n  <li>Later, he used smaller doses by interval/dose adjustments: Nowadays(cycle60) use IV‐immunoglobulin 0.68 g/kg/3 m hospitalized.<\/li>\n  <li>A28 Assessment of health‐related quality of life of patients with type 1 diabetes (DM1) using continuous insulin infusion system (CI) or multiple doses of insulin (MDI): what is the scenario of an outpatient reference clinic in SUS‐DF?<\/li>\n  <li>Patients were divided into three groups: CI (25 patients), MDI and FDI 30 patients each.<\/li>\n  <li>Results: Dosing accuracy was 2 units ±10% (with U-100 insulin) over a range of environmental conditions, with ≥95% reliability and confidence.<\/li>\n  <li>The fluid seal performance and the safety alert features performed with ≥95% reliability and ≥95% confidence.<\/li>\n  <li>The association between each factor and ICD or DSM diagnoses of non‐organic psychotic disorders was graded into convincing, highly suggestive, suggestive, weak, or non‐significant according to a standardized classification based on: number of psychotic cases, random‐effects p value, largest study 95% confidence interval, heterogeneity between studies, 95% prediction interval, small study effect, and excess significance bias.<\/li>\n  <li>For dichotomous outcomes, we reported the risk ratio (RR) (or rate ratio) and 95% confidence intervals (CI).<\/li>\n  <li>Prophylaxis of MRONJOne trial compared standard care with regular dental examinations in three-month intervals and preventive treatments (including antibiotics before dental extractions and the use of techniques for wound closure that avoid exposure and contamination of bone) in men with metastatic prostate cancer treated with zoledronic acid.<\/li>\n  <li>AUTHORS' CONCLUSIONS Prophylaxis of MRONJOne open-label RCT provided some evidence that dental examinations in three-month intervals and preventive treatments may be more effective than standard care for reducing the incidence of MRONJ in individuals taking intravenous bisphosphonates for advanced cancer.<\/li>\n  <li>Background: Ambient particulate matter (PM) air pollution exposure has been associated with increases in QT interval duration (QT).<\/li>\n  <li>Odds ratios (ORs) and 95% confidence intervals were estimated.<\/li>\n  <li>We analysed dichotomous outcome data using risk ratio (RR) and continuous outcome data using mean difference (MD) with 95% confidence intervals (CI).<\/li>\n  <li>If the two estimates were equal, we used the estimate with the widest CI as our main result.<\/li>\n  <li>Motivational interviewing versus traditional lecturesOne CBA study found that participants given motivational group interviewing-based safety education scored higher on a checklist measuring PPE use (MD 2.95, 95% CI 1.93 to 3.97) than control workers given traditional educational sessions.<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
 </div>
-<h2 id="retreiving-additional-information">Retreiving additional information</h2>
-<p>It might also be interesting to information about the type of pollutant considered in the study, the study period, the number of observations or the type of outcome studied (mortality, emergency admissions, stroke, cerebrovascular or cardiovascular diseases). We also use regex to recover this information.</p>
-<div class="layout-chunk" data-layout="l-body">
-
-</div>
+<p>The <code>effects_and_CI</code> data frame displays, in each row, a point estimate and the lower and upper band of the CI along with the DOI of the article from which this estimate is extracted. We retrieved 2084 valid point estimates and associated confidence intervals. We analyze them further in another document.</p>
+<h1 id="retreiving-additional-information">Retreiving additional information</h1>
+<p>It might also be interesting to have information about the type of pollutant considered in the study, the study period, the number of observations or the type of outcome studied (mortality, emergency admissions, stroke, cerebrovascular or cardiovascular diseases). We thus use regex to recover this information. Of course, this does not enable us to retrieve data for all the abstracts considered but it provides a useful source of information; retrieving this information “by hand” is extremely cumbersome. Regex are thus very helpful here. They also make this analysis reproducible.</p>
+<h2 id="number-of-obsrvations">Number of obsrvations</h2>
+<p>In most studies in this field, observations are daily and at the city level. To compute the number of observations, we thus retrieve the length of the study period from the abstract when possible, along with the number of cities considered in the study.</p>
 <h3 id="length-of-the-study-period">Length of the study period</h3>
-<p>We first detect begin and end dates for the period of study and compute the length of study, after transforming the text data to a date format using the function <code>text_to_date</code>.</p>
+<p>To compute the length of the study period, we look for beginning and end dates for the period of study in the abstract. Some abstracts contain phrases such as “from January 2002 to March 2011” to indicate the study period. We take advantage of such mentions to retrieve the study period. Before anything, we transform the text data to a date format using the function <code>text_to_date</code>. Then, we detect, the study periods and wrangle them into a usable format. If we retrieve several length for a unique article, we take a conservative approach and only keep the longer one.</p>
 <div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class="va">abstracts_only</span> <span class="op">&lt;-</span> <span class="va">abstracts</span> <span class="op">%&gt;%</span> 
+  <span class="fu">mutate</span><span class="op">(</span>abstract <span class="op">=</span> <span class="fu">str_replace_all</span><span class="op">(</span><span class="va">abstract</span>, <span class="st">&quot;·&quot;</span>, <span class="st">&quot;.&quot;</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">select</span><span class="op">(</span><span class="va">doi</span>, <span class="va">abstract</span><span class="op">)</span>
 
+<span class="va">month_regex</span> <span class="op">&lt;-</span> <span class="fu">str_c</span><span class="op">(</span>
+  <span class="st">&quot;\\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|&quot;</span>, 
+  <span class="st">&quot;Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|(Nov|Dec)(?:ember)?)&quot;</span><span class="op">)</span>
+<span class="va">date_regex</span> <span class="op">&lt;-</span> <span class="fu">str_c</span><span class="op">(</span><span class="st">&quot;(&quot;</span>, <span class="va">month_regex</span>, <span class="st">&quot;\\s){0,1}(19|20)\\d{2}&quot;</span><span class="op">)</span>
+
+<span class="va">text_to_date</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">date_text</span><span class="op">)</span> <span class="op">{</span>
+  <span class="va">year</span> <span class="op">&lt;-</span>  <span class="fu">str_remove_all</span><span class="op">(</span><span class="va">date_text</span>, <span class="st">&quot;[^\\d]&quot;</span><span class="op">)</span>
+  <span class="va">month</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/match.html">match</a></span><span class="op">(</span><span class="fu">str_remove_all</span><span class="op">(</span><span class="va">date_text</span>, <span class="st">&quot;[\\d\\s]&quot;</span><span class="op">)</span>, <span class="va">month.name</span><span class="op">)</span>
+  <span class="va">month</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">month</span><span class="op">)</span>, <span class="st">&quot;01&quot;</span>, <span class="va">month</span><span class="op">)</span>
+  <span class="va">date</span> <span class="op">&lt;-</span> <span class="fu"><a href="http://lubridate.tidyverse.org/reference/ymd.html">dmy</a></span><span class="op">(</span><span class="fu">str_c</span><span class="op">(</span><span class="st">&quot;01-&quot;</span>, <span class="fu">str_pad</span><span class="op">(</span><span class="va">month</span>, width <span class="op">=</span> <span class="fl">2</span>, pad <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>, <span class="st">&quot;-&quot;</span>, <span class="va">year</span><span class="op">)</span><span class="op">)</span>
+  <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="va">date</span><span class="op">)</span>
+<span class="op">}</span>
+
+<span class="va">articles_length_study</span> <span class="op">&lt;-</span> <span class="va">abstracts_only</span> <span class="op">%&gt;%</span>
+  <span class="fu">mutate</span><span class="op">(</span>
+    dates_obs <span class="op">=</span> <span class="fu">str_extract_all</span><span class="op">(</span>
+      <span class="va">abstract</span>, 
+      <span class="fu">str_c</span><span class="op">(</span>
+        <span class="st">&quot;(&quot;</span>, <span class="va">date_regex</span>, <span class="st">&quot;|&quot;</span>, <span class="va">month_regex</span>, <span class="st">&quot;)&quot;</span>, 
+        <span class="st">&quot;( to |\\s?—\\s?|\\s?-\\s?| and )&quot;</span>, 
+        <span class="va">date_regex</span>
+      <span class="op">)</span>
+    <span class="op">)</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">unnest</span><span class="op">(</span><span class="va">dates_obs</span>, keep_empty <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">separate</span><span class="op">(</span>
+    <span class="va">dates_obs</span>, 
+    into <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">&quot;begin_obs&quot;</span>, <span class="st">&quot;end_obs&quot;</span><span class="op">)</span>, 
+    <span class="st">&quot;( to |\\s?—\\s?|\\s?-\\s?| and )&quot;</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">mutate</span><span class="op">(</span><span class="co">#when begin_obs and end_obs are in the same year, </span>
+    <span class="co">#we only get the month for begin_obs</span>
+    begin_obs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span>
+      <span class="op">!</span><span class="fu">str_detect</span><span class="op">(</span><span class="va">begin_obs</span>, <span class="st">&quot;\\d&quot;</span><span class="op">)</span>, 
+      <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="va">begin_obs</span>, <span class="fu">str_remove_all</span><span class="op">(</span><span class="va">end_obs</span>, <span class="st">&quot;[^\\d]&quot;</span><span class="op">)</span><span class="op">)</span>,
+      <span class="va">begin_obs</span><span class="op">)</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">mutate</span><span class="op">(</span>
+    begin_obs <span class="op">=</span> <span class="fu">text_to_date</span><span class="op">(</span><span class="va">begin_obs</span><span class="op">)</span>,
+    end_obs <span class="op">=</span> <span class="fu">text_to_date</span><span class="op">(</span><span class="va">end_obs</span><span class="op">)</span>,
+    length_study <span class="op">=</span> <span class="fu"><a href="http://lubridate.tidyverse.org/reference/time_length.html">time_length</a></span><span class="op">(</span><span class="va">end_obs</span> <span class="op">-</span> <span class="va">begin_obs</span>, unit <span class="op">=</span> <span class="st">&quot;days&quot;</span><span class="op">)</span>,
+    length_study <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">length_study</span> <span class="op">&lt;</span> <span class="fl">0</span> <span class="op">|</span> <span class="va">end_obs</span> <span class="op">&gt;</span> <span class="fu"><a href="http://lubridate.tidyverse.org/reference/now.html">today</a></span><span class="op">(</span><span class="op">)</span>, <span class="cn">NA</span>, <span class="va">length_study</span><span class="op">)</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">select</span><span class="op">(</span><span class="va">doi</span>, <span class="va">length_study</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">group_by</span><span class="op">(</span><span class="va">doi</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">mutate</span><span class="op">(</span>
+    length_study <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">length_study</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,
+    length_study <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">length_study</span> <span class="op">&lt;</span> <span class="fl">0</span>, <span class="cn">NA</span>, <span class="va">length_study</span><span class="op">)</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">ungroup</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">distinct</span><span class="op">(</span><span class="op">)</span>
+</code></pre>
 </div>
+</div>
+<p>We retrieve a length of the study for 35.3976532% of the articles. Note that with this method, we may miss studies which span for exactly a year, <em>eg</em> when only 2011 is mentioned.</p>
 <h3 id="number-of-cities-considered">Number of cities considered</h3>
 <p>We then try to detect the number of cities considered in each abstract. To do so, we use two different techniques:</p>
 <ul>
@@ -3508,24 +3737,199 @@ text-align: justify}
 <li>We count the number of cities names appearing uniquely in each abstract. To do so, we use a database of cities names. We restrict our sample to large cities.</li>
 </ul>
 <div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class="va">number_word</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span>
+  number <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5000</span>, 
+  word <span class="op">=</span> <span class="fu">english</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/english/man/words.html">words</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5000</span><span class="op">)</span>
+<span class="op">)</span>
 
+<span class="va">abstracts_in_numbers</span> <span class="op">&lt;-</span> <span class="va">abstracts_only</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://rdrr.io/pkg/tidytext/man/unnest_tokens.html">unnest_tokens</a></span><span class="op">(</span><span class="va">word</span>, <span class="va">abstract</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">left_join</span><span class="op">(</span><span class="va">number_word</span>, by <span class="op">=</span> <span class="st">&quot;word&quot;</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">mutate</span><span class="op">(</span>word <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">number</span><span class="op">)</span>, <span class="va">number</span>, <span class="va">word</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">number</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">group_by</span><span class="op">(</span><span class="va">doi</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">summarize</span><span class="op">(</span>abstract <span class="op">=</span> <span class="fu">str_c</span><span class="op">(</span><span class="va">word</span>, collapse <span class="op">=</span> <span class="st">&quot; &quot;</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">ungroup</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">mutate</span><span class="op">(</span>abstract <span class="op">=</span> <span class="fu">str_remove_all</span><span class="op">(</span><span class="va">abstract</span>, <span class="st">&quot;-&quot;</span><span class="op">)</span><span class="op">)</span>
+
+<span class="co">#Source: https://simplemaps.com/data/world-cities</span>
+<span class="va">worldcities</span> <span class="op">&lt;-</span> <span class="fu">read_csv</span><span class="op">(</span><span class="st">&quot;../Inputs/worldcities.csv&quot;</span><span class="op">)</span>
+
+<span class="va">worldcities_large</span> <span class="op">&lt;-</span> <span class="va">worldcities</span> <span class="op">%&gt;%</span>
+  <span class="fu">mutate</span><span class="op">(</span>
+    city_regex <span class="op">=</span> <span class="fu">str_c</span><span class="op">(</span><span class="st">&quot;\\b&quot;</span>, <span class="va">city_ascii</span>, <span class="st">&quot;\\b&quot;</span><span class="op">)</span>,
+    city_regex <span class="op">=</span> <span class="fu">str_to_lower</span><span class="op">(</span><span class="va">city_regex</span><span class="op">)</span>,
+    city_regex <span class="op">=</span> <span class="fu">str_remove_all</span><span class="op">(</span><span class="va">city_regex</span>, <span class="st">&quot;-&quot;</span><span class="op">)</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">population</span> <span class="op">&gt;</span> <span class="fl">500000</span><span class="op">)</span>
+
+<span class="va">articles_number_cities</span> <span class="op">&lt;-</span> <span class="va">abstracts_in_numbers</span> <span class="op">%&gt;%</span> 
+   <span class="fu">mutate</span><span class="op">(</span>
+    n_many_cities <span class="op">=</span> <span class="fu">str_extract_all</span><span class="op">(</span>
+      <span class="va">abstract</span>, 
+      <span class="co"># &quot;(?&lt;!more\\sthan)\\d+(?=\\s?(c|C)it(y|ies))&quot;</span>
+      <span class="st">&quot;\\d+(?=\\s?(c|C)it(y|ies))&quot;</span>
+    <span class="op">)</span>,
+    abstract_ascii <span class="op">=</span> <span class="fu">stringi</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/stringi/man/stri_trans_general.html">stri_trans_general</a></span><span class="op">(</span><span class="va">abstract</span>,<span class="st">&quot;Latin-ASCII&quot;</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">str_to_lower</span><span class="op">(</span><span class="op">)</span>,
+    abstract_ascii <span class="op">=</span> <span class="fu">str_remove_all</span><span class="op">(</span><span class="va">abstract_ascii</span>, <span class="st">&quot;-&quot;</span><span class="op">)</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">unnest</span><span class="op">(</span><span class="va">n_many_cities</span>, keep_empty <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">mutate</span><span class="op">(</span>n_many_cities <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="va">n_many_cities</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">group_by</span><span class="op">(</span><span class="va">doi</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">mutate</span><span class="op">(</span>n_many_cities <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">n_many_cities</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">ungroup</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">distinct</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">group_by</span><span class="op">(</span><span class="va">doi</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">mutate</span><span class="op">(</span>
+    n_names_cities <span class="op">=</span> <span class="fu">str_extract_all</span><span class="op">(</span><span class="va">abstract_ascii</span>, <span class="va">worldcities_large</span><span class="op">[[</span><span class="st">&quot;city_regex&quot;</span><span class="op">]</span><span class="op">]</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+      <span class="fu">as_vector</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+      <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+      <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="op">)</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">ungroup</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">group_by</span><span class="op">(</span><span class="va">doi</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">mutate</span><span class="op">(</span>
+    n_cities <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">n_many_cities</span>, <span class="va">n_names_cities</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,
+    n_cities <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">n_cities</span> <span class="op">==</span> <span class="fl">0</span>, <span class="cn">NA</span>, <span class="va">n_cities</span><span class="op">)</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">ungroup</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">select</span><span class="op">(</span><span class="va">doi</span>, <span class="va">n_cities</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">distinct</span><span class="op">(</span><span class="op">)</span>
+</code></pre>
 </div>
+</div>
+<p>We retrieve a number of cities considered in the study for 44.0677966% of the articles.</p>
 <h3 id="number-of-observations">Number of observations</h3>
 <p>Finally, we combine these two information to compute the number of observations.</p>
 <div class="layout-chunk" data-layout="l-body">
-
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class="va">articles_n_obs</span> <span class="op">&lt;-</span> <span class="va">articles_length_study</span> <span class="op">%&gt;%</span> 
+  <span class="fu">full_join</span><span class="op">(</span><span class="va">articles_number_cities</span>, by <span class="op">=</span> <span class="st">&quot;doi&quot;</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">mutate</span><span class="op">(</span>n_obs <span class="op">=</span> <span class="va">n_cities</span><span class="op">*</span><span class="va">length_study</span><span class="op">)</span>
+</code></pre>
 </div>
-<h3 id="pollutant-and-outcome-studied">Pollutant and outcome studied</h3>
-<p>We then recover, when possible, the pollutant and outcome considered. We retrieve pollutants and outcome that are mentioned in the abstract. Importantly, we recognize that some pollutants and outcome may be mentioned in an abstract even though the corresponding study does not run any analysis on these pollutants and outcomes. We however assume that it is rather unlikely that a study on cardiovascular diseases due to particulate matter pollution will talk about ozone in its abstract. Note that there are sometimes several pollutants and outcomes per abstract.</p>
+</div>
+<p>We retrieve a number of cities considered in the study for 20.4041721% of the articles.</p>
+<h2 id="pollutant-studied">Pollutant studied</h2>
+<p>We then recover, when possible, the pollutant(s) considered in the study. We assume that only pollutants studied are mentioned in the abstract. This might be slightly inaccurate but seems to be a coherent first order approximation. We recognize that some pollutants may be mentioned in an abstract even though the corresponding study does not run any analysis on these pollutants and outcomes. We however assume that it is rather unlikely that a study on particulate matter pollution for instance will also talk about ozone <strong>in its abstract</strong>. Note that there are sometimes several pollutants mentioned in an abstract and analyzed in a study.</p>
 <div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class="va">abstracts_with_titles</span> <span class="op">&lt;-</span> <span class="va">abstracts</span> <span class="op">%&gt;%</span> 
+  <span class="fu">mutate</span><span class="op">(</span>
+    abstract <span class="op">=</span> <span class="fu">str_replace_all</span><span class="op">(</span><span class="va">abstract</span>, <span class="st">&quot;·&quot;</span>, <span class="st">&quot;.&quot;</span><span class="op">)</span>,
+    abstract_title <span class="op">=</span> <span class="fu">str_c</span><span class="op">(</span><span class="va">title</span>, <span class="va">abstract</span>, sep <span class="op">=</span> <span class="st">&quot;. &quot;</span><span class="op">)</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">select</span><span class="op">(</span><span class="va">doi</span>, <span class="va">abstract_title</span><span class="op">)</span>
 
+<span class="va">articles_pollutant</span> <span class="op">&lt;-</span> <span class="va">abstracts_with_titles</span> <span class="op">%&gt;%</span> 
+  <span class="fu">mutate</span><span class="op">(</span>
+    pollutant <span class="op">=</span> <span class="fu">str_extract_all</span><span class="op">(</span>
+      <span class="va">abstract_title</span>,
+      <span class="fu">str_c</span><span class="op">(</span><span class="st">&quot;(\\bPM\\s?2(\\.|,)5|\\bPM\\s?10|\\bO\\s?3\\b|\\b(o|O)zone\\b|&quot;</span>,
+            <span class="st">&quot;\\b(P|p)articulate(\\s(M|m)atter\\b)?|\\bNO\\s?2|&quot;</span>,
+            <span class="st">&quot;\\b(n|N)itrogen\\s?(d|D)ioxide\\b|\\bNO\\b|&quot;</span>,
+            <span class="st">&quot;\\b(n|N)itrogen\\s?(o|O)xide\\b|\\bNO\\s?(x|X)\\b|\\bSO\\s?2|&quot;</span>,
+            <span class="st">&quot;\\bCO\\b|\\bBC\\b|\\b(A|a)ir\\s(Q|q)uality\\s(I|i)ndex\\b)&quot;</span><span class="op">)</span>
+    <span class="op">)</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">unnest</span><span class="op">(</span><span class="va">pollutant</span>, keep_empty <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">group_by</span><span class="op">(</span><span class="va">doi</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">mutate</span><span class="op">(</span>
+    pollutant <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/chartr.html">tolower</a></span><span class="op">(</span><span class="va">pollutant</span><span class="op">)</span>, 
+    pollutant <span class="op">=</span> <span class="fu">str_replace_all</span><span class="op">(</span><span class="va">pollutant</span>, <span class="st">&quot;\\s&quot;</span>, <span class="st">&quot;&quot;</span><span class="op">)</span>,
+    pollutant <span class="op">=</span> <span class="fu">str_replace_all</span><span class="op">(</span><span class="va">pollutant</span>, <span class="st">&quot;,&quot;</span>, <span class="st">&quot;\\.&quot;</span><span class="op">)</span>,
+    pollutant <span class="op">=</span> <span class="fu">case_when</span><span class="op">(</span>
+      <span class="va">pollutant</span> <span class="op">==</span> <span class="st">&quot;nitrogendioxide&quot;</span> <span class="op">~</span> <span class="st">&quot;no2&quot;</span>,
+      <span class="va">pollutant</span> <span class="op">==</span> <span class="st">&quot;nitrogenoxide&quot;</span> <span class="op">~</span> <span class="st">&quot;no&quot;</span>, 
+      <span class="va">pollutant</span> <span class="op">==</span> <span class="st">&quot;ozone&quot;</span> <span class="op">~</span> <span class="st">&quot;o3&quot;</span>,
+      <span class="va">pollutant</span> <span class="op">==</span> <span class="st">&quot;particulate&quot;</span> <span class="op">~</span> <span class="st">&quot;particulatematter&quot;</span>,
+      <span class="cn">TRUE</span> <span class="op">~</span> <span class="va">pollutant</span>
+    <span class="op">)</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">distinct</span><span class="op">(</span><span class="va">pollutant</span>, .keep_all <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">ungroup</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">abstract_title</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">nest</span><span class="op">(</span>pollutant <span class="op">=</span> <span class="va">pollutant</span><span class="op">)</span>
+</code></pre>
 </div>
+</div>
+<p>We identify pollutants considered in the study for 79.9217731% of the articles.</p>
+<h2 id="outcome-considered">Outcome considered</h2>
+<p>Following a similar methodology as for pollutants, we retrieve information about the outcomes considered.</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class="va">articles_outcome</span> <span class="op">&lt;-</span> <span class="va">abstracts_with_titles</span> <span class="op">%&gt;%</span> 
+  <span class="fu">mutate</span><span class="op">(</span>
+    outcome <span class="op">=</span> <span class="fu">str_extract_all</span><span class="op">(</span>
+      <span class="va">abstract_title</span>, 
+      <span class="st">&quot;(\\b(M|m)ortality\\b|\\b(D|d)eath(s)?\\b|\\b(H|h)ospitalization|\\b(E|e)mergenc)&quot;</span>
+    <span class="op">)</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">unnest</span><span class="op">(</span><span class="va">outcome</span>, keep_empty <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">group_by</span><span class="op">(</span><span class="va">doi</span><span class="op">)</span> <span class="op">%&gt;%</span>
+   <span class="fu">mutate</span><span class="op">(</span>
+    outcome <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/chartr.html">tolower</a></span><span class="op">(</span><span class="va">outcome</span><span class="op">)</span>,
+    outcome <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="fu">str_starts</span><span class="op">(</span><span class="va">outcome</span>, <span class="st">&quot;emergenc|hospitalization&quot;</span><span class="op">)</span>, <span class="st">&quot;Emergency&quot;</span>,
+                     <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="fu">str_starts</span><span class="op">(</span><span class="va">outcome</span>, <span class="st">&quot;death|mortalit&quot;</span><span class="op">)</span>, <span class="st">&quot;Mortality&quot;</span>, <span class="cn">NA</span><span class="op">)</span><span class="op">)</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">distinct</span><span class="op">(</span><span class="va">outcome</span>, .keep_all <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">ungroup</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">nest</span><span class="op">(</span>outcome <span class="op">=</span> <span class="va">outcome</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">abstract_title</span><span class="op">)</span>
+</code></pre>
+</div>
+</div>
+<p>We identify outcomes considered in the study for 86.505867% of the articles.</p>
+<h2 id="sub-population-considered">Sub-population considered</h2>
+<p>Using a similar methodology, we try to identify the sub-population considered (infants, elderly). Note that, when the whole population is studied, we do not recover any information. It might be a bit far fetch to consider that</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class="va">articles_subpop</span> <span class="op">&lt;-</span> <span class="va">abstracts_with_titles</span> <span class="op">%&gt;%</span> 
+  <span class="fu">mutate</span><span class="op">(</span>
+    subpop <span class="op">=</span> <span class="fu">str_extract_all</span><span class="op">(</span>
+      <span class="va">abstract_title</span>, 
+      <span class="st">&quot;(\\b(I|i)nfant|\\b(E|e)lder)&quot;</span>
+    <span class="op">)</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">unnest</span><span class="op">(</span><span class="va">subpop</span>, keep_empty <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">group_by</span><span class="op">(</span><span class="va">doi</span><span class="op">)</span> <span class="op">%&gt;%</span>
+   <span class="fu">mutate</span><span class="op">(</span>
+    subpop <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/chartr.html">tolower</a></span><span class="op">(</span><span class="va">subpop</span><span class="op">)</span>,
+    subpop <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="fu">str_starts</span><span class="op">(</span><span class="va">subpop</span>, <span class="st">&quot;infant&quot;</span><span class="op">)</span>, <span class="st">&quot;Infants&quot;</span>,
+                     <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="fu">str_starts</span><span class="op">(</span><span class="va">subpop</span>, <span class="st">&quot;elder&quot;</span><span class="op">)</span>, <span class="st">&quot;Elders&quot;</span>, <span class="cn">NA</span><span class="op">)</span><span class="op">)</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">distinct</span><span class="op">(</span><span class="va">subpop</span>, .keep_all <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">ungroup</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">nest</span><span class="op">(</span>subpop <span class="op">=</span> <span class="va">subpop</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">abstract_title</span><span class="op">)</span>
+</code></pre>
+</div>
+</div>
+<p>We identify sub-population considered in the study for 11.3428944% of the articles.</p>
+<p>Finally, we build the overall metadata set, by combining all the previous information.</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class="va">articles_metadata</span> <span class="op">&lt;-</span> <span class="va">abstracts</span> <span class="op">%&gt;%</span> 
+  <span class="fu">full_join</span><span class="op">(</span><span class="va">articles_n_obs</span>, by <span class="op">=</span> <span class="st">&quot;doi&quot;</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">full_join</span><span class="op">(</span><span class="va">articles_pollutant</span>, by <span class="op">=</span> <span class="st">&quot;doi&quot;</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">full_join</span><span class="op">(</span><span class="va">articles_outcome</span>, by <span class="op">=</span> <span class="st">&quot;doi&quot;</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">full_join</span><span class="op">(</span><span class="va">articles_subpop</span>, by <span class="op">=</span> <span class="st">&quot;doi&quot;</span><span class="op">)</span>
+
+<span class="fu"><a href="https://rdrr.io/r/base/readRDS.html">saveRDS</a></span><span class="op">(</span><span class="va">articles_metadata</span>, <span class="st">&quot;../Outputs/articles_metadata.RDS&quot;</span><span class="op">)</span>
+</code></pre>
+</div>
+</div>
+<!-- ```{r} -->
+<!-- str_view_all( -->
+<!--     sentences_with_CI$sentence[random_sentences], "(1|10)\\s?(μ|m)\\s?g\\s?(\\.|\\/|\\⋅)?m(\\-|\\−|\\s)?3(?=\\s?)") -->
+<!-- ``` -->
 <div class="sourceCode" id="cb1"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
 <section class="footnotes" role="doc-endnotes">
 <hr />
 <ol>
 <li id="fn1" role="doc-endnote"><p>In case any problem remains, we use tryCatch to record the DOIs corresponding to errors in order to be able to handle them later.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn2" role="doc-endnote"><p>We analyse the characteristics of articles doing soin another document.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2" role="doc-endnote"><p>We analyze the characteristics of articles doing so in another document.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 <!--radix_placeholder_article_footer-->

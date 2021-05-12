@@ -49,25 +49,27 @@ set.seed(1)
 
 # Purpose of the document
 
-In the present document, we retrieve abstracts for our systematic review of the literature on short term health effects of air pollution. 
+In the present document, we retrieve abstracts for our systematic review of the literature on short term health effects of air pollution, focusing mainly on the epidemiology literature. We take advantage of a somehow standardized reporting mechanism to retrieve point estimates and confidence intervals from the abstracts using REGular EXPressions (regex). 
+
+The algorithm we wrote is not perfect: it probably does not detect all estimates and may pick up some incorrect point estimates and/or standard error. However, based on quick non-systematic checks we ran, these potential issues seem very limited. Retrieving all this information via careful reading of the abstracts would have been extremely cumbersome. This systematic analysis is an important time saver. Importantly, the analysis carried out for this literature could be easily replicated for another literature, based on the code used and described in this document.
 
 # Selecting articles and retrieving metadata
 
 We use the [`fulltext`](https://books.ropensci.org/fulltext/) package to get the abstract of each article corresponding to our search query. 
 <!-- This set of articles might be too restrictive and we may want to broaden our scope later.  -->
 
-We focus on articles published on Scopus and Pubmed. To access Scopus API, one needs to register to get an API key (stored in the .Renviron) for Elsevier and a Crossref TDM API key. Note that downloading of full texts may not work if one is not connected directly to their institution internet network. Pubmed articles are accessed via Entrez. An API key enables to increase the number of requests per seconds from 3 to 10. More information on authentication is available on [the `fulltext` manual](https://books.ropensci.org/fulltext/authentication.html).
+We focus on articles published on Scopus and Pubmed. To access Scopus API, one needs to register to get an API key (stored in the .Renviron) for Elsevier and a Crossref TDM API key. 
+<!-- Note that downloading of full texts may not work if one is not connected directly to their institution internet network.  -->
+Pubmed articles are accessed via Entrez. An API key enables to increase the number of requests per seconds from 3 to 10. More information on authentication is available on [the `fulltext` manual](https://books.ropensci.org/fulltext/authentication.html).
 
 ## Set of articles to consider
 
-First of all, we need to clearly define the set of articles we want to consider in this analysis. Our baseline search query is: 
+First of all, we need to clearly define the set of articles we want to consider in this analysis. Our search query is: 
 
-'"air pollution" AND ("emergency" OR "mortality") AND ("particulate matter" OR ozone OR "nitrogen dioxyde" OR "sulfur dioxide")'. 
-
-This returns about 57000 articles (without accounting for duplicates in between journals). This number being rather large, we want to narrow it down. To focus on the epidemiological literature, we add the query term `poisson`. To get causal analyses, we add the term `causal`. 
+'TITLE(("air pollution" OR "air quality" OR "particulate matter" OR ozone OR "nitrogen dioxide" OR "sulfur dioxide" OR "PM10" OR "PM2.5" OR "carbon dioxide" OR "carbon monoxide") AND ("emergency" OR "mortality" OR "stroke" OR "cerebrovascular" OR "cardiovascular" OR "death" OR "hospitalization") AND NOT ("long term" OR "long-term")) AND "short term"'
 
 ```{r eval = FALSE}
-query <- 'TITLE(("air pollution" OR "air quality" OR "particulate matter" OR ozone OR "nitrogen dioxide" OR "sulfur dioxide" OR "PM10" OR "PM2.5" OR "carbon dioxide" OR "carbon monoxide") AND ("emergency" OR "mortality" OR "stroke" OR "cerebrovascular" OR "cardiovascular" OR "death" OR "hospitalization") AND NOT ("long term" OR "long-term")) AND "short term"'# AND (poisson OR causal)'
+query <- 'TITLE(("air pollution" OR "air quality" OR "particulate matter" OR ozone OR "nitrogen dioxide" OR "sulfur dioxide" OR "PM10" OR "PM2.5" OR "carbon dioxide" OR "carbon monoxide") AND ("emergency" OR "mortality" OR "stroke" OR "cerebrovascular" OR "cardiovascular" OR "death" OR "hospitalization") AND NOT ("long term" OR "long-term")) AND "short term"'
 
 opts_entrez <- list(use_history = TRUE)
 
@@ -76,11 +78,7 @@ search <- ft_search(query, from = "scopus", limit = 2000)
 search_entrez <- ft_search(query, from = "entrez", limit = 200, entrezopts = opts_entrez)
 ```
 
-The final query is thus:
-
-'TITLE(("air pollution"  OR "air quality" OR "particulate matter" OR ozone OR "nitrogen dioxide" OR "sulfur dioxide") AND ("emergency" OR "mortality") AND NOT ("long term" or "long-term")) AND ("particulate matter" OR ozone OR "nitrogen dioxide" OR "sulfur dioxide")'
-
-Then, we retrieve the related metadata. The metadata from different sources having different shapes, we only select a few relevant columns to build an overall metadata set.
+We then retrieve and wrangle the related metadata. The metadata from different sources having different shapes, we only select a few relevant columns to build an overall metadata set.
 
 ```{r eval = FALSE}
 metadata_scopus <- search$scopus$data %>% 
@@ -125,20 +123,17 @@ metadata_lit_review <- metadata_scopus %>%
   group_by(doi) %>% 
   filter(pub_date == max(pub_date, na.rm = TRUE)) %>% #some articles have been published twice
   mutate(n_with_doi = n()) %>% 
-  filter(n_with_doi == 1 | (n_with_doi > 1 & pubmed_id == max(pubmed_id, na.rm = TRUE))) %>% #two wierd articles with separate author names, I select one randomly
+  filter(n_with_doi == 1 | (n_with_doi > 1 & pubmed_id == max(pubmed_id, na.rm = TRUE))) %>%
+  #two weird articles with separate author names, I select one randomly
   select(-n_with_doi) %>% 
   ungroup()
 
 # saveRDS(metadata_lit_review, "../Outputs/metadata_lit_review.RDS")
 ```
 
-# Analysis of the power in the literature
+# Retreiving abstracts
 
-## Retreiving abstracts
-
-First, we focus on the abstracts and download them. 
-
-There is no `fulltext` function to access abstracts from Entrez. Therefore, using the DOI, we get the abstracts from Semantic Scholar. We also access Scopus abstracts from Semantic Scholar since, due to my IP address being located outside of Columbia, I cannot access the texts and abstracts from Scopus.
+There is no `fulltext` function to access abstracts from Entrez. Therefore, using the DOI, we get the abstracts from Semantic Scholar. We also access Scopus abstracts from Semantic Scholar since, due to an IP address constraint we cannot access the texts and abstracts from Scopus.
 
 In Semantic Scholar, there is a rate limit of 100 articles per 5 min or 20 articles per minute. We therefore need to pause the system to be able to download everything. In addition, some DOIs are not valid so we filtered them out in a previous step (`pb_doi`).^[In case any problem remains, we use tryCatch to record the DOIs corresponding to errors in order to be able to handle them later.]
 
@@ -169,7 +164,9 @@ get_abstracts <- function(doi) {
     )
     
     if (inherits(possible_error, "error")) {
-      warning(str_c("The abstracts for the following articles could not be downloaded: ", str_c(doi_period, collapse = ",")))
+      warning(
+        str_c("The abstracts for the following articles could not be downloaded: ",
+              str_c(doi_period, collapse = ",")))
       next
     } else {
        abs <- abs %>%
@@ -192,76 +189,100 @@ abstracts <- metadata_lit_review %>%
   left_join(metadata_lit_review, by = "doi") 
 
 # saveRDS(abstracts, "../Outputs/abstracts.RDS")
-
 ```
 
-## Retreiving effects and confidence interavals
+# Retreiving effects and confidence interavals
 
-```{r}
+```{r include=FALSE}
 abstracts <- readRDS("../Outputs/abstracts.RDS")
 ```
 
-Then we want to extract the effects, odds ratio and associated confidence intervals in the abstracts. Part of the literature, display directly effects and confidence intervals in their abstracts.^[We analyse the characteristics of articles doing soin another document.] We thus consider these abstracts (about 684 abstracts) and identify effects and CIs as follows:
+Now that we have retrieved the abstracts, we want to extract the effects and associated confidence intervals. Part of the literature, displays directly effects and 95% confidence intervals in their abstracts.^[We analyze the characteristics of articles doing so in another document.] We identify effects and CIs as follows:
 
-- CI: any couple of numbers following by less than 4 characters a string describing a confidence interval ("95%", "CI", "confidence interval"). We also consider confidence intervals of the shape "(-8.7, 54.7)": it needs to have a shape "(number separator number)" and needs to be preceded by a number less than 5 characters away.
-- Effect: the first number preceding by less than 30 characters a similar string describing a confidence interval (we do not consider "95%").
+- CI: any couple of numbers following by less than 4 characters a string describing a confidence interval ("95%", "CI", "confidence interval"). We also consider confidence intervals of the shape "(-8.7, 54.7)": it needs to have a shape "(number separator number)" and needs to be preceded by a number, less than 5 characters away.
+- Effect: the first number preceding by less than 30 characters a similar string describing a confidence interval (apart numbers used to describe the "95" of a 95% CI).
 
 
 ```{r}
-string_confint <- "((?<!(\\.|\\d))95\\s?%|(?<!(\\.|\\d))95\\s(per(\\s?)cent)|\\bCI(s?)\\b|\\bPI(s?)\\b|\\b(i|I)nterval|\\b(c|C)onfidence\\s(i|I)nterval|\\b(c|C)redible\\s(i|I)nterval|\\b(p|P)osterior\\s(i|I)nterval)"
-# string_confint_detect <- "(?<!(\\.|\\d))(95)?\\s?%?(per(\\s?)cent)?\\s?(\\bCI(s?)|(\\b(c|C)onfidence\\s)?(i|I)nterval(s?))(\\s?(\\(|\\[)?CIs?(\\)|\\])?)?"
+string_confint <- str_c(
+  "((?<!(\\.|\\d))95\\s?%|(?<!(\\.|\\d))95\\s(per(\\s?)cent)|",
+  "\\bCI(s?)\\b|\\bPI(s?)\\b|\\b(i|I)nterval|",
+  "\\b(c|C)onfidence\\s(i|I)nterval|\\b(c|C)redible\\s(i|I)nterval|", 
+  "\\b(p|P)osterior\\s(i|I)nterval)"
+  )
 num_confint <- "(-\\s?|−\\s?)?[\\d\\.]{1,7}[–\\s:;,%\\-to\\‐-]{1,5}(-\\s?|−\\s?)?[\\d\\.]{1,7}"
 num_effect <- "(-\\s?|−\\s?)?[\\d\\.]{1,7}"
 
-effects_CI <- abstracts %>% 
+detected_effects <- abstracts %>%
   mutate(
     abstract = str_replace_all(abstract, "·", "."),
     abstract = str_replace_all(abstract, "C.I.", "CI")
-  ) %>% 
-  select(doi, abstract) %>% 
-  unnest_tokens(sentence, abstract, token = "sentences", to_lower = FALSE, drop = FALSE) %>% 
-  mutate(
-    contains_CI = str_detect(sentence, string_confint),
-    sentence = str_replace_all(sentence, "(?<=(?<!\\.)(?<!\\d)\\d{1,4}),(?=(\\d{3}(?!\\.)))", "")
   ) %>%
-  filter(contains_CI) %>%
-  # mutate(
-  #   effect_CI = str_extract_all(sentence, str_c(
-  #   num_effect, "[^\\d\\.]{0,17}([^\\.\\d]",
-  #   string_confint, ").{0,35}((?<=", string_confint, "[^\\d]{0,4})",
-  #   num_confint, "[^\\d\\.]{0,3}[\\)\\];,])|", num_effect, "[^\\d\\.]{0,5}(\\(|\\[)", num_confint, "%?[\\)\\];](?<![^\\.\\d]95)"))
-  # ) %>%
-  # unnest(effect_CI, keep_empty = TRUE) %>% 
+  select(doi, abstract) %>%
+  unnest_tokens(
+    sentence,
+    abstract,
+    token = "sentences",
+    to_lower = FALSE,
+    drop = FALSE
+  ) %>%
   mutate(
-    CI = str_extract_all(sentence, str_c(
-      "((?<=", string_confint, "[^\\d]{0,4})", num_confint, ")|",
-      "(?<=", num_effect, "[^\\d\\.]{0,5})(?<=(\\(|\\[))", num_confint, "(?=%?[\\)\\];])")
-    ),   
-    effect = str_extract_all(sentence, str_c(
-      num_effect, "(?=[^\\d\\.]{0,30}([^\\.\\d]", string_confint, "))(?<!\\b95)|",
-      num_effect, "(?=[^\\d\\.]{0,5}(\\(|\\[)", num_confint, "(?=%?[\\)\\];]))(?<![^\\.\\d]95)")
+    # contains_CI = str_detect(sentence, string_confint),
+    sentence = str_replace_all(
+      sentence,
+      "(?<=(?<!\\.)(?<!\\d)\\d{1,4}),(?=(\\d{3}(?!\\.)))",
+      ""
+    )
+  ) %>%
+  # filter(contains_CI) %>%
+  mutate(
+    CI = str_extract_all(
+      sentence,
+      str_c(
+        "((?<=", string_confint, "[^\\d]{0,4})", num_confint,")|",
+        "(?<=", num_effect,"[^\\d\\.]{0,5})", 
+        "(?<=(\\(|\\[))", num_confint,"(?=%?[\\)\\];])"
+      )
+    ),
+    effect = str_extract_all(
+      sentence,
+      str_c(
+        num_effect,
+        "(?=[^\\d\\.]{0,30}([^\\.\\d]", string_confint,"))(?<!\\b95)|",
+        num_effect,
+        "(?=[^\\d\\.]{0,5}(\\(|\\[)", num_confint, "(?=%?[\\)\\];]))(?<![^\\.\\d]95)"
+      )
     )
   ) 
-  # select(-effect_CI)
 ```
 
-These lines of code return a set of confidence intervals and effect for each sentence containing the phrase ("CI", "confidence interval", etc). We could improve this code by linking directly each effect to its confidence interval. For now, if we do not detect the same number of effects and confidence interval in a sentence, we drop the sentence, even though there are 5 pairs of effect-CI and only one of them is badly detected.
+These lines of code return a set of confidence intervals and effects for each sentence containing the phrase ("CI", "confidence interval", etc). 
+<!-- We could improve this code by linking directly each effect to its confidence interval.  -->
+For now, if we do not detect the same number of effects and confidence interval in a sentence, we drop the sentence, even though there are 5 pairs of effect-CI and only one of them is badly detected.
 
 Note that some problems might remain with our estimates and CIs detected. Yet, a vast majority of estimates are correctly detected. Here are examples of the confidence intervals and effects detected using our current method:
 
 ```{r}
-random_sentences <- sample(1:length(effects_CI$sentence), 5)
-str_view_all(effects_CI$sentence[random_sentences], str_c(
-    num_effect, "(?=[^\\d\\.]{0,17}([^\\.\\d]", string_confint, "))(?<!\\b95)|",
-      num_effect, "(?=[^\\d\\.]{0,5}(\\(|\\[)", num_confint, "(?=%?[\\)\\];]))(?<![^\\.\\d]95)",
-    "|((?<=", string_confint, "[^\\d]{0,4})", num_confint, ")|",
-      "(?<=", num_effect, "[^\\d\\.]{0,5})(?<=(\\(|\\[))", num_confint, "(?=%?[\\)\\];])"))
+sentences_with_CI <- detected_effects %>% 
+  filter(CI != "character(0)" & effect != "character(0)")
+random_sentences <- sample(1:length(sentences_with_CI$sentence), 5)
+str_view_all(
+  sentences_with_CI$sentence[random_sentences],
+  str_c(
+    num_effect,
+    "(?=[^\\d\\.]{0,17}([^\\.\\d]", string_confint, "))(?<!\\b95)|",
+    num_effect,
+    "(?=[^\\d\\.]{0,5}(\\(|\\[)", num_confint, "(?=%?[\\)\\];]))(?<![^\\.\\d]95)",
+    "|((?<=", string_confint, "[^\\d]{0,4})", num_confint,")|",
+    "(?<=", num_effect,"[^\\d\\.]{0,5})(?<=(\\(|\\[))", num_confint, "(?=%?[\\)\\];])"
+  )
+)
 ```
 
 Once the effects and CI are identified, some wrangling is necessary in order to get the data into a usable format. We also choose to **drop effects which do not fall into the CI** (62 estimates) in order to get rid off most of the poorly detected effects-CIs. 
 
 ```{r}
-effects_CI_clean <- effects_CI %>% 
+effects_and_CI <- detected_effects %>% 
   filter(lengths(effect) == lengths(CI)) %>% #if number of effects != nb of CI for a sentence,
   #can't attribute effects to CI so, drop sentence
   unnest(c(effect, CI), keep_empty = TRUE) %>%
@@ -274,58 +295,35 @@ effects_CI_clean <- effects_CI %>%
     up_CI = ifelse(is.na(low_CI), NA, up_CI),
     effect = ifelse(is.na(low_CI), NA, effect)
   ) %>% 
-  select(-sentence, -abstract, -contains_CI) %>%
+  select(doi, effect, low_CI, up_CI) %>%
   filter(!is.na(effect)) %>%  
   filter(effect > low_CI & effect < up_CI)
 
-articles_effect <- abstracts %>% 
-  left_join(effects_CI_clean, by = "doi")
-
-saveRDS(articles_effect, "../Outputs/articles_effect.RDS")
+saveRDS(effects_and_CI, "../Outputs/effects_and_CI.RDS")
 ```
 
+The `effects_and_CI` data frame displays, in each row, a point estimate and the lower and upper band of the CI along with the DOI of the article from which this estimate is extracted. We retrieved `r nrow(effects_and_CI)` valid point estimates and associated confidence intervals. We analyze them further in another document.
 
+# Retreiving additional information
 
-```{r}
-articles_effect %>%
-  mutate(
-    contains_CI = str_detect(abstract, "(95%|\\bCI\\b|\\b(c|C)onfidence (i|I)nterval\\b)")
-  ) %>%
-  filter(contains_CI) %>%
-  group_by(doi) %>%
-  summarise(has_effect = mean(effect, na.rm = TRUE)) %>%
-  count(ret = !is.nan(has_effect)) %>%
-  mutate(ret = ifelse(ret, "Yes", "No")) %>%
-  kable(col.names = c("Effect retreived", "Number of articles"), caption = "Number of articles for which at least one effect is retrieved (out of those containing the phrase CI)")
+It might also be interesting to have information about the type of pollutant considered in the study, the study period, the number of observations or the type of outcome studied (mortality, emergency admissions, stroke, cerebrovascular or cardiovascular diseases). We thus use regex to recover this information. Of course, this does not enable us to retrieve data for all the abstracts considered but it provides a useful source of information; retrieving this information "by hand" is extremely cumbersome. Regex are thus very helpful here. They also make this analysis reproducible.
 
-no_effect <- effects_CI %>%
-  mutate(effect = as.character(effect)) %>%
-  filter(effect == "character(0)")
+## Number of obsrvations
 
-str_view_all(no_effect$sentence, "lom")
-```
-
-
-## Retreiving additional information
-
-It might also be interesting to information about the type of pollutant considered in the study, the study period, the number of observations or the type of outcome studied (mortality, emergency admissions, stroke, cerebrovascular or cardiovascular diseases). We also use regex to recover this information.
-
-```{r}
-#To start on the right foot, a bit of cleaning
-abstracts_only <- abstracts %>% 
-  mutate(
-    abstract = str_replace_all(abstract, "·", ".")
-  ) %>% 
-  select(doi, abstract)
-```
-
+In most studies in this field, observations are daily and at the city level. To compute the number of observations, we thus retrieve the length of the study period from the abstract when possible, along with the number of cities considered in the study. 
 
 ### Length of the study period
 
-We first detect begin and end dates for the period of study and compute the length of study, after transforming the text data to a date format using the function `text_to_date`.
+To compute the length of the study period, we look for beginning and end dates for the period of study in the abstract. Some abstracts contain phrases such as "from January 2002 to March 2011" to indicate the study period. We take advantage of such mentions to retrieve the study period.  Before anything, we transform the text data to a date format using the function `text_to_date`. Then, we detect, the study periods and wrangle them into a usable format. If we retrieve several length for a unique article, we take a conservative approach and only keep the longer one.
 
 ```{r}
-month_regex <- "\\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|(Nov|Dec)(?:ember)?)"
+abstracts_only <- abstracts %>% 
+  mutate(abstract = str_replace_all(abstract, "·", ".")) %>% 
+  select(doi, abstract)
+
+month_regex <- str_c(
+  "\\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|", 
+  "Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|(Nov|Dec)(?:ember)?)")
 date_regex <- str_c("(", month_regex, "\\s){0,1}(19|20)\\d{2}")
 
 text_to_date <- function(date_text) {
@@ -336,15 +334,23 @@ text_to_date <- function(date_text) {
   return(date)
 }
 
-abstracts_length_study <- abstracts_only %>%
+articles_length_study <- abstracts_only %>%
   mutate(
     dates_obs = str_extract_all(
       abstract, 
-      str_c("(", date_regex, "|", month_regex, ")( to |\\s?—\\s?|\\s?-\\s?| and )", date_regex)
+      str_c(
+        "(", date_regex, "|", month_regex, ")", 
+        "( to |\\s?—\\s?|\\s?-\\s?| and )", 
+        date_regex
+      )
     )
   ) %>% 
   unnest(dates_obs, keep_empty = TRUE) %>%
-  separate(dates_obs, into = c("begin_obs", "end_obs"), "( to |\\s?—\\s?|\\s?-\\s?| and )") %>% 
+  separate(
+    dates_obs, 
+    into = c("begin_obs", "end_obs"), 
+    "( to |\\s?—\\s?|\\s?-\\s?| and )"
+  ) %>% 
   mutate(#when begin_obs and end_obs are in the same year, 
     #we only get the month for begin_obs
     begin_obs = ifelse(
@@ -359,8 +365,16 @@ abstracts_length_study <- abstracts_only %>%
     length_study = ifelse(length_study < 0 | end_obs > today(), NA, length_study)
   ) %>% 
   select(doi, length_study) %>% 
+  group_by(doi) %>% 
+  mutate(
+    length_study = max(length_study, na.rm = TRUE),
+    length_study = ifelse(length_study < 0, NA, length_study)
+  ) %>% 
+  ungroup() %>% 
   distinct()
 ```
+
+We retrieve a length of the study for `r sum(!is.na(articles_length_study$length_study))/nrow(articles_length_study)*100`% of the articles. Note that with this method, we may miss studies which span for exactly a year, *eg* when only 2011 is mentioned.
 
 ### Number of cities considered
 
@@ -376,7 +390,7 @@ number_word <- tibble(
   word = english::words(1:5000)
 )
 
-abstracts_numbers <- abstracts_only %>% 
+abstracts_in_numbers <- abstracts_only %>% 
   unnest_tokens(word, abstract) %>%
   left_join(number_word, by = "word") %>%
   mutate(word = ifelse(!is.na(number), number, word)) %>% 
@@ -397,7 +411,7 @@ worldcities_large <- worldcities %>%
   ) %>%
   filter(population > 500000)
 
-abstracts_number_cities <- abstracts_numbers %>% 
+articles_number_cities <- abstracts_in_numbers %>% 
    mutate(
     n_many_cities = str_extract_all(
       abstract, 
@@ -431,27 +445,42 @@ abstracts_number_cities <- abstracts_numbers %>%
   distinct()
 ```
 
+We retrieve a number of cities considered in the study for `r sum(!is.na(articles_number_cities$n_cities))/nrow(articles_number_cities)*100`% of the articles. 
+
 ### Number of observations
 
 Finally, we combine these two information to compute the number of observations. 
 
 ```{r}
-abstracts_n_obs <- abstracts %>% 
-  left_join(abstracts_length_study, by = "doi") %>% 
-  left_join(abstracts_number_cities, by = "doi") %>% 
+articles_n_obs <- articles_length_study %>% 
+  full_join(articles_number_cities, by = "doi") %>% 
   mutate(n_obs = n_cities*length_study)
 ```
 
-### Pollutant and outcome studied
+We retrieve a number of cities considered in the study for `r sum(!is.na(articles_n_obs$n_obs))/nrow(articles_n_obs)*100`% of the articles. 
 
-We then recover, when possible, the pollutant and outcome considered. 
-We retrieve pollutants and outcome that are mentioned in the abstract. Importantly, we recognize that some pollutants and outcome may be mentioned in an abstract even though the corresponding study does not run any analysis on these pollutants and outcomes. We however assume that it is rather unlikely that a study on cardiovascular diseases due to particulate matter pollution will talk about ozone in its abstract. Note that there are sometimes several pollutants and outcomes per abstract. 
+## Pollutant studied
+
+We then recover, when possible, the pollutant(s) considered in the study. We assume that only pollutants studied are mentioned in the abstract. This might be slightly inaccurate but seems to be a coherent first order approximation. We recognize that some pollutants may be mentioned in an abstract even though the corresponding study does not run any analysis on these pollutants and outcomes. We however assume that it is rather unlikely that a study on particulate matter pollution for instance will also talk about ozone **in its abstract**. Note that there are sometimes several pollutants mentioned in an abstract and analyzed in a study.
 
 ```{r}
-abstracts_more_info <- abstracts_n_obs %>% 
+abstracts_with_titles <- abstracts %>% 
   mutate(
-    p_value = str_extract_all(abstract, "(?<=\\b(p|P|p-value|p value)\\s?)[=<]\\s?[\\d.]+"),
-    pollutant = str_extract_all(abstract, "(\\bPM\\s?2(\\.|,)5|\\bPM\\s?10|\\bO\\s?3\\b|\\b(o|O)zone\\b|\\b(P|p)articulate\\s(M|m)atter\\b|\\bNO\\s?2|\\b(n|N)itrogen\\s?(d|D)ioxide\\b|\\bNO\\b|\\b(n|N)itrogen\\s?(o|O)xide\\b|\\bNO\\s?(x|X)\\b|\\bSO\\s?2|\\bCO\\b|\\bBC\\b|\\b(A|a)ir\\s(Q|q)uality\\s(I|i)ndex\\b)")
+    abstract = str_replace_all(abstract, "·", "."),
+    abstract_title = str_c(title, abstract, sep = ". ")
+  ) %>% 
+  select(doi, abstract_title)
+
+articles_pollutant <- abstracts_with_titles %>% 
+  mutate(
+    pollutant = str_extract_all(
+      abstract_title,
+      str_c("(\\bPM\\s?2(\\.|,)5|\\bPM\\s?10|\\bO\\s?3\\b|\\b(o|O)zone\\b|",
+            "\\b(P|p)articulate(\\s(M|m)atter\\b)?|\\bNO\\s?2|",
+            "\\b(n|N)itrogen\\s?(d|D)ioxide\\b|\\bNO\\b|",
+            "\\b(n|N)itrogen\\s?(o|O)xide\\b|\\bNO\\s?(x|X)\\b|\\bSO\\s?2|",
+            "\\bCO\\b|\\bBC\\b|\\b(A|a)ir\\s(Q|q)uality\\s(I|i)ndex\\b)")
+    )
   ) %>% 
   unnest(pollutant, keep_empty = TRUE) %>% 
   group_by(doi) %>% 
@@ -459,31 +488,92 @@ abstracts_more_info <- abstracts_n_obs %>%
     pollutant = tolower(pollutant), 
     pollutant = str_replace_all(pollutant, "\\s", ""),
     pollutant = str_replace_all(pollutant, ",", "\\."),
-    pollutant = ifelse(pollutant == "nitrogendioxide", "no2", pollutant),
-    pollutant = ifelse(pollutant == "nitrogenoxide", "no", pollutant),
-    pollutant = ifelse(pollutant == "ozone", "o3",pollutant)
+    pollutant = case_when(
+      pollutant == "nitrogendioxide" ~ "no2",
+      pollutant == "nitrogenoxide" ~ "no", 
+      pollutant == "ozone" ~ "o3",
+      pollutant == "particulate" ~ "particulatematter",
+      TRUE ~ pollutant
+    )
   ) %>% 
   distinct(pollutant, .keep_all = TRUE) %>% 
   ungroup() %>% 
-  nest(pollutant = pollutant) %>% 
+  select(-abstract_title) %>% 
+  nest(pollutant = pollutant)
+```
+
+We identify pollutants considered in the study for `r articles_pollutant %>% unnest(pollutant) %>% filter(!is.na(pollutant)) %>% distinct(doi) %>% nrow()/nrow(articles_pollutant)*100`% of the articles.
+
+## Outcome considered
+
+Following a similar methodology as for pollutants, we retrieve information about the outcomes considered. 
+
+```{r}
+articles_outcome <- abstracts_with_titles %>% 
   mutate(
-    # outcome = str_extract_all(title, "(\\b(M|m)ortality\\b|\\b(D|d)eath\\b|\\b(H|h)ospitalization|\\b(E|e)mergenc|\\b(S|s)troke|\\b(C|c)erebrovascular\\b|\\b(C|c)ardiovascular\\b)")
-    outcome = str_extract_all(title, "(\\b(M|m)ortality\\b|\\b(D|d)eath\\b|\\b(H|h)ospitalization|\\b(E|e)mergenc)")
+    outcome = str_extract_all(
+      abstract_title, 
+      "(\\b(M|m)ortality\\b|\\b(D|d)eath(s)?\\b|\\b(H|h)ospitalization|\\b(E|e)mergenc)"
+    )
   ) %>% 
   unnest(outcome, keep_empty = TRUE) %>% 
   group_by(doi) %>%
    mutate(
     outcome = tolower(outcome),
-    outcome = ifelse(outcome %in% c("emergenc", "hospitalization"), "Emergency",
-                     ifelse(outcome %in% c("death", "mortality"), "Mortality", NA))
+    outcome = ifelse(str_starts(outcome, "emergenc|hospitalization"), "Emergency",
+                     ifelse(str_starts(outcome, "death|mortalit"), "Mortality", NA))
   ) %>%
   distinct(outcome, .keep_all = TRUE) %>%
   ungroup() %>%
   nest(outcome = outcome) %>%
-  select(-title)
-
-
-saveRDS(abstracts_more_info, "../Outputs/abstracts_more_info.RDS")
+  select(-abstract_title)
 ```
+
+We identify outcomes considered in the study for `r articles_outcome %>% unnest(outcome) %>% filter(!is.na(outcome)) %>% distinct(doi) %>% nrow()/nrow(articles_outcome)*100`% of the articles.
+
+## Sub-population considered
+
+Using a similar methodology, we try to identify the sub-population considered (infants, elderly). Note that, when the whole population is studied, we do not recover any information. It might be a bit far fetch to consider that 
+
+```{r}
+articles_subpop <- abstracts_with_titles %>% 
+  mutate(
+    subpop = str_extract_all(
+      abstract_title, 
+      "(\\b(I|i)nfant|\\b(E|e)lder)"
+    )
+  ) %>% 
+  unnest(subpop, keep_empty = TRUE) %>% 
+  group_by(doi) %>%
+   mutate(
+    subpop = tolower(subpop),
+    subpop = ifelse(str_starts(subpop, "infant"), "Infants",
+                     ifelse(str_starts(subpop, "elder"), "Elders", NA))
+  ) %>%
+  distinct(subpop, .keep_all = TRUE) %>%
+  ungroup() %>%
+  nest(subpop = subpop) %>%
+  select(-abstract_title)
+```
+
+We identify sub-population considered in the study for `r articles_subpop %>% unnest(subpop) %>% filter(!is.na(subpop)) %>% distinct(doi) %>% nrow()/nrow(articles_subpop)*100`% of the articles.
+
+Finally, we build the overall metadata set, by combining all the previous information.
+
+```{r}
+articles_metadata <- abstracts %>% 
+  full_join(articles_n_obs, by = "doi") %>% 
+  full_join(articles_pollutant, by = "doi") %>% 
+  full_join(articles_outcome, by = "doi") %>% 
+  full_join(articles_subpop, by = "doi")
+
+saveRDS(articles_metadata, "../Outputs/articles_metadata.RDS")
+```
+
+
+<!-- ```{r} -->
+<!-- str_view_all( -->
+<!--     sentences_with_CI$sentence[random_sentences], "(1|10)\\s?(μ|m)\\s?g\\s?(\\.|\\/|\\⋅)?m(\\-|\\−|\\s)?3(?=\\s?)") -->
+<!-- ``` -->
 
 
