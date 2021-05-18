@@ -11,7 +11,8 @@ author:
   affiliation_url: https://www.parisschoolofeconomics.eu/en/
 date: "`r Sys.Date()`"
 output:
-  distill::distill_article: default
+  distill::distill_article: 
+    toc: true
   html_notebook: default
 ---
 
@@ -218,13 +219,13 @@ Now that we have retrieved the abstracts, we want to extract the effects and ass
 
 ```{r}
 string_confint <- str_c(
-  "((?<!(\\.|\\d))95\\s?%|(?<!(\\.|\\d))95\\s(per(\\s?)cent)|",
-  "\\bC(\\.)?I(\\.)?(s?)\\b|\\bPI(s?)\\b|\\b(i|I)nterval|",
+  "((?<!(\\d\\.|\\d))95\\s?%|(?<!(\\d\\.|\\d))95\\s(per(\\s?)cent)|",
+  "\\bC(\\.)?(I|l)(\\.)?(s?)\\b|\\bPI(s?)\\b|\\b(i|I)nterval|",
   "\\b(c|C)onfidence\\s(i|I)nterval|\\b(c|C)redible\\s(i|I)nterval|", 
   "\\b(p|P)osterior\\s(i|I)nterval)"
   )
 num_confint <- 
-  "(-\\s?|−\\s?)?[\\d\\.]{1,7}[–\\s:;,%\\-to\\‐-]{1,5}(-\\s?|−\\s?)?[\\d\\.]{1,7}"
+  "(-\\s?|−\\s?)?[\\d\\.]{1,7}[–\\s:\\~;,%\\-to\\‐-]{1,5}(-\\s?|−\\s?)?[\\d\\.]{1,7}"
 num_effect <- "(-\\s?|−\\s?)?[\\d\\.]{1,7}"
 
 detected_effects <- abstracts %>%
@@ -259,7 +260,7 @@ detected_effects <- abstracts %>%
       sentence,
       str_c(
         num_effect,
-        "(?=[^\\d\\.]{0,30}([^\\.\\d]", string_confint,"))(?<!\\b95)|",
+        "(?=[^\\d\\.]{0,30}([^\\.\\d]", string_confint,"))(?<![^\\.\\d]95)|",
         num_effect,
         "(?=[^\\d\\.]{0,5}(\\(|\\[)", num_confint, "(?=%?[\\)\\];]))(?<![^\\.\\d]95)"
       )
@@ -281,7 +282,7 @@ str_view_all(
   sentences_with_CI$sentence[random_sentences],
   str_c(
     num_effect,
-    "(?=[^\\d\\.]{0,17}([^\\.\\d]", string_confint, "))(?<!\\b95)|",
+    "(?=[^\\d\\.]{0,17}([^\\.\\d]", string_confint, "))(?<![^\\.\\d]95)|",
     num_effect,
     "(?=[^\\d\\.]{0,5}(\\(|\\[)", num_confint, "(?=%?[\\)\\];]))(?<![^\\.\\d]95)",
     "|((?<=", string_confint, "[^\\d]{0,4})", num_confint,")|",

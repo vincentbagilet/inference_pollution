@@ -11,7 +11,9 @@ author:
   affiliation_url: https://www.parisschoolofeconomics.eu/en/
 date: "`r Sys.Date()`"
 output:
-  distill::distill_article: default
+  distill::distill_article: 
+    toc: true
+    toc_float: true
   html_notebook: default
 ---
 
@@ -52,21 +54,19 @@ set.seed(1)
 
 # Purpose of the document
 
-One of the objectives of our paper is to evaluate whether the literature of short terms health effects of air pollution suffers from power and bias issues. 
-
 <!-- For years, the empirical economic literature has been obsessed with unbiasedness. Researchers have developed empirical methods and techniques in a quest to retrieve unbiased estimates. Yet, due to their inherent constraints, these techniques limit the set of settings in which one can retrieve causal and unbiased estimates. They also often tend to focus on limited samples of the data, leading to a reduction in sample size? This can ultimately lead to underpowered studies. As underlined by Gelman and Carlin (2014), a lack of power is often associated with type M and type S error. In a quest for unbiasedness, practitioners use methods leading to smaller sample size which can ultimately create bias (type M and type S error). We thus aim at analyzing whether the literature of short term health effects of air pollution suffers from power, type M and type S error issues. -->
 
-In this particular document, we implement robustness tests in order to compute the power, type M and type S error in the studied articles. We look at what would be the power, type M and type S error if the true effect was a fraction of the measured effect. 
+One of the objectives of our paper is to evaluate whether the literature of short terms health effects of air pollution suffers from power and bias issues. In this document, we carry out part of our analysis. We retrieved part of the estimates and confidence intervals of the literature in [another document](systematic_lit_review_geting_abstracts.html). To do so, we took advantage  using REGular EXPressions (regex) of a somehow standardized reporting mechanism of point estimates and confidence intervals in the abstracts. The set of articles studied in details here is therefore limited to articles describing displaying confidence intervals and point estimates in their abstracts. This convention does not exist in all disciplines. For instance, it is not common practice in the economics literature but it is much more common in the epidemiology literature. This analysis thus focuses on a selected sample of the literature.
 
-We retrieved estimates and confidence intervals of articles in the literature of interest in [another document](systematic_lit_review_geting_abstracts.html). Before diving into the power analysis itself, we look at the characteristics of the articles considered.
+In the present document, we implement sensitivity tests in order to compute power, type M and type S error in the studied articles. 
+
+Before diving into the power analysis itself, we look at the characteristics of the articles considered.
 
 <!-- write a paragraph explaining why the robustness checks make sense -->
 
 # Articles characteristics
 
-## Full set of articles
-
-We retrieved the articles using the following query:
+We retrieved the articles from PubMed and Scopus using the following query on May 18, 2021:
 
 'TITLE(("air pollution" OR "air quality" OR "particulate matter" OR ozone OR "nitrogen dioxide" OR "sulfur dioxide" OR "PM10" OR "PM2.5" OR "carbon dioxide" OR "carbon monoxide") AND ("emergency" OR "mortality" OR "stroke" OR "cerebrovascular" OR "cardiovascular" OR "death" OR "hospitalization") AND NOT ("long term" OR "long-term")) AND "short term"'
 
@@ -75,14 +75,18 @@ abstracts_and_metadata <- readRDS("../Outputs/abstracts_and_metadata.RDS")
 estimates <- readRDS("../Outputs/estimates.RDS")
 ```
 
-This query returns `r nrow(abstracts_and_metadata)` articles. Based on the abstracts, we can briefly explore the main (unsurprising) themes of the articles:
+This query enables us to retrieve `r nrow(abstracts_and_metadata)` valid abstracts.
+
+## Themes
+
+We can briefly explore the main (unsurprising) themes of the articles:
 
 ```{r}
 abstracts_and_metadata %>%
   unnest_tokens(word, abstract, to_lower = TRUE) %>% 
   anti_join(tidytext::stop_words, by = "word") %>%
   count(word) %>%
-  with(wordcloud::wordcloud(word, n, max.words = 100, random.color = TRUE, colors = "#00313C"))
+  with(wordcloud::wordcloud(word, n, max.words = 80, random.color = TRUE, colors = "#00313C"))
 ```
 
 ```{r fig.asp = 1}
@@ -92,7 +96,7 @@ abstracts_and_metadata %>%
   select(doi, word) %>%
   distinct() %>%
   count(word, sort = TRUE) %>%
-  filter(n > 500) %>%
+  filter(n > 650) %>%
   mutate(word = reorder(word, n)) %>%
   ggplot(aes(n, word)) +
   geom_col() +
@@ -104,14 +108,14 @@ abstracts_and_metadata %>%
   ) 
 ```
 
-## Abstracts with effects and confidence intervals
+## Detection of effects
 
-Not all abstracts display effects and confidence intervals. We thus want to assess whether there are noticeable differences between articles for which we retrieve confidence intervals and those for which we do not. This quick exploration will also provide additional information and descriptive statistics on the whole set of articles.
+<!-- Not all abstracts display effects and confidence intervals. We thus want to assess whether there are noticeable differences between articles for which we retrieve confidence intervals and those for which we do not. This quick exploration will also provide additional information and descriptive statistics on the whole set of articles. -->
 
 ```{r}
 string_confint <- str_c(
-  "((?<!(\\.|\\d))95\\s?%|(?<!(\\.|\\d))95\\s(per(\\s?)cent)|",
-  "\\bC(\\.)?I(\\.)?(s?)\\b|\\bPI(s?)\\b|\\b(i|I)nterval|",
+  "((?<!(\\d\\.|\\d))95\\s?%|(?<!(\\d\\.|\\d))95\\s(per(\\s?)cent)|",
+  "\\bC(\\.)?(I|l)(\\.)?(s?)\\b|\\bPI(s?)\\b|\\b(i|I)nterval|",
   "\\b(c|C)onfidence\\s(i|I)nterval|\\b(c|C)redible\\s(i|I)nterval|", 
   "\\b(p|P)osterior\\s(i|I)nterval)"
   )
@@ -131,9 +135,25 @@ effect_detected <- abstracts_and_metadata %>%
   distinct()
 ```
 
-Out of the `r nrow(abstracts_and_metadata)` abstracts returned by the query, `r effect_detected %>% filter(contains_CI) %>% nrow()` mention the terms "confidence interval", "CI", "Credible Interval", "95%", etc. We virtually covered all possible spelling of these different terms.
+Out of the `r nrow(abstracts_and_metadata)` valid articles returned by the query only a fraction reports estimates and confidence intervals in their abstracts. We therefore do not retrieve effects for all the articles returned by the query, mostly for the reason aforementioned. This might create some selection, making the sample of articles studied not representative of the whole literature. We investigate further the difference between articles that do and do not report confidence intervals in their abstracts in the following section. 
 
-In these articles, we retrieve valid effects and confidence intervals in the following proportions. Note that a bunch of abstracts contain the phrase "CI" without actually displaying effects and confidence intervals. Our algorithm seems to make a reasonably good job at detecting effects.
+Here is a list of the valid articles. The last column shows whether at least one effect was retrieved for this article.
+
+```{r}
+effect_detected %>% 
+  select(authors, pub_date, title, journal, has_effect_phrase) %>% 
+  datatable(
+    colnames = c(
+      "Authors", 
+      "Publication date", 
+      "Title", 
+      "Journal", 
+      "Effect retrieved"
+    )
+  )
+```
+
+In total, we **detect `r nrow(estimates)` valid effects** and associated confidence intervals. We retrieve estimates for most of the articles mentioning "CI" in the abstract:  
 
 ```{r}
 effect_detected %>%
@@ -150,27 +170,29 @@ effect_detected %>%
   )
 ```
 
-This corresponds **to `r nrow(estimates)` valid effects** and associated confidence intervals.
+Note that a bunch of abstracts contain the phrase "CI" without actually displaying effects and confidence intervals. Our algorithm seems to make a reasonably good job at detecting effects and CI when they are indeed displayed in an abstract. In addition, there is no reason to think that our ability to detect an effect would be correlated with power issues in the paper. Hence, we feel rather confident assuming that our detection algorithm selects a random (along our dimension of interest) sample of estimates among all estimates displayed in abstracts.
 
-Here is a list of the articles for which at least one effect has been retrieved: 
+## Representativity of articles for which an effect was retrieved
 
-```{r}
-effect_detected %>% 
-  filter(has_effect) %>% 
-  select(authors, pub_date, title, journal) %>% 
-  datatable(colnames = c("Authors", "Publication date", "Title", "Journal"))
-```
+In this subsection, we investigate whether there are systematic differences between articles for which we retrieved an effect and articles that do not display an effect in their abstract or for which we did not detect one. We build this analysis such that it also provides general information about the entire set of articles. 
+
+### Qualitative random analysis
+
+First of all, we skim through a bunch of abstracts for which we retrieve an effect or not to see whether there are clear differences across study subsets. We notice that
 
 
-## Comparison between abstracts for which an effect was retrieved or not
+<!-- ```{r} -->
+<!-- effect_detected %>%  -->
+<!--   filter(has_effect) %>%  -->
+<!--   slice_sample(n = 3) %>%  -->
+<!--   .$abstract %>%  -->
+<!--   str_view_all("~") -->
+<!-- ``` -->
 
-In this subsection, we investigate whether there are systematic differences between articles for which we retrieved an effect in the abstract and articles that do not display an effect or for which we did not detect the effect. Importantly, in this analysis, we consider articles that do not mention "confidence intervals" in their abstract as articles for which no effect has been retrieved.
-
-We build this analysis to also get general information about both the entire set of articles and those for which we retrieve an effect. For instance, we build this analysis to see get a sense of the main journal fields in which articles considered as published.
 
 ### Publication date
 
-We first wonder whether there are disparities in publication dates. It might be the case that displaying effects in the abstract was a feature of a given period.
+We first look into the distribution of published articles on this topic in time. We then wonder whether displaying effects in the abstract was a particular feature of a given period.
 
 ```{r}
 effect_detected %>% 
@@ -192,11 +214,13 @@ year_first_article <- effect_detected %>%
   min(na.rm = TRUE)
 ```
 
-Even though there are slightly more recent (2010-2020) articles for which effects are retrieved, the difference does not seem to be substantial. The first article for which an effect is detected was published in `r year_first_article`. Not many articles were published on this topic before this date. We only found `r effect_detected %>% filter(year(pub_date) < year_first_article) %>% count() %>% .$n` articles published before `r year_first_article`. In most places, air pollution has only been measured consistently since the 1990s.
+First, we notice that the number of articles published on short-term health effects of air pollution has been increasing rather strongly since the 1980s. The first article for which an effect is detected was published in `r year_first_article`. We only found `r effect_detected %>% filter(year(pub_date) < year_first_article) %>% count() %>% .$n` articles published before `r year_first_article`. This can be explained by the fact that, in most places, air pollution has only been measured consistently since the 1990s.
+
+Even though there are slightly more recent (2010-2020) articles for which effects are retrieved, the difference does not seem to be substantial. Distributions of articles for which an effect has been retrieved and not are rather similar.
 
 ### Journal and fields
 
-We then investigate whether there are differences in the journals in which the articles are published. The results are rather messy so we focus on journal areas and subareas. 
+We then look into the journals and academic fields in which articles on short term health effect of air pollution have been published. The results by journals are rather messy so we focus on journal areas and subareas. 
 
 ```{r fig.asp=1}
 effect_detected %>% 
@@ -210,7 +234,7 @@ effect_detected %>%
   ggplot() +
   geom_bar(aes(y = fct_rev(fct_infreq(subject_area)), fill = has_effect_phrase)) +
   labs(
-    x = "Number of articles",
+    x = "Number of articles published in journals from each subject",
     y = NULL,
     title = "Journals subjects in which articles have been published",
     subtitle = "Comparison between articles for which an effect is retrieved and not"
@@ -231,19 +255,22 @@ effect_detected %>%
   ggplot() +
   geom_bar(aes(y = fct_rev(fct_infreq(subsubject_area)), fill = has_effect_phrase)) +
   labs(
-    x = "Number of articles",
+    x = "Number of articles published in journals covering a given subsubject",
     y = NULL,
     title = "Main journals subsubjects in which articles have been published",
-    subtitle = "Comparison between articles for which an effect is retrieved and not"
+    subtitle = "Comparison between articles for which an effect is retrieved and not",
+    caption = "A paper publsihed in a multi-subject journal will appear several times"
   ) +
   scale_fill_discrete(name = "") 
 ```
 
-One may notice that effects are not retrieved, *ie* not reported in the abstract or not detected, for most papers published in life science and social sciences and humanities. This might not be as problematic as they constitute a small share of the sample. Most papers studied here have been published in multidisciplinary, health sciences or physical sciences journals.
+Most papers on this topic have been, unsurprisingly, published in multidisciplinary journals, health or physical science journals.
+
+One may notice that effects are not retrieved, *ie* not reported in the abstract or not detected, for most papers published in life science and social sciences and humanities. This might not be as problematic as they constitute a small share of the sample. There does not seem to be a particularly large imbalance in terms of journal general field for the more represented fields.
 
 ### Themes
 
-Then, we wonder if the words used in each types of abstracts differ.
+We then wonder if the words used in each sets of abstracts differ between the two sets of articles.
 
 ```{r fig.asp=1}
 theme_effect <- effect_detected %>%
@@ -284,11 +311,11 @@ theme_effect %>%
   scale_fill_discrete(name = "")
 ```
 
-Apart from a few key terms, such as CI, 95 for instance, there are no huge differences in the terms used in both types of abstracts. 
+Apart from a few key terms, such as CI, 95 for instance, there are no huge differences in the terms used in both subsets of abstracts. 
 
 ### Pollutant
 
-We then look at the proportion of articles studying various pollutants.
+We take look at the pollutants considered in each article. We consider that a pollutant is studied if it is mentioned in the abstract. It is not an exact measure as some articles may mention pollutants without actually studying them but it remains an interesting metric.
 
 ```{r fig.asp=0.7}
 effect_detected %>% 
@@ -297,18 +324,21 @@ effect_detected %>%
   ggplot() +
   geom_bar(aes(y = fct_rev(fct_infreq(pollutant)), fill = has_effect_phrase)) +
   labs(
-    x = "Number of articles",
+    x = "Number of article mentionning each pollutant",
     y = NULL,
     title = "Number of articles studing a given pollutant",
-    subtitle = "Comparison between articles for which an effect was detected or not"
+    subtitle = "Comparison between articles for which an effect was detected or not",
+    caption = "A paper mentioning several pollutants will appear several times"
   ) +
   scale_fill_discrete(name = "")
 ```
-First of all, we notice that a large share of papers considered here study particulate matters. It seems that, when there are enough articles, our propensity to detect an effect does not seem to vary too much with the type of pollutant. Note that if an article considers several pollutants, it will appear several times in this graph.
+First of all, we notice that a large share of papers considered here study particulate matters (PM2.5, PM10 or both). 
+
+It seems that, when there are enough articles, the likelihood of detecting an effect does not seem to vary much with the type of pollutant. Importantly, the proportion of effects retrieved is much lower for articles for which we are not able to detect the type of pollutants studied. 
 
 ### Outcome
 
-We then analyze whether there are reporting or detection differences in terms of outcome considered in the study.
+As for pollutants, for some articles, we were able to retrieve studied outcomes depending on the words used in an abstract. We classified them into two categories: mortality and emergency.
 
 ```{r fig.asp=0.7}
 effect_detected %>% 
@@ -326,11 +356,11 @@ effect_detected %>%
   scale_fill_discrete(name = "") 
 ```
 
-Most articles studied here are interested in mortality. There is no tremendous difference in the reporting of effect and our ability to detect them based on the outcome considered. The proportion of estimates retrieved is however lower for mortality than for emergency admissions.
+Most articles studied here are interested in mortality. The proportion of articles for which an effect is retrieved seems to be larger for papers studying emergency admissions than mortality. 
 
 ### Subpopulation
 
-Some articles focus their analysis on sub-populations such as infants or elderly. We are able to a fraction of these articles if they mention these terms in the abstracts. When these terms are not mentioned, either the entire population is considered or we are not able to detect the subgroup considered. The number of articles for which a subpopulation is indicated his as follows.
+Some articles focus on sub-populations such as infants or elderly. We are able to detect a fraction of these articles, when these terms are mentioned in the abstract. When these terms are not mentioned, either the entire population is considered or we are not able to detect the subgroup considered. The number of articles for which a subpopulation is indicated is rather small: 
 
 ```{r}
 effect_detected %>% 
@@ -353,19 +383,20 @@ effect_detected %>%
   mutate(subpop = ifelse(is.na(subpop), "No subpopulation not detected", subpop)) %>% 
   mutate(has_effect = ifelse(has_effect, "Effect detected", "Effect not detected")) %>% 
   ggplot() +
-  geom_bar(aes(x = subpop, fill = has_effect), position = "dodge") +
+  geom_bar(aes(x = subpop, fill = has_effect), position = "fill") +
   labs(
     x = NULL,
-    y = "Number of articles",
-    title = "Number of articles studing a given outcome",
+    y = "Proportion of articles",
+    title = "Proportion of articles studing a given outcome",
     subtitle = "Comparison between articles for which an effect was detected or not - articles with unknown outcomes dropped"
   ) +
   scale_fill_discrete(name = "") 
 ```
+There does not seem to be large variations in the proportion of articles for which an effect is detected, depending on whether a subpopulation is studied or not. Yet, this proportion is a slightly larger for elders than infants, itself larger than when when no subpopulation is detected.
 
 ### Number of observations
 
-We then look at the number of observation, the length of the the study and the number of cities considered. Importantly, we only retrieve this information for a very limited subset of articles. 
+We then look at the number of observations, the length of the the study period and the number of cities considered. Importantly, we only retrieve this information for a very limited subset of articles. 
 
 ```{r}
 len <- effect_detected %>% 
@@ -392,6 +423,18 @@ Our analysis is therefore to be taken with caution as there is a critical lack o
 ```{r fig.asp=0.7}
 effect_detected %>% 
   ggplot() +
+  geom_density(aes(x = n_obs, fill = has_effect_phrase, color = has_effect_phrase)) +
+  labs(
+    title = "Distribution of the number of observations",
+    subtitle = "Comparison between articles for which an effect is retrieved and not",
+    x = "Estimated number of observations",
+    y = "Density"
+  ) + 
+  scale_x_log10() +
+  scale_fill_discrete(name = "")
+
+effect_detected %>% 
+  ggplot() +
   geom_density(aes(x = length_study, fill = has_effect_phrase, color = has_effect_phrase)) +
   labs(
     title = "Distribution of the length of the study",
@@ -399,6 +442,7 @@ effect_detected %>%
     x = "Estimated length of the study (in days)",
     y = "Density"
   ) + 
+  scale_x_log10() +
   scale_fill_discrete(name = "")
 
 effect_detected %>% 
@@ -412,25 +456,13 @@ effect_detected %>%
   ) + 
   scale_x_log10() +
   scale_fill_discrete(name = "")
-
-effect_detected %>% 
-  ggplot() +
-  geom_density(aes(x = n_obs, fill = has_effect_phrase, color = has_effect_phrase)) +
-  labs(
-    title = "Distribution of the number of observations",
-    subtitle = "Comparison between articles for which an effect is retrieved and not",
-    x = "Estimated number of observations",
-    y = "Density"
-  ) + 
-  scale_x_log10() +
-  scale_fill_discrete(name = "")
 ```
 
-We notice that there are large variations in the number of observations in the studies considered. However, there does not seem to be large differences along this dimension on whether an effect is retrieved or not.
+We notice that there are large variations in the number of observations in the studies considered. However, there does not seem to be large differences along this dimension on whether an effect is retrieved or not. There seems however to be more studies around 1000 observation and less between 10,000 and 100,000 in articles for which an effect is retrieved. This is explained by the fact effects are retrieved more for studies with rather limited study period (around 3 years)/
 
 Now that we have quickly compared the articles for which we retrieve an effect an those for which we do not, we can dig further into the analysis of the estimates retrieved.
 
-## Analysis of the effects
+# Analysis of the effects
 
 In this section, we briefly analyze the effects retrieved. First, we look into the proportion of significant effects.
 
@@ -463,7 +495,7 @@ estimates_stats %>%
   count(has_significant) %>% 
   mutate(prop = n/sum(n)) %>% 
   mutate(has_significant = ifelse(has_significant, "Yes", "No")) %>% 
-  kable(col.names = c("At least one significant estimates", "Number of articles", "Proportion"))
+  kable(col.names = c("At least one significant estimate", "Number of articles", "Proportion"))
 ```
 
 
@@ -517,7 +549,7 @@ quantile(estimates_stats$signal_noise, seq(0, 1, 0.1)) %>%
   )
 ```
 
-## Power analysis
+# Power analysis
 
 We then turn to the power analysis itself. The objective is to evaluate the power, type M and type S errors for each estimate. 
 
