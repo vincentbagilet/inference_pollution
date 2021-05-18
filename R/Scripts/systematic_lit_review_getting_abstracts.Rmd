@@ -569,27 +569,42 @@ It is also interesting to have access to journal fields. This will enable us to 
 
 We retrieve information on journal fields from Scopus. In [their source list](https://www.scopus.com/sources.uri), they classify all journals into approximately 330 sub-subject areas. We thus match this with journal names from our database. Scopus also provides coarser subject area categorizations, for instance one with 5 fields: Multidisciplinary, Physical Sciences, Health Sciences, Social Sciences and Life Science. They provide [a correspondance table](https://service.elsevier.com/app/answers/detail/a_id/15181/supporthub/scopus/) between those two classifications.
 
+Note that, some journals mention several of these fields as references. We choose to classify those as multidisciplinary journals. 
+
 ```{r}
-scopus_subject_corres <-
+subject_subsubject_corres <-
   read_csv("../Inputs/scopus_subject_corres.csv") %>%
   rename(
     area_code = Code,
-    sub_subject_area = Field, 
+    subsubject_area = Field, 
     subject_area = `Subject area`
   ) %>%
   drop_na()
 
-scopus_journal_subsubject <- read_csv("../Inputs/scopus_journal_subsubject.csv") %>% 
+journal_subsubject_corres <- read_csv("../Inputs/scopus_journal_subsubject.csv") %>% 
   rename(
     journal = Title,
-    sub_subject_area = `Scopus Sub-Subject Area`,
+    subsubject_area = `Scopus Sub-Subject Area`,
     area_code = `Scopus ASJC Code (Sub-subject Area)`
   ) %>% 
-  select(journal, sub_subject_area, area_code)
+  select(journal, subsubject_area, area_code)
 
-journal_subject <- scopus_journal_subsubject %>% 
-  left_join(scopus_subject_corres, by = c("area_code", "sub_subject_area")) %>% 
-  select(-area_code) %>% 
+#To classify journals as multidisciplinary
+journal_subject_corres <- journal_subsubject_corres %>% 
+  left_join(subject_subsubject_corres, by = c("area_code", "subsubject_area")) %>% 
+  select(journal, subject_area) %>% 
+  distinct() %>% 
+  group_by(journal) %>% 
+  mutate(
+    n_subject_area = n(),
+    subject_area = ifelse(n_subject_area > 1, "Multidisciplinary", subject_area)
+  ) %>% 
+  ungroup() %>% 
+  select(-n_subject_area) %>% 
+  distinct()
+
+journal_subject <- journal_subsubject_corres %>% 
+  left_join(journal_subject_corres, by = c("journal")) %>% 
   mutate(
     journal_merge = str_to_lower(journal),
     journal_merge = str_remove_all(journal_merge, "[^\\w\\s]")
@@ -601,11 +616,12 @@ articles_journal_subject <- abstracts %>%
     journal_merge = str_remove_all(journal_merge, "[^\\w\\s]")
   ) %>% 
   left_join(journal_subject, by = "journal_merge") %>% 
-  select(doi, subject_area, sub_subject_area) %>% 
+  select(doi, subject_area, subsubject_area) %>% 
   distinct() %>% 
-  nest(subject_area = c(subject_area), sub_subject_area = c(sub_subject_area)) 
+  nest(subject_area = c(subject_area), subsubject_area = c(subsubject_area)) 
 ```
 
+We retrieve information about the subject area for `r articles_journal_subject %>% unnest(subject_area) %>% distinct() %>% count(missing_subject = is.na(subject_area)) %>% mutate(prop = n / sum(n)) %>% filter(!missing_subject) %>% .$prop*100`% articles and about the subsubject area for `r articles_journal_subject %>% unnest(subsubject_area) %>% distinct() %>% count(missing_subject = is.na(subsubject_area)) %>% mutate(prop = n / sum(n)) %>% filter(!missing_subject) %>% .$prop*100`% of articles.
 
 # Agregating the information
 

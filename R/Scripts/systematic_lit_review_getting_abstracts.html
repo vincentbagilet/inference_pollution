@@ -3915,28 +3915,42 @@ text-align: justify}
 <h2 id="additional-information-on-journals">Additional information on journals</h2>
 <p>It is also interesting to have access to journal fields. This will enable us to see whether some academic research fields are more subject to certain type of issues than others.</p>
 <p>We retrieve information on journal fields from Scopus. In <a href="https://www.scopus.com/sources.uri">their source list</a>, they classify all journals into approximately 330 sub-subject areas. We thus match this with journal names from our database. Scopus also provides coarser subject area categorizations, for instance one with 5 fields: Multidisciplinary, Physical Sciences, Health Sciences, Social Sciences and Life Science. They provide <a href="https://service.elsevier.com/app/answers/detail/a_id/15181/supporthub/scopus/">a correspondance table</a> between those two classifications.</p>
+<p>Note that, some journals mention several of these fields as references. We choose to classify those as multidisciplinary journals.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class="va">scopus_subject_corres</span> <span class="op">&lt;-</span>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="va">subject_subsubject_corres</span> <span class="op">&lt;-</span>
   <span class="fu">read_csv</span><span class="op">(</span><span class="st">&quot;../Inputs/scopus_subject_corres.csv&quot;</span><span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="fu">rename</span><span class="op">(</span>
     area_code <span class="op">=</span> <span class="va">Code</span>,
-    sub_subject_area <span class="op">=</span> <span class="va">Field</span>, 
+    subsubject_area <span class="op">=</span> <span class="va">Field</span>, 
     subject_area <span class="op">=</span> <span class="va">`Subject area`</span>
   <span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="fu">drop_na</span><span class="op">(</span><span class="op">)</span>
 
-<span class="va">scopus_journal_subsubject</span> <span class="op">&lt;-</span> <span class="fu">read_csv</span><span class="op">(</span><span class="st">&quot;../Inputs/scopus_journal_subsubject.csv&quot;</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+<span class="va">journal_subsubject_corres</span> <span class="op">&lt;-</span> <span class="fu">read_csv</span><span class="op">(</span><span class="st">&quot;../Inputs/scopus_journal_subsubject.csv&quot;</span><span class="op">)</span> <span class="op">%&gt;%</span> 
   <span class="fu">rename</span><span class="op">(</span>
     journal <span class="op">=</span> <span class="va">Title</span>,
-    sub_subject_area <span class="op">=</span> <span class="va">`Scopus Sub-Subject Area`</span>,
+    subsubject_area <span class="op">=</span> <span class="va">`Scopus Sub-Subject Area`</span>,
     area_code <span class="op">=</span> <span class="va">`Scopus ASJC Code (Sub-subject Area)`</span>
   <span class="op">)</span> <span class="op">%&gt;%</span> 
-  <span class="fu">select</span><span class="op">(</span><span class="va">journal</span>, <span class="va">sub_subject_area</span>, <span class="va">area_code</span><span class="op">)</span>
+  <span class="fu">select</span><span class="op">(</span><span class="va">journal</span>, <span class="va">subsubject_area</span>, <span class="va">area_code</span><span class="op">)</span>
 
-<span class="va">journal_subject</span> <span class="op">&lt;-</span> <span class="va">scopus_journal_subsubject</span> <span class="op">%&gt;%</span> 
-  <span class="fu">left_join</span><span class="op">(</span><span class="va">scopus_subject_corres</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">&quot;area_code&quot;</span>, <span class="st">&quot;sub_subject_area&quot;</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
-  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">area_code</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+<span class="co">#To classify journals as multidisciplinary</span>
+<span class="va">journal_subject_corres</span> <span class="op">&lt;-</span> <span class="va">journal_subsubject_corres</span> <span class="op">%&gt;%</span> 
+  <span class="fu">left_join</span><span class="op">(</span><span class="va">subject_subsubject_corres</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">&quot;area_code&quot;</span>, <span class="st">&quot;subsubject_area&quot;</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">select</span><span class="op">(</span><span class="va">journal</span>, <span class="va">subject_area</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">distinct</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">group_by</span><span class="op">(</span><span class="va">journal</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">mutate</span><span class="op">(</span>
+    n_subject_area <span class="op">=</span> <span class="fu">n</span><span class="op">(</span><span class="op">)</span>,
+    subject_area <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">n_subject_area</span> <span class="op">&gt;</span> <span class="fl">1</span>, <span class="st">&quot;Multidisciplinary&quot;</span>, <span class="va">subject_area</span><span class="op">)</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">ungroup</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">n_subject_area</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">distinct</span><span class="op">(</span><span class="op">)</span>
+
+<span class="va">journal_subject</span> <span class="op">&lt;-</span> <span class="va">journal_subsubject_corres</span> <span class="op">%&gt;%</span> 
+  <span class="fu">left_join</span><span class="op">(</span><span class="va">journal_subject_corres</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">&quot;journal&quot;</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
   <span class="fu">mutate</span><span class="op">(</span>
     journal_merge <span class="op">=</span> <span class="fu">str_to_lower</span><span class="op">(</span><span class="va">journal</span><span class="op">)</span>,
     journal_merge <span class="op">=</span> <span class="fu">str_remove_all</span><span class="op">(</span><span class="va">journal_merge</span>, <span class="st">&quot;[^\\w\\s]&quot;</span><span class="op">)</span>
@@ -3948,12 +3962,13 @@ text-align: justify}
     journal_merge <span class="op">=</span> <span class="fu">str_remove_all</span><span class="op">(</span><span class="va">journal_merge</span>, <span class="st">&quot;[^\\w\\s]&quot;</span><span class="op">)</span>
   <span class="op">)</span> <span class="op">%&gt;%</span> 
   <span class="fu">left_join</span><span class="op">(</span><span class="va">journal_subject</span>, by <span class="op">=</span> <span class="st">&quot;journal_merge&quot;</span><span class="op">)</span> <span class="op">%&gt;%</span> 
-  <span class="fu">select</span><span class="op">(</span><span class="va">doi</span>, <span class="va">subject_area</span>, <span class="va">sub_subject_area</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">select</span><span class="op">(</span><span class="va">doi</span>, <span class="va">subject_area</span>, <span class="va">subsubject_area</span><span class="op">)</span> <span class="op">%&gt;%</span> 
   <span class="fu">distinct</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> 
-  <span class="fu">nest</span><span class="op">(</span>subject_area <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">subject_area</span><span class="op">)</span>, sub_subject_area <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">sub_subject_area</span><span class="op">)</span><span class="op">)</span> 
+  <span class="fu">nest</span><span class="op">(</span>subject_area <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">subject_area</span><span class="op">)</span>, subsubject_area <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">subsubject_area</span><span class="op">)</span><span class="op">)</span> 
 </code></pre>
 </div>
 </div>
+<p>We retrieve information about the subject area for 85.8539765% articles and about the subsubject area for 93.1716656% of articles.</p>
 <h1 id="agregating-the-information">Agregating the information</h1>
 <p>Finally, we build the overall metadata set, by combining all the previous information.</p>
 <div class="layout-chunk" data-layout="l-body">
