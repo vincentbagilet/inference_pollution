@@ -69,7 +69,14 @@ First of all, we need to clearly define the set of articles we want to consider 
 'TITLE(("air pollution" OR "air quality" OR "particulate matter" OR ozone OR "nitrogen dioxide" OR "sulfur dioxide" OR "PM10" OR "PM2.5" OR "carbon dioxide" OR "carbon monoxide") AND ("emergency" OR "mortality" OR "stroke" OR "cerebrovascular" OR "cardiovascular" OR "death" OR "hospitalization") AND NOT ("long term" OR "long-term")) AND "short term"'
 
 ```{r eval = FALSE}
-query <- 'TITLE(("air pollution" OR "air quality" OR "particulate matter" OR ozone OR "nitrogen dioxide" OR "sulfur dioxide" OR "PM10" OR "PM2.5" OR "carbon dioxide" OR "carbon monoxide") AND ("emergency" OR "mortality" OR "stroke" OR "cerebrovascular" OR "cardiovascular" OR "death" OR "hospitalization") AND NOT ("long term" OR "long-term")) AND "short term"'
+query <- 
+  str_c('TITLE(("air pollution" OR "air quality" OR "particulate matter" OR ozone', 
+        'OR "nitrogen dioxide" OR "sulfur dioxide" OR "PM10" OR "PM2.5" OR', 
+        ' "carbon dioxide" OR "carbon monoxide")', 
+        'AND ("emergency" OR "mortality" OR "stroke" OR "cerebrovascular" OR', 
+        '"cardiovascular" OR "death" OR "hospitalization")' ,
+        'AND NOT ("long term" OR "long-term")) AND "short term"'
+  )
 
 opts_entrez <- list(use_history = TRUE)
 
@@ -128,7 +135,7 @@ metadata_lit_review <- metadata_scopus %>%
   select(-n_with_doi) %>% 
   ungroup()
 
-# saveRDS(metadata_lit_review, "../Outputs/metadata_lit_review.RDS")
+saveRDS(metadata_lit_review, "../Outputs/metadata_lit_review.RDS")
 ```
 
 # Retreiving abstracts
@@ -206,18 +213,16 @@ Now that we have retrieved the abstracts, we want to extract the effects and ass
 ```{r}
 string_confint <- str_c(
   "((?<!(\\.|\\d))95\\s?%|(?<!(\\.|\\d))95\\s(per(\\s?)cent)|",
-  "\\bCI(s?)\\b|\\bPI(s?)\\b|\\b(i|I)nterval|",
+  "\\bC(\\.)?I(\\.)?(s?)\\b|\\bPI(s?)\\b|\\b(i|I)nterval|",
   "\\b(c|C)onfidence\\s(i|I)nterval|\\b(c|C)redible\\s(i|I)nterval|", 
   "\\b(p|P)osterior\\s(i|I)nterval)"
   )
-num_confint <- "(-\\s?|−\\s?)?[\\d\\.]{1,7}[–\\s:;,%\\-to\\‐-]{1,5}(-\\s?|−\\s?)?[\\d\\.]{1,7}"
+num_confint <- 
+  "(-\\s?|−\\s?)?[\\d\\.]{1,7}[–\\s:;,%\\-to\\‐-]{1,5}(-\\s?|−\\s?)?[\\d\\.]{1,7}"
 num_effect <- "(-\\s?|−\\s?)?[\\d\\.]{1,7}"
 
 detected_effects <- abstracts %>%
-  mutate(
-    abstract = str_replace_all(abstract, "·", "."),
-    abstract = str_replace_all(abstract, "C.I.", "CI")
-  ) %>%
+  mutate(abstract = str_replace_all(abstract, "·", ".")) %>%
   select(doi, abstract) %>%
   unnest_tokens(
     sentence,
@@ -282,7 +287,7 @@ str_view_all(
 Once the effects and CI are identified, some wrangling is necessary in order to get the data into a usable format. We also choose to **drop effects which do not fall into the CI** (62 estimates) in order to get rid off most of the poorly detected effects-CIs. 
 
 ```{r}
-effects_and_CI <- detected_effects %>% 
+estimates <- detected_effects %>% 
   filter(lengths(effect) == lengths(CI)) %>% #if number of effects != nb of CI for a sentence,
   #can't attribute effects to CI so, drop sentence
   unnest(c(effect, CI), keep_empty = TRUE) %>%
@@ -299,10 +304,10 @@ effects_and_CI <- detected_effects %>%
   filter(!is.na(effect)) %>%  
   filter(effect > low_CI & effect < up_CI)
 
-saveRDS(effects_and_CI, "../Outputs/effects_and_CI.RDS")
+saveRDS(estimates, "../Outputs/estimates.RDS")
 ```
 
-The `effects_and_CI` data frame displays, in each row, a point estimate and the lower and upper band of the CI along with the DOI of the article from which this estimate is extracted. We retrieved `r nrow(effects_and_CI)` valid point estimates and associated confidence intervals. We analyze them further in another document.
+The `estimates` data frame displays, in each row, a point estimate and the lower and upper band of the CI along with the DOI of the article from which this estimate is extracted. We retrieved `r nrow(estimates)` valid point estimates and associated confidence intervals. We analyze them further in another document.
 
 # Retreiving additional information
 
@@ -558,16 +563,69 @@ articles_subpop <- abstracts_with_titles %>%
 
 We identify sub-population considered in the study for `r articles_subpop %>% unnest(subpop) %>% filter(!is.na(subpop)) %>% distinct(doi) %>% nrow()/nrow(articles_subpop)*100`% of the articles.
 
+## Additional information on journals
+
+It is also interesting to have access to journal fields. This will enable us to see whether some academic research fields are more subject to certain type of issues than others.
+
+We retrieve information on journal fields from Scopus. In [their source list](https://www.scopus.com/sources.uri), they classify all journals into approximately 330 sub-subject areas. We thus match this with journal names from our database. Scopus also provides coarser subject area categorizations, for instance one with 5 fields: Multidisciplinary, Physical Sciences, Health Sciences, Social Sciences and Life Science. They provide [a correspondance table](https://service.elsevier.com/app/answers/detail/a_id/15181/supporthub/scopus/) between those two classifications.
+
+```{r}
+scopus_subject_corres <-
+  read_csv("../Inputs/scopus_subject_corres.csv") %>%
+  rename(
+    area_code = Code,
+    sub_subject_area = Field, 
+    subject_area = `Subject area`
+  ) %>%
+  drop_na()
+
+scopus_journal_subsubject <- read_csv("../Inputs/scopus_journal_subsubject.csv") %>% 
+  rename(
+    journal = Title,
+    sub_subject_area = `Scopus Sub-Subject Area`,
+    area_code = `Scopus ASJC Code (Sub-subject Area)`
+  ) %>% 
+  select(journal, sub_subject_area, area_code)
+
+journal_subject <- scopus_journal_subsubject %>% 
+  left_join(scopus_subject_corres, by = c("area_code", "sub_subject_area")) %>% 
+  select(-area_code) %>% 
+  mutate(
+    journal_merge = str_to_lower(journal),
+    journal_merge = str_remove_all(journal_merge, "[^\\w\\s]")
+  )
+
+articles_journal_subject <- abstracts %>% 
+  mutate(
+    journal_merge = str_to_lower(journal),
+    journal_merge = str_remove_all(journal_merge, "[^\\w\\s]")
+  ) %>% 
+  left_join(journal_subject, by = "journal_merge") %>% 
+  select(doi, subject_area, sub_subject_area) %>% 
+  distinct() %>% 
+  nest(subject_area = c(subject_area), sub_subject_area = c(sub_subject_area)) 
+```
+
+
+# Agregating the information
+
 Finally, we build the overall metadata set, by combining all the previous information.
 
 ```{r}
-articles_metadata <- abstracts %>% 
+abstracts_and_metadata <- abstracts %>% 
   full_join(articles_n_obs, by = "doi") %>% 
   full_join(articles_pollutant, by = "doi") %>% 
   full_join(articles_outcome, by = "doi") %>% 
-  full_join(articles_subpop, by = "doi")
+  full_join(articles_subpop, by = "doi") %>% 
+  full_join(articles_journal_subject, by = "doi") %>% 
+  group_by(doi) %>% 
+  filter(
+    pub_date == max(pub_date, na.rm = TRUE) | 
+      is.na(pub_date)
+  ) %>% #some articles have been published twice
+  ungroup()
 
-saveRDS(articles_metadata, "../Outputs/articles_metadata.RDS")
+saveRDS(abstracts_and_metadata, "../Outputs/abstracts_and_metadata.RDS")
 ```
 
 

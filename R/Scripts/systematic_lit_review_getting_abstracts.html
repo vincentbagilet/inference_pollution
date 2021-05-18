@@ -91,8 +91,8 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   
   
   <!--  https://schema.org/Article -->
-  <meta property="article:published" itemprop="datePublished" content="2021-05-12" />
-  <meta property="article:created" itemprop="dateCreated" content="2021-05-12" />
+  <meta property="article:published" itemprop="datePublished" content="2021-05-18" />
+  <meta property="article:created" itemprop="dateCreated" content="2021-05-18" />
   <meta name="article:author" content="Vincent Bagilet" />
   <meta name="article:author" content="Léo Zabrocki" />
   
@@ -109,7 +109,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <!--radix_placeholder_rmarkdown_metadata-->
   
   <script type="text/json" id="radix-rmarkdown-metadata">
-  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","author","date","output"]}},"value":[{"type":"character","attributes":{},"value":["Systematic literature review - Getting abstracts"]},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Vincent Bagilet"]},{"type":"character","attributes":{},"value":["https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet"]},{"type":"character","attributes":{},"value":["Columbia University"]},{"type":"character","attributes":{},"value":["https://www.columbia.edu/"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Léo Zabrocki"]},{"type":"character","attributes":{},"value":["https://www.parisschoolofeconomics.eu/en/"]},{"type":"character","attributes":{},"value":["Paris School of Economics"]},{"type":"character","attributes":{},"value":["https://www.parisschoolofeconomics.eu/en/"]}]}]},{"type":"character","attributes":{},"value":["2021-05-12"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article","html_notebook"]}},"value":[{"type":"character","attributes":{},"value":["default"]},{"type":"character","attributes":{},"value":["default"]}]}]}
+  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","author","date","output"]}},"value":[{"type":"character","attributes":{},"value":["Systematic literature review - Getting abstracts"]},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Vincent Bagilet"]},{"type":"character","attributes":{},"value":["https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet"]},{"type":"character","attributes":{},"value":["Columbia University"]},{"type":"character","attributes":{},"value":["https://www.columbia.edu/"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Léo Zabrocki"]},{"type":"character","attributes":{},"value":["https://www.parisschoolofeconomics.eu/en/"]},{"type":"character","attributes":{},"value":["Paris School of Economics"]},{"type":"character","attributes":{},"value":["https://www.parisschoolofeconomics.eu/en/"]}]}]},{"type":"character","attributes":{},"value":["2021-05-18"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article","html_notebook"]}},"value":[{"type":"character","attributes":{},"value":["default"]},{"type":"character","attributes":{},"value":["default"]}]}]}
   </script>
   <!--/radix_placeholder_rmarkdown_metadata-->
   
@@ -3391,7 +3391,7 @@ distill-header .nav a {
 <!--radix_placeholder_front_matter-->
 
 <script id="distill-front-matter" type="text/json">
-{"title":"Systematic literature review - Getting abstracts","authors":[{"author":"Vincent Bagilet","authorURL":"https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet","affiliation":"Columbia University","affiliationURL":"https://www.columbia.edu/","orcidID":""},{"author":"Léo Zabrocki","authorURL":"https://www.parisschoolofeconomics.eu/en/","affiliation":"Paris School of Economics","affiliationURL":"https://www.parisschoolofeconomics.eu/en/","orcidID":""}],"publishedDate":"2021-05-12T00:00:00.000+00:00","citationText":"Bagilet & Zabrocki, 2021"}
+{"title":"Systematic literature review - Getting abstracts","authors":[{"author":"Vincent Bagilet","authorURL":"https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet","affiliation":"Columbia University","affiliationURL":"https://www.columbia.edu/","orcidID":""},{"author":"Léo Zabrocki","authorURL":"https://www.parisschoolofeconomics.eu/en/","affiliation":"Paris School of Economics","affiliationURL":"https://www.parisschoolofeconomics.eu/en/","orcidID":""}],"publishedDate":"2021-05-18T00:00:00.000+00:00","citationText":"Bagilet & Zabrocki, 2021"}
 </script>
 
 <!--/radix_placeholder_front_matter-->
@@ -3412,7 +3412,7 @@ distill-header .nav a {
   
 ,   Léo Zabrocki <a href="https://www.parisschoolofeconomics.eu/en/" class="uri">https://www.parisschoolofeconomics.eu/en/</a> (Paris School of Economics)<a href="https://www.parisschoolofeconomics.eu/en/" class="uri">https://www.parisschoolofeconomics.eu/en/</a>
   
-<br />2021-05-12
+<br />2021-05-18
 </div>
 
 <div class="d-article">
@@ -3431,13 +3431,20 @@ text-align: justify}
 <p>‘TITLE((“air pollution” OR “air quality” OR “particulate matter” OR ozone OR “nitrogen dioxide” OR “sulfur dioxide” OR “PM10” OR “PM2.5” OR “carbon dioxide” OR “carbon monoxide”) AND (“emergency” OR “mortality” OR “stroke” OR “cerebrovascular” OR “cardiovascular” OR “death” OR “hospitalization”) AND NOT (“long term” OR “long-term”)) AND “short term”’</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class="va">query</span> <span class="op">&lt;-</span> <span class="st">&#39;TITLE((&quot;air pollution&quot; OR &quot;air quality&quot; OR &quot;particulate matter&quot; OR ozone OR &quot;nitrogen dioxide&quot; OR &quot;sulfur dioxide&quot; OR &quot;PM10&quot; OR &quot;PM2.5&quot; OR &quot;carbon dioxide&quot; OR &quot;carbon monoxide&quot;) AND (&quot;emergency&quot; OR &quot;mortality&quot; OR &quot;stroke&quot; OR &quot;cerebrovascular&quot; OR &quot;cardiovascular&quot; OR &quot;death&quot; OR &quot;hospitalization&quot;) AND NOT (&quot;long term&quot; OR &quot;long-term&quot;)) AND &quot;short term&quot;&#39;</span>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="va">query</span> <span class="op">&lt;-</span> 
+  <span class="fu">str_c</span><span class="op">(</span><span class="st">&#39;TITLE((&quot;air pollution&quot; OR &quot;air quality&quot; OR &quot;particulate matter&quot; OR ozone&#39;</span>, 
+        <span class="st">&#39;OR &quot;nitrogen dioxide&quot; OR &quot;sulfur dioxide&quot; OR &quot;PM10&quot; OR &quot;PM2.5&quot; OR&#39;</span>, 
+        <span class="st">&#39; &quot;carbon dioxide&quot; OR &quot;carbon monoxide&quot;)&#39;</span>, 
+        <span class="st">&#39;AND (&quot;emergency&quot; OR &quot;mortality&quot; OR &quot;stroke&quot; OR &quot;cerebrovascular&quot; OR&#39;</span>, 
+        <span class="st">&#39;&quot;cardiovascular&quot; OR &quot;death&quot; OR &quot;hospitalization&quot;)&#39;</span> ,
+        <span class="st">&#39;AND NOT (&quot;long term&quot; OR &quot;long-term&quot;)) AND &quot;short term&quot;&#39;</span>
+  <span class="op">)</span>
 
 <span class="va">opts_entrez</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>use_history <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
 
 <span class="co">#Run a search</span>
-<span class="va">search</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://docs.ropensci.org/fulltext/reference/ft_search.html">ft_search</a></span><span class="op">(</span><span class="va">query</span>, from <span class="op">=</span> <span class="st">&quot;scopus&quot;</span>, limit <span class="op">=</span> <span class="fl">2000</span><span class="op">)</span>
-<span class="va">search_entrez</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://docs.ropensci.org/fulltext/reference/ft_search.html">ft_search</a></span><span class="op">(</span><span class="va">query</span>, from <span class="op">=</span> <span class="st">&quot;entrez&quot;</span>, limit <span class="op">=</span> <span class="fl">200</span>, entrezopts <span class="op">=</span> <span class="va">opts_entrez</span><span class="op">)</span>
+<span class="va">search</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/fulltext/man/ft_search.html">ft_search</a></span><span class="op">(</span><span class="va">query</span>, from <span class="op">=</span> <span class="st">&quot;scopus&quot;</span>, limit <span class="op">=</span> <span class="fl">2000</span><span class="op">)</span>
+<span class="va">search_entrez</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/fulltext/man/ft_search.html">ft_search</a></span><span class="op">(</span><span class="va">query</span>, from <span class="op">=</span> <span class="st">&quot;entrez&quot;</span>, limit <span class="op">=</span> <span class="fl">200</span>, entrezopts <span class="op">=</span> <span class="va">opts_entrez</span><span class="op">)</span>
 </code></pre>
 </div>
 </div>
@@ -3455,7 +3462,7 @@ text-align: justify}
   <span class="op">)</span> <span class="op">%&gt;%</span> 
   <span class="fu">mutate</span><span class="op">(</span>
     pubmed_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="op">!</span><span class="fu">str_detect</span><span class="op">(</span><span class="va">pubmed_id</span>, <span class="st">&quot;[0-9]{7}&quot;</span><span class="op">)</span>, <span class="cn">NA</span>, <span class="va">pubmed_id</span><span class="op">)</span>,
-    pub_date <span class="op">=</span> <span class="fu"><a href="http://lubridate.tidyverse.org/reference/ymd.html">ymd</a></span><span class="op">(</span><span class="va">coverDate</span><span class="op">)</span>
+    pub_date <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/lubridate/man/ymd.html">ymd</a></span><span class="op">(</span><span class="va">coverDate</span><span class="op">)</span>
   <span class="op">)</span> <span class="op">%&gt;%</span> 
   <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">coverDate</span><span class="op">)</span>
 
@@ -3471,7 +3478,7 @@ text-align: justify}
   <span class="op">)</span> <span class="op">%&gt;%</span> 
   <span class="fu">mutate</span><span class="op">(</span>
     pubmed_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="op">!</span><span class="fu">str_detect</span><span class="op">(</span><span class="va">pubmed_id</span>, <span class="st">&quot;[0-9]{7}&quot;</span><span class="op">)</span>, <span class="cn">NA</span>, <span class="va">pubmed_id</span><span class="op">)</span>,
-    pub_date <span class="op">=</span> <span class="fu"><a href="http://lubridate.tidyverse.org/reference/ymd.html">ymd</a></span><span class="op">(</span><span class="va">pubdate</span><span class="op">)</span>
+    pub_date <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/lubridate/man/ymd.html">ymd</a></span><span class="op">(</span><span class="va">pubdate</span><span class="op">)</span>
   <span class="op">)</span> <span class="op">%&gt;%</span> 
   <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">pubdate</span><span class="op">)</span>
 
@@ -3491,7 +3498,7 @@ text-align: justify}
   <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">n_with_doi</span><span class="op">)</span> <span class="op">%&gt;%</span> 
   <span class="fu">ungroup</span><span class="op">(</span><span class="op">)</span>
 
-<span class="co"># saveRDS(metadata_lit_review, &quot;../Outputs/metadata_lit_review.RDS&quot;)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/readRDS.html">saveRDS</a></span><span class="op">(</span><span class="va">metadata_lit_review</span>, <span class="st">&quot;../Outputs/metadata_lit_review.RDS&quot;</span><span class="op">)</span>
 </code></pre>
 </div>
 </div>
@@ -3516,7 +3523,7 @@ text-align: justify}
     
     <span class="va">possible_error</span> <span class="op">&lt;-</span> <span class="kw"><a href="https://rdrr.io/r/base/conditions.html">tryCatch</a></span><span class="op">(</span>
       <span class="va">abs_period</span> <span class="op">&lt;-</span> <span class="va">doi_period</span> <span class="op">%&gt;%</span>
-        <span class="fu"><a href="https://docs.ropensci.org/fulltext/reference/ft_abstract.html">ft_abstract</a></span><span class="op">(</span>from <span class="op">=</span> <span class="st">&quot;semanticscholar&quot;</span><span class="op">)</span> <span class="op">%&gt;%</span>
+        <span class="fu"><a href="https://rdrr.io/pkg/fulltext/man/ft_abstract.html">ft_abstract</a></span><span class="op">(</span>from <span class="op">=</span> <span class="st">&quot;semanticscholar&quot;</span><span class="op">)</span> <span class="op">%&gt;%</span>
         <span class="va">.</span><span class="op">$</span><span class="va">semanticscholar</span> <span class="op">%&gt;%</span>
         <span class="fu">as_tibble</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span>
         <span class="fu">unnest</span><span class="op">(</span>cols <span class="op">=</span> <span class="fu">everything</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
@@ -3564,18 +3571,16 @@ text-align: justify}
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span class="va">string_confint</span> <span class="op">&lt;-</span> <span class="fu">str_c</span><span class="op">(</span>
   <span class="st">&quot;((?&lt;!(\\.|\\d))95\\s?%|(?&lt;!(\\.|\\d))95\\s(per(\\s?)cent)|&quot;</span>,
-  <span class="st">&quot;\\bCI(s?)\\b|\\bPI(s?)\\b|\\b(i|I)nterval|&quot;</span>,
+  <span class="st">&quot;\\bC(\\.)?I(\\.)?(s?)\\b|\\bPI(s?)\\b|\\b(i|I)nterval|&quot;</span>,
   <span class="st">&quot;\\b(c|C)onfidence\\s(i|I)nterval|\\b(c|C)redible\\s(i|I)nterval|&quot;</span>, 
   <span class="st">&quot;\\b(p|P)osterior\\s(i|I)nterval)&quot;</span>
   <span class="op">)</span>
-<span class="va">num_confint</span> <span class="op">&lt;-</span> <span class="st">&quot;(-\\s?|−\\s?)?[\\d\\.]{1,7}[–\\s:;,%\\-to\\‐-]{1,5}(-\\s?|−\\s?)?[\\d\\.]{1,7}&quot;</span>
+<span class="va">num_confint</span> <span class="op">&lt;-</span> 
+  <span class="st">&quot;(-\\s?|−\\s?)?[\\d\\.]{1,7}[–\\s:;,%\\-to\\‐-]{1,5}(-\\s?|−\\s?)?[\\d\\.]{1,7}&quot;</span>
 <span class="va">num_effect</span> <span class="op">&lt;-</span> <span class="st">&quot;(-\\s?|−\\s?)?[\\d\\.]{1,7}&quot;</span>
 
 <span class="va">detected_effects</span> <span class="op">&lt;-</span> <span class="va">abstracts</span> <span class="op">%&gt;%</span>
-  <span class="fu">mutate</span><span class="op">(</span>
-    abstract <span class="op">=</span> <span class="fu">str_replace_all</span><span class="op">(</span><span class="va">abstract</span>, <span class="st">&quot;·&quot;</span>, <span class="st">&quot;.&quot;</span><span class="op">)</span>,
-    abstract <span class="op">=</span> <span class="fu">str_replace_all</span><span class="op">(</span><span class="va">abstract</span>, <span class="st">&quot;C.I.&quot;</span>, <span class="st">&quot;CI&quot;</span><span class="op">)</span>
-  <span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">mutate</span><span class="op">(</span>abstract <span class="op">=</span> <span class="fu">str_replace_all</span><span class="op">(</span><span class="va">abstract</span>, <span class="st">&quot;·&quot;</span>, <span class="st">&quot;.&quot;</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="fu">select</span><span class="op">(</span><span class="va">doi</span>, <span class="va">abstract</span><span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="fu"><a href="https://rdrr.io/pkg/tidytext/man/unnest_tokens.html">unnest_tokens</a></span><span class="op">(</span>
     <span class="va">sentence</span>,
@@ -3636,12 +3641,12 @@ text-align: justify}
 </code></pre>
 </div>
 <div id="htmlwidget-2a0dd1ba32e0541469b5" style="width:960px;height:100%;" class="str_view html-widget"></div>
-<script type="application/json" data-for="htmlwidget-2a0dd1ba32e0541469b5">{"x":{"html":"<ul>\n  <li>Mixed results were found on lung function parameters, and a meta-analysis including two studies with comparable methodology showed a trend towards reduced maximum flow rate at functional residual capacity of <span class='match'>−34.59<\/span> mL/s (95% CI <span class='match'>−72.81 to 3.63<\/span>, p=0.08) in 1-month-old infants born to women who smoked during pregnancy.<\/li>\n  <li>Ambient NO2 pollution interquartile range increase (IQR) on the day of admission and previous day (lag 0–1) in patients below 65 years of age increase the risk of ACS equal to <span class='match'>24<\/span>% (95% CI <span class='match'>0.96–1.60<\/span>).<\/li>\n  <li>We estimated a hazard ratio (HR) of <span class='match'>1.053<\/span> [95% confidence interval (CI): <span class='match'>1.041, 1.065<\/span>] per 10-μg/m3 change in PM2.5 after pooling the three cohort-specific hazard ratios, with some variation between cohorts (1.041 for the 1991 and 1996 cohorts and 1.084 for the 2001 cohort).<\/li>\n  <li>RESULTS: For the totla mortality except the external ones, a significant impact of black smoke (RR 10 m g/m3: <span class='match'>1.013<\/span>; CI95% <span class='match'>1.003 to 1.023<\/span>) and for CO 24 h (RR 1 mg/m3: <span class='match'>1.024<\/span>; CI95% <span class='match'>1.003 to 1.046<\/span>) was found.<\/li>\n  <li>Also for males, statistically significant results were observed in the case of PM2.5 exposure lagged by 5 days (OR = <span class='match'>1.003<\/span>, 95% CI: <span class='match'>1.000-1.038<\/span>) and sulfur dioxide (SO2) exposure lagged by 1 and 2 days (OR = <span class='match'>1.016<\/span>, 95% CI: <span class='match'>1.000-1.031<\/span> and OR = <span class='match'>1.018<\/span>, 95% CI: <span class='match'>1.002-1.033<\/span>).<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-2a0dd1ba32e0541469b5">{"x":{"html":"<ul>\n  <li>Increased exposure to particulate matter ≤2.5 µm in diameter (PM2.5) was not associated with the increased risk of GDM (adjusted OR <span class='match'>1.03<\/span>, 95% CI <span class='match'>0.99 to 1.06<\/span>).<\/li>\n  <li>We report that an increase of 10 μg/m(3) in the daily ozone 8-h maximum moving-average corresponds to an increase of 0.95% (95%CI: <span class='match'>0.30, 1.60<\/span>) and <span class='match'>1.58<\/span>% (95%CI: <span class='match'>0.45, 2.73<\/span>) in non-accidental mortality and cardiovascular mortality, respectively, in the summer season.<\/li>\n  <li>We estimated a hazard ratio (HR) of <span class='match'>1.053<\/span> [95% confidence interval (CI): <span class='match'>1.041, 1.065<\/span>] per 10-μg/m3 change in PM2.5 after pooling the three cohort-specific hazard ratios, with some variation between cohorts (1.041 for the 1991 and 1996 cohorts and 1.084 for the 2001 cohort).<\/li>\n  <li>When the SO2 levels were categorized into four groups to estimate the relative risk (RR) of neonatal mortality using the lowest exposure category as a reference, the RR increased with elevated exposure levels (P for trend < 0.001) and was the highest in the group with the highest level of exposure (RR = <span class='match'>2.2<\/span>, 95% confidence interval; <span class='match'>1.2-4.1<\/span>).<\/li>\n  <li>Fog (lag 2) showed protective effects against asthma exacerbations in Chuncheon (risk increase: <span class='match'>-29.4<\/span>% [95% CI=<span class='match'>-46.3% to -7.2<\/span>%], P=0.013).<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
 </div>
 <p>Once the effects and CI are identified, some wrangling is necessary in order to get the data into a usable format. We also choose to <strong>drop effects which do not fall into the CI</strong> (62 estimates) in order to get rid off most of the poorly detected effects-CIs.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class="va">effects_and_CI</span> <span class="op">&lt;-</span> <span class="va">detected_effects</span> <span class="op">%&gt;%</span> 
+<pre class="sourceCode r"><code class="sourceCode r"><span class="va">estimates</span> <span class="op">&lt;-</span> <span class="va">detected_effects</span> <span class="op">%&gt;%</span> 
   <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lengths.html">lengths</a></span><span class="op">(</span><span class="va">effect</span><span class="op">)</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/lengths.html">lengths</a></span><span class="op">(</span><span class="va">CI</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="co">#if number of effects != nb of CI for a sentence,</span>
   <span class="co">#can&#39;t attribute effects to CI so, drop sentence</span>
   <span class="fu">unnest</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">effect</span>, <span class="va">CI</span><span class="op">)</span>, keep_empty <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">%&gt;%</span>
@@ -3658,11 +3663,11 @@ text-align: justify}
   <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">effect</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>  
   <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">effect</span> <span class="op">&gt;</span> <span class="va">low_CI</span> <span class="op">&amp;</span> <span class="va">effect</span> <span class="op">&lt;</span> <span class="va">up_CI</span><span class="op">)</span>
 
-<span class="fu"><a href="https://rdrr.io/r/base/readRDS.html">saveRDS</a></span><span class="op">(</span><span class="va">effects_and_CI</span>, <span class="st">&quot;../Outputs/effects_and_CI.RDS&quot;</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/readRDS.html">saveRDS</a></span><span class="op">(</span><span class="va">estimates</span>, <span class="st">&quot;../Outputs/estimates.RDS&quot;</span><span class="op">)</span>
 </code></pre>
 </div>
 </div>
-<p>The <code>effects_and_CI</code> data frame displays, in each row, a point estimate and the lower and upper band of the CI along with the DOI of the article from which this estimate is extracted. We retrieved 2084 valid point estimates and associated confidence intervals. We analyze them further in another document.</p>
+<p>The <code>estimates</code> data frame displays, in each row, a point estimate and the lower and upper band of the CI along with the DOI of the article from which this estimate is extracted. We retrieved 2079 valid point estimates and associated confidence intervals. We analyze them further in another document.</p>
 <h1 id="retreiving-additional-information">Retreiving additional information</h1>
 <p>It might also be interesting to have information about the type of pollutant considered in the study, the study period, the number of observations or the type of outcome studied (mortality, emergency admissions, stroke, cerebrovascular or cardiovascular diseases). We thus use regex to recover this information. Of course, this does not enable us to retrieve data for all the abstracts considered but it provides a useful source of information; retrieving this information “by hand” is extremely cumbersome. Regex are thus very helpful here. They also make this analysis reproducible.</p>
 <h2 id="number-of-obsrvations">Number of obsrvations</h2>
@@ -3684,7 +3689,7 @@ text-align: justify}
   <span class="va">year</span> <span class="op">&lt;-</span>  <span class="fu">str_remove_all</span><span class="op">(</span><span class="va">date_text</span>, <span class="st">&quot;[^\\d]&quot;</span><span class="op">)</span>
   <span class="va">month</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/match.html">match</a></span><span class="op">(</span><span class="fu">str_remove_all</span><span class="op">(</span><span class="va">date_text</span>, <span class="st">&quot;[\\d\\s]&quot;</span><span class="op">)</span>, <span class="va">month.name</span><span class="op">)</span>
   <span class="va">month</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">month</span><span class="op">)</span>, <span class="st">&quot;01&quot;</span>, <span class="va">month</span><span class="op">)</span>
-  <span class="va">date</span> <span class="op">&lt;-</span> <span class="fu"><a href="http://lubridate.tidyverse.org/reference/ymd.html">dmy</a></span><span class="op">(</span><span class="fu">str_c</span><span class="op">(</span><span class="st">&quot;01-&quot;</span>, <span class="fu">str_pad</span><span class="op">(</span><span class="va">month</span>, width <span class="op">=</span> <span class="fl">2</span>, pad <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>, <span class="st">&quot;-&quot;</span>, <span class="va">year</span><span class="op">)</span><span class="op">)</span>
+  <span class="va">date</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lubridate/man/ymd.html">dmy</a></span><span class="op">(</span><span class="fu">str_c</span><span class="op">(</span><span class="st">&quot;01-&quot;</span>, <span class="fu">str_pad</span><span class="op">(</span><span class="va">month</span>, width <span class="op">=</span> <span class="fl">2</span>, pad <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>, <span class="st">&quot;-&quot;</span>, <span class="va">year</span><span class="op">)</span><span class="op">)</span>
   <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="va">date</span><span class="op">)</span>
 <span class="op">}</span>
 
@@ -3715,8 +3720,8 @@ text-align: justify}
   <span class="fu">mutate</span><span class="op">(</span>
     begin_obs <span class="op">=</span> <span class="fu">text_to_date</span><span class="op">(</span><span class="va">begin_obs</span><span class="op">)</span>,
     end_obs <span class="op">=</span> <span class="fu">text_to_date</span><span class="op">(</span><span class="va">end_obs</span><span class="op">)</span>,
-    length_study <span class="op">=</span> <span class="fu"><a href="http://lubridate.tidyverse.org/reference/time_length.html">time_length</a></span><span class="op">(</span><span class="va">end_obs</span> <span class="op">-</span> <span class="va">begin_obs</span>, unit <span class="op">=</span> <span class="st">&quot;days&quot;</span><span class="op">)</span>,
-    length_study <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">length_study</span> <span class="op">&lt;</span> <span class="fl">0</span> <span class="op">|</span> <span class="va">end_obs</span> <span class="op">&gt;</span> <span class="fu"><a href="http://lubridate.tidyverse.org/reference/now.html">today</a></span><span class="op">(</span><span class="op">)</span>, <span class="cn">NA</span>, <span class="va">length_study</span><span class="op">)</span>
+    length_study <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/lubridate/man/time_length.html">time_length</a></span><span class="op">(</span><span class="va">end_obs</span> <span class="op">-</span> <span class="va">begin_obs</span>, unit <span class="op">=</span> <span class="st">&quot;days&quot;</span><span class="op">)</span>,
+    length_study <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">length_study</span> <span class="op">&lt;</span> <span class="fl">0</span> <span class="op">|</span> <span class="va">end_obs</span> <span class="op">&gt;</span> <span class="fu"><a href="https://rdrr.io/pkg/lubridate/man/now.html">today</a></span><span class="op">(</span><span class="op">)</span>, <span class="cn">NA</span>, <span class="va">length_study</span><span class="op">)</span>
   <span class="op">)</span> <span class="op">%&gt;%</span> 
   <span class="fu">select</span><span class="op">(</span><span class="va">doi</span>, <span class="va">length_study</span><span class="op">)</span> <span class="op">%&gt;%</span> 
   <span class="fu">group_by</span><span class="op">(</span><span class="va">doi</span><span class="op">)</span> <span class="op">%&gt;%</span> 
@@ -3907,16 +3912,66 @@ text-align: justify}
 </div>
 </div>
 <p>We identify sub-population considered in the study for 11.3428944% of the articles.</p>
+<h2 id="additional-information-on-journals">Additional information on journals</h2>
+<p>It is also interesting to have access to journal fields. This will enable us to see whether some academic research fields are more subject to certain type of issues than others.</p>
+<p>We retrieve information on journal fields from Scopus. In <a href="https://www.scopus.com/sources.uri">their source list</a>, they classify all journals into approximately 330 sub-subject areas. We thus match this with journal names from our database. Scopus also provides coarser subject area categorizations, for instance one with 5 fields: Multidisciplinary, Physical Sciences, Health Sciences, Social Sciences and Life Science. They provide <a href="https://service.elsevier.com/app/answers/detail/a_id/15181/supporthub/scopus/">a correspondance table</a> between those two classifications.</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span class="va">scopus_subject_corres</span> <span class="op">&lt;-</span>
+  <span class="fu">read_csv</span><span class="op">(</span><span class="st">&quot;../Inputs/scopus_subject_corres.csv&quot;</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">rename</span><span class="op">(</span>
+    area_code <span class="op">=</span> <span class="va">Code</span>,
+    sub_subject_area <span class="op">=</span> <span class="va">Field</span>, 
+    subject_area <span class="op">=</span> <span class="va">`Subject area`</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">drop_na</span><span class="op">(</span><span class="op">)</span>
+
+<span class="va">scopus_journal_subsubject</span> <span class="op">&lt;-</span> <span class="fu">read_csv</span><span class="op">(</span><span class="st">&quot;../Inputs/scopus_journal_subsubject.csv&quot;</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">rename</span><span class="op">(</span>
+    journal <span class="op">=</span> <span class="va">Title</span>,
+    sub_subject_area <span class="op">=</span> <span class="va">`Scopus Sub-Subject Area`</span>,
+    area_code <span class="op">=</span> <span class="va">`Scopus ASJC Code (Sub-subject Area)`</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">select</span><span class="op">(</span><span class="va">journal</span>, <span class="va">sub_subject_area</span>, <span class="va">area_code</span><span class="op">)</span>
+
+<span class="va">journal_subject</span> <span class="op">&lt;-</span> <span class="va">scopus_journal_subsubject</span> <span class="op">%&gt;%</span> 
+  <span class="fu">left_join</span><span class="op">(</span><span class="va">scopus_subject_corres</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">&quot;area_code&quot;</span>, <span class="st">&quot;sub_subject_area&quot;</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">area_code</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">mutate</span><span class="op">(</span>
+    journal_merge <span class="op">=</span> <span class="fu">str_to_lower</span><span class="op">(</span><span class="va">journal</span><span class="op">)</span>,
+    journal_merge <span class="op">=</span> <span class="fu">str_remove_all</span><span class="op">(</span><span class="va">journal_merge</span>, <span class="st">&quot;[^\\w\\s]&quot;</span><span class="op">)</span>
+  <span class="op">)</span>
+
+<span class="va">articles_journal_subject</span> <span class="op">&lt;-</span> <span class="va">abstracts</span> <span class="op">%&gt;%</span> 
+  <span class="fu">mutate</span><span class="op">(</span>
+    journal_merge <span class="op">=</span> <span class="fu">str_to_lower</span><span class="op">(</span><span class="va">journal</span><span class="op">)</span>,
+    journal_merge <span class="op">=</span> <span class="fu">str_remove_all</span><span class="op">(</span><span class="va">journal_merge</span>, <span class="st">&quot;[^\\w\\s]&quot;</span><span class="op">)</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">left_join</span><span class="op">(</span><span class="va">journal_subject</span>, by <span class="op">=</span> <span class="st">&quot;journal_merge&quot;</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">select</span><span class="op">(</span><span class="va">doi</span>, <span class="va">subject_area</span>, <span class="va">sub_subject_area</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">distinct</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">nest</span><span class="op">(</span>subject_area <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">subject_area</span><span class="op">)</span>, sub_subject_area <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">sub_subject_area</span><span class="op">)</span><span class="op">)</span> 
+</code></pre>
+</div>
+</div>
+<h1 id="agregating-the-information">Agregating the information</h1>
 <p>Finally, we build the overall metadata set, by combining all the previous information.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class="va">articles_metadata</span> <span class="op">&lt;-</span> <span class="va">abstracts</span> <span class="op">%&gt;%</span> 
+<pre class="sourceCode r"><code class="sourceCode r"><span class="va">abstracts_and_metadata</span> <span class="op">&lt;-</span> <span class="va">abstracts</span> <span class="op">%&gt;%</span> 
   <span class="fu">full_join</span><span class="op">(</span><span class="va">articles_n_obs</span>, by <span class="op">=</span> <span class="st">&quot;doi&quot;</span><span class="op">)</span> <span class="op">%&gt;%</span> 
   <span class="fu">full_join</span><span class="op">(</span><span class="va">articles_pollutant</span>, by <span class="op">=</span> <span class="st">&quot;doi&quot;</span><span class="op">)</span> <span class="op">%&gt;%</span> 
   <span class="fu">full_join</span><span class="op">(</span><span class="va">articles_outcome</span>, by <span class="op">=</span> <span class="st">&quot;doi&quot;</span><span class="op">)</span> <span class="op">%&gt;%</span> 
-  <span class="fu">full_join</span><span class="op">(</span><span class="va">articles_subpop</span>, by <span class="op">=</span> <span class="st">&quot;doi&quot;</span><span class="op">)</span>
+  <span class="fu">full_join</span><span class="op">(</span><span class="va">articles_subpop</span>, by <span class="op">=</span> <span class="st">&quot;doi&quot;</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">full_join</span><span class="op">(</span><span class="va">articles_journal_subject</span>, by <span class="op">=</span> <span class="st">&quot;doi&quot;</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">group_by</span><span class="op">(</span><span class="va">doi</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span>
+    <span class="va">pub_date</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">pub_date</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|</span> 
+      <span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">pub_date</span><span class="op">)</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span> <span class="co">#some articles have been published twice</span>
+  <span class="fu">ungroup</span><span class="op">(</span><span class="op">)</span>
 
-<span class="fu"><a href="https://rdrr.io/r/base/readRDS.html">saveRDS</a></span><span class="op">(</span><span class="va">articles_metadata</span>, <span class="st">&quot;../Outputs/articles_metadata.RDS&quot;</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/readRDS.html">saveRDS</a></span><span class="op">(</span><span class="va">abstracts_and_metadata</span>, <span class="st">&quot;../Outputs/abstracts_and_metadata.RDS&quot;</span><span class="op">)</span>
 </code></pre>
 </div>
 </div>
