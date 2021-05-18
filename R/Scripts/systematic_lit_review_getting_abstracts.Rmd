@@ -499,7 +499,10 @@ articles_pollutant <- abstracts_with_titles %>%
       pollutant == "ozone" ~ "o3",
       pollutant == "particulate" ~ "particulatematter",
       TRUE ~ pollutant
-    )
+    ),
+    pollutant = str_to_upper(pollutant),
+    pollutant = ifelse(pollutant == "PARTICULATEMATTER", "Particulate matter", pollutant),
+    pollutant = ifelse(pollutant == "AIRQUALITYINDEX", "Air Quality Index", pollutant)
   ) %>% 
   distinct(pollutant, .keep_all = TRUE) %>% 
   ungroup() %>% 
@@ -618,7 +621,7 @@ articles_journal_subject <- abstracts %>%
   left_join(journal_subject, by = "journal_merge") %>% 
   select(doi, subject_area, subsubject_area) %>% 
   distinct() %>% 
-  nest(subject_area = c(subject_area), subsubject_area = c(subsubject_area)) 
+  nest(subsubject_area = c(subsubject_area)) 
 ```
 
 We retrieve information about the subject area for `r articles_journal_subject %>% unnest(subject_area) %>% distinct() %>% count(missing_subject = is.na(subject_area)) %>% mutate(prop = n / sum(n)) %>% filter(!missing_subject) %>% .$prop*100`% articles and about the subsubject area for `r articles_journal_subject %>% unnest(subsubject_area) %>% distinct() %>% count(missing_subject = is.na(subsubject_area)) %>% mutate(prop = n / sum(n)) %>% filter(!missing_subject) %>% .$prop*100`% of articles.
