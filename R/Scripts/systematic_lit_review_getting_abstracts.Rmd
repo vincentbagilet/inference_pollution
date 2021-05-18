@@ -70,7 +70,7 @@ First of all, we need to clearly define the set of articles we want to consider 
 
 ```{r eval = FALSE}
 query <- 
-  str_c('TITLE(("air pollution" OR "air quality" OR "particulate matter" OR ozone', 
+  paste('TITLE(("air pollution" OR "air quality" OR "particulate matter" OR "ozone"', 
         'OR "nitrogen dioxide" OR "sulfur dioxide" OR "PM10" OR "PM2.5" OR', 
         ' "carbon dioxide" OR "carbon monoxide")', 
         'AND ("emergency" OR "mortality" OR "stroke" OR "cerebrovascular" OR', 
@@ -82,7 +82,12 @@ opts_entrez <- list(use_history = TRUE)
 
 #Run a search
 search <- ft_search(query, from = "scopus", limit = 2000)
-search_entrez <- ft_search(query, from = "entrez", limit = 200, entrezopts = opts_entrez)
+search_entrez <- ft_search(
+  str_replace(query, "AND NOT", "NOT"), 
+  from = "entrez", 
+  limit = 300, 
+  entrezopts = opts_entrez
+)
 ```
 
 We then retrieve and wrangle the related metadata. The metadata from different sources having different shapes, we only select a few relevant columns to build an overall metadata set.
@@ -133,7 +138,8 @@ metadata_lit_review <- metadata_scopus %>%
   filter(n_with_doi == 1 | (n_with_doi > 1 & pubmed_id == max(pubmed_id, na.rm = TRUE))) %>%
   #two weird articles with separate author names, I select one randomly
   select(-n_with_doi) %>% 
-  ungroup()
+  ungroup() %>%
+  distinct(title, .keep_all = TRUE)
 
 saveRDS(metadata_lit_review, "../Outputs/metadata_lit_review.RDS")
 ```
@@ -189,8 +195,8 @@ get_abstracts <- function(doi) {
   return(abs)
 }
 
+#run this from the console to see the time remaining (copy/paste it)
 abstracts <- metadata_lit_review %>%
-  distinct(title, .keep_all = TRUE) %>% 
   .$doi %>% 
   get_abstracts()  %>% 
   left_join(metadata_lit_review, by = "doi") 
