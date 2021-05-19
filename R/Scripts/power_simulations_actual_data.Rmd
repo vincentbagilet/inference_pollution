@@ -213,12 +213,8 @@ library(mediocrethemes)
 
 set_mediocre_all()
 
-nmmaps_data <- readRDS(here::here("R", "Inputs", "nmmaps_data_simulations.rds"))
-
-nmmaps_data <- nmmaps_data %>% 
-  mutate(
-    city = as.factor(city)
-  ) 
+nmmaps_data <- readRDS(here::here("R", "Inputs", "nmmaps_data_simulations.rds")) %>% 
+  mutate(temperature_squared = temperature^2)
 ```
 
 ## Function definitions
@@ -419,9 +415,9 @@ create_y1 <- function(data,
                       formula) {
   
   fml <- Formula::as.Formula(formula)
+  dep_var <- all.vars(fml)[[1]]
   
   if (id_method %in% c("RCT", "DID", "ITS", "RDIT", "RDD")) {
-    dep_var <- all.vars(fml)[[1]]
     
     data <- data %>% 
       group_by(.data$city) %>% 
@@ -436,6 +432,7 @@ create_y1 <- function(data,
     
   } else if (str_starts(id_method, "OLS|IV")) {
     pollutant <- find_pollutant(fml)
+    formula_clean <- str_replace(formula, "log\\(.+\\)", dep_var)
     
     if (str_starts(id_method, "IV")) {
       iv_intensity <- as.numeric(str_extract(id_method, "(?<=_).+"))
@@ -446,17 +443,15 @@ create_y1 <- function(data,
       # pollutant <- str_c("fit_", pollutant)
       
       #need to withdraw the first stage from the formula and add the pollutant
-      parts_formula <- str_split(formula, "\\|")[[1]]
-      fml <- Formula::as.Formula(
-        str_c(
-          parts_formula[1], 
-          "+", 
-          str_extract(parts_formula[3], "\\b.+(?=~)"),
-          "|", parts_formula[2]
-        )
+      parts_formula <- str_split(formula_clean, "\\|")[[1]]
+      formula_clean <- str_c(
+        parts_formula[1], 
+        "+", str_extract(parts_formula[3], "\\b.+(?=~)"),
+        "|", parts_formula[2]
       )
     } 
-
+    
+    fml <- Formula::as.Formula(formula_clean)
     reg <- feglm(data = data, fml = fml, combine.quick=FALSE) 
     
     reg$coefficients[[pollutant]] <- percent_effect_size/100
@@ -470,7 +465,7 @@ create_y1 <- function(data,
   return(data)
 } 
 
-create_y1(draw_treated(nmmaps_data), id_method = "IV_0.05", formula = "resp_total ~  temperature | month + year + weekday + city | co ~ treated") %>% select(resp_total, y1) 
+create_y1(draw_treated(nmmaps_data), id_method = "IV_0.05", formula = "log(resp_total) ~  temperature | month + year + weekday + city | co ~ treated") %>% select(resp_total, y1)
 ```
 
 ### Estimate the model
@@ -580,7 +575,7 @@ compute_simulation <- function(data,
     select_study_period(n_days, n_cities) %>%
     mutate(y0 = .data[[dep_var]]) %>%
     draw_treated(p_treat, quasi_exp) %>% 
-    create_y1(percent_effect_size, id_method, fml) %>% 
+    create_y1(percent_effect_size, id_method, formula) %>% 
     mutate(
       yobs = y1 * treated + y0 * (1 - treated)
     ) %>%
@@ -602,15 +597,15 @@ compute_simulation <- function(data,
   return(sim_output)
 }
 
-test <- nmmaps_data %>% 
-  compute_simulation(
-    data = .,
-    formula = "resp_total ~ treated + temperature | city",
-    quasi_exp = "random_days",
-    id_method = "RCT",
-    n_days = 500
-    # quasi_exp = "local"
-  ) 
+# test <- nmmaps_data %>% 
+#   compute_simulation(
+#     data = .,
+#     formula = "resp_total ~ treated + temperature | city",
+#     quasi_exp = "random_days",
+#     id_method = "RCT",
+#     n_days = 500
+#     # quasi_exp = "local"
+#   ) 
 ````
 
 We will then loop this function to get a large number of replications of each simulation for a given set of parameters. We will also vary the values of the different parameter.
@@ -627,14 +622,14 @@ To build `sim_param`, we first define a set of baseline values for our parameter
 
 ```{r}
 sim_param_base <- tibble(
-  n_days = 500,
-  n_cities = 66,
-  p_treat = 0.2,
+  n_days = 2000,
+  n_cities = 68,
+  p_treat = 0.5,
   percent_effect_size = 0.5, 
-  formula = "resp_total ~ treated + temperature + I(temperature^2) | city + month + year + weekday"
+  formula = "resp_total ~ treated + temperature + temperature_squared | city + month^year + weekday"
 )
 
-write_csv(sim_param_base, "../Outputs/sim_param_base.csv")
+# write_csv(sim_param_base, "../Outputs/sim_param_base.csv")
 
 vect_n_days <- c(100, 250, 500, 750, 1000)
 vect_n_cities <- c(66)
@@ -643,8 +638,8 @@ vect_percent_effect_size <- c(0.1, 0.5, 1)
 vect_formula <- c(
   "resp_total ~ treated", 
   "resp_total ~ treated | city",
-  "resp_total ~ treated | city + month + year + weekday",
-  "resp_total ~ treated + temperature + I(temperature^2) | city + month + year + weekday"
+  "resp_total ~ treated | city + month^year + weekday",
+  "resp_total ~ treated + temperature + temperature_squared | city + month^year + weekday"
 )
 ```
 
@@ -679,10 +674,10 @@ We want to compute our simulations for this set of parameters for every quasi ex
 Then, for each set of parameters we want to run many iterations of the simulation, `n_iter`. We thus modify `sim_param` so that each set of parameter appears `n_iter` times. It will enable us to loop `compute_simulation` directly on `sim_param`.
 
 ```{r}
-vect_quasi_exp <- c("random_days", "national", "local", "alert_co", "national_short", "rolling", "none") #, "alert_co"
+vect_quasi_exp <- c("random_days", "national", "local", "alert_co", "none") #, "alert_co"
 n_iter <- 1
 
-sim_param_to_edit <- sim_param_unique %>%
+sim_param_to_edit <- sim_param_base %>% #sim_param_unique %>%
   crossing(vect_quasi_exp) %>%
   rename(quasi_exp = vect_quasi_exp) %>%
   # mutate(p_treat = ifelse(str_starts(quasi_exp "alert"), p_treat/10, p_treat) %>% 
@@ -727,9 +722,9 @@ sim_param_to_edit <- sim_param_unique %>%
 
 write_csv(sim_param_to_edit, "../Outputs/sim_param_to_edit.csv")
 #Here, check everything and edit by hand
-sim_param_edited <- read_csv("../Outputs/sim_param_edited.csv")
+# sim_param_edited <- read_csv("../Outputs/sim_param_edited.csv")
 
-sim_param <- sim_param_edited %>%
+sim_param <- sim_param_to_edit %>%
   crossing(rep_id = 1:n_iter) %>%
   select(-rep_id) %>% 
   mutate(sim_id = row_number()) #for merging with compute_simulation() results
