@@ -210,6 +210,7 @@ library(Formula)
 library(furrr) # for parallel computing
 future::plan(multicore)
 library(mediocrethemes)
+library(progressr)
 
 set_mediocre_all()
 
@@ -536,6 +537,7 @@ We also need to compute the true effect for each simulation. The different ident
 ```{r}
 compute_true_effect <- function(data, id_method, percent_effect_size) {
   effect_size <- percent_effect_size
+  
   if (id_method == "DID") {#ATET
     true_effect <- data %>% 
       filter(post, city_treated) %>% 
@@ -606,6 +608,7 @@ compute_simulation <- function(data,
 #     n_days = 500
 #     # quasi_exp = "local"
 #   ) 
+
 ````
 
 We will then loop this function to get a large number of replications of each simulation for a given set of parameters. We will also vary the values of the different parameter.
@@ -675,9 +678,9 @@ Then, for each set of parameters we want to run many iterations of the simulatio
 
 ```{r}
 vect_quasi_exp <- c("random_days", "national", "local", "alert_co", "none") #, "alert_co"
-n_iter <- 100
+n_iter <- 10
 
-sim_param_to_edit <- sim_param_unique %>%
+sim_param <- sim_param_unique %>%
   crossing(vect_quasi_exp) %>%
   rename(quasi_exp = vect_quasi_exp) %>%
   # mutate(p_treat = ifelse(str_starts(quasi_exp "alert"), p_treat/10, p_treat) %>% 
@@ -690,7 +693,7 @@ sim_param_to_edit <- sim_param_unique %>%
     ),
     id_method = ifelse(
       quasi_exp == "random_days", 
-      list(c("RCT","IV_0.2")), 
+      list(c("RCT","IV_0.4")), 
       id_method
     )
   ) %>% 
@@ -721,13 +724,8 @@ sim_param_to_edit <- sim_param_unique %>%
   #adapting parameters
   filter(!(n_cities == 1 & quasi_exp == "local")) %>% 
   filter(!(quasi_exp %in% c("local", "national") & p_treat < 0.1)) %>% 
-  mutate(p_treat = ifelse(id_method == "RDD", p_treat/10, p_treat))
-
-write_csv(sim_param_to_edit, "../Outputs/sim_param_to_edit.csv")
-#Here, check everything and edit by hand
-# sim_param_edited <- read_csv("../Outputs/sim_param_edited.csv")
-
-sim_param <- sim_param_to_edit %>%
+  mutate(p_treat = ifelse(id_method == "RDD", p_treat/10, p_treat)) %>%
+  #crossing for iterations
   crossing(rep_id = 1:n_iter) %>%
   select(-rep_id) %>% 
   mutate(sim_id = row_number()) #for merging with compute_simulation() results
@@ -740,21 +738,45 @@ sim_param <- sim_param_to_edit %>%
 We can then run the simulations for each set of parameter, using a `pmap_dfr` function.
 
 ```{r eval=FALSE}
-tic()
-simulations <- future_pmap_dfr(
-  sim_param %>% select(-sim_id), 
-  compute_simulation, 
-  data = nmmaps_data,
-  .id = "sim_id",
-  .options = furrr_options(seed = TRUE)
-) 
-toc()
+compute_all_simulations <- function(data) {
+  p <- progressor(steps = nrow(data))
+  
+  future_pmap_dfr(
+    data, 
+    ~{
+      p()
+      compute_simulation(
+      data = nmmaps_data)
+    }, 
+    .id = "sim_id",
+    .options = furrr_options(seed = TRUE),
+    .progress = TRUE
+  ) 
+}
+
+
+with_progress({
+  simulations <- compute_all_simulations(sim_param %>% select(-sim_id) %>% slice(1:10))
+})
+
+# tic()
+# simulations <- future_pmap_dfr(
+#   sim_param %>% select(-sim_id) %>% filter(id_method == "IV_0.4"), 
+#   compute_simulation, 
+#   data = nmmaps_data,
+#   .id = "sim_id",
+#   .options = furrr_options(seed = TRUE),
+#   .progress = TRUE
+# ) 
+# toc()
 
 all_simulations <- simulations %>% 
   as_tibble() %>% 
   mutate(sim_id = as.numeric(sim_id)) %>% 
   left_join(sim_param, by = "sim_id") %>% 
   select(-sim_id)
+
+beepr::beep(5)
 
 # saveRDS(all_simulations, "../Outputs/data_simulations.RDS")
 ```
