@@ -10,7 +10,9 @@ author:
     affiliation: Paris School of Economics
     affiliation_url: https://www.parisschoolofeconomics.eu/en/
 date: "`r Sys.Date()`"
-output: distill::distill_article
+output: 
+  distill::distill_article:
+    toc: true
 ---
 
 <style>
@@ -331,7 +333,7 @@ draw_treated <- function(data, p_treat = 0.5, quasi_exp = "random_days") {
 
 Both to verify that everything works well and for illustration, we can make quick plots:
 
-```{r eval=FALSE, include=FALSE}
+```{r echo=FALSE}
 draw_treated_exp <- function(data, p_treat, quasi_exp) {
   data <- draw_treated(data, p_treat, quasi_exp)
   
@@ -435,28 +437,40 @@ create_y1 <- function(data,
   } else if (str_starts(id_method, "OLS|IV")) {
     pollutant <- find_pollutant(fml)
     
-    reg <- feols(data = data, fml = fml, combine.quick=FALSE) 
-    
     if (str_starts(id_method, "IV")) {
       iv_intensity <- as.numeric(str_extract(id_method, "(?<=_).+"))
       data[[pollutant]] <- 
         data[[pollutant]] + 
-        iv_intensity*data[["treated"]] + 
-        rnorm(data[[pollutant]], 0, 0.5)
-      pollutant <- str_c("fit_", pollutant)
+        iv_intensity*data[["treated"]] +
+        rnorm(data[[pollutant]], 0, 0.1)
+      # pollutant <- str_c("fit_", pollutant)
+      
+      #need to withdraw the first stage from the formula and add the pollutant
+      parts_formula <- str_split(formula, "\\|")[[1]]
+      fml <- Formula::as.Formula(
+        str_c(
+          parts_formula[1], 
+          "+", 
+          str_extract(parts_formula[3], "\\b.+(?=~)"),
+          "|", parts_formula[2]
+        )
+      )
     } 
+
+    reg <- feglm(data = data, fml = fml, combine.quick=FALSE) 
     
     reg$coefficients[[pollutant]] <- percent_effect_size/100
     res <- reg$residuals
     
-    data[["y1"]] <- round(exp(predict(reg, data) + 
-                   rnorm(res, mean(res), sd = sd(res))))
+    data[["y1"]] <- round(predict(reg, data) + 
+                   rnorm(res, mean(res), sd = sd(res)))
+    data[["y1"]] <- ifelse(data[["y1"]] < 0, 0, data[["y1"]])
   } 
   
   return(data)
 } 
 
-# create_y1(draw_treated(nmmaps_data), id_method = "IV_0.05", formula = "log(resp_total) ~  temperature | city | co ~ treated") %>% select(resp_total, y1)
+create_y1(draw_treated(nmmaps_data), id_method = "IV_0.05", formula = "resp_total ~  temperature | month + year + weekday + city | co ~ treated") %>% select(resp_total, y1) 
 ```
 
 ### Estimate the model
@@ -537,7 +551,7 @@ compute_true_effect <- function(data, id_method, percent_effect_size) {
       filter(t_post > 0) %>% 
       summarise(mean(y1 - y0, na.rm = TRUE)) %>% 
       as.numeric()
-  } else if (id_method == "OLS") {
+  } else if (id_method == "OLS|IV") {
     true_effect <- effect_size
   } else {#ATE
     true_effect <- mean(data$y1 - data$y0, na.rm = TRUE)
@@ -708,7 +722,8 @@ sim_param_to_edit <- sim_param_unique %>%
       TRUE ~ formula
     )
   ) %>% 
-  filter(!str_detect(formula, "~\\s{0,2}\\|"))
+  filter(!str_detect(formula, "~\\s{0,2}\\|")) 
+  # mutate(p_treat = ifelse(id_method == "RDD", p_treat/10, p_treat))
 
 write_csv(sim_param_to_edit, "../Outputs/sim_param_to_edit.csv")
 #Here, check everything and edit by hand
