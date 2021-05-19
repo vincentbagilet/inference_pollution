@@ -58,13 +58,13 @@ set.seed(1)
 
 One of the objectives of our paper is to evaluate whether the literature of short terms health effects of air pollution suffers from power and bias issues. In this document, we carry out part of our analysis. We retrieved part of the estimates and confidence intervals of the literature in [another document](systematic_lit_review_geting_abstracts.html). To do so, we took advantage  using REGular EXPressions (regex) of a somehow standardized reporting mechanism of point estimates and confidence intervals in the abstracts. The set of articles studied in details here is therefore limited to articles describing displaying confidence intervals and point estimates in their abstracts. This convention does not exist in all disciplines. For instance, it is not common practice in the economics literature but it is much more common in the epidemiology literature. This analysis thus focuses on a selected sample of the literature.
 
-In the present document, we implement sensitivity tests in order to compute power, type M and type S error in the studied articles. 
-
-Before diving into the power analysis itself, we look at the characteristics of the articles considered.
+In the present document, we first explore the characteristics of the articles considered. We only retrieve effects for a subset of papers and thus assess whether these papers are representative of the literature. We find that these papers are relatively representative of the whole literature. We then briefly explore the effects retrieved before carrying out a power analysis on these effects, implementing sensitivity tests to compute power, type M and type S error. We find a lot of heterogeneity in this literature. Some of papers do not seem to present major problems while others seem to suffer from to severe power issues. We therefore explore potential sources for this heterogeneity.
 
 <!-- write a paragraph explaining why the robustness checks make sense -->
 
 # Articles characteristics
+
+Before diving into the power analysis itself, we look at the characteristics of the articles considered.
 
 We retrieved the articles from PubMed and Scopus using the following query on May 18, 2021:
 
@@ -167,7 +167,8 @@ effect_detected %>%
   kable(
     col.names = c("Effect retreived", "Number of articles", "Proportion"),
     caption = "Number of articles for which at least one effect is retrieved (out of those containing the phrase 'CI')"
-  )
+  ) %>%
+  kable_styling(position = "center")
 ```
 
 Note that a bunch of abstracts contain the phrase "CI" without actually displaying effects and confidence intervals. Our algorithm seems to make a reasonably good job at detecting effects and CI when they are indeed displayed in an abstract. In addition, there is no reason to think that our ability to detect an effect would be correlated with power issues in the paper. Hence, we feel rather confident assuming that our detection algorithm selects a random (along our dimension of interest) sample of estimates among all estimates displayed in abstracts.
@@ -372,7 +373,8 @@ effect_detected %>%
   distinct() %>% 
   count(missing_subpop = missing_subpop) %>%
   mutate(missing_subpop = ifelse(missing_subpop, "No or unknown", "Yes")) %>% 
-  kable(col.names = c("Subpopulation indicated", "Number of articles"))
+  kable(col.names = c("Subpopulation indicated", "Number of articles")) %>%
+  kable_styling(position = "center")
 ```
 
 Looking more in details into the detection of effects, we get the following pattern:
@@ -415,7 +417,8 @@ len %>%
   full_join(cities) %>% 
   full_join(obs) %>% 
   mutate(Missing = str_to_title(Missing)) %>% 
-  kable()
+  kable() %>%
+  kable_styling(position = "center")
 ```
 
 Our analysis is therefore to be taken with caution as there is a critical lack of information for this category.
@@ -458,13 +461,15 @@ effect_detected %>%
   scale_fill_discrete(name = "")
 ```
 
-We notice that there are large variations in the number of observations in the studies considered. However, there does not seem to be large differences along this dimension on whether an effect is retrieved or not. There seems however to be more studies around 1000 observation and less between 10,000 and 100,000 in articles for which an effect is retrieved. This is explained by the fact effects are retrieved more for studies with rather limited study period (around 3 years)/
+We notice that there are large variations in the number of observations in the studies considered. However, there does not seem to be large differences along this dimension on whether an effect is retrieved or not. There seems however to be more studies around 1000 observation and less between 10,000 and 100,000 in articles for which an effect is retrieved. This is explained by the fact effects are retrieved more for studies with rather limited study period (around 3 years).
 
 Now that we have quickly compared the articles for which we retrieve an effect an those for which we do not, we can dig further into the analysis of the estimates retrieved.
 
 # Analysis of the effects
 
-In this section, we briefly analyze the effects retrieved. First, we look into the proportion of significant effects.
+In this section, we briefly analyze the effects retrieved, their statistical significance and their precision.
+
+First, we notice that most of the effects retrieved here are significant (at the usual 5% threshold).
 
 ```{r}
 estimates_stats <- estimates %>%
@@ -480,10 +485,11 @@ estimates_stats %>%
   count(significant) %>% 
   mutate(prop = n/sum(n)) %>% 
   mutate(significant = ifelse(significant, "Yes", "No")) %>% 
-  kable(col.names = c("Significant", "Number of effects", "Proportion"))
+  kable(col.names = c("Significant", "Number of effects", "Proportion")) %>%
+  kable_styling(position = "center")
 ```
 
-Most of the effects retrieved here are significant. Research mention their key findings in the abstract and therefore probably do not report non statistically significant estimates for which the null hypothesis of no effect cannot be rejected. Only a very small proportion of articles do not report any statistically significant estimates in their abstract:
+Researchers mention their key findings in the abstract and therefore probably do not report non statistically significant estimates for which the null hypothesis of no effect cannot be rejected in their abstracts. Only a very small proportion of articles do not report any statistically significant estimates in their abstract:
 
 ```{r}
 estimates_stats %>% 
@@ -495,7 +501,8 @@ estimates_stats %>%
   count(has_significant) %>% 
   mutate(prop = n/sum(n)) %>% 
   mutate(has_significant = ifelse(has_significant, "Yes", "No")) %>% 
-  kable(col.names = c("At least one significant estimate", "Number of articles", "Proportion"))
+  kable(col.names = c("At least one significant estimate", "Number of articles", "Proportion")) %>%
+  kable_styling(position = "center")
 ```
 
 
@@ -546,7 +553,8 @@ quantile(estimates_stats$signal_noise, seq(0, 1, 0.1)) %>%
       "Signal to noise ratio",
       "Percentage of estimates with a lower signal to noise ratio"
     )
-  )
+  ) %>%
+  kable_styling(position = "center")
 ```
 
 # Power analysis
@@ -619,7 +627,8 @@ retro_analysis %>%
       prop_true_effect_phrase)
   ) %>% 
   kable(col.names = c("", "Mean", "Median", "Mean", "Median", "Mean", "Median")) %>%
-  add_header_above(c('"True" effect' = 1, "Power" = 2, "Type M" = 2, "Type S" = 2))
+  add_header_above(c('"True" effect' = 1, "Power" = 2, "Type M" = 2, "Type S" = 2)) %>%
+  kable_styling(position = "center")
 ```
 
 Then, we explore graphically the distribution of power, type M and type S error across simulation and for different magnitudes of the true effect.
@@ -978,7 +987,7 @@ retro_analysis_pubdate %>%
 
 There does not seem to be a clear trend in the evolution of power and type S error. However, type M error seems to have peaked in the 2010s and to be decreasing again recently.
 
-### Analysis of articles with low power
+# Analysis of the sources of heterogeneity
 
 In the previous section, we noticed that a non negligible number of studies seemed to suffer from a low power issue and associated type M error. We consider that an estimate has low power if its computed power is lower than 80% if the true effect is 3/4 of the measured effect. 80% is the threshold usually used in power analyses but 3/4 is arbitrary and could be changed easily in a robustness check. Following this criterion, the number and proportion of estimates with low power is as follows:
 
@@ -994,7 +1003,8 @@ articles_low_adequate <- retro_analysis %>%
 articles_low_adequate %>% 
   count(low_power_phrase) %>% 
   mutate(prop = n/sum(n)) %>% 
-  kable(col.names = c("Power", "Number of estimates", "Proportion"))
+  kable(col.names = c("Power", "Number of estimates", "Proportion")) %>%
+  kable_styling(position = "center")
 ```
 <!-- Non surprisingly, most of the type M and type S errors are associated with "low power" -->
 
@@ -1034,10 +1044,24 @@ It seems that less articles with low power have been published recently, in comp
 
 ```{r fig.asp=1}
 articles_low_adequate %>%
-  mutate(journal = fct_lump_n(journal, 20)) %>% 
-  filter(journal != "Other") %>% 
+  mutate(subject_area = fct_lump_n(subject_area, 20)) %>% 
+  filter(subject_area != "Other") %>% 
   ggplot() +
-  geom_bar(aes(y = fct_rev(fct_infreq(journal)), fill = low_power_phrase)) +
+  geom_bar(aes(y = fct_rev(fct_infreq(subject_area)), fill = low_power_phrase)) +
+  labs(
+    x = "Number of articles",
+    y = NULL,
+    title = "Main journals in which effects have been published",
+    subtitle = "Comparison between effects that have adequate power or not"
+  ) +
+   scale_fill_discrete(name = "")
+
+articles_low_adequate %>%
+  unnest(subsubject_area) %>% 
+  mutate(subsubject_area = fct_lump_n(subsubject_area, 20)) %>% 
+  filter(subsubject_area != "Other") %>% 
+  ggplot() +
+  geom_bar(aes(y = fct_rev(fct_infreq(subsubject_area)), fill = low_power_phrase), position = "fill") +
   labs(
     x = "Number of articles",
     y = NULL,
