@@ -286,7 +286,7 @@ draw_treated <- function(data, p_treat = 0.5, quasi_exp = "random_days") {
     data[["treated"]] <- (num_date >= quantile(num_date, 1 - p_treat))
   } else if (quasi_exp == "local") {
     treated_cities <- unique(data[["city"]]) %>%
-      sample(size = round(length(.) * min(p_treat * 2, 1)))
+      sample(size = round(length(.) * min(p_treat, 1)))
     data[["treated"]] <- (data[["city"]] %in% treated_cities &
                   data[["date"]] >= median(data[["date"]]))
   } else if (str_starts(quasi_exp, "alert")) {
@@ -352,7 +352,7 @@ test_treatment_data <- nmmaps_data %>%
   select_study_period(n_days = 500, n_cities = 6) %>% 
   draw_treated_exp(0.05, "random_days")%>% 
   draw_treated_exp(0.2, "national") %>%
-  draw_treated_exp(0.2, "local") %>% 
+  draw_treated_exp(0.5, "local") %>% 
   draw_treated_exp(0.05, "national_short") %>% 
   draw_treated_exp(0.2, "rolling") %>% 
   draw_treated(0.04, "alert_co") %>% 
@@ -634,14 +634,6 @@ compute_simulation <- function(data,
 #     n_days = 300,
 #     n_cities = 4
 #   )
-
-nmmaps_data %>%
-  compute_simulation(
-    data = .,
-    formula = "death_total ~ treated + post + city_treated + temperature + temperature_squared | city + month^year + weekday",
-    quasi_exp = "local",
-    id_method = "DID"
-  )
 ````
 
 We will then loop this function to get a large number of replications of each simulation for a given set of parameters. We will also vary the values of the different parameter.
@@ -672,7 +664,7 @@ vect_n_cities <- c(1, 4, 20, 68)
 vect_p_treat <- c(0.5, 0.2, 0.01)
 vect_percent_effect_size <- c(0.1, 0.5, 1, 10)
 vect_formula <- c(
-  "resp_total ~ treated", 
+  "death_total ~ treated", 
   "resp_total ~ treated + temperature + temperature_squared | city + month^year + weekday",
   "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday",
   "copd_age_65_75 ~ treated + temperature + temperature_squared | city + month^year + weekday"
@@ -711,7 +703,7 @@ Then, for each set of parameters we want to run many iterations of the simulatio
 
 ```{r}
 vect_quasi_exp <- c("random_days", "national", "local", "alert_co", "none") #, "alert_co"
-n_iter <- 200
+n_iter <- 100
 
 sim_param_unique_clean <- sim_param_base %>% #sim_param_unique %>%
   crossing(vect_quasi_exp) %>%
@@ -734,7 +726,8 @@ sim_param_unique_clean <- sim_param_base %>% #sim_param_unique %>%
   mutate(
     formula = case_when(
       id_method == "DID" ~ str_replace_all(formula, "treated", 
-                                             "treated + post + city_treated"),
+                                             "treated + post + city_treated") %>% 
+        str_remove_all("city\\s?\\+"),
       id_method == "ITS" ~ str_replace_all(
         formula, "treated", 
         "treated + t + t_post"),
@@ -755,7 +748,7 @@ sim_param_unique_clean <- sim_param_base %>% #sim_param_unique %>%
   filter(!(quasi_exp %in% c("local", "national") & p_treat < 0.1)) %>% 
   mutate(p_treat = ifelse(id_method == "RDD", p_treat/10, p_treat)) %>% 
   # filter(!str_starts(id_method, "OLS|IV")) %>%
-  filter(str_starts(id_method, "IV"))
+  filter(str_starts(id_method, "DID"))
   # filter(id_method == "RCT" & str_starts(formula, "death"))
 
 sim_param <- sim_param_unique_clean %>% 
