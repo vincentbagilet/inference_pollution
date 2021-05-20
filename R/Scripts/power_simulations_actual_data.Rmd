@@ -442,7 +442,6 @@ create_y1 <- function(data,
     
   } else if (str_starts(id_method, "OLS|IV")) {
     pollutant <- find_pollutant(fml)
-    formula_clean <- str_replace(formula, "log\\(.+\\)", dep_var)
     
     if (str_starts(id_method, "IV")) {
       iv_intensity <- as.numeric(str_extract(id_method, "(?<=_).+"))
@@ -453,13 +452,15 @@ create_y1 <- function(data,
       # pollutant <- str_c("fit_", pollutant)
       
       #need to withdraw the first stage from the formula and add the pollutant
-      parts_formula <- str_split(formula_clean, "\\|")[[1]]
+      parts_formula <- str_split(formula, "\\|")[[1]]
       formula_clean <- str_c(
         parts_formula[1], 
         "+", str_extract(parts_formula[3], "\\b.+(?=~)"),
         "|", parts_formula[2]
       )
-    } 
+    } else {
+      formula_clean <- formula
+    }
     
     fml <- Formula::as.Formula(formula_clean)
     reg <- feglm(data = data, fml = fml, combine.quick=FALSE) 
@@ -469,13 +470,13 @@ create_y1 <- function(data,
     
     data[["y1"]] <- round(predict(reg, data) + 
                    rnorm(res, mean(res), sd = sd(res)))
-    data[["y1"]] <- ifelse(data[["y1"]] < 0, 0, data[["y1"]])
+    # data[["y1"]] <- ifelse(data[["y1"]] < 0, 0, data[["y1"]])
   } 
   
   return(data)
 } 
 
-# create_y1(draw_treated(nmmaps_data), id_method = "IV_0.05", formula = "log(resp_total) ~  temperature | month + year + weekday + city | co ~ treated") %>% select(resp_total, y1)
+# create_y1(draw_treated(nmmaps_data), id_method = "IV_0.05", formula = "resp_total ~  temperature | month + year + weekday + city | co ~ treated") %>% select(resp_total, y1)
 ```
 
 ### Estimate the model
@@ -510,8 +511,10 @@ estimate_model <- function(data, formula) {
       n_obs = nobs,
       f_stat = fstat
     )
-} 
-# estimate_model(nmmaps_data, "resp_total ~ co + temperature | city ")
+} 	
+
+estimate_model(draw_treated(nmmaps_data), "resp_total ~ co + temperature | city ")
+estimate_model(draw_treated(nmmaps_data), "death_total ~  temperature + temperature_squared | city + month^year + weekday | co ~ treated")
 ```
 
 ### Computing simulations
@@ -599,8 +602,8 @@ compute_simulation <- function(data,
   
   updated_fml <- ifelse(
     str_starts(id_method, "IV|OLS"),
-    str_replace(formula, ".+(?=~)", "y1 "),
-    str_replace(formula, ".+(?=~)", "yobs ")
+    str_replace(iv, dep_var, "y1"),
+    str_replace(iv, dep_var, "yobs")
   )
 
   sim_output <- sim_data %>%
@@ -631,9 +634,9 @@ compute_simulation <- function(data,
 nmmaps_data %>%
   compute_simulation(
     data = .,
-    formula = "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday",
+    formula = "death_total ~  temperature + temperature_squared | city + month^year + weekday | co ~ treated",
     quasi_exp = "random_days",
-    id_method = "RCT"
+    id_method = "IV_0.4"
     # n_days = 2000,
     # n_cities = 68
   )
@@ -706,7 +709,7 @@ Then, for each set of parameters we want to run many iterations of the simulatio
 
 ```{r}
 vect_quasi_exp <- c("random_days", "national", "local", "alert_co", "none") #, "alert_co"
-n_iter <- 3
+n_iter <- 100
 
 sim_param_unique_clean <- sim_param_base %>% #sim_param_unique %>%
   crossing(vect_quasi_exp) %>%
@@ -748,8 +751,9 @@ sim_param_unique_clean <- sim_param_base %>% #sim_param_unique %>%
   #adapting parameters
   filter(!(n_cities == 1 & quasi_exp == "local")) %>% 
   filter(!(quasi_exp %in% c("local", "national") & p_treat < 0.1)) %>% 
-  mutate(p_treat = ifelse(id_method == "RDD", p_treat/10, p_treat))  
-  # filter(!str_starts(id_method, "OLS|IV")) %>%   
+  mutate(p_treat = ifelse(id_method == "RDD", p_treat/10, p_treat)) %>% 
+  # filter(!str_starts(id_method, "OLS|IV")) %>%
+  filter(str_starts(id_method, "OLS")) 
   # filter(id_method == "RCT" & str_starts(formula, "death"))
 
 sim_param <- sim_param_unique_clean %>% 
@@ -770,7 +774,7 @@ We can then run the simulations for each set of parameter, using a `pmap_dfr` fu
 with_progress({
   p <- progressor(steps = nrow(sim_param))
   
-  simulations_prog <- future_pmap_dfr(
+  simulations <- future_pmap_dfr(
     sim_param %>% select(-sim_id),
     compute_simulation,
     data = nmmaps_data,
@@ -786,8 +790,7 @@ with_progress({
 #   compute_simulation,
 #   data = nmmaps_data,
 #   .id = "sim_id",
-#   .options = furrr_options(seed = TRUE),
-#   .progress = TRUE
+#   .options = furrr_options(seed = TRUE)
 # )
 # toc()
 
@@ -884,4 +887,16 @@ summary_simulations <- summarise_simulations(all_simulations)
 <!--   scale_fill_continuous(limits = c(1, NA)) -->
 
 <!-- ``` -->
+
+
+
+
+
+```{r}
+all_simulations %>% 
+  ggplot() +
+  geom_density(aes(x = estimate)) + 
+  geom_vline(xintercept = mean(all_simulations$true_effect))
+```
+
 
