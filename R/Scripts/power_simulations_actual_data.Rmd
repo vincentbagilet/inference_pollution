@@ -499,16 +499,19 @@ estimate_model <- function(data, formula) {
   
   #retrieve the useful info
   nobs <- length(est_results$residuals)
+  fstat <- fitstat(est_results, type = "ivf")$ivf1 %>% as_vector() %>% .[[1]]
   
   est_results %>%
     broom::tidy(conf.int = TRUE) %>%
     filter(term == param_of_interest) %>%
     rename(p_value = p.value, se = std.error) %>%
     select(estimate, p_value, se) %>%
-    mutate(n_obs = nobs)
+    mutate(
+      n_obs = nobs,
+      f_stat = fstat
+    )
 } 
-
-# estimate_model(nmmaps_data, "resp_total ~ co + temperature | city")
+# estimate_model(nmmaps_data, "resp_total ~ co + temperature | city ")
 ```
 
 ### Computing simulations
@@ -711,10 +714,6 @@ sim_param_unique_clean <- sim_param_unique %>%
   ) %>% 
   unnest(id_method) %>% 
   mutate(
-    formula = ifelse(
-      str_starts(id_method, "OLS|IV"), 
-      str_c("log(", str_extract(formula, ".+(?=\\s~)"), ") ~ ", str_extract(formula, "(?<=~\\s).+")), 
-      formula),
     formula = case_when(
       id_method == "DID" ~ str_replace_all(formula, "treated", 
                                              "treated + post + city_treated"),
