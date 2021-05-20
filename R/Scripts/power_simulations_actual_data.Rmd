@@ -579,7 +579,9 @@ compute_simulation <- function(data,
                                percent_effect_size = 0.5,
                                quasi_exp = "random_days",
                                id_method = "RCT", 
-                               formula = "resp_total ~ treated") {
+                               formula = "resp_total ~ treated",
+                               progressbar = progressor()#to have a progressbar when mapping
+                               ) {
   
   fml <- Formula::as.Formula(formula)
   dep_var <- all.vars(fml)[1]
@@ -612,6 +614,7 @@ compute_simulation <- function(data,
       )
     )
   
+  progressbar()
   return(sim_output)
 }
 
@@ -624,6 +627,16 @@ compute_simulation <- function(data,
 #     n_days = 300,
 #     n_cities = 4
 #   )
+
+nmmaps_data %>%
+  compute_simulation(
+    data = .,
+    formula = "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday",
+    quasi_exp = "random_days",
+    id_method = "RCT"
+    # n_days = 2000,
+    # n_cities = 68
+  )
 ````
 
 We will then loop this function to get a large number of replications of each simulation for a given set of parameters. We will also vary the values of the different parameter.
@@ -644,7 +657,7 @@ sim_param_base <- tibble(
   n_cities = 68,
   p_treat = 0.5,
   percent_effect_size = 0.5, 
-  formula = "resp_total ~ treated + temperature + temperature_squared | city + month^year + weekday"
+  formula = "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday"
 )
 
 # write_csv(sim_param_base, "../Outputs/sim_param_base.csv")
@@ -693,9 +706,9 @@ Then, for each set of parameters we want to run many iterations of the simulatio
 
 ```{r}
 vect_quasi_exp <- c("random_days", "national", "local", "alert_co", "none") #, "alert_co"
-n_iter <- 100
+n_iter <- 3
 
-sim_param_unique_clean <- sim_param_unique %>%
+sim_param_unique_clean <- sim_param_base %>% #sim_param_unique %>%
   crossing(vect_quasi_exp) %>%
   rename(quasi_exp = vect_quasi_exp) %>%
   # mutate(p_treat = ifelse(str_starts(quasi_exp "alert"), p_treat/10, p_treat) %>% 
@@ -735,14 +748,16 @@ sim_param_unique_clean <- sim_param_unique %>%
   #adapting parameters
   filter(!(n_cities == 1 & quasi_exp == "local")) %>% 
   filter(!(quasi_exp %in% c("local", "national") & p_treat < 0.1)) %>% 
-  mutate(p_treat = ifelse(id_method == "RDD", p_treat/10, p_treat)) %>% 
-  filter(!str_starts(id_method, "OLS|IV"))
+  mutate(p_treat = ifelse(id_method == "RDD", p_treat/10, p_treat))  
+  # filter(!str_starts(id_method, "OLS|IV")) %>%   
+  # filter(id_method == "RCT" & str_starts(formula, "death"))
 
 sim_param <- sim_param_unique_clean %>% 
   crossing(rep_id = 1:n_iter) %>%
   select(-rep_id) %>% 
   mutate(sim_id = row_number()) #for merging with compute_simulation() results
-  # select(-sim_id) %>%
+  # select(-sim_id) %>% 
+
 
 # write_csv(sim_param, "../Outputs/sim_param.csv")
 ```
@@ -752,23 +767,17 @@ sim_param <- sim_param_unique_clean %>%
 We can then run the simulations for each set of parameter, using a `pmap_dfr` function.
 
 ```{r eval=FALSE}
-compute_all_simulations <- function(params) {
-  p <- progressor(steps = nrow(params))
+with_progress({
+  p <- progressor(steps = nrow(sim_param))
   
-  future_pmap_dfr(
-    params, 
-    ~{
-      p()
-      compute_simulation(.x,
-      data = nmmaps_data)
-    }, 
+  simulations_prog <- future_pmap_dfr(
+    sim_param %>% select(-sim_id),
+    compute_simulation,
+    data = nmmaps_data,
+    progressbar = p,
     .id = "sim_id",
     .options = furrr_options(seed = TRUE)
-  ) 
-}
-
-with_progress({
-  simulations <- compute_all_simulations(sim_param %>% select(-sim_id))
+  )
 })
 
 # tic()
@@ -789,7 +798,7 @@ all_simulations <- simulations %>%
 
 beepr::beep(5)
 
-# saveRDS(all_simulations, "R/Outputs/data_simulations.RDS")
+# saveRDS(all_simulations, "R/Outputs/all_simulations.RDS")
 ```
 
 ### Summarising the results
@@ -800,13 +809,14 @@ We then summarize our results, computing power, type M and so on for each set of
 summarise_simulations <- function(data) {
   
   data %>% 
-    group_by(formula, quasi_exp, n_days, n_cities, n_obs, p_treat, percent_effect_size, id_method) %>%
+    group_by(formula, quasi_exp, n_days, n_cities, p_treat, percent_effect_size, id_method) %>%
     summarise(
       power = mean(p_value <= 0.05, na.rm = TRUE)*100, 
       # average_p_value = mean(p_value, na.rm = TRUE),
       type_m = mean(ifelse(p_value <= 0.05, abs(estimate/true_effect), NA), na.rm = TRUE),
       type_s = sum(ifelse(p_value <= 0.05, sign(estimate) != sign(true_effect), NA), na.rm = TRUE)/n()*100,
       mse = mean((estimate - true_effect)^2, na.rm = TRUE),
+      mean_estimate = mean(estimate, na.rm = TRUE),
       normalized_bias = mean(abs((estimate - true_effect/true_effect)), na.rm = TRUE),
       estimate_true_ratio = mean(abs(estimate/true_effect), na.rm = TRUE),
       .groups	= "drop"
