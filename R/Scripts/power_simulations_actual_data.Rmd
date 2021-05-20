@@ -96,7 +96,7 @@ We use a Difference-In-Differences (DiD) model to estimate the effect of a sub-n
 
 This identification method enables to estimate the Average Treatment Effect on the Treated (ATET), *ie* $\mathbb{E}[Y_{1i} - Y_{0i} | Treated_c = 1, Post_t = 1]$, where $Post_t$ is a dummy variable equal to one after the intervention and 0 otherwise. We thus have $D_{ct} = Treated_c \times Post_t$. To estimate this effect, we use the following type of model:
 
-$$Y_{ct} = \alpha + \beta D_{ct} + \gamma Treated_c + \delta Post_t +  \epsilon_{ct}$$
+$$Y_{ct} = \alpha + \beta D_{ct} + \gamma Treated_c + \delta Post_t + \epsilon_{ct}$$
 The key identification assumptions is parallel trends, *ie* the expected difference in outcome between the treatment and control group would have remained the same in the absence of the treatment.
 
 ### Interrupted time series
@@ -364,7 +364,7 @@ graph_treatment_assignment <- function(data, method) {
   subtitle <- ifelse(method == "alert", "CO concentration", "number of deaths")
   
   data %>% 
-    mutate(outcome = ifelse(alert, co, resp_total)) %>%
+    mutate(outcome = ifelse(alert, co, death_total)) %>%
     rename(Treated = .data[[paste("treated", method, sep = "_")]]) %>% 
     ggplot() +
     geom_point(aes(x = date, y = outcome, color = Treated), size = 0.3) +
@@ -463,20 +463,24 @@ create_y1 <- function(data,
     }
     
     fml <- Formula::as.Formula(formula_clean)
-    reg <- feglm(data = data, fml = fml, combine.quick=FALSE) 
-    
-    reg$coefficients[[pollutant]] <- log(1 + percent_effect_size/100) #to get beta as the increase in percent
+    # reg <- feglm(data = data, fml = fml, combine.quick=FALSE)
+    reg <- feols(data = data, fml = fml, combine.quick=FALSE)
+    reg$coefficients[[pollutant]] <- mean(data[[dep_var]])*percent_effect_size/100  
+    #to get beta as the increase in percent
     res <- reg$residuals
     
-    data[["y1"]] <- round(predict(reg, data) + 
-                   rnorm(res, mean(res), sd = sd(res)))
+    data[["y1"]] <- predict(reg, data) + rnorm(res, mean(res), sd = sd(res))
     # data[["y1"]] <- ifelse(data[["y1"]] < 0, 0, data[["y1"]])
   } 
   
   return(data)
 } 
 
-# create_y1(draw_treated(nmmaps_data), id_method = "IV_0.05", formula = "resp_total ~  temperature | month + year + weekday + city | co ~ treated") %>% select(resp_total, y1)
+nmmaps_data %>% 
+  select_study_period() %>%
+  create_y1(id_method = "OLS", formula = "death_total ~ co + temperature | city + month^year + weekday") %>% 
+  feols(data = ., fml = y1 ~ co + temperature | city + month^year + weekday) 
+
 ```
 
 ### Estimate the model
@@ -513,8 +517,8 @@ estimate_model <- function(data, formula) {
     )
 } 	
 
-estimate_model(draw_treated(nmmaps_data), "resp_total ~ co + temperature | city ")
-estimate_model(draw_treated(nmmaps_data), "death_total ~  temperature + temperature_squared | city + month^year + weekday | co ~ treated")
+# estimate_model(draw_treated(nmmaps_data), "resp_total ~ co + temperature | city ")
+# estimate_model(draw_treated(nmmaps_data), "death_total ~  temperature + temperature_squared | city + month^year + weekday | co ~ treated")
 ```
 
 ### Computing simulations
@@ -602,8 +606,8 @@ compute_simulation <- function(data,
   
   updated_fml <- ifelse(
     str_starts(id_method, "IV|OLS"),
-    str_replace(iv, dep_var, "y1"),
-    str_replace(iv, dep_var, "yobs")
+    str_replace(formula, dep_var, "y1"),
+    str_replace(formula, dep_var, "yobs")
   )
 
   sim_output <- sim_data %>%
@@ -634,11 +638,9 @@ compute_simulation <- function(data,
 nmmaps_data %>%
   compute_simulation(
     data = .,
-    formula = "death_total ~  temperature + temperature_squared | city + month^year + weekday | co ~ treated",
-    quasi_exp = "random_days",
-    id_method = "IV_0.4"
-    # n_days = 2000,
-    # n_cities = 68
+    formula = "death_total ~ treated + post + city_treated + temperature + temperature_squared | city + month^year + weekday",
+    quasi_exp = "local",
+    id_method = "DID"
   )
 ````
 
@@ -709,7 +711,7 @@ Then, for each set of parameters we want to run many iterations of the simulatio
 
 ```{r}
 vect_quasi_exp <- c("random_days", "national", "local", "alert_co", "none") #, "alert_co"
-n_iter <- 100
+n_iter <- 200
 
 sim_param_unique_clean <- sim_param_base %>% #sim_param_unique %>%
   crossing(vect_quasi_exp) %>%
@@ -724,7 +726,7 @@ sim_param_unique_clean <- sim_param_base %>% #sim_param_unique %>%
     ),
     id_method = ifelse(
       quasi_exp == "random_days", 
-      list(c("RCT","IV_0.4")), 
+      list(c("RCT", "IV_0.1")), 
       id_method
     )
   ) %>% 
@@ -753,7 +755,7 @@ sim_param_unique_clean <- sim_param_base %>% #sim_param_unique %>%
   filter(!(quasi_exp %in% c("local", "national") & p_treat < 0.1)) %>% 
   mutate(p_treat = ifelse(id_method == "RDD", p_treat/10, p_treat)) %>% 
   # filter(!str_starts(id_method, "OLS|IV")) %>%
-  filter(str_starts(id_method, "OLS")) 
+  filter(str_starts(id_method, "IV"))
   # filter(id_method == "RCT" & str_starts(formula, "death"))
 
 sim_param <- sim_param_unique_clean %>% 
@@ -771,6 +773,8 @@ sim_param <- sim_param_unique_clean %>%
 We can then run the simulations for each set of parameter, using a `pmap_dfr` function.
 
 ```{r eval=FALSE}
+future::plan(multicore)
+tic()
 with_progress({
   p <- progressor(steps = nrow(sim_param))
   
@@ -783,6 +787,7 @@ with_progress({
     .options = furrr_options(seed = TRUE)
   )
 })
+toc()
 
 # tic()
 # simulations <- future_pmap_dfr(
@@ -832,6 +837,12 @@ We then run this function.
 
 ```{r eval=FALSE}
 summary_simulations <- summarise_simulations(all_simulations)
+
+all_simulations %>% 
+  # filter(id_method == "OLS") %>% 
+  ggplot() +
+  geom_density(aes(x = estimate)) + 
+  geom_vline(xintercept = mean(all_simulations$true_effect))
 
 # saveRDS(summary_simulations, "R/Outputs/summary_simulations.RDS")
 ```
@@ -888,15 +899,5 @@ summary_simulations <- summarise_simulations(all_simulations)
 
 <!-- ``` -->
 
-
-
-
-
-```{r}
-all_simulations %>% 
-  ggplot() +
-  geom_density(aes(x = estimate)) + 
-  geom_vline(xintercept = mean(all_simulations$true_effect))
-```
 
 

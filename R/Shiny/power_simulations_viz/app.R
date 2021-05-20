@@ -26,7 +26,7 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                         choices = c(
                             "Number of days in the study" = "n_days", 
                             "Number of cities in the study" = "n_cities", 
-                            "Average number of observations" = "average_n_obs", 
+                            "Number of observations" = "average_n_obs", 
                             "Effect size" = "percent_effect_size", 
                             "Proportion of treated units" = "p_treat")),
             
