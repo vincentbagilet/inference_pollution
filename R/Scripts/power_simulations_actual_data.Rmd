@@ -13,6 +13,8 @@ date: "`r Sys.Date()`"
 output: 
   distill::distill_article:
     toc: true
+editor_options: 
+  chunk_output_type: console
 ---
 
 <style>
@@ -210,9 +212,16 @@ library(Formula)
 library(furrr) # for parallel computing
 future::plan(multicore)
 library(mediocrethemes)
+library(progress)
 library(progressr)
 
 set_mediocre_all()
+
+handlers(list(
+  handler_progress(
+    format   = ":spin :current/:total (:message) [:bar] :percent in :elapsed ETA: :eta"
+  )
+))
 
 nmmaps_data <- readRDS(here::here("R", "Inputs", "nmmaps_data_simulations.rds")) %>% 
   mutate(temperature_squared = temperature^2)
@@ -455,7 +464,7 @@ create_y1 <- function(data,
     fml <- Formula::as.Formula(formula_clean)
     reg <- feglm(data = data, fml = fml, combine.quick=FALSE) 
     
-    reg$coefficients[[pollutant]] <- percent_effect_size/100
+    reg$coefficients[[pollutant]] <- log(1 + percent_effect_size/100) #to get beta as the increase in percent
     res <- reg$residuals
     
     data[["y1"]] <- round(predict(reg, data) + 
@@ -535,8 +544,7 @@ add_post_vars <- function(data, id_method) {
 We also need to compute the true effect for each simulation. The different identification methods aims to identify different estimands (ATE, ATET, etc). We 
 
 ```{r}
-compute_true_effect <- function(data, id_method, percent_effect_size) {
-  effect_size <- percent_effect_size
+compute_true_effect <- function(data, id_method, percent_effect_size, dep_var) {
   
   if (id_method == "DID") {#ATET
     true_effect <- data %>% 
@@ -548,8 +556,8 @@ compute_true_effect <- function(data, id_method, percent_effect_size) {
       filter(t_post > 0) %>% 
       summarise(mean(y1 - y0, na.rm = TRUE)) %>% 
       as.numeric()
-  } else if (id_method == "OLS|IV") {
-    true_effect <- effect_size
+  } else if (str_starts(id_method, "IV|OLS")) {
+    true_effect <- percent_effect_size/100*mean(data[[dep_var]])
   } else {#ATE
     true_effect <- mean(data$y1 - data$y0, na.rm = TRUE)
   }
@@ -586,29 +594,33 @@ compute_simulation <- function(data,
   
   updated_fml <- ifelse(
     str_starts(id_method, "IV|OLS"),
-    formula,
+    str_replace(formula, ".+(?=~)", "y1 "),
     str_replace(formula, ".+(?=~)", "yobs ")
   )
 
   sim_output <- sim_data %>%
     estimate_model(formula = updated_fml) %>% 
     mutate(
-      true_effect = compute_true_effect(sim_data, id_method, percent_effect_size)
+      true_effect = compute_true_effect(
+        sim_data, 
+        id_method, 
+        percent_effect_size, 
+        dep_var
+      )
     )
   
   return(sim_output)
 }
 
-# test <- nmmaps_data %>% 
+# test <- nmmaps_data %>%
 #   compute_simulation(
 #     data = .,
 #     formula = "resp_total ~ treated + temperature | city",
 #     quasi_exp = "random_days",
 #     id_method = "RCT",
-#     n_days = 500
-#     # quasi_exp = "local"
-#   ) 
-
+#     n_days = 300,
+#     n_cities = 4
+#   )
 ````
 
 We will then loop this function to get a large number of replications of each simulation for a given set of parameters. We will also vary the values of the different parameter.
@@ -678,9 +690,9 @@ Then, for each set of parameters we want to run many iterations of the simulatio
 
 ```{r}
 vect_quasi_exp <- c("random_days", "national", "local", "alert_co", "none") #, "alert_co"
-n_iter <- 10
+n_iter <- 100
 
-sim_param <- sim_param_unique %>%
+sim_param_unique_clean <- sim_param_unique %>%
   crossing(vect_quasi_exp) %>%
   rename(quasi_exp = vect_quasi_exp) %>%
   # mutate(p_treat = ifelse(str_starts(quasi_exp "alert"), p_treat/10, p_treat) %>% 
@@ -724,11 +736,14 @@ sim_param <- sim_param_unique %>%
   #adapting parameters
   filter(!(n_cities == 1 & quasi_exp == "local")) %>% 
   filter(!(quasi_exp %in% c("local", "national") & p_treat < 0.1)) %>% 
-  mutate(p_treat = ifelse(id_method == "RDD", p_treat/10, p_treat)) %>%
-  #crossing for iterations
+  mutate(p_treat = ifelse(id_method == "RDD", p_treat/10, p_treat)) %>% 
+  filter(!str_starts(id_method, "OLS|IV"))
+
+sim_param <- sim_param_unique_clean %>% 
   crossing(rep_id = 1:n_iter) %>%
   select(-rep_id) %>% 
   mutate(sim_id = row_number()) #for merging with compute_simulation() results
+  # select(-sim_id) %>%
 
 # write_csv(sim_param, "../Outputs/sim_param.csv")
 ```
@@ -738,47 +753,44 @@ sim_param <- sim_param_unique %>%
 We can then run the simulations for each set of parameter, using a `pmap_dfr` function.
 
 ```{r eval=FALSE}
-compute_all_simulations <- function(data) {
-  p <- progressor(steps = nrow(data))
+compute_all_simulations <- function(params) {
+  p <- progressor(steps = nrow(params))
   
   future_pmap_dfr(
-    data, 
+    params, 
     ~{
       p()
-      compute_simulation(
+      compute_simulation(.x,
       data = nmmaps_data)
     }, 
     .id = "sim_id",
-    .options = furrr_options(seed = TRUE),
-    .progress = TRUE
+    .options = furrr_options(seed = TRUE)
   ) 
 }
 
-
 with_progress({
-  simulations <- compute_all_simulations(sim_param %>% select(-sim_id) %>% slice(1:10))
+  simulations <- compute_all_simulations(sim_param %>% select(-sim_id))
 })
 
 # tic()
 # simulations <- future_pmap_dfr(
-#   sim_param %>% select(-sim_id) %>% filter(id_method == "IV_0.4"), 
-#   compute_simulation, 
+#   sim_param %>% select(-sim_id),
+#   compute_simulation,
 #   data = nmmaps_data,
 #   .id = "sim_id",
 #   .options = furrr_options(seed = TRUE),
 #   .progress = TRUE
-# ) 
+# )
 # toc()
 
 all_simulations <- simulations %>% 
-  as_tibble() %>% 
-  mutate(sim_id = as.numeric(sim_id)) %>% 
+  mutate(sim_id = as.numeric(sim_id)) %>%
   left_join(sim_param, by = "sim_id") %>% 
   select(-sim_id)
 
 beepr::beep(5)
 
-# saveRDS(all_simulations, "../Outputs/data_simulations.RDS")
+# saveRDS(all_simulations, "R/Outputs/data_simulations.RDS")
 ```
 
 ### Summarising the results
@@ -789,11 +801,10 @@ We then summarize our results, computing power, type M and so on for each set of
 summarise_simulations <- function(data) {
   
   data %>% 
-    group_by(formula, quasi_exp, n_days, p_treat, percent_effect_size) %>%
+    group_by(formula, quasi_exp, n_days, n_cities, n_obs, p_treat, percent_effect_size, id_method) %>%
     summarise(
       power = mean(p_value <= 0.05, na.rm = TRUE)*100, 
       # average_p_value = mean(p_value, na.rm = TRUE),
-      average_n_obs = mean(n_obs, na.rm = TRUE),
       type_m = mean(ifelse(p_value <= 0.05, abs(estimate/true_effect), NA), na.rm = TRUE),
       type_s = sum(ifelse(p_value <= 0.05, sign(estimate) != sign(true_effect), NA), na.rm = TRUE)/n()*100,
       mse = mean((estimate - true_effect)^2, na.rm = TRUE),
@@ -810,7 +821,7 @@ We then run this function.
 ```{r eval=FALSE}
 summary_simulations <- summarise_simulations(all_simulations)
 
-# saveRDS(summary_simulations, "../Outputs/summary_simulations.RDS")
+# saveRDS(summary_simulations, "R/Outputs/summary_simulations.RDS")
 ```
 
 
@@ -850,8 +861,8 @@ summary_simulations <- summarise_simulations(all_simulations)
 <!--   select(-sim_id) %>%  -->
 <!--   mutate(quasi_exp = "random_days") -->
 
-<!-- # saveRDS(all_simulations_heatmap, "../Outputs/data_simulations_heatmap.RDS") -->
-<!-- all_simulations_heatmap <- readRDS("../Outputs/data_simulations_heatmap.RDS") -->
+<!-- # saveRDS(all_simulations_heatmap, "R/Outputs/data_simulations_heatmap.RDS") -->
+<!-- all_simulations_heatmap <- readRDS("R/Outputs/data_simulations_heatmap.RDS") -->
 
 <!-- summary_simulations_heatmap <- summarise_simulations(all_simulations_heatmap) -->
 
