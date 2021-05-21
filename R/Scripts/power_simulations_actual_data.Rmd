@@ -209,8 +209,7 @@ library(rlang)
 library(readr)
 library(fixest)
 library(Formula)
-library(furrr) # for parallel computing
-future::plan(multicore)
+library(furrr) 
 library(mediocrethemes)
 library(progress)
 library(progressr)
@@ -671,7 +670,7 @@ To build `sim_param`, we first define a set of baseline values for our parameter
 sim_param_base <- tibble(
   n_days = 2000,
   n_cities = 68,
-  p_obs_treat = 0.1,
+  p_obs_treat = 0.5,
   percent_effect_size = 0.5, 
   formula = "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday"
 )
@@ -679,14 +678,14 @@ sim_param_base <- tibble(
 # write_csv(sim_param_base, "../Outputs/sim_param_base.csv")
 
 vect_n_days <- c(100, 500, 1000, 2000, 3000)
-vect_n_cities <- c(1, 4, 20, 68)
-vect_p_obs_treat <- c(0.5, 0.2, 0.01)
-vect_percent_effect_size <- c(0.1, 0.5, 1, 10)
+vect_n_cities <- c(20, 68)
+vect_p_obs_treat <- c(0.5, 0.2) #c(0.5, 0.2, 0.01)
+vect_percent_effect_size <- c(0.1, 0.5, 1)
 vect_formula <- c(
-  "death_total ~ treated", 
+  # "death_total ~ treated", 
   "resp_total ~ treated + temperature + temperature_squared | city + month^year + weekday",
-  "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday",
-  "copd_age_65_75 ~ treated + temperature + temperature_squared | city + month^year + weekday"
+  "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday"
+  # "copd_age_65_75 ~ treated + temperature + temperature_squared | city + month^year + weekday"
 )
 ```
 
@@ -722,9 +721,9 @@ Then, for each set of parameters we want to run many iterations of the simulatio
 
 ```{r}
 vect_quasi_exp <- c("random_days", "national", "local", "alert_co", "none") #, "alert_co"
-n_iter <- 300
+n_iter <- 500
 
-sim_param_unique_clean <- sim_param_base %>% #sim_param_unique %>%
+sim_param_unique_clean <- sim_param_unique %>%
   crossing(vect_quasi_exp) %>%
   rename(quasi_exp = vect_quasi_exp) %>%
   # mutate(p_obs_treat = ifelse(str_starts(quasi_exp "alert"), p_obs_treat/10, p_obs_treat) %>% 
@@ -737,7 +736,7 @@ sim_param_unique_clean <- sim_param_base %>% #sim_param_unique %>%
     ),
     id_method = ifelse(
       quasi_exp == "random_days", 
-      list(c("RCT", "IV_0.1")), 
+      list(c("RCT", "IV_0.5", "IV_0.1")), 
       id_method
     )
   ) %>% 
@@ -768,13 +767,12 @@ sim_param_unique_clean <- sim_param_base %>% #sim_param_unique %>%
   mutate(
     p_obs_treat = case_when(
       id_method == "RDD" ~  p_obs_treat/5,
-      
       id_method == "DID" ~  p_obs_treat/2,
       TRUE ~ p_obs_treat
     )
-  ) %>% 
+  )  
   # filter(!str_starts(id_method, "OLS|IV")) %>%
-  filter(str_starts(id_method, "RCT"))
+  # filter(str_starts(id_method, "RCT"))
   # filter(id_method == "RCT" & str_starts(formula, "death"))
 
 sim_param <- sim_param_unique_clean %>% 
@@ -792,7 +790,7 @@ sim_param <- sim_param_unique_clean %>%
 We can then run the simulations for each set of parameter, using a `pmap_dfr` function.
 
 ```{r eval=FALSE}
-future::plan(multicore)
+future::plan(multiprocess)
 tic()
 with_progress({
   p <- progressor(steps = nrow(sim_param))
@@ -825,7 +823,7 @@ all_simulations <- simulations %>%
 
 beepr::beep(5)
 
-# saveRDS(all_simulations, "R/Outputs/all_simulations.RDS")
+saveRDS(all_simulations, "R/Outputs/all_simulations.RDS")
 ```
 
 ### Summarising the results
@@ -857,17 +855,18 @@ We then run this function.
 ```{r eval=FALSE}
 summary_simulations <- summarise_simulations(all_simulations)
 
-all_simulations %>% 
-  mutate(significant = (p_value < 0.05)) %>% 
-  # filter(id_method === "OLS") %>% 
-  ggplot() +
-  geom_histogram(aes(x = estimate, fill = significant)) + 
-  geom_vline(xintercept = mean(all_simulations$true_effect))
-
 # saveRDS(summary_simulations, "R/Outputs/summary_simulations.RDS")
 ```
 
 
+```{r}
+# all_simulations %>% 
+#   mutate(significant = (p_value < 0.05)) %>% 
+#   # filter(id_method === "OLS") %>% 
+#   ggplot() +
+#   geom_histogram(aes(x = estimate, fill = significant)) + 
+#   geom_vline(xintercept = mean(all_simulations$true_effect))
+```
 
 
 
