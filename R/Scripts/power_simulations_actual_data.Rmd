@@ -266,37 +266,38 @@ select_study_period <- function(data, n_days = 2000, n_cities = 68) {
 
 Then, we create a function to draw the treatment. This function returns a boolean vector, stating whether each observation is in the treatment group or not.
 
-For each treatment, we define the proportion of treated units (`p_treat`). The different treatments correspond to different types of quasi-experiments. Note that we will consider some identifications strategies that will only consider restricted samples (RDD and RDIT). For coding simplicity, to get an accurate proportion of treated units, we directly restrict the sample in this function. For the RDIT, we create another type of quasi experiment ("national_short"), even though the quasi experiment is actually the same as for a national intervention.
+For each treatment, we define the proportion of treated observations (`p_obs_treat`). The different treatments correspond to different types of quasi-experiments. Note that we will consider some identifications strategies that will only consider restricted samples (RDD and RDIT). For coding simplicity, to get an accurate proportion of treated units, we directly restrict the sample in this function. For the RDIT, we create another type of quasi experiment ("national_short"), even though the quasi experiment is actually the same as for a national intervention.
 
 In this function, we made some simulations decisions: 
 
-- For the local intervention, to simplify, we set the beginning of the treatment as the median date. To get the desired proportion of treated units, we thus need to draw 2*`p_treat` cities.
-- For the air pollution alert, we draw a threshold position (from a beta distribution, for no other reason than the shape of its PDF). For each city, we find the corresponding threshold and define a bandwidth such that `p_treat` observations of the total sample are treated. Observations outside the bandwidth get a `NA` for `treated`. Thus, after calling this function, we need to filter out observations with a `NA` for `treated`.
-- In the roll out intervention, for each city, we randomly draw a treatment starting date. To get a proportion of treated days equal to `p_treat`, we do not draw this date from the whole sample. We only consider dates close enough to the end of the study period such that, on average only `p_treat` of the data will be treated.
-- For the short national intervention (*ie* the RDIT), we define the bandwidth such that the proportion of treated days, as compared to the overall sample size, *ie* the length of the study period, is equal to `p_treat`. Note that it does not make sense to have a large `p_treat` as this would correspond to the national case. We therefore limit `p_treat` to be smaller than 0.5.
+- For the local intervention, to simplify, we set the beginning of the treatment as the median date. To get the desired proportion of treated units, we thus need to draw 2*`p_obs_treat` cities.
+- For the air pollution alert, we draw a threshold position (from a beta distribution, for no other reason than the shape of its PDF). For each city, we find the corresponding threshold and define a bandwidth such that `p_obs_treat` observations of the total sample are treated. Observations outside the bandwidth get a `NA` for `treated`. Thus, after calling this function, we need to filter out observations with a `NA` for `treated`.
+- In the roll out intervention, for each city, we randomly draw a treatment starting date. To get a proportion of treated days equal to `p_obs_treat`, we do not draw this date from the whole sample. We only consider dates close enough to the end of the study period such that, on average only `p_obs_treat` of the data will be treated.
+- For the short national intervention (*ie* the RDIT), we define the bandwidth such that the proportion of treated days, as compared to the overall sample size, *ie* the length of the study period, is equal to `p_obs_treat`. Note that it does not make sense to have a large `p_obs_treat` as this would correspond to the national case. We therefore limit `p_obs_treat` to be smaller than 0.5.
 - For the GAM and IV, we only consider a subset of observations to create variation across iterations
 
 ```{r}
-draw_treated <- function(data, p_treat = 0.5, quasi_exp = "random_days") {
+draw_treated <- function(data, p_obs_treat = 0.5, quasi_exp = "random_days") {
   
   if (quasi_exp == "random_days") {
-    data[["treated"]] <- rbernoulli(length(data[["date"]]), p_treat)
+    data[["treated"]] <- rbernoulli(length(data[["date"]]), p_obs_treat)
   } else if (quasi_exp == "national") {
     num_date <- as.numeric(data[["date"]])
-    data[["treated"]] <- (num_date >= quantile(num_date, 1 - p_treat))
+    data[["treated"]] <- (num_date >= quantile(num_date, 1 - p_obs_treat))
   } else if (quasi_exp == "local") {
     treated_cities <- unique(data[["city"]]) %>%
-      sample(size = round(length(.) * min(p_treat, 1)))
+      sample(size = round(length(.) * min(p_obs_treat * 2, 1)))
     data[["treated"]] <- (data[["city"]] %in% treated_cities &
                   data[["date"]] >= median(data[["date"]]))
   } else if (str_starts(quasi_exp, "alert")) {
     pollutant <- str_extract(quasi_exp, "(?<=_).+")
-    threshold_pos <- rbeta(1, 20, 2) 
+    # threshold_pos <- rbeta(1, 20, 7) 
+    threshold_pos <- runif(1, 0.2, 0.4) 
     data <- data %>%
       group_by(.data$city) %>%
       mutate(
         threshold = quantile(.data[[pollutant]], threshold_pos, names = FALSE),
-        bw_high = quantile(.data[[pollutant]], min(threshold_pos + p_treat, 1), names = FALSE),
+        bw_high = quantile(.data[[pollutant]], min(threshold_pos + p_obs_treat, 1), names = FALSE),
         treated = ifelse(
           .data[[pollutant]] > bw_high | .data[[pollutant]] < threshold - (bw_high - threshold), 
           NA, 
@@ -311,14 +312,14 @@ draw_treated <- function(data, p_treat = 0.5, quasi_exp = "random_days") {
       mutate(
         treated = (.data$date > sample(
           seq.Date(
-            min(.data$date) + (1 - 2*p_treat)*length(.data$date),
+            min(.data$date) + (1 - 2*p_obs_treat)*length(.data$date),
             max(.data$date), "day"
           ), 1))
       ) %>%
       ungroup() 
   } else if (quasi_exp == "national_short") {
     dates <- unique(data[["date"]])
-    bw <- floor(min(p_treat, 0.5) * length(dates))
+    bw <- floor(min(p_obs_treat, 0.5) * length(dates))
   
     date_start_treat <- sample(seq.Date(min(dates) + bw, max(dates) - bw, "day"), 1)
     
@@ -340,8 +341,8 @@ draw_treated <- function(data, p_treat = 0.5, quasi_exp = "random_days") {
 Both to verify that everything works well and for illustration, we can make quick plots:
 
 ```{r echo=FALSE}
-draw_treated_exp <- function(data, p_treat, quasi_exp) {
-  data <- draw_treated(data, p_treat, quasi_exp)
+draw_treated_exp <- function(data, p_obs_treat, quasi_exp) {
+  data <- draw_treated(data, p_obs_treat, quasi_exp)
   
   data[[paste("treated", quasi_exp, sep = "_")]] <- data[["treated"]]
   
@@ -355,7 +356,7 @@ test_treatment_data <- nmmaps_data %>%
   draw_treated_exp(0.5, "local") %>% 
   draw_treated_exp(0.05, "national_short") %>% 
   draw_treated_exp(0.2, "rolling") %>% 
-  draw_treated(0.04, "alert_co") %>% 
+  draw_treated(0.1, "alert_co") %>% 
   rename(treated_alert = treated)  
 
 graph_treatment_assignment <- function(data, method) {
@@ -381,24 +382,23 @@ graph_treatment_assignment <- function(data, method) {
     )
 } 
 
-test_treatment_data %>% 
+test_treatment_data %>%
   graph_treatment_assignment("random_days")
 
 test_treatment_data %>% 
   graph_treatment_assignment("alert")
 
-test_treatment_data %>% 
+test_treatment_data %>%
   graph_treatment_assignment("local")
 
-test_treatment_data %>% 
+test_treatment_data %>%
   graph_treatment_assignment("national")
 
-test_treatment_data %>% 
+test_treatment_data %>%
   graph_treatment_assignment("national_short")
 
-test_treatment_data %>% 
+test_treatment_data %>%
   graph_treatment_assignment("rolling")
-
 ```
 
 ### Creating the output if a unit is treated
@@ -432,7 +432,7 @@ create_y1 <- function(data,
     data <- data %>% 
       group_by(.data$city) %>% 
       mutate(
-        y1 = .data[[dep_var]] + 
+        y1 = .data[[dep_var]] +
           rpois(
             n(),
             mean(.data[[dep_var]], na.rm = TRUE) * percent_effect_size / 100
@@ -476,10 +476,10 @@ create_y1 <- function(data,
   return(data)
 } 
 
-nmmaps_data %>% 
-  select_study_period() %>%
-  create_y1(id_method = "OLS", formula = "death_total ~ co + temperature | city + month^year + weekday") %>% 
-  feols(data = ., fml = y1 ~ co + temperature | city + month^year + weekday) 
+# nmmaps_data %>% 
+#   select_study_period() %>%
+#   create_y1(id_method = "OLS", formula = "death_total ~ co + temperature | city + month^year + weekday") %>% 
+#   feols(data = ., fml = y1 ~ co + temperature | city + month^year + weekday) 
 
 ```
 
@@ -517,7 +517,6 @@ estimate_model <- function(data, formula) {
     )
 } 	
 
-# estimate_model(draw_treated(nmmaps_data), "resp_total ~ co + temperature | city ")
 # estimate_model(draw_treated(nmmaps_data), "death_total ~  temperature + temperature_squared | city + month^year + weekday | co ~ treated")
 ```
 
@@ -582,7 +581,7 @@ We can now create a function running all the previous functions together and the
 compute_simulation <- function(data,
                                n_days = 2000,
                                n_cities = 68, 
-                               p_treat = 0.5,
+                               p_obs_treat = 0.5,
                                percent_effect_size = 0.5,
                                quasi_exp = "random_days",
                                id_method = "RCT", 
@@ -596,7 +595,7 @@ compute_simulation <- function(data,
   sim_data <- data %>%
     select_study_period(n_days, n_cities) %>%
     mutate(y0 = .data[[dep_var]]) %>%
-    draw_treated(p_treat, quasi_exp) %>% 
+    draw_treated(p_obs_treat, quasi_exp) %>% 
     create_y1(percent_effect_size, id_method, formula) %>% 
     mutate(
       yobs = y1 * treated + y0 * (1 - treated)
@@ -625,15 +624,16 @@ compute_simulation <- function(data,
   return(sim_output)
 }
 
-# test <- nmmaps_data %>%
-#   compute_simulation(
-#     data = .,
-#     formula = "resp_total ~ treated + temperature | city",
-#     quasi_exp = "random_days",
-#     id_method = "RCT",
-#     n_days = 300,
-#     n_cities = 4
-#   )
+nmmaps_data %>%
+  compute_simulation(
+    data = .,
+    formula = "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday",
+    quasi_exp = "alert_co",
+    id_method = "RDD",
+    n_days = 4000,
+    n_cities = 68,
+    percent_effect_size = 0.5
+  )
 ````
 
 We will then loop this function to get a large number of replications of each simulation for a given set of parameters. We will also vary the values of the different parameter.
@@ -652,7 +652,7 @@ To build `sim_param`, we first define a set of baseline values for our parameter
 sim_param_base <- tibble(
   n_days = 2000,
   n_cities = 68,
-  p_treat = 0.5,
+  p_obs_treat = 0.5,
   percent_effect_size = 0.5, 
   formula = "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday"
 )
@@ -661,7 +661,7 @@ sim_param_base <- tibble(
 
 vect_n_days <- c(100, 500, 1000, 2000, 3000)
 vect_n_cities <- c(1, 4, 20, 68)
-vect_p_treat <- c(0.5, 0.2, 0.01)
+vect_p_obs_treat <- c(0.5, 0.2, 0.01)
 vect_percent_effect_size <- c(0.1, 0.5, 1, 10)
 vect_formula <- c(
   "death_total ~ treated", 
@@ -686,7 +686,7 @@ add_values_param <- function(df, vect_param) {
     fill(everything(), .direction = "downup")
 }
 
-vect_of_vect_param <- c("vect_n_days", "vect_n_cities", "vect_p_treat", "vect_percent_effect_size", "vect_formula")
+vect_of_vect_param <- c("vect_n_days", "vect_n_cities", "vect_p_obs_treat", "vect_percent_effect_size", "vect_formula")
 
 sim_param_unique <- 
   map_dfr(
@@ -708,7 +708,7 @@ n_iter <- 100
 sim_param_unique_clean <- sim_param_base %>% #sim_param_unique %>%
   crossing(vect_quasi_exp) %>%
   rename(quasi_exp = vect_quasi_exp) %>%
-  # mutate(p_treat = ifelse(str_starts(quasi_exp "alert"), p_treat/10, p_treat) %>% 
+  # mutate(p_obs_treat = ifelse(str_starts(quasi_exp "alert"), p_obs_treat/10, p_obs_treat) %>% 
   mutate(
     id_method = case_when(
       quasi_exp %in% c("local", "rolling") ~ "DID",
@@ -731,9 +731,9 @@ sim_param_unique_clean <- sim_param_base %>% #sim_param_unique %>%
       id_method == "ITS" ~ str_replace_all(
         formula, "treated", 
         "treated + t + t_post"),
-      id_method == "RDD" ~ str_replace_all(formula, "treated", paste(
-        "treated +", str_remove(quasi_exp, "alert_")
-      )),
+      # id_method == "RDD" ~ str_replace_all(formula, "treated", paste(
+      #   "treated +", str_remove(quasi_exp, "alert_")
+      # )),
       id_method == "OLS" ~ str_replace_all(formula, "treated", "co"),
       str_starts(id_method, "IV") ~ paste(
         str_remove_all(formula, "(\\+\\s)?\\btreated\\b(\\s\\+)?"),
@@ -745,10 +745,17 @@ sim_param_unique_clean <- sim_param_base %>% #sim_param_unique %>%
   filter(!str_detect(formula, "~\\s{0,2}\\|")) %>% 
   #adapting parameters
   filter(!(n_cities == 1 & quasi_exp == "local")) %>% 
-  filter(!(quasi_exp %in% c("local", "national") & p_treat < 0.1)) %>% 
-  mutate(p_treat = ifelse(id_method == "RDD", p_treat/10, p_treat)) %>% 
+  filter(!(quasi_exp %in% c("local", "national") & p_obs_treat < 0.1)) %>% 
+  mutate(
+    p_obs_treat = case_when(
+      id_method == "RDD" ~  p_obs_treat/5,
+      
+      id_method == "DID" ~  p_obs_treat/2,
+      TRUE ~ p_obs_treat
+    )
+  ) %>%
   # filter(!str_starts(id_method, "OLS|IV")) %>%
-  filter(str_starts(id_method, "DID"))
+  filter(str_starts(id_method, "RDD"))
   # filter(id_method == "RCT" & str_starts(formula, "death"))
 
 sim_param <- sim_param_unique_clean %>% 
@@ -810,7 +817,7 @@ We then summarize our results, computing power, type M and so on for each set of
 summarise_simulations <- function(data) {
   
   data %>% 
-    group_by(formula, quasi_exp, n_days, n_cities, p_treat, percent_effect_size, id_method) %>%
+    group_by(formula, quasi_exp, n_days, n_cities, p_obs_treat, percent_effect_size, id_method) %>%
     summarise(
       power = mean(p_value <= 0.05, na.rm = TRUE)*100, 
       # average_p_value = mean(p_value, na.rm = TRUE),
@@ -832,7 +839,7 @@ We then run this function.
 summary_simulations <- summarise_simulations(all_simulations)
 
 all_simulations %>% 
-  # filter(id_method == "OLS") %>% 
+  # filter(id_method === "OLS") %>% 
   ggplot() +
   geom_density(aes(x = estimate)) + 
   geom_vline(xintercept = mean(all_simulations$true_effect))
