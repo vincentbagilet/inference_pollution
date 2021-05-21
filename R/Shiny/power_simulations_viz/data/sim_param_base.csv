@@ -1,2 +1,2 @@
-n_days_study,p_treat,percent_effect_size,formula
-500,0.2,0.5,resp_total ~ treated + temperature + I(temperature^2) | city + month + year + day_of_week
+n_days,n_cities,p_obs_treat,percent_effect_size,formula
+2000,68,0.5,0.5,death_total ~ treated + temperature + temperature_squared | city + month^year + weekday

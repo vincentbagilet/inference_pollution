@@ -1,36 +1,43 @@
-sim_param_base <- readRDS("data/sim_param_base.RDS")
-
-graph_evol_by_exp <- function(df, var_param = "n_days_study", stat = "power") {
+graph_evol_by_exp <- function(df, var_param = "n_days", stat = "power") {
   
-  var_param_name <- str_replace_all(var_param, "_", " ")
-  stat_name <- str_replace_all(stat, "_", " ")
+  var_param_name <- str_replace_all(var_param, "_", " ") 
+  stat_name <- str_replace_all(stat, "_", " ") 
+  all_var <- c(
+    "quasi_exp", 
+    "n_days", 
+    "n_cities", 
+    "p_obs_treat", 
+    "percent_effect_size", 
+    "id_method",
+    "formula"
+  )
   
-  #considering baseline values
-  df_filtered <- df %>% 
-    filter(str_detect(formula, "temperature")) #to only consider the model with all covariates
+  #Get baseline values
+  baseline_param <- df %>% 
+    filter(str_detect(formula, "resp_total")) %>% 
+    select(quasi_exp, n_days, n_cities, p_obs_treat, percent_effect_size, id_method) %>% 
+    distinct() %>% 
+    inner_join(
+      df,
+      by = all_var[all_var != "formula"]
+    ) %>% 
+    filter(str_detect(formula, "death_total")) %>% 
+    select(all_var) %>% 
+    distinct()
   
-  if (var_param != "p_treat") {
-    df_filtered <- df_filtered %>% 
-      filter(p_treat == sim_param_base[["p_treat"]])
-  } 
-  if (!(var_param %in% c("n_days_study", "average_n_obs"))) {
-    df_filtered <- df_filtered %>% 
-      filter(n_days_study == sim_param_base[["n_days_study"]])
-  } 
-  if (var_param != "percent_effect_size") {
-    df_filtered <- df_filtered %>% 
-      filter(percent_effect_size == sim_param_base[["percent_effect_size"]])
-  }
+  df_filtered <- baseline_param %>% 
+    select(-var_param) %>% 
+    inner_join(df, by = all_var[all_var != var_param])
   
   #graph itself
   graph <- df_filtered %>% 
     mutate(
-      quasi_exp = str_to_sentence(str_replace_all(quasi_exp, "_", " "))
+      id_method = str_replace_all(id_method, "_", " ")
     ) %>% 
-    ggplot(aes(x = .data[[var_param]], y = .data[[stat]])) + #, color = .data[[quasi_exp]] + 
+    ggplot(aes(x = .data[[var_param]], y = .data[[stat]])) + #, color = .data[[id_method]] + 
     geom_point() +
     geom_line(linetype = "dashed", size = 0.1) +
-    facet_wrap(~ quasi_exp) +
+    facet_wrap(~ id_method) +
     ylim(c(0, ifelse(stat == "power", 100, NA))) +
     labs(
       title = paste(
@@ -45,3 +52,33 @@ graph_evol_by_exp <- function(df, var_param = "n_days_study", stat = "power") {
   
   return(graph)
 } 
+
+check_distrib_estimate <- function(df) {
+
+  #only consider baseline values
+  df_baseline <- df %>% 
+    filter(str_detect(formula, "resp_total")) %>% 
+    select(quasi_exp, n_days, n_cities, p_obs_treat, percent_effect_size, id_method) %>% 
+    distinct() %>% 
+    inner_join(
+      df,
+      by = c("quasi_exp", "n_days", "n_cities", "p_obs_treat", "percent_effect_size", "id_method")
+    ) %>% 
+    filter(str_detect(formula, "death_total"))
+  
+  data_true_effects <- df_baseline %>%
+    group_by(id_method) %>%
+    summarize(mean_true_effect = mean(true_effect))
+
+  graph <- df_baseline %>%
+    ggplot() +
+    geom_density(aes(x = estimate)) +
+    facet_wrap(~ id_method, scales = "free") + 
+    geom_vline(data = data_true_effects, aes(xintercept = mean_true_effect)) +
+    labs(
+      title = "Distribution of estimates by identification method",
+      subtitle = "Comparison to the true effect"
+    ) 
+    
+  return(graph)
+}
