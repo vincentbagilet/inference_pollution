@@ -629,18 +629,6 @@ compute_simulation <- function(data,
   return(sim_output)
 }
 
-nmmaps_data %>%
-  compute_simulation(
-    data = .,
-    formula = "death_total ~ treated + post + city_treated + temperature + temperature_squared |  month^year + weekday",
-    quasi_exp = "local",
-    id_method = "DID",
-    n_days = 4000,
-    n_cities = 68,
-    percent_effect_size = 0.5,
-    p_obs_treat = 0.5/2
-  )
-
 # nmmaps_data %>%
 #   compute_simulation(
 #     data = .,
@@ -675,14 +663,15 @@ sim_param_base <- tibble(
   formula = "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday"
 )
 
-# write_csv(sim_param_base, "../Outputs/sim_param_base.csv")
+# saveRDS(sim_param_base, "R/Outputs/sim_param_base.RDS")
+# write_csv(sim_param_base, "R/Outputs/sim_param_base.csv")
 
 vect_n_days <- c(100, 500, 1000, 2000, 3000)
 vect_n_cities <- c(20, 68)
 vect_p_obs_treat <- c(0.5, 0.2) #c(0.5, 0.2, 0.01)
 vect_percent_effect_size <- c(0.1, 0.5, 1)
 vect_formula <- c(
-  # "death_total ~ treated", 
+  # "death_total ~ treated",
   "resp_total ~ treated + temperature + temperature_squared | city + month^year + weekday",
   "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday"
   # "copd_age_65_75 ~ treated + temperature + temperature_squared | city + month^year + weekday"
@@ -721,7 +710,7 @@ Then, for each set of parameters we want to run many iterations of the simulatio
 
 ```{r}
 vect_quasi_exp <- c("random_days", "national", "local", "alert_co", "none") #, "alert_co"
-n_iter <- 500
+n_iter <- 300
 
 sim_param_unique_clean <- sim_param_unique %>%
   crossing(vect_quasi_exp) %>%
@@ -770,9 +759,11 @@ sim_param_unique_clean <- sim_param_unique %>%
       id_method == "DID" ~  p_obs_treat/2,
       TRUE ~ p_obs_treat
     )
-  )  
+  ) 
   # filter(!str_starts(id_method, "OLS|IV")) %>%
-  # filter(str_starts(id_method, "RCT"))
+  # filter(str_starts(id_method, "DID")) %>% 
+  # filter(n_days == 3000) %>% 
+  # mutate(percent_effect_size = 50)
   # filter(id_method == "RCT" & str_starts(formula, "death"))
 
 sim_param <- sim_param_unique_clean %>% 
@@ -790,7 +781,7 @@ sim_param <- sim_param_unique_clean %>%
 We can then run the simulations for each set of parameter, using a `pmap_dfr` function.
 
 ```{r eval=FALSE}
-future::plan(multiprocess)
+future::plan(multicore)
 tic()
 with_progress({
   p <- progressor(steps = nrow(sim_param))
@@ -823,7 +814,7 @@ all_simulations <- simulations %>%
 
 beepr::beep(5)
 
-saveRDS(all_simulations, "R/Outputs/all_simulations.RDS")
+# saveRDS(all_simulations, "R/Outputs/all_simulations.RDS")
 ```
 
 ### Summarising the results
@@ -844,9 +835,10 @@ summarise_simulations <- function(data) {
       mean_estimate = mean(estimate, na.rm = TRUE),
       normalized_bias = mean(abs((estimate - true_effect/true_effect)), na.rm = TRUE),
       estimate_true_ratio = mean(abs(estimate/true_effect), na.rm = TRUE),
+      mean_f_stat = mean(f_stat, na.rm = TRUE),
       .groups	= "drop"
     ) %>% 
-    ungroup() 
+    ungroup()
 } 
 ```
 
@@ -857,18 +849,6 @@ summary_simulations <- summarise_simulations(all_simulations)
 
 # saveRDS(summary_simulations, "R/Outputs/summary_simulations.RDS")
 ```
-
-
-```{r}
-# all_simulations %>% 
-#   mutate(significant = (p_value < 0.05)) %>% 
-#   # filter(id_method === "OLS") %>% 
-#   ggplot() +
-#   geom_histogram(aes(x = estimate, fill = significant)) + 
-#   geom_vline(xintercept = mean(all_simulations$true_effect))
-```
-
-
 
 <!-- # Heatmap -->
 
@@ -918,17 +898,24 @@ summary_simulations <- summarise_simulations(all_simulations)
 
 <!-- ``` -->
 
-```{r}
-group_by(.data$city) %>% 
-      mutate(
-        treatment_effect = rpois(
-            n(),
-            mean(.data[[dep_var]], na.rm = TRUE) * percent_effect_size / 100
-          ) %>% suppressWarnings() #warnings when is.na(dep_var) eg rpois(1, NA)
-        y1 = ifelse(id_method == "RCT", .data[[dep_var]] + treatment_effect, .data[[dep_var]] - treatment_effect)
-      ) %>% 
-      ungroup() %>% 
-      select(-treatment_effect)
-```
+
+<!-- ```{r} -->
+<!-- nmmaps_data %>% -->
+<!--   draw_treated(p_obs_treat = 0.25, quasi_exp = "local") %>% -->
+<!--   create_y1(percent_effect_size = 50, id_method = "DID", formula = "death_total ~ treated") %>%  -->
+<!--   add_post_vars("DID") %>%  -->
+<!--   # filter(!post) %>%  -->
+<!--   mutate(year_month = str_c(year, as.numeric(month), sep = "_")) %>%  -->
+<!--   group_by(city_treated, year_month) %>%  -->
+<!--   summarise( -->
+<!--     mean_y1 = mean(y1),  -->
+<!--     mean_deaths = mean(death_total) -->
+<!--   ) %>%  -->
+<!--   ggplot() +  -->
+<!--   geom_line(aes(x = year_month, y = mean_y1, color = city_treated, group = city_treated))  -->
+
+
+<!-- ``` -->
+
 
 

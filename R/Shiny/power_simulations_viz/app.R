@@ -22,6 +22,7 @@ ui <- fluidPage(theme = shinytheme("flatly"),
     # Sidebar with a slider input for number of bins 
     sidebarLayout(
         sidebarPanel(
+            conditionalPanel(
                 condition = "input.tabselected == '0'",
                 selectInput(inputId = "var_param",
                             label = "Choose a variable:",
@@ -42,6 +43,13 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                                 "Normalised biased" = "nomalized_bias",
                                 "Estimate to true ratio" = "estimate_true_ratio", 
                                 "Average F-stat" = "mean_f_stat")),
+            ),
+            conditionalPanel(
+                condition = "input.tabselected == '1'",
+                selectInput(inputId = "method",
+                            label = "Choose an identification method:",
+                            choices = c("DID", "RCT", "RDD", "OLS", "IV_0.5", "IV_0.1")),
+            ),
         ),
 
         # Show a plot of the generated distribution
