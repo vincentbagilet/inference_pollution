@@ -427,7 +427,20 @@ create_y1 <- function(data,
   fml <- Formula::as.Formula(formula)
   dep_var <- all.vars(fml)[[1]]
   
-  if (id_method %in% c("RCT", "DID", "ITS", "RDIT", "RDD")) {
+  if (id_method %in% c("DID", "ITS", "RDIT", "RDD")) {
+    
+    data <- data %>% 
+      group_by(.data$city) %>% 
+      mutate(
+        y1 = .data[[dep_var]] -
+          rpois(
+            n(),
+            mean(.data[[dep_var]], na.rm = TRUE) * percent_effect_size / 100
+          ) %>% suppressWarnings() #warnings when is.na(dep_var) eg rpois(1, NA)
+      ) %>%
+      ungroup()
+    
+  } else if (id_method == "RCT") {
     
     data <- data %>% 
       group_by(.data$city) %>% 
@@ -437,7 +450,7 @@ create_y1 <- function(data,
             n(),
             mean(.data[[dep_var]], na.rm = TRUE) * percent_effect_size / 100
           ) %>% suppressWarnings() #warnings when is.na(dep_var) eg rpois(1, NA)
-      ) %>% 
+      ) %>%
       ungroup()
     
   } else if (str_starts(id_method, "OLS|IV")) {
@@ -475,12 +488,6 @@ create_y1 <- function(data,
   
   return(data)
 } 
-
-# nmmaps_data %>% 
-#   select_study_period() %>%
-#   create_y1(id_method = "OLS", formula = "death_total ~ co + temperature | city + month^year + weekday") %>% 
-#   feols(data = ., fml = y1 ~ co + temperature | city + month^year + weekday) 
-
 ```
 
 ### Estimate the model
@@ -516,7 +523,6 @@ estimate_model <- function(data, formula) {
       f_stat = fstat
     )
 } 	
-
 # estimate_model(draw_treated(nmmaps_data), "death_total ~  temperature + temperature_squared | city + month^year + weekday | co ~ treated")
 ```
 
@@ -627,13 +633,26 @@ compute_simulation <- function(data,
 nmmaps_data %>%
   compute_simulation(
     data = .,
-    formula = "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday",
-    quasi_exp = "alert_co",
-    id_method = "RDD",
+    formula = "death_total ~ treated + post + city_treated + temperature + temperature_squared |  month^year + weekday",
+    quasi_exp = "local",
+    id_method = "DID",
     n_days = 4000,
     n_cities = 68,
-    percent_effect_size = 0.5
+    percent_effect_size = 0.5,
+    p_obs_treat = 0.5/2
   )
+
+# nmmaps_data %>%
+#   compute_simulation(
+#     data = .,
+#     formula = "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday",
+#     quasi_exp = "random_days",
+#     id_method = "RCT",
+#     n_days = 4000,
+#     n_cities = 68,
+#     percent_effect_size = 0.5,
+#     p_obs_treat = 0.01
+#   )
 ````
 
 We will then loop this function to get a large number of replications of each simulation for a given set of parameters. We will also vary the values of the different parameter.
@@ -652,7 +671,7 @@ To build `sim_param`, we first define a set of baseline values for our parameter
 sim_param_base <- tibble(
   n_days = 2000,
   n_cities = 68,
-  p_obs_treat = 0.5,
+  p_obs_treat = 0.1,
   percent_effect_size = 0.5, 
   formula = "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday"
 )
@@ -703,7 +722,7 @@ Then, for each set of parameters we want to run many iterations of the simulatio
 
 ```{r}
 vect_quasi_exp <- c("random_days", "national", "local", "alert_co", "none") #, "alert_co"
-n_iter <- 100
+n_iter <- 300
 
 sim_param_unique_clean <- sim_param_base %>% #sim_param_unique %>%
   crossing(vect_quasi_exp) %>%
@@ -753,9 +772,9 @@ sim_param_unique_clean <- sim_param_base %>% #sim_param_unique %>%
       id_method == "DID" ~  p_obs_treat/2,
       TRUE ~ p_obs_treat
     )
-  ) %>%
+  ) %>% 
   # filter(!str_starts(id_method, "OLS|IV")) %>%
-  filter(str_starts(id_method, "RDD"))
+  filter(str_starts(id_method, "RCT"))
   # filter(id_method == "RCT" & str_starts(formula, "death"))
 
 sim_param <- sim_param_unique_clean %>% 
@@ -839,9 +858,10 @@ We then run this function.
 summary_simulations <- summarise_simulations(all_simulations)
 
 all_simulations %>% 
+  mutate(significant = (p_value < 0.05)) %>% 
   # filter(id_method === "OLS") %>% 
   ggplot() +
-  geom_density(aes(x = estimate)) + 
+  geom_histogram(aes(x = estimate, fill = significant)) + 
   geom_vline(xintercept = mean(all_simulations$true_effect))
 
 # saveRDS(summary_simulations, "R/Outputs/summary_simulations.RDS")
@@ -899,5 +919,17 @@ all_simulations %>%
 
 <!-- ``` -->
 
+```{r}
+group_by(.data$city) %>% 
+      mutate(
+        treatment_effect = rpois(
+            n(),
+            mean(.data[[dep_var]], na.rm = TRUE) * percent_effect_size / 100
+          ) %>% suppressWarnings() #warnings when is.na(dep_var) eg rpois(1, NA)
+        y1 = ifelse(id_method == "RCT", .data[[dep_var]] + treatment_effect, .data[[dep_var]] - treatment_effect)
+      ) %>% 
+      ungroup() %>% 
+      select(-treatment_effect)
+```
 
 
