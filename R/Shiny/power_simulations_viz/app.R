@@ -23,9 +23,9 @@ ui <- fluidPage(theme = shinytheme("flatly"),
     sidebarLayout(
         sidebarPanel(
             conditionalPanel(
-                condition = "input.tabselected == '0'",
+                condition = "input.tabselected < '2'",
                 selectInput(inputId = "var_param",
-                            label = "Choose a variable:",
+                            label = "Choose a varying parameter:",
                             choices = c(
                                 "Number of days in the study" = "n_days", 
                                 "Number of cities in the study" = "n_cities",  
@@ -45,7 +45,7 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                                 "Average F-stat" = "mean_f_stat")),
             ),
             conditionalPanel(
-                condition = "input.tabselected == '1'",
+                condition = "input.tabselected == '1' || input.tabselected == '2'",
                 selectInput(inputId = "method",
                             label = "Choose an identification method:",
                             choices = c("DID", "RCT", "RDD", "OLS", "IV_0.5", "IV_0.1")),
@@ -59,9 +59,16 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                     value = 0,
                     "Relation statistics/parameters",
                     plotOutput("evol_by_exp"),
+                    h3("Values of non-varying parameters"),
+                    tableOutput("table_baseline_param"),
                 ),
                 tabPanel(
                     value = 1,
+                    "Table statistics",
+                    tableOutput("table_by_exp"),
+                ),
+                tabPanel(
+                    value = 2,
                     "Checks",
                     plotOutput("check_plot"),
                 ),
@@ -80,6 +87,17 @@ server <- function(input, output) {
     
     output$check_plot <- renderPlot({
         check_distrib_estimate(all_simulations)
+    })
+    
+    output$table_by_exp <- renderTable({
+        table_stats(summary_simulations, input$var_param, input$stat, input$method)
+    })
+    
+    output$table_baseline_param <- renderTable({
+        get_baseline_param(summary_simulations) %>% 
+            select(-input$var_param) %>% 
+            distinct() %>% 
+            rename_with(~ str_to_title(str_replace_all(.x, "_", " ")))
     })
 }
 

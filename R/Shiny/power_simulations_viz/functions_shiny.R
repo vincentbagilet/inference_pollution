@@ -1,7 +1,4 @@
-graph_evol_by_exp <- function(df, var_param = "n_days", stat = "power") {
-  
-  var_param_name <- str_replace_all(var_param, "_", " ") 
-  stat_name <- str_replace_all(stat, "_", " ") 
+get_baseline_param <- function(df) {
   all_var <- c(
     "quasi_exp", 
     "n_days", 
@@ -25,7 +22,25 @@ graph_evol_by_exp <- function(df, var_param = "n_days", stat = "power") {
     select(all_var) %>% 
     distinct()
   
-  df_filtered <- baseline_param %>% 
+  return(baseline_param)
+}
+
+
+graph_evol_by_exp <- function(df, var_param = "n_days", stat = "power") {
+  
+  var_param_name <- str_replace_all(var_param, "_", " ") 
+  stat_name <- str_replace_all(stat, "_", " ") 
+  all_var <- c(
+    "quasi_exp", 
+    "n_days", 
+    "n_cities", 
+    "p_obs_treat", 
+    "percent_effect_size", 
+    "id_method",
+    "formula"
+  )
+  
+  df_filtered <-  get_baseline_param(df) %>% 
     select(-var_param) %>% 
     inner_join(df, by = all_var[all_var != var_param])
   
@@ -83,7 +98,26 @@ check_distrib_estimate <- function(df) {
   return(graph)
 }
 
-
+table_stats <- function(df, var_param = "n_days", stat = "power", method = "DID") {
+  all_var <- c(
+    "quasi_exp", 
+    "n_days", 
+    "n_cities", 
+    "p_obs_treat", 
+    "percent_effect_size", 
+    "id_method",
+    "formula"
+  )
+  
+  tab_out <-  get_baseline_param(df) %>% 
+    select(-var_param) %>% 
+    inner_join(df, by = all_var[all_var != var_param]) %>% 
+    select(stat, all_var) %>% 
+    filter(id_method == method) %>% 
+    rename_with(~ str_to_title(str_replace_all(.x, "_", " ")))
+  
+  return(tab_out)
+}
 
 
 
