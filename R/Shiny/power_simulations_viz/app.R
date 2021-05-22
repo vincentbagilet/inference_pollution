@@ -45,7 +45,7 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                                 "Average F-stat" = "mean_f_stat")),
             ),
             conditionalPanel(
-                condition = "input.tabselected == '1' || input.tabselected == '2'",
+                condition = "input.tabselected == '1'",
                 selectInput(inputId = "method",
                             label = "Choose an identification method:",
                             choices = c("DID", "RCT", "RDD", "OLS", "IV_0.5", "IV_0.1")),
@@ -97,7 +97,8 @@ server <- function(input, output) {
         get_baseline_param(summary_simulations) %>% 
             select(-input$var_param) %>% 
             distinct() %>% 
-            rename_with(~ str_to_title(str_replace_all(.x, "_", " ")))
+            select(id_method, everything()) %>% 
+            rename_with(~ str_to_title(str_replace_all(.x, "_", " "))) 
     })
 }
 

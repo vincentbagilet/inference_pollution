@@ -92,7 +92,8 @@ check_distrib_estimate <- function(df) {
     geom_vline(data = data_true_effects, aes(xintercept = mean_true_effect)) +
     labs(
       title = "Distribution of estimates by identification method",
-      subtitle = "Comparison to the true effect"
+      subtitle = "Comparison to the true effect",
+      caption = "The vertical line represents the true effect"
     ) 
     
   return(graph)
