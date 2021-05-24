@@ -41,3 +41,4 @@ vignettes/*.pdf
 # Data
 R/Inputs
 R/Outputs
+R/Old/Data
