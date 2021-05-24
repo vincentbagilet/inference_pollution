@@ -814,12 +814,18 @@ We then summarize our results, computing power, type M and so on for each set of
 summarise_simulations <- function(data) {
   
   data %>% 
+    mutate(
+      CI_low = estimate + se*qnorm((1-0.95)/2),
+      CI_high = estimate - se*qnorm((1-0.95)/2),
+      covered = (true_effect > CI_low & true_effect < CI_high) 
+    ) %>% 
     group_by(formula, quasi_exp, n_days, n_cities, p_obs_treat, percent_effect_size, id_method) %>%
     summarise(
       power = mean(p_value <= 0.05, na.rm = TRUE)*100, 
       # average_p_value = mean(p_value, na.rm = TRUE),
       type_m = mean(ifelse(p_value <= 0.05, abs(estimate/true_effect), NA), na.rm = TRUE),
       type_s = sum(ifelse(p_value <= 0.05, sign(estimate) != sign(true_effect), NA), na.rm = TRUE)/n()*100,
+      coverage_rate = mean(covered)*100,
       mse = mean((estimate - true_effect)^2, na.rm = TRUE),
       mean_estimate = mean(estimate, na.rm = TRUE),
       normalized_bias = mean(abs((estimate - true_effect/true_effect)), na.rm = TRUE),
@@ -834,7 +840,7 @@ summarise_simulations <- function(data) {
 We then run this function.
 
 ```{r eval=FALSE}
-summary_simulations <- summarise_simulations(all_simulations)
+summary_simulations <- summarise_simulations(simulations_output)
 
 # saveRDS(summary_simulations, "R/Outputs/summary_simulations.RDS")
 ```

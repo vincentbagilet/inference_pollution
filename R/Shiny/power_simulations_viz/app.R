@@ -38,6 +38,7 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                                 "Power" = "power", 
                                 "Type M" = "type_m", 
                                 "Type S" = "type_s",
+                                "Coverage rate" = "coverage_rate"
                                 "MSE" = "mse", 
                                 "Mean of the estimates" = "mean_estimate",
                                 "Normalised biased" = "nomalized_bias",
