@@ -622,24 +622,31 @@ compute_simulation <- function(data,
         id_method, 
         percent_effect_size, 
         dep_var
-      )
+      ),
+      n_days = n_days, 
+      n_cities = n_cities,
+      p_obs_treat = p_obs_treat,
+      percent_effect_size = percent_effect_size,
+      quasi_exp = quasi_exp,
+      id_method = id_method, 
+      formula = formula
     )
   
   progressbar()
   return(sim_output)
 }
 
-# nmmaps_data %>%
-#   compute_simulation(
-#     data = .,
-#     formula = "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday",
-#     quasi_exp = "random_days",
-#     id_method = "RCT",
-#     n_days = 4000,
-#     n_cities = 68,
-#     percent_effect_size = 0.5,
-#     p_obs_treat = 0.01
-#   )
+nmmaps_data %>%
+  compute_simulation(
+    data = .,
+    formula = "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday",
+    quasi_exp = "random_days",
+    id_method = "RCT",
+    n_days = 100,
+    n_cities = 68,
+    percent_effect_size = 0.5,
+    p_obs_treat = 0.01
+  )
 ````
 
 We will then loop this function to get a large number of replications of each simulation for a given set of parameters. We will also vary the values of the different parameter.
@@ -710,7 +717,7 @@ Then, for each set of parameters we want to run many iterations of the simulatio
 
 ```{r}
 vect_quasi_exp <- c("random_days", "national", "local", "alert_co", "none") #, "alert_co"
-n_iter <- 300
+n_iter <- 1
 
 sim_param_unique_clean <- sim_param_unique %>%
   crossing(vect_quasi_exp) %>%
@@ -759,7 +766,8 @@ sim_param_unique_clean <- sim_param_unique %>%
       id_method == "DID" ~  p_obs_treat/2,
       TRUE ~ p_obs_treat
     )
-  ) 
+  ) %>% 
+  arrange(id_method, n_days)
   # filter(!str_starts(id_method, "OLS|IV")) %>%
   # filter(str_starts(id_method, "DID")) %>% 
   # filter(n_days == 3000) %>% 
@@ -768,10 +776,7 @@ sim_param_unique_clean <- sim_param_unique %>%
 
 sim_param <- sim_param_unique_clean %>% 
   crossing(rep_id = 1:n_iter) %>%
-  select(-rep_id) %>% 
-  mutate(sim_id = row_number()) #for merging with compute_simulation() results
-  # select(-sim_id) %>% 
-
+  select(-rep_id) 
 
 # write_csv(sim_param, "../Outputs/sim_param.csv")
 ```
@@ -786,35 +791,19 @@ tic()
 with_progress({
   p <- progressor(steps = nrow(sim_param))
   
-  simulations <- future_pmap_dfr(
-    sim_param %>% select(-sim_id),
+  simulations_output <- future_pmap_dfr(
+    sim_param,
     compute_simulation,
     data = nmmaps_data,
     progressbar = p,
-    .id = "sim_id",
     .options = furrr_options(seed = TRUE)
   )
 })
 toc()
 
-# tic()
-# simulations <- future_pmap_dfr(
-#   sim_param %>% select(-sim_id),
-#   compute_simulation,
-#   data = nmmaps_data,
-#   .id = "sim_id",
-#   .options = furrr_options(seed = TRUE)
-# )
-# toc()
+# beepr::beep(1)
 
-all_simulations <- simulations %>% 
-  mutate(sim_id = as.numeric(sim_id)) %>%
-  left_join(sim_param, by = "sim_id") %>% 
-  select(-sim_id)
-
-beepr::beep(5)
-
-# saveRDS(all_simulations, "R/Outputs/all_simulations.RDS")
+# saveRDS(simulations_output, "R/Outputs/simulations_output.RDS")
 ```
 
 ### Summarising the results
