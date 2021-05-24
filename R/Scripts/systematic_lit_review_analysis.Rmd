@@ -15,6 +15,8 @@ output:
     toc: true
     toc_float: true
   html_notebook: default
+editor_options: 
+  chunk_output_type: console
 ---
 
 <style>
@@ -469,6 +471,8 @@ Now that we have quickly compared the articles for which we retrieve an effect a
 
 In this section, we briefly analyze the effects retrieved, their statistical significance and their precision.
 
+## Significance
+
 First, we notice that most of the effects retrieved here are significant (at the usual 5% threshold).
 
 ```{r}
@@ -505,6 +509,7 @@ estimates_stats %>%
   kable_styling(position = "center")
 ```
 
+## T-scores
 
 We then look into the distribution of the t-scores. 
 
@@ -523,7 +528,9 @@ estimates_stats %>%
   ) 
 ```
 
-There seems to be some sort of bunching for t-scores above 1.96. In this analysis, we only consider estimates reported in the abstracts. Authors may only report significant estimates in their abstracts even though they also report non significant estimates in the body of the article. This might explain this bunching. We need to investigate this further in order to understand whether this bunching is evidence of publication bias. We could investigate this further by reproducing the present analysis but analyzing the full texts and not only on the abstracts. 
+There seems to be some sort of bunching for t-scores above 1.96. In this analysis, we only consider estimates reported in the abstracts. Authors may only report significant estimates in their abstracts even though they also report non significant estimates in the body of the article. This might explain this bunching. We need to investigate this further in order to understand whether this bunching is evidence of publication bias. To do so, we could reproduce the present analysis but analyze the full texts and not only on the abstracts. 
+
+## Signal to noise ratio
  
 We then plot the distribution of the signal to noise ratio, *ie* the ratio of the point estimate and the width of the confidence interval.
 
@@ -542,7 +549,7 @@ estimates_stats %>%
   ) 
 ```
 
-The graph is of course analogous to the previous one. It however informs us that in a large share of the studies, the magnitude of the noise is larger than the magnitude of the effect. Looking in more details into the distribution of the signal to noise ratio, we notice that for 40% of the estimates considered here, the magnitude of the noise is more important than those of the signal.
+The graph is of course analogous to the previous one. It however underlines that in a large share of the studies, the magnitude of the noise is larger than the magnitude of the effect. We then look into the distribution of the signal to noise ratio in more details.
 
 ```{r}
 quantile(estimates_stats$signal_noise, seq(0, 1, 0.1)) %>%
@@ -557,17 +564,19 @@ quantile(estimates_stats$signal_noise, seq(0, 1, 0.1)) %>%
   kable_styling(position = "center")
 ```
 
+We notice that for about 55% of the estimates considered here, the magnitude of the noise is more important than those of the signal. This is particularly concerning.
+
 # Power analysis
 
 We then turn to the power analysis itself. The objective is to evaluate the power, type M and type S errors for each estimate. 
 
-To compute these values, we would need to know the true effect size. Yet, true effects are of course unknown. One solution could be to use estimates from the literature and meta-analyses as best guesses for the true value. Yet, in the setting of this systematic literature review, it is very challenging to retrieve what is exactly measured in each analysis since there is no standardized way of reporting the results. One study may for instance claim that a 10 $\mu g/m^{3}$ increase in PM2.5 concentration leads to an increase of x% in hospital admissions over the course of a year while another study may state that a 2% increase in ozone concentration increases the number of deaths by 3 over a month. Fortunately, for each estimate retrieved, even though we do not know what is measured, we can evaluate the precision with which it is estimated.
+To compute these values, we would need to know the true effect size. Yet, true effects are of course unknown. One solution could be to use estimates from the literature and meta-analyses as best guesses for these true values. Yet, in the setting of this systematic literature review, detecting what is exactly measured in each analysis is particularly challenging since there is no standardized way of reporting the results beyond mentioning confidence intervals. One study may for instance claim that a 10 $\mu g/m^{3}$ increase in PM2.5 concentration leads to an increase of x% in hospital admissions over the course of a year while another study may state that a 2% increase in ozone concentration increases the number of deaths by 3 over a month. Fortunately, for each estimate retrieved, even though we do not know what is measured, we can evaluate the precision with which it is estimated.
 
-To circumvent the fact that we do not know the actual effect size, we follow the strategy suggested by Gelman and Carlin (2014). We consider different potential "true" effect sizes and run robustness checks. This enables us to investigate what would be the power, type M and type S error if the true effect was only a fraction of the measured effect. It enables us to assess whether the design of the study is good enough to detect a smaller effect. If assuming that the true effect is 3/4 of the measured effect yields a power of 30%, there is a probably a key issue with the design of this study. This design would only enable to detect this (non zero) effect 30% of the time.
+To circumvent the fact that we do not know the actual effect size, we follow a strategy suggested by Gelman and Carlin (2014). We consider a range of potential "true" effect sizes and run a sensitivity analysis. We investigate what would be the power, type M and type S error if the true effect was only a fraction of the measured effect. This enables us to assess whether the design of the study would be *good enough* to detect a smaller effect. If assuming that the true effect is 3/4 of the measured effect yields a power of 30%, there is probably a major issue with the design of this study. With this design, this (non zero) effect would only be detected 30% of the time.
 
-Of course, there is no reason to think *a priori* that a given effect would be overestimated. The results are only informative. 
+Of course, there is no reason to think *a priori* that a given effect would be overestimated. The values for power, type M and type S errors are therefore only informative. 
 
-To carry out this analysis, we use the package `retrodesign` which computes post analysis design calculations (power, type M and type S errors). We run the function `retro_desing()` for several effect sizes.
+To carry out the analysis, we use the package `retrodesign` which computes post analysis design calculations (power, type M and type S errors). We run the function `retro_desing()` for several effect sizes.
 
 ```{r}
 retro_analysis <- estimates_stats %>% 
@@ -599,39 +608,15 @@ retro_analysis <- estimates_stats %>%
   filter(typeM < Inf) 
 ```
 
-### Overal analysis
+In a first part, we investigate whether the literature might be subject to design issues. We analyze the distribution of power, type M and type S errors in the whole set of abstracts, how they evolve jointly or along several variables such as the size of the true effect. We find clear evidence of heterogeneity across articles. Some of them seem to present robust designs while others seem much more problematic, yield low power and high rates of type M error, even for large hypothesized true effect sizes.
+<!-- The former set of estimates display high power even for low hypothesized true effect sizes while estimates from the later set present low power for still large true effect sizes.  -->
+Thus, in a second part, we investigate potential sources of heterogeneity. 
 
-In a first part, we carry out our analysis on the whole set of abstracts. We notice that there is some heterogeneity across articles, some articles displaying a high power and others displaying lower power. Thus, in a second part, we will look in more details at articles displaying low power.
+### Distribution of design statistics in the literature
 
-We start by computing the average and median power, type M and type S errors for a set of "true" effects. 
+#### Graphical analysis
 
-```{r}
-retro_analysis %>% 
-  # filter(typeM < Inf) %>%
-  group_by(prop_true_effect, prop_true_effect_phrase) %>% 
-  summarise(
-    mean_power = mean(power, na.rm = TRUE),
-    median_power = median(power, na.rm = TRUE),
-    mean_typeM = mean(typeM, na.rm = TRUE),
-    median_typeM = median(typeM, na.rm = TRUE),
-    mean_typeS = mean(typeS, na.rm = TRUE),
-    median_typeS = median(typeS, na.rm = TRUE), 
-    .groups = "drop"
-  ) %>% 
-  arrange(prop_true_effect) %>% 
-  select(-prop_true_effect) %>%
-  mutate(
-    prop_true_effect_phrase = ifelse(
-      is.na(prop_true_effect_phrase), 
-      "Lower bound of the CI", 
-      prop_true_effect_phrase)
-  ) %>% 
-  kable(col.names = c("", "Mean", "Median", "Mean", "Median", "Mean", "Median")) %>%
-  add_header_above(c('"True" effect' = 1, "Power" = 2, "Type M" = 2, "Type S" = 2)) %>%
-  kable_styling(position = "center")
-```
-
-Then, we explore graphically the distribution of power, type M and type S error across simulation and for different magnitudes of the true effect.
+We first explore graphically the distribution of power, type M and type S error across simulation and for different magnitudes of the true effect.
 
 ```{r}
 sizes_to_display <- c(0.33, 0.5, 0.75)
@@ -669,9 +654,9 @@ retro_analysis %>%
   )
 ```
 
-A large chunk of articles display high power and low rates of type M and type S error, in each robustness check. However, a non negligible number of articles display lower power and/or some evidence of type M error. Type S error does not seem to be an important issue in this literature. We investigate potential driver of low power and type M errors further in the next subsection.
+A large chunk of articles display high power and low rates of type M and type S error, in each robustness check. However, a non negligible number of articles display lower power and/or some evidence of type M error. Type S error does not seem to be an important issue in this literature. 
 
-Note that for type M errors, due to some outliers, we used a log scale. Without this log scale and restricting our sample to type M errors lower than 2.5 (95% of our sample, even when we assume that the true effect is only 1/3 of the estimated one).
+Note that for type M errors, due to some outliers, we used a log scale. Without this log scale and restricting our sample to type M errors lower than 2.5 (95% of our sample, even when we assume that the true effect is only 1/3 of the estimated one), we get the following graph:
 
 ```{r}
 retro_analysis %>%
@@ -686,9 +671,9 @@ retro_analysis %>%
   ) 
 ```
 
-We find that, even if the measured effect is the true effect, there is some risk of type M error. 
+We find that, even if the measured effect was close to the true effect, for a good chunk of articles, there  would be a substantial risk of type M error. Replicating this study would yield to an overestimation of the effect. 
 
-Alternatively, we can also look at what would be the power, type M and type S if the true effect was equal to the lower bound of the confidence interval. 
+Alternatively, we can also look at what would be the power, type M and type S if the true effect was equal to the lower bound of the confidence interval. This metric may exacerbate design issues for imprecise estimates. Such estimates would be "penalized" twice for being imprecise: they have a large standard error and the hypothesized effect would be very small. Yet, this metric remains interesting as confidence intervals describe credible effect sizes. If the effect size is smaller but still credible, would the design be good enough to "detect" it?
 
 ```{r}
 retro_analysis %>% 
@@ -707,8 +692,41 @@ retro_analysis %>%
   ) 
 ```
 
+Unsurprisingly, the conclusions remain similar: a non negligible chunk of articles seems to suffer from power issues. 
 
-The ECDF also provide useful information on the distribution of power, type M and type S errors across studies.
+#### Table
+
+We then look more precisely at actual numbers, looking at the median and mean power, type M and type S errors for different true effect sizes.
+
+```{r}
+retro_analysis %>% 
+  # filter(typeM < Inf) %>%
+  group_by(prop_true_effect, prop_true_effect_phrase) %>% 
+  summarise(
+    mean_power = mean(power, na.rm = TRUE),
+    median_power = median(power, na.rm = TRUE),
+    mean_typeM = mean(typeM, na.rm = TRUE),
+    median_typeM = median(typeM, na.rm = TRUE),
+    mean_typeS = mean(typeS, na.rm = TRUE),
+    median_typeS = median(typeS, na.rm = TRUE), 
+    .groups = "drop"
+  ) %>% 
+  arrange(prop_true_effect) %>% 
+  select(-prop_true_effect) %>%
+  mutate(
+    prop_true_effect_phrase = ifelse(
+      is.na(prop_true_effect_phrase), 
+      "Lower bound of the CI", 
+      prop_true_effect_phrase)
+  ) %>% 
+  kable(col.names = c("", "Mean", "Median", "Mean", "Median", "Mean", "Median")) %>%
+  add_header_above(c('"True" effect' = 1, "Power" = 2, "Type M" = 2, "Type S" = 2)) %>%
+  kable_styling(position = "center")
+```
+
+#### ECDF
+
+Empirical Cumulative Distribution Functions (ECDFs) provide a broader overview of these metrics.  They inform us of the share of articles which power, type M or S errors are below a given threshold. 
 
 ```{r}
 retro_analysis %>%
@@ -717,6 +735,7 @@ retro_analysis %>%
   stat_ecdf(geom = "line") +
   facet_wrap( ~ prop_true_effect_phrase) +
   geom_vline(xintercept = 0.8, linetype = "dashed", size = 0.3) +
+  coord_flip() +
   labs(
     title = "Empirical cumulative distribution of power in the literature",
     subtitle = "If the magnitude of true effect is a fraction of the measured effect",
@@ -753,9 +772,9 @@ retro_analysis %>%
   ) 
 ```
 
-We notice that about 50% of studies would be underpowered at the conventional 80% level if we considered that the true effect was half the measured effect.
+We notice that about 40% of estimates would not reach the conventional 80% statistical power level if the true effect is 3/4 the size of the measured effect. This is rather concerning.
 
-For ECDFs too we can look at what would be the power, type M and type S error if the true effect was equal to the lower bound of the confidence interval.
+For ECDFs too we look at what would be the power, type M and type S error if the true effect was equal to the lower bound of the confidence interval.
 
 ```{r}
 retro_analysis %>% 
@@ -765,8 +784,8 @@ retro_analysis %>%
   pivot_longer(power:typeM, names_to = "design_stat") %>% 
   ggplot(aes(x = value)) +
   stat_ecdf(geom = "line") +
-  # geom_hline(yintercept = 0.5) +
-  coord_flip() +
+  # geom_hline(yintercept = 0.8) +
+  # coord_flip() +
   facet_wrap( ~ design_stat, scales = "free") +
   labs(
     x = "", 
@@ -776,6 +795,7 @@ retro_analysis %>%
   ) 
 ```
 
+#### Joint evolution
 
 Then, we look how type M and type S error evolve with power for the estimates considered.
 
@@ -804,6 +824,7 @@ retro_analysis %>%
     y = "Type S"
   )
 ```
+
 There is a one-to-one relationship between power and type M and type S error. Not surprisingly, type M and type S error skyrocket in studies with low power. 
 
 We then investigate how average power, type M and type S evolve as a proportion of the true effect size.
