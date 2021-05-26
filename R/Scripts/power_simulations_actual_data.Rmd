@@ -632,7 +632,7 @@ compute_simulation <- function(data,
       formula = formula
     )
   
-  progressbar()
+  progressbar() 
   return(sim_output)
 }
 
@@ -786,20 +786,45 @@ sim_param <- sim_param_unique_clean %>%
 We can then run the simulations for each set of parameter, using a `pmap_dfr` function.
 
 ```{r eval=FALSE}
+simulations_output <- NULL
+save_every <- 10
 future::plan(multicore)
-tic()
-with_progress({
-  p <- progressor(steps = nrow(sim_param))
+
+for (i in 1:ceiling(nrow(sim_param)/save_every)) {
+  params_slice <- sim_param %>% 
+    slice((1 + save_every*(i-1)):(save_every*i))
   
-  simulations_output <- future_pmap_dfr(
-    sim_param,
-    compute_simulation,
-    data = nmmaps_data,
-    progressbar = p,
-    .options = furrr_options(seed = TRUE)
+  with_progress({
+    p <- progressor(steps = nrow(params_slice))
+    
+    simulations_output_to_save <- future_pmap_dfr(
+      params_slice,
+      compute_simulation,
+      data = nmmaps_data,
+      progressbar = p,
+      .options = furrr_options(seed = TRUE)
+    )
+  })
+  
+  print(paste("Iteration =", i*save_every))
+  simulations_output <- simulations_output %>% rbind(simulations_output_to_save)
+  saveRDS(
+    simulations_output_to_save, 
+    here("R", "Outputs", "Sim_save", str_c("sim_output_saved_", i,".RDS"))
   )
-})
-toc()
+}
+
+# with_progress({
+#   p <- progressor(steps = nrow(sim_param))
+#   
+#   simulations_output <- future_pmap_dfr(
+#     sim_param,
+#     compute_simulation,
+#     data = nmmaps_data,
+#     progressbar = p,
+#     .options = furrr_options(seed = TRUE)
+#   )
+# })
 
 # beepr::beep(1)
 
@@ -810,14 +835,15 @@ toc()
 
 We then summarize our results, computing power, type M and so on for each set of parameters using he function `summarise_simulations`. Note that this function can only take as input a data frame produced by `compute_simulation` (or a mapped version of this function).
 
-```{r eval=FALSE}
+```{r}
 summarise_simulations <- function(data) {
   
   data %>% 
     mutate(
       CI_low = estimate + se*qnorm((1-0.95)/2),
       CI_high = estimate - se*qnorm((1-0.95)/2),
-      covered = (true_effect > CI_low & true_effect < CI_high) 
+      covered = (true_effect > CI_low & true_effect < CI_high), 
+      covered = ifelse(p_value > 0.05, NA, covered) #to consider only significant estimates
     ) %>% 
     group_by(formula, quasi_exp, n_days, n_cities, p_obs_treat, percent_effect_size, id_method) %>%
     summarise(
@@ -825,7 +851,7 @@ summarise_simulations <- function(data) {
       # average_p_value = mean(p_value, na.rm = TRUE),
       type_m = mean(ifelse(p_value <= 0.05, abs(estimate/true_effect), NA), na.rm = TRUE),
       type_s = sum(ifelse(p_value <= 0.05, sign(estimate) != sign(true_effect), NA), na.rm = TRUE)/n()*100,
-      coverage_rate = mean(covered)*100,
+      coverage_rate = mean(covered, na.rm = TRUE)*100,
       mse = mean((estimate - true_effect)^2, na.rm = TRUE),
       mean_estimate = mean(estimate, na.rm = TRUE),
       normalized_bias = mean(abs((estimate - true_effect/true_effect)), na.rm = TRUE),
@@ -845,53 +871,54 @@ summary_simulations <- summarise_simulations(simulations_output)
 # saveRDS(summary_simulations, "R/Outputs/summary_simulations.RDS")
 ```
 
-<!-- # Heatmap -->
+# Heatmap
 
-<!-- ```{r} -->
-<!-- n_iter <- 3 -->
+```{r}
+n_iter <- 3
 
-<!-- vect_n_days <- seq(500, 1000, 100) -->
-<!-- vect_percent_effect_size <- seq(0.5, 1.5, 0.1) -->
+vect_n_days <- seq(500, 4000, 500)
+vect_percent_effect_size <- seq(0.5, 1.5, 0.1)
 
-<!-- sim_param_heatmap <- sim_param_base %>%  -->
-<!--   select(-n_days, -percent_effect_size) %>%  -->
-<!--   crossing(vect_n_days, vect_percent_effect_size) %>% -->
-<!--   rename_with( ~ str_remove(., "vect_")) %>% -->
-<!--   crossing(rep_id = 1:n_iter) %>% -->
-<!--   select(-rep_id) %>%  -->
-<!--   mutate(sim_id = row_number()) -->
+sim_param_heatmap <- sim_param_base %>%
+  select(-n_days, -percent_effect_size) %>%
+  crossing(vect_n_days, vect_percent_effect_size) %>%
+  rename_with( ~ str_remove(., "vect_")) %>%
+  crossing(rep_id = 1:n_iter) %>%
+  select(n_days, n_cities, p_obs_treat, percent_effect_size, formula) %>% 
+  mutate(quasi_exp = "random_days", id_method = "RCT")
 
-<!-- tic() -->
-<!-- simulations <- future_pmap_dfr( -->
-<!--   sim_param_heatmap %>% select(-sim_id),  -->
-<!--   compute_simulation,  -->
-<!--   data = total_data, -->
-<!--   .id = "sim_id", -->
-<!--   .options = furrr_options(seed = TRUE) -->
-<!-- )  -->
-<!-- toc() -->
+future::plan(multicore)
+tic()
+with_progress({
+  p <- progressor(steps = nrow(sim_param_heatmap))
+  
+  simulations_output_heatmap <- future_pmap_dfr(
+    sim_param_heatmap,
+    compute_simulation,
+    data = nmmaps_data,
+    progressbar = p,
+    .options = furrr_options(seed = TRUE)
+  )
+})
+toc()
 
-<!-- all_simulations_heatmap <- simulations %>%  -->
-<!--   as_tibble() %>%  -->
-<!--   mutate(sim_id = as.numeric(sim_id)) %>%  -->
-<!--   left_join(sim_param_heatmap, by = "sim_id") %>%  -->
-<!--   select(-sim_id) %>%  -->
-<!--   mutate(quasi_exp = "random_days") -->
+all_simulations_heatmap <- simulations_output_heatmap %>%
+  as_tibble() 
 
-<!-- # saveRDS(all_simulations_heatmap, "R/Outputs/data_simulations_heatmap.RDS") -->
-<!-- all_simulations_heatmap <- readRDS("R/Outputs/data_simulations_heatmap.RDS") -->
+# saveRDS(all_simulations_heatmap, "R/Outputs/data_simulations_heatmap.RDS")
+# all_simulations_heatmap <- readRDS("R/Outputs/data_simulations_heatmap.RDS")
 
-<!-- summary_simulations_heatmap <- summarise_simulations(all_simulations_heatmap) -->
+summary_simulations_heatmap <- summarise_simulations(all_simulations_heatmap)
 
-<!-- summary_simulations_heatmap %>%  -->
-<!--   filter(percent_effect_size > 0.4 & n_days > 400) %>% -->
-<!--   ggplot(aes(x = n_days, y = percent_effect_size)) +  -->
-<!--   geom_raster(aes(fill = type_m)) + # , interpolate = TRUE) + -->
-<!--   # geom_contour(aes(z = type_m)) + -->
-<!--   coord_fixed(ratio = 1000) + -->
-<!--   scale_fill_continuous(limits = c(1, NA)) -->
+summary_simulations_heatmap %>%
+  filter(percent_effect_size > 0.4 & n_days > 400) %>%
+  ggplot(aes(x = n_days, y = percent_effect_size)) +
+  geom_raster(aes(fill = type_m)) + # , interpolate = TRUE) +
+  # geom_contour(aes(z = type_m)) +
+  coord_fixed(ratio = 1000) +
+  scale_fill_continuous(limits = c(1, NA))
 
-<!-- ``` -->
+```
 
 
 <!-- ```{r} -->
