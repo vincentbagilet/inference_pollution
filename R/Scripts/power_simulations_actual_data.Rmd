@@ -232,7 +232,7 @@ First, we create a function to randomly select a study period of a given length.
 This function randomly selects a starting date for the study, early enough so that the study can actually last the number of days chosen. It then  randomly draws a given number of cities and filters out observations outside of the study period. It returns a data set with only the desired number of cities and days.
 
 ```{r}
-select_study_period <- function(data, n_days = 2000, n_cities = 68) {
+select_study_period <- function(data, n_days = 3000, n_cities = 68) {
   dates <- data[["date"]]
   err_proof_n_days <- min(n_days, unique(dates))
   cities <- data[["city"]]
@@ -314,9 +314,9 @@ draw_treated_exp <- function(data, p_obs_treat, quasi_exp) {
 }
 
 test_treatment_data <- nmmaps_data %>% 
-  select_study_period(n_days = 500, n_cities = 6) %>% 
-  draw_treated_exp(0.05, "random_days")%>% 
-  draw_treated(0.1, "alert_co") %>% 
+  select_study_period(n_days = 3500, n_cities = 6) %>% 
+  draw_treated_exp(0.5, "random_days")%>% 
+  draw_treated(0.01, "alert_co") %>% 
   rename(treated_alert = treated)  
 
 graph_treatment_assignment <- function(data, method) {
@@ -370,6 +370,7 @@ find_pollutant <- function(formula) {
 create_y1 <- function(data,
                       percent_effect_size = 0.5,
                       id_method = "RCT", 
+                      iv_intensity = NA, 
                       formula) {
   
   fml <- Formula::as.Formula(formula)
@@ -402,11 +403,10 @@ create_y1 <- function(data,
       ) %>%
       ungroup()
     
-  } else if (str_starts(id_method, "OLS|IV")) {
+  } else if (id_method %in% c("OLS", "IV")) {
     pollutant <- find_pollutant(fml)
     
-    if (str_starts(id_method, "IV")) {
-      iv_intensity <- as.numeric(str_extract(id_method, "(?<=_).+"))
+    if (id_method == "IV") {
       data[[pollutant]] <- 
         data[[pollutant]] + 
         iv_intensity*data[["treated"]] +
@@ -482,7 +482,7 @@ We also need to compute the true effect for each simulation. The different ident
 ```{r}
 compute_true_effect <- function(data, id_method, percent_effect_size, dep_var) {
   
-  if (str_starts(id_method, "IV|OLS")) {
+  if (id_method %in% c("OLS", "IV")) {
     true_effect <- percent_effect_size/100*mean(data[[dep_var]])
   } else {#ATE
     true_effect <- mean(data$y1 - data$y0, na.rm = TRUE)
@@ -496,12 +496,13 @@ We can now create a function running all the previous functions together and the
 
 ```{r}
 compute_simulation <- function(data,
-                               n_days = 2000,
+                               n_days = 3000,
                                n_cities = 68, 
                                p_obs_treat = 0.5,
-                               percent_effect_size = 0.5,
+                               percent_effect_size = 1,
                                quasi_exp = "random_days",
                                id_method = "RCT", 
+                               iv_intensity = NA,
                                formula = "resp_total ~ treated",
                                progressbar = progressor()#to have a progressbar when mapping
                                ) {
@@ -513,14 +514,14 @@ compute_simulation <- function(data,
     select_study_period(n_days, n_cities) %>%
     mutate(y0 = .data[[dep_var]]) %>%
     draw_treated(p_obs_treat, quasi_exp) %>% 
-    create_y1(percent_effect_size, id_method, formula) %>% 
+    create_y1(percent_effect_size, id_method, iv_intensity, formula) %>% 
     mutate(
       yobs = y1 * treated + y0 * (1 - treated)
     ) %>%
     filter(!is.na(treated)) #not necessary bc dropped in lm()
   
   updated_fml <- ifelse(
-    str_starts(id_method, "IV|OLS"),
+    id_method %in% c("OLS", "IV"),
     str_replace(formula, dep_var, "y1"),
     str_replace(formula, dep_var, "yobs")
   )
@@ -540,6 +541,7 @@ compute_simulation <- function(data,
       percent_effect_size = percent_effect_size,
       quasi_exp = quasi_exp,
       id_method = id_method, 
+      iv_intensity = iv_intensity,
       formula = formula
     )
   
@@ -550,9 +552,10 @@ compute_simulation <- function(data,
 nmmaps_data %>%
   compute_simulation(
     data = .,
-    formula = "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday",
+    formula = "death_total ~ temperature + temperature_squared | city + month^year + weekday | co ~ treated ",
     quasi_exp = "random_days",
-    id_method = "RCT",
+    id_method = "IV",
+    iv_intensity = 0.5,
     n_days = 100,
     n_cities = 68,
     percent_effect_size = 0.5,
@@ -574,10 +577,11 @@ To build `sim_param`, we first define a set of baseline values for our parameter
 
 ```{r}
 sim_param_base <- tibble(
-  n_days = 2000,
+  n_days = 3000,
   n_cities = 68,
   p_obs_treat = 0.5,
-  percent_effect_size = 0.5, 
+  percent_effect_size = 1, 
+  iv_intensity = 0.5,
   formula = "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday"
 )
 
@@ -585,9 +589,10 @@ sim_param_base <- tibble(
 # write_csv(sim_param_base, "R/Outputs/sim_param_base.csv")
 
 vect_n_days <- c(100, 500, 1000, 2000, 3000)
-vect_n_cities <- c(20, 68)
-vect_p_obs_treat <- c(0.5, 0.2) #c(0.5, 0.2, 0.01)
-vect_percent_effect_size <- c(0.1, 0.5, 1)
+vect_n_cities <- c(68)
+vect_p_obs_treat <- c(0.01, 0.05, 0.1, 0.25, 0.5)
+vect_percent_effect_size <- c(0.5, 1, 2, 5, 10)
+vect_iv_intensity <- c(0.01, 0.1, 0.2, 0.5, 0.7)
 vect_formula <- c(
   # "death_total ~ treated",
   "resp_total ~ treated + temperature + temperature_squared | city + month^year + weekday",
@@ -611,7 +616,7 @@ add_values_param <- function(df, vect_param) {
     fill(everything(), .direction = "downup")
 }
 
-vect_of_vect_param <- c("vect_n_days", "vect_n_cities", "vect_p_obs_treat", "vect_percent_effect_size", "vect_formula")
+vect_of_vect_param <- c("vect_n_days", "vect_n_cities", "vect_p_obs_treat", "vect_percent_effect_size", "vect_iv_intensity", "vect_formula")
 
 sim_param_unique <- 
   map_dfr(
@@ -641,7 +646,7 @@ sim_param_unique_clean <- sim_param_unique %>%
     ),
     id_method = ifelse(
       quasi_exp == "random_days", 
-      list(c("RCT", "IV_0.5", "IV_0.1")), 
+      list(c("RCT", "IV")), 
       id_method
     )
   ) %>% 
@@ -649,7 +654,7 @@ sim_param_unique_clean <- sim_param_unique %>%
   mutate(
     formula = case_when(
       id_method == "OLS" ~ str_replace_all(formula, "treated", "co"),
-      str_starts(id_method, "IV") ~ paste(
+      id_method == "IV" ~ paste(
         str_remove_all(formula, "(\\+\\s)?\\btreated\\b(\\s\\+)?"),
         "| co ~ treated"
         ),
@@ -658,9 +663,13 @@ sim_param_unique_clean <- sim_param_unique %>%
   ) %>% 
   filter(!str_detect(formula, "~\\s{0,2}\\|")) %>% 
   #adapting parameters
-  mutate(p_obs_treat = ifelse(id_method == "RDD", p_obs_treat/5, p_obs_treat)) %>% 
+  mutate(
+    p_obs_treat = ifelse(id_method == "RDD", p_obs_treat/5, p_obs_treat),
+    iv_intensity = ifelse(id_method != "IV", NA, iv_intensity)
+  ) %>% 
+  distinct() %>% 
   arrange(id_method, n_days)
-  # filter(!str_starts(id_method, "OLS|IV")) %>%
+  # filter(!id_method %in% c("OLS", "IV")) %>%
   # filter(n_days == 3000) %>% 
   # mutate(percent_effect_size = 50)
   # filter(id_method == "RCT" & str_starts(formula, "death"))
