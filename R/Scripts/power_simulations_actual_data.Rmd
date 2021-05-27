@@ -195,15 +195,11 @@ In this section, we follow the steps described in the section "analysis" and car
 We load the packages and the data and wrangle it into a format well suited for this analysis.
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
-library(here) # for files paths organization
-library(tidyverse) # for data manipulation and visualisation
-library(modelr) # modeling within the tidyverse
-library(retrodesign) # formulas for type-m and type-s errors
-library(knitr) # for tables
+library(here)
+library(tidyverse) 
+library(knitr) 
 library(broom)
 library(lubridate)
-library(lmtest)
-library(sandwich)
 library(tictoc)
 library(rlang)
 library(readr)
@@ -216,6 +212,7 @@ library(progressr)
 
 set_mediocre_all()
 
+# Settings for progress bar
 handlers(list(
   handler_progress(
     format   = ":spin :current/:total (:message) [:bar] :percent in :elapsed ETA: :eta"
@@ -280,14 +277,6 @@ draw_treated <- function(data, p_obs_treat = 0.5, quasi_exp = "random_days") {
   
   if (quasi_exp == "random_days") {
     data[["treated"]] <- rbernoulli(length(data[["date"]]), p_obs_treat)
-  } else if (quasi_exp == "national") {
-    num_date <- as.numeric(data[["date"]])
-    data[["treated"]] <- (num_date >= quantile(num_date, 1 - p_obs_treat))
-  } else if (quasi_exp == "local") {
-    treated_cities <- unique(data[["city"]]) %>%
-      sample(size = round(length(.) * min(p_obs_treat * 2, 1)))
-    data[["treated"]] <- (data[["city"]] %in% treated_cities &
-                  data[["date"]] >= median(data[["date"]]))
   } else if (str_starts(quasi_exp, "alert")) {
     pollutant <- str_extract(quasi_exp, "(?<=_).+")
     # threshold_pos <- rbeta(1, 20, 7) 
@@ -305,30 +294,6 @@ draw_treated <- function(data, p_obs_treat = 0.5, quasi_exp = "random_days") {
       ) %>%
       select(-bw_high, -threshold) %>% 
       ungroup()
-  } else if (quasi_exp == "rolling") {
-    data <- data %>%
-      group_by(.data$city) %>%
-      mutate(
-        treated = (.data$date > sample(
-          seq.Date(
-            min(.data$date) + (1 - 2*p_obs_treat)*length(.data$date),
-            max(.data$date), "day"
-          ), 1))
-      ) %>%
-      ungroup() 
-  } else if (quasi_exp == "national_short") {
-    dates <- unique(data[["date"]])
-    bw <- floor(min(p_obs_treat, 0.5) * length(dates))
-  
-    date_start_treat <- sample(seq.Date(min(dates) + bw, max(dates) - bw, "day"), 1)
-    
-    data <- data %>%
-      mutate(
-        treated = ifelse(
-          .data[["date"]] > date_start_treat + bw |
-            .data[["date"]] < date_start_treat - bw,
-                         NA, (.data[["date"]] >= date_start_treat))
-      )
   } else {
     data[["treated"]] <- TRUE
   }
@@ -351,10 +316,6 @@ draw_treated_exp <- function(data, p_obs_treat, quasi_exp) {
 test_treatment_data <- nmmaps_data %>% 
   select_study_period(n_days = 500, n_cities = 6) %>% 
   draw_treated_exp(0.05, "random_days")%>% 
-  draw_treated_exp(0.2, "national") %>%
-  draw_treated_exp(0.5, "local") %>% 
-  draw_treated_exp(0.05, "national_short") %>% 
-  draw_treated_exp(0.2, "rolling") %>% 
   draw_treated(0.1, "alert_co") %>% 
   rename(treated_alert = treated)  
 
@@ -386,18 +347,6 @@ test_treatment_data %>%
 
 test_treatment_data %>% 
   graph_treatment_assignment("alert")
-
-test_treatment_data %>%
-  graph_treatment_assignment("local")
-
-test_treatment_data %>%
-  graph_treatment_assignment("national")
-
-test_treatment_data %>%
-  graph_treatment_assignment("national_short")
-
-test_treatment_data %>%
-  graph_treatment_assignment("rolling")
 ```
 
 ### Creating the output if a unit is treated
@@ -426,10 +375,10 @@ create_y1 <- function(data,
   fml <- Formula::as.Formula(formula)
   dep_var <- all.vars(fml)[[1]]
   
-  if (id_method %in% c("DID", "ITS", "RDIT", "RDD")) {
+  if (id_method == "RDD") {
     
-    data <- data %>% 
-      group_by(.data$city) %>% 
+    data <- data %>%
+      group_by(.data$city) %>%
       mutate(
         y1 = .data[[dep_var]] -
           rpois(
@@ -440,9 +389,10 @@ create_y1 <- function(data,
       ungroup()
     
   } else if (id_method == "RCT") {
-    
-    data <- data %>% 
-      group_by(.data$city) %>% 
+
+    #Just a different sign
+    data <- data %>%
+      group_by(.data$city) %>%
       mutate(
         y1 = .data[[dep_var]] +
           rpois(
@@ -461,7 +411,6 @@ create_y1 <- function(data,
         data[[pollutant]] + 
         iv_intensity*data[["treated"]] +
         rnorm(data[[pollutant]], 0, 0.1)
-      # pollutant <- str_c("fit_", pollutant)
       
       #need to withdraw the first stage from the formula and add the pollutant
       parts_formula <- str_split(formula, "\\|")[[1]]
@@ -475,7 +424,6 @@ create_y1 <- function(data,
     }
     
     fml <- Formula::as.Formula(formula_clean)
-    # reg <- feglm(data = data, fml = fml, combine.quick=FALSE)
     reg <- feols(data = data, fml = fml, combine.quick=FALSE)
     reg$coefficients[[pollutant]] <- mean(data[[dep_var]])*percent_effect_size/100  
     #to get beta as the increase in percent
@@ -529,48 +477,12 @@ estimate_model <- function(data, formula) {
 
 We then want to compute simulations by running all the previous functions together. Yet, for the DiD and the ITS/RDIT, we first need to create additional dummy variables (`post` and `city_treated` for the DiD and `t` and `t_post` for the ITS/RDIT). We thus write a function which does so, `add_post_vars`:
 
-```{r}
-add_post_vars <- function(data, id_method) {
-  if (id_method == "DID") {
-    out_data <- data %>%
-      group_by(city) %>%
-      mutate(city_treated = as.logical(max(treated))) %>%
-      ungroup() %>%
-      group_by(date) %>%
-      mutate(post = as.logical(max(treated))) %>%
-      ungroup()
-  } else if (id_method %in% c("ITS", "RDIT")) {
-    out_data <- data %>%
-      mutate(
-        date_num = as.numeric(date),
-        t = date_num - min(date_num),
-        t_post = date_num - as.numeric(min(.data$date[treated == TRUE])),
-        t_post = ifelse(t_post < 0, 0, t_post)
-      )
-  } else { 
-    out_data <- data
-  }
-  
-  return(out_data)
-}
-```
-
 We also need to compute the true effect for each simulation. The different identification methods aims to identify different estimands (ATE, ATET, etc). We 
 
 ```{r}
 compute_true_effect <- function(data, id_method, percent_effect_size, dep_var) {
   
-  if (id_method == "DID") {#ATET
-    true_effect <- data %>% 
-      filter(post, city_treated) %>% 
-      summarise(mean(y1 - y0, na.rm = TRUE)) %>% 
-      as.numeric()
-  } else if (id_method %in% c("ITS", "RDIT")) {#ATET
-    true_effect <- data %>% 
-      filter(t_post > 0) %>% 
-      summarise(mean(y1 - y0, na.rm = TRUE)) %>% 
-      as.numeric()
-  } else if (str_starts(id_method, "IV|OLS")) {
+  if (str_starts(id_method, "IV|OLS")) {
     true_effect <- percent_effect_size/100*mean(data[[dep_var]])
   } else {#ATE
     true_effect <- mean(data$y1 - data$y0, na.rm = TRUE)
@@ -605,8 +517,7 @@ compute_simulation <- function(data,
     mutate(
       yobs = y1 * treated + y0 * (1 - treated)
     ) %>%
-    filter(!is.na(treated)) %>% #not necessary bc dropped in lm()
-    add_post_vars(id_method) 
+    filter(!is.na(treated)) #not necessary bc dropped in lm()
   
   updated_fml <- ifelse(
     str_starts(id_method, "IV|OLS"),
@@ -716,7 +627,7 @@ We want to compute our simulations for this set of parameters for every quasi ex
 Then, for each set of parameters we want to run many iterations of the simulation, `n_iter`. We thus modify `sim_param` so that each set of parameter appears `n_iter` times. It will enable us to loop `compute_simulation` directly on `sim_param`.
 
 ```{r}
-vect_quasi_exp <- c("random_days", "national", "local", "alert_co", "none") #, "alert_co"
+vect_quasi_exp <- c("random_days", "alert_co", "none")
 n_iter <- 1
 
 sim_param_unique_clean <- sim_param_unique %>%
@@ -725,8 +636,6 @@ sim_param_unique_clean <- sim_param_unique %>%
   # mutate(p_obs_treat = ifelse(str_starts(quasi_exp "alert"), p_obs_treat/10, p_obs_treat) %>% 
   mutate(
     id_method = case_when(
-      quasi_exp %in% c("local", "rolling") ~ "DID",
-      str_starts(quasi_exp, "national") ~ "ITS",
       str_starts(quasi_exp, "alert") ~ "RDD",
       quasi_exp == "none" ~ "OLS",
     ),
@@ -739,15 +648,6 @@ sim_param_unique_clean <- sim_param_unique %>%
   unnest(id_method) %>% 
   mutate(
     formula = case_when(
-      id_method == "DID" ~ str_replace_all(formula, "treated", 
-                                             "treated + post + city_treated") %>% 
-        str_remove_all("city\\s?\\+"),
-      id_method == "ITS" ~ str_replace_all(
-        formula, "treated", 
-        "treated + t + t_post"),
-      # id_method == "RDD" ~ str_replace_all(formula, "treated", paste(
-      #   "treated +", str_remove(quasi_exp, "alert_")
-      # )),
       id_method == "OLS" ~ str_replace_all(formula, "treated", "co"),
       str_starts(id_method, "IV") ~ paste(
         str_remove_all(formula, "(\\+\\s)?\\btreated\\b(\\s\\+)?"),
@@ -758,18 +658,9 @@ sim_param_unique_clean <- sim_param_unique %>%
   ) %>% 
   filter(!str_detect(formula, "~\\s{0,2}\\|")) %>% 
   #adapting parameters
-  filter(!(n_cities == 1 & quasi_exp == "local")) %>% 
-  filter(!(quasi_exp %in% c("local", "national") & p_obs_treat < 0.1)) %>% 
-  mutate(
-    p_obs_treat = case_when(
-      id_method == "RDD" ~  p_obs_treat/5,
-      id_method == "DID" ~  p_obs_treat/2,
-      TRUE ~ p_obs_treat
-    )
-  ) %>% 
+  mutate(p_obs_treat = ifelse(id_method == "RDD", p_obs_treat/5, p_obs_treat)) %>% 
   arrange(id_method, n_days)
   # filter(!str_starts(id_method, "OLS|IV")) %>%
-  # filter(str_starts(id_method, "DID")) %>% 
   # filter(n_days == 3000) %>% 
   # mutate(percent_effect_size = 50)
   # filter(id_method == "RCT" & str_starts(formula, "death"))
@@ -871,54 +762,55 @@ summary_simulations <- summarise_simulations(simulations_output)
 # saveRDS(summary_simulations, "R/Outputs/summary_simulations.RDS")
 ```
 
-# Heatmap
+<!-- # Heatmap -->
 
-```{r}
-n_iter <- 3
+<!-- ```{r} -->
+<!-- n_iter <- 3 -->
 
-vect_n_days <- seq(500, 4000, 500)
-vect_percent_effect_size <- seq(0.5, 1.5, 0.1)
+<!-- vect_n_days <- seq(500, 4000, 500) -->
+<!-- vect_percent_effect_size <- seq(0.5, 1.5, 0.1) -->
 
-sim_param_heatmap <- sim_param_base %>%
-  select(-n_days, -percent_effect_size) %>%
-  crossing(vect_n_days, vect_percent_effect_size) %>%
-  rename_with( ~ str_remove(., "vect_")) %>%
-  crossing(rep_id = 1:n_iter) %>%
-  select(n_days, n_cities, p_obs_treat, percent_effect_size, formula) %>% 
-  mutate(quasi_exp = "random_days", id_method = "RCT")
+<!-- sim_param_heatmap <- sim_param_base %>% -->
+<!--   select(-n_days, -percent_effect_size) %>% -->
+<!--   crossing(vect_n_days, vect_percent_effect_size) %>% -->
+<!--   rename_with( ~ str_remove(., "vect_")) %>% -->
+<!--   crossing(rep_id = 1:n_iter) %>% -->
+<!--   select(n_days, n_cities, p_obs_treat, percent_effect_size, formula) %>% -->
+<!--   mutate(quasi_exp = "random_days", id_method = "RCT") -->
 
-future::plan(multicore)
-tic()
-with_progress({
-  p <- progressor(steps = nrow(sim_param_heatmap))
-  
-  simulations_output_heatmap <- future_pmap_dfr(
-    sim_param_heatmap,
-    compute_simulation,
-    data = nmmaps_data,
-    progressbar = p,
-    .options = furrr_options(seed = TRUE)
-  )
-})
-toc()
+<!-- future::plan(multicore) -->
+<!-- tic() -->
+<!-- with_progress({ -->
+<!--   p <- progressor(steps = nrow(sim_param_heatmap)) -->
 
-all_simulations_heatmap <- simulations_output_heatmap %>%
-  as_tibble() 
+<!--   simulations_output_heatmap <- future_pmap_dfr( -->
+<!--     sim_param_heatmap, -->
+<!--     compute_simulation, -->
+<!--     data = nmmaps_data, -->
+<!--     progressbar = p, -->
+<!--     .options = furrr_options(seed = TRUE) -->
+<!--   ) -->
+<!-- }) -->
+<!-- toc() -->
 
-# saveRDS(all_simulations_heatmap, "R/Outputs/data_simulations_heatmap.RDS")
-# all_simulations_heatmap <- readRDS("R/Outputs/data_simulations_heatmap.RDS")
+<!-- all_simulations_heatmap <- simulations_output_heatmap %>% -->
+<!--   as_tibble() -->
 
-summary_simulations_heatmap <- summarise_simulations(all_simulations_heatmap)
+<!-- # saveRDS(all_simulations_heatmap, "R/Outputs/data_simulations_heatmap.RDS") -->
+<!-- # all_simulations_heatmap <- readRDS("R/Outputs/data_simulations_heatmap.RDS") -->
 
-summary_simulations_heatmap %>%
-  filter(percent_effect_size > 0.4 & n_days > 400) %>%
-  ggplot(aes(x = n_days, y = percent_effect_size)) +
-  geom_raster(aes(fill = type_m)) + # , interpolate = TRUE) +
-  # geom_contour(aes(z = type_m)) +
-  coord_fixed(ratio = 1000) +
-  scale_fill_continuous(limits = c(1, NA))
+<!-- summary_simulations_heatmap <- summarise_simulations(all_simulations_heatmap) -->
 
-```
+<!-- summary_simulations_heatmap %>% -->
+<!--   filter(percent_effect_size > 0.4 & n_days > 500) %>% -->
+<!--   filter(percent_effect_size < 1) %>%  -->
+<!--   ggplot(aes(x = n_days, y = percent_effect_size)) + -->
+<!--   geom_raster(aes(fill = type_m)) + # , interpolate = TRUE) + -->
+<!--   # geom_contour(aes(z = type_m)) + -->
+<!--   coord_fixed(ratio = 1000) + -->
+<!--   scale_fill_continuous(limits = c(1, NA)) -->
+
+<!-- ``` -->
 
 
 <!-- ```{r} -->
