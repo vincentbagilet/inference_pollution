@@ -569,11 +569,11 @@ We will then loop this function to get a large number of replications of each si
 
 We can then run the simulations. But first, we define the set of parameters we want to consider.
 
-### Defining the parameters
+### Defining baseline parameters
 
 We create a table displaying in each row a set of parameters we want to have a simulation for, `sim_param`. We will then map our function `compute_simulation` on this table.
 
-To build `sim_param`, we first define a set of baseline values for our parameters and store them in a data frame, `sim_param_base`. We will then vary the values of the parameters one after the other. We thus create vectors containing the different values of the parameters we want to test.
+To build `sim_param`, we first define a set of baseline values for our parameters and store them in a data frame, `sim_param_base`.
 
 ```{r}
 sim_param_base <- tibble(
@@ -587,19 +587,28 @@ sim_param_base <- tibble(
 
 # saveRDS(sim_param_base, "R/Outputs/sim_param_base.RDS")
 # write_csv(sim_param_base, "R/Outputs/sim_param_base.csv")
+```
 
-vect_n_days <- c(100, 500, 1000, 2000, 3000)
+### Evolution with values of a given parameter
+
+#### Defining parameters
+
+We will then vary the values of the parameters one after the other. We thus create vectors containing the different values of the parameters we want to test.
+ 
+```{r}
+vect_n_days <- c(100, 500, 1000, 2000, 3000, 4000)
 vect_n_cities <- c(68)
-vect_p_obs_treat <- c(0.01, 0.05, 0.1, 0.25, 0.5)
-vect_percent_effect_size <- c(0.5, 1, 2, 5, 10)
+vect_p_obs_treat <- c(0.01, 0.025, 0.05, 0.1, 0.25, 0.5)
+vect_percent_effect_size <- c(0.1, 0.5, 1, 2, 5, 10)
 vect_iv_intensity <- c(0.01, 0.1, 0.2, 0.5, 0.7)
 vect_formula <- c(
   # "death_total ~ treated",
   "resp_total ~ treated + temperature + temperature_squared | city + month^year + weekday",
-  "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday"
-  # "copd_age_65_75 ~ treated + temperature + temperature_squared | city + month^year + weekday"
+  "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday",
+  "copd_age_65_75 ~ treated + temperature + temperature_squared | city + month^year + weekday"
 )
 ```
+
 
 We then want to create the actual table, varying parameters one after the other. To do so, we create a simple function `add_values_param`. This function adds the values of a parameter contained in a vector. We can then map this function on all the vectors of parameters of interest.
 
@@ -633,7 +642,7 @@ Then, for each set of parameters we want to run many iterations of the simulatio
 
 ```{r}
 vect_quasi_exp <- c("random_days", "alert_co", "none")
-n_iter <- 1
+n_iter <- 10
 
 sim_param_unique_clean <- sim_param_unique %>%
   crossing(vect_quasi_exp) %>%
@@ -665,9 +674,10 @@ sim_param_unique_clean <- sim_param_unique %>%
   #adapting parameters
   mutate(
     p_obs_treat = ifelse(id_method == "RDD", p_obs_treat/5, p_obs_treat),
+    p_obs_treat = ifelse(id_method == "OLS", NA, p_obs_treat),
     iv_intensity = ifelse(id_method != "IV", NA, iv_intensity)
   ) %>% 
-  distinct() %>% 
+  distinct() %>% #to erase the duplicates due to iv_intensity in non-iv id_methods
   arrange(id_method, n_days)
   # filter(!id_method %in% c("OLS", "IV")) %>%
   # filter(n_days == 3000) %>% 
@@ -681,15 +691,16 @@ sim_param <- sim_param_unique_clean %>%
 # write_csv(sim_param, "../Outputs/sim_param.csv")
 ```
 
-### Running the simulation
+#### Running the simulation
 
 We can then run the simulations for each set of parameter, using a `pmap_dfr` function.
 
 ```{r eval=FALSE}
 simulations_output <- NULL
-save_every <- 10
+save_every <- 7000
 future::plan(multicore)
 
+tic()
 for (i in 1:ceiling(nrow(sim_param)/save_every)) {
   params_slice <- sim_param %>% 
     slice((1 + save_every*(i-1)):(save_every*i))
@@ -713,6 +724,7 @@ for (i in 1:ceiling(nrow(sim_param)/save_every)) {
     here("R", "Outputs", "Sim_save", str_c("sim_output_saved_", i,".RDS"))
   )
 }
+toc()
 
 # with_progress({
 #   p <- progressor(steps = nrow(sim_param))
@@ -731,7 +743,7 @@ for (i in 1:ceiling(nrow(sim_param)/save_every)) {
 # saveRDS(simulations_output, "R/Outputs/simulations_output.RDS")
 ```
 
-### Summarising the results
+#### Summarising the results
 
 We then summarize our results, computing power, type M and so on for each set of parameters using he function `summarise_simulations`. Note that this function can only take as input a data frame produced by `compute_simulation` (or a mapped version of this function).
 
@@ -745,7 +757,7 @@ summarise_simulations <- function(data) {
       covered = (true_effect > CI_low & true_effect < CI_high), 
       covered = ifelse(p_value > 0.05, NA, covered) #to consider only significant estimates
     ) %>% 
-    group_by(formula, quasi_exp, n_days, n_cities, p_obs_treat, percent_effect_size, id_method) %>%
+    group_by(formula, quasi_exp, n_days, n_cities, p_obs_treat, percent_effect_size, id_method, iv_intensity) %>%
     summarise(
       power = mean(p_value <= 0.05, na.rm = TRUE)*100, 
       # average_p_value = mean(p_value, na.rm = TRUE),
@@ -770,6 +782,48 @@ summary_simulations <- summarise_simulations(simulations_output)
 
 # saveRDS(summary_simulations, "R/Outputs/summary_simulations.RDS")
 ```
+
+### Decomposing the number of observations into number of cities and days
+
+In this section, we wonder whether only the total number of observations mater or whether decreasing the number of cities studied while keeping the number of observations constant (thus increasing the number of days) affects power and type M error. We thus aim to run several simulations with an identical number of observations but different numbers of cities/days. We repeat this for 3 different number of observations (1000, 2000 and 4000) to check the robustness of our findings.
+
+```{r}
+n_iter <- 1000
+
+sim_param_decoupling <- tibble(n_cities = c(1, 5, 15, 34)) %>% 
+  crossing(n_obs = c(1000, 2000, 4000)) %>% 
+  mutate(n_days = floor(n_obs/n_cities)) %>% 
+  select(-n_obs) %>% 
+  full_join(sim_param_base, by = c("n_cities", "n_days")) %>% 
+  fill(everything(), .direction = "updown") %>% 
+  anti_join(#because sim_param_base not in the exact set of param we want here
+    sim_param_base,
+    by = c("n_cities", "n_days", "p_obs_treat", "percent_effect_size", "iv_intensity", "formula")
+  ) %>% 
+  crossing(rep_id = 1:n_iter) %>%
+  select(-rep_id) 
+
+with_progress({
+  p <- progressor(steps = nrow(sim_param))
+
+  simulations_decomp_nobs <- future_pmap_dfr(
+    sim_param,
+    compute_simulation,
+    data = nmmaps_data,
+    progressbar = p,
+    .options = furrr_options(seed = TRUE)
+  )
+})
+
+beepr::beep(1)
+
+# saveRDS(simulations_decomp_nobs, here("R", "Outputs", "simulations_decomp_nobs.RDS"))
+
+summary_decomp_nobs <- summarise_simulations(simulations_decomp_nobs)
+
+# saveRDS(summary_decomp_nobs, here("R", "Outputs", "summary_decomp_nobs.RDS"))
+```
+
 
 <!-- # Heatmap -->
 
