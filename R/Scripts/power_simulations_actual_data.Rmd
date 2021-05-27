@@ -641,52 +641,51 @@ We want to compute our simulations for this set of parameters for every quasi ex
 Then, for each set of parameters we want to run many iterations of the simulation, `n_iter`. We thus modify `sim_param` so that each set of parameter appears `n_iter` times. It will enable us to loop `compute_simulation` directly on `sim_param`.
 
 ```{r}
-vect_quasi_exp <- c("random_days", "alert_co", "none")
-n_iter <- 10
+prepare_sim_param <- function(df_sim_param, 
+                              vect_quasi_exp = c("random_days", "alert_co", "none"), 
+                              n_iter = 10) {
+  
+  sim_param_clean <- df_sim_param %>%
+    crossing(vect_quasi_exp) %>%
+    rename(quasi_exp = vect_quasi_exp) %>%
+    mutate(
+      id_method = case_when(
+        str_starts(quasi_exp, "alert") ~ "RDD",
+        quasi_exp == "none" ~ "OLS",
+      ),
+      id_method = ifelse(
+        quasi_exp == "random_days", 
+        list(c("RCT", "IV")), 
+        id_method
+      )
+    ) %>% 
+    unnest(id_method) %>% 
+    mutate(
+      formula = case_when(
+        id_method == "OLS" ~ str_replace_all(formula, "treated", "co"),
+        id_method == "IV" ~ paste(
+          str_remove_all(formula, "(\\+\\s)?\\btreated\\b(\\s\\+)?"),
+          "| co ~ treated"
+          ),
+        TRUE ~ formula
+      )
+    ) %>% 
+    filter(!str_detect(formula, "~\\s{0,2}\\|")) %>% 
+    #adapting parameters
+    mutate(
+      p_obs_treat = ifelse(id_method == "RDD", p_obs_treat/5, p_obs_treat),
+      p_obs_treat = ifelse(id_method == "OLS", NA, p_obs_treat),
+      iv_intensity = ifelse(id_method != "IV", NA, iv_intensity)
+    ) %>% 
+    distinct() %>% #to erase the duplicates due to iv_intensity in non-iv id_methods
+    arrange(id_method, n_days) %>% 
+    crossing(rep_id = 1:n_iter) %>%
+    select(-rep_id) 
+  
+  return(sim_param_clean)
+} 
 
-sim_param_unique_clean <- sim_param_unique %>%
-  crossing(vect_quasi_exp) %>%
-  rename(quasi_exp = vect_quasi_exp) %>%
-  # mutate(p_obs_treat = ifelse(str_starts(quasi_exp "alert"), p_obs_treat/10, p_obs_treat) %>% 
-  mutate(
-    id_method = case_when(
-      str_starts(quasi_exp, "alert") ~ "RDD",
-      quasi_exp == "none" ~ "OLS",
-    ),
-    id_method = ifelse(
-      quasi_exp == "random_days", 
-      list(c("RCT", "IV")), 
-      id_method
-    )
-  ) %>% 
-  unnest(id_method) %>% 
-  mutate(
-    formula = case_when(
-      id_method == "OLS" ~ str_replace_all(formula, "treated", "co"),
-      id_method == "IV" ~ paste(
-        str_remove_all(formula, "(\\+\\s)?\\btreated\\b(\\s\\+)?"),
-        "| co ~ treated"
-        ),
-      TRUE ~ formula
-    )
-  ) %>% 
-  filter(!str_detect(formula, "~\\s{0,2}\\|")) %>% 
-  #adapting parameters
-  mutate(
-    p_obs_treat = ifelse(id_method == "RDD", p_obs_treat/5, p_obs_treat),
-    p_obs_treat = ifelse(id_method == "OLS", NA, p_obs_treat),
-    iv_intensity = ifelse(id_method != "IV", NA, iv_intensity)
-  ) %>% 
-  distinct() %>% #to erase the duplicates due to iv_intensity in non-iv id_methods
-  arrange(id_method, n_days)
-  # filter(!id_method %in% c("OLS", "IV")) %>%
-  # filter(n_days == 3000) %>% 
-  # mutate(percent_effect_size = 50)
-  # filter(id_method == "RCT" & str_starts(formula, "death"))
-
-sim_param <- sim_param_unique_clean %>% 
-  crossing(rep_id = 1:n_iter) %>%
-  select(-rep_id) 
+sim_param <- prepare_sim_param(sim_param_unique, n_iter = 1)
 
 # write_csv(sim_param, "../Outputs/sim_param.csv")
 ```
@@ -788,11 +787,10 @@ summary_simulations <- summarise_simulations(simulations_output)
 In this section, we wonder whether only the total number of observations mater or whether decreasing the number of cities studied while keeping the number of observations constant (thus increasing the number of days) affects power and type M error. We thus aim to run several simulations with an identical number of observations but different numbers of cities/days. We repeat this for 3 different number of observations (1000, 2000 and 4000) to check the robustness of our findings.
 
 ```{r}
-n_iter <- 1000
-
-sim_param_decoupling <- tibble(n_cities = c(1, 5, 15, 34)) %>% 
-  crossing(n_obs = c(1000, 2000, 4000)) %>% 
-  mutate(n_days = floor(n_obs/n_cities)) %>% 
+sim_param_decomp_nobs <- 
+  tibble(n_cities = c(1, 3, 5, 10, 15, 25, 34)) %>%
+  crossing(n_obs = c(1000, 2000, 3000)) %>%
+  mutate(n_days = round(n_obs/n_cities)) %>% 
   select(-n_obs) %>% 
   full_join(sim_param_base, by = c("n_cities", "n_days")) %>% 
   fill(everything(), .direction = "updown") %>% 
@@ -800,30 +798,60 @@ sim_param_decoupling <- tibble(n_cities = c(1, 5, 15, 34)) %>%
     sim_param_base,
     by = c("n_cities", "n_days", "p_obs_treat", "percent_effect_size", "iv_intensity", "formula")
   ) %>% 
-  crossing(rep_id = 1:n_iter) %>%
-  select(-rep_id) 
-
-with_progress({
-  p <- progressor(steps = nrow(sim_param))
-
-  simulations_decomp_nobs <- future_pmap_dfr(
-    sim_param,
-    compute_simulation,
-    data = nmmaps_data,
-    progressbar = p,
-    .options = furrr_options(seed = TRUE)
-  )
-})
-
-beepr::beep(1)
-
-# saveRDS(simulations_decomp_nobs, here("R", "Outputs", "simulations_decomp_nobs.RDS"))
-
-summary_decomp_nobs <- summarise_simulations(simulations_decomp_nobs)
-
-# saveRDS(summary_decomp_nobs, here("R", "Outputs", "summary_decomp_nobs.RDS"))
+  prepare_sim_param(n_iter = 1) 
 ```
 
+```{r}
+sim_decomp_nobs <- NULL
+save_every <- 10000
+future::plan(multicore)
+
+tic()
+for (i in 1:ceiling(nrow(sim_param_decomp_nobs)/save_every)) {
+  params_slice <- sim_param_decomp_nobs %>% 
+    slice((1 + save_every*(i-1)):(save_every*i))
+  
+  with_progress({
+    p <- progressor(steps = nrow(params_slice))
+    
+    sim_decomp_nobs_to_save <- future_pmap_dfr(
+      params_slice,
+      compute_simulation,
+      data = nmmaps_data,
+      progressbar = p,
+      .options = furrr_options(seed = TRUE)
+    )
+  })
+  
+  print(paste("Iteration =", i*save_every))
+  sim_decomp_nobs <- sim_decomp_nobs %>% rbind(sim_decomp_nobs_to_save)
+  saveRDS(
+    sim_decomp_nobs_to_save, 
+    here("R", "Outputs", "Sim_save", str_c("sim_decomp_nobs_saved_", i,".RDS"))
+  )
+}
+toc()
+
+# saveRDS(simulations_decomp_nobs, here("R", "Outputs", "simulations_decomp_nobs.RDS"))
+```
+
+
+```{r}
+
+
+summary_decomp_nobs <- summarise_simulations(simulations_decomp_nobs)
+# saveRDS(summary_decomp_nobs, here("R", "Outputs", "summary_decomp_nobs.RDS"))
+
+summary_decomp_nobs %>% 
+  mutate(n_obs = as.factor(round(n_days*n_cities/100)*100)) %>% 
+  ggplot() + 
+  geom_point(aes(x = n_cities, y = power, color = n_obs)) +
+  geom_line(aes(x = n_cities, y = power, color = n_obs))
+
+
+beepr::beep(5)
+  
+```
 
 <!-- # Heatmap -->
 
