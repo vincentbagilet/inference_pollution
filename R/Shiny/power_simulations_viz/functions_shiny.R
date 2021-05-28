@@ -6,13 +6,14 @@ get_baseline_param <- function(df) {
     "p_obs_treat", 
     "percent_effect_size", 
     "id_method",
+    "iv_intensity",
     "formula"
   )
   
   #Get baseline values
   baseline_param <- df %>% 
     filter(str_detect(formula, "resp_total")) %>% 
-    select(quasi_exp, n_days, n_cities, p_obs_treat, percent_effect_size, id_method) %>% 
+    select(quasi_exp, n_days, n_cities, p_obs_treat, percent_effect_size, id_method, iv_intensity) %>% 
     distinct() %>% 
     inner_join(
       df,
@@ -37,6 +38,7 @@ graph_evol_by_exp <- function(df, var_param = "n_days", stat = "power") {
     "p_obs_treat", 
     "percent_effect_size", 
     "id_method",
+    "iv_intensity",
     "formula"
   )
   
@@ -56,10 +58,12 @@ graph_evol_by_exp <- function(df, var_param = "n_days", stat = "power") {
     ylim(c(0, ifelse(stat == "power", 100, NA))) +
     labs(
       title = paste(
-        str_to_title(stat_name), ifelse(stat == "power", "increases", "decreases"),
-        "with", var_param_name
+        "Evolution of",
+        str_to_title(stat_name), 
+        "with", 
+        var_param_name
       ),
-      subtitle = "Comparison across quasi-experiments",
+      subtitle = "Comparison across quasi-experiments and identification methods",
       x = var_param_name,
       y = str_to_title(stat_name)
     ) 
@@ -73,11 +77,11 @@ check_distrib_estimate <- function(df) {
   #only consider baseline values
   df_baseline <- df %>% 
     filter(str_detect(formula, "resp_total")) %>% 
-    select(quasi_exp, n_days, n_cities, p_obs_treat, percent_effect_size, id_method) %>% 
+    select(quasi_exp, n_days, n_cities, p_obs_treat, percent_effect_size, id_method, iv_intensity) %>% 
     distinct() %>% 
     inner_join(
       df,
-      by = c("quasi_exp", "n_days", "n_cities", "p_obs_treat", "percent_effect_size", "id_method")
+      by = c("quasi_exp", "n_days", "n_cities", "p_obs_treat", "percent_effect_size", "id_method", "iv_intensity")
     ) %>% 
     filter(str_detect(formula, "death_total"))
   
@@ -107,6 +111,7 @@ table_stats <- function(df, var_param = "n_days", stat = "power", method = "DID"
     "p_obs_treat", 
     "percent_effect_size", 
     "id_method",
+    "iv_intensity",
     "formula"
   )
   
@@ -118,6 +123,25 @@ table_stats <- function(df, var_param = "n_days", stat = "power", method = "DID"
     rename_with(~ str_to_title(str_replace_all(.x, "_", " ")))
   
   return(tab_out)
+}
+
+graph_decomp <- function(df_decomp, var_decomp, stat) {
+  df <-  df_decomp %>% 
+    filter(decomp_var == var_decomp)
+  
+  x_var <- ifelse(var_decomp == "n_obs", "n_cities", "p_obs_treat")
+  
+  graph <- df %>% 
+    mutate(
+      n_treat = as.factor(round(n_days*n_cities*p_obs_treat/100)*100), 
+      n_obs = as.factor(round(n_days*n_cities/100)*100)
+    ) %>% 
+    ggplot() + 
+    geom_point(aes(x = .data[[x_var]], y = .data[[stat]], color = .data[[var_decomp]])) +
+    geom_line(aes(x = .data[[x_var]], y = .data[[stat]], color = .data[[var_decomp]])) +
+    facet_wrap(~ id_method, scales = "free_x")
+  
+  return(graph)
 }
 
 

@@ -6,8 +6,10 @@ library(shinyWidgets)
 
 set_mediocre_all()
 
-summary_simulations <- readRDS("./data/summary_simulations.RDS")
-all_simulations <- readRDS("./data/all_simulations.RDS")
+summary_evol <- readRDS(here("R", "Outputs", "summary_evol.RDS")) 
+sim_evol <- readRDS(here("R", "Outputs", "sim_evol.RDS")) 
+summary_decomp_ptreat <- readRDS(here("R", "Outputs", "summary_decomp.RDS")) 
+
 # sim_param_base <- readRDS("data/sim_param_base.RDS")
 source("./functions_shiny.R")
 
@@ -25,20 +27,24 @@ ui <- fluidPage(theme = shinytheme("flatly"),
             conditionalPanel(
                 condition = "input.tabselected < '2'",
                 selectInput(inputId = "var_param",
-                            label = "Choose a varying parameter:",
+                            label = "Varying parameter:",
                             choices = c(
                                 "Number of days in the study" = "n_days", 
                                 "Number of cities in the study" = "n_cities",  
                                 "Effect size" = "percent_effect_size", 
-                                "Proportion of treated units" = "p_obs_treat")),
-                
+                                "Proportion of treated units" = "p_obs_treat",
+                                # "Outcome count" = ,
+                                "IV intensity" = "iv_intensity")),
+            ),
+            conditionalPanel(
+                condition = "input.tabselected < '3'",
                 selectInput(inputId = "stat",
-                            label = "Choose a statistics:",
+                            label = "Statistics:",
                             choices = c(
                                 "Power" = "power", 
                                 "Type M" = "type_m", 
                                 "Type S" = "type_s",
-                                "Coverage rate" = "coverage_rate"
+                                "Coverage rate" = "coverage_rate",
                                 "MSE" = "mse", 
                                 "Mean of the estimates" = "mean_estimate",
                                 "Normalised biased" = "nomalized_bias",
@@ -48,8 +54,16 @@ ui <- fluidPage(theme = shinytheme("flatly"),
             conditionalPanel(
                 condition = "input.tabselected == '1'",
                 selectInput(inputId = "method",
-                            label = "Choose an identification method:",
-                            choices = c("DID", "RCT", "RDD", "OLS", "IV_0.5", "IV_0.1")),
+                            label = "Identification method:",
+                            choices = c("RCT", "RDD", "OLS", "IV")),
+            ),
+            conditionalPanel(
+                condition = "input.tabselected == '2'",
+                selectInput(inputId = "var_decomp",
+                            label = "Decomposition of:",
+                            choices = c(
+                                "Number of observations" = "n_obs",
+                                "Number of treated" = "n_treat")),
             ),
         ),
 
@@ -70,9 +84,15 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                 ),
                 tabPanel(
                     value = 2,
+                    "Decomposition",
+                    plotOutput("decomp_plot"),
+                ),
+                tabPanel(
+                    value = 3,
                     "Checks",
                     plotOutput("check_plot"),
                 ),
+                
                 id = "tabselected"
             )
         )
@@ -83,23 +103,27 @@ ui <- fluidPage(theme = shinytheme("flatly"),
 server <- function(input, output) {
 
     output$evol_by_exp <- renderPlot({
-        graph_evol_by_exp(summary_simulations, input$var_param, input$stat)
+        graph_evol_by_exp(summary_evol, input$var_param, input$stat)
     })
     
     output$check_plot <- renderPlot({
-        check_distrib_estimate(all_simulations)
+        check_distrib_estimate(sim_evol)
     })
     
     output$table_by_exp <- renderTable({
-        table_stats(summary_simulations, input$var_param, input$stat, input$method)
+        table_stats(summary_evol, input$var_param, input$stat, input$method)
     })
     
     output$table_baseline_param <- renderTable({
-        get_baseline_param(summary_simulations) %>% 
+        get_baseline_param(summary_evol) %>% 
             select(-input$var_param) %>% 
             distinct() %>% 
             select(id_method, everything()) %>% 
             rename_with(~ str_to_title(str_replace_all(.x, "_", " "))) 
+    })
+    
+    output$decomp_plot <- renderPlot({
+        graph_decomp(summary_decomp, input$var_decomp, input$stat)
     })
 }
 

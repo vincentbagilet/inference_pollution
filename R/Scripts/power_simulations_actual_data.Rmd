@@ -577,8 +577,8 @@ To build `sim_param`, we first define a set of baseline values for our parameter
 
 ```{r}
 sim_param_base <- tibble(
-  n_days = 3000,
-  n_cities = 68,
+  n_days = 1000,
+  n_cities = 10,
   p_obs_treat = 0.5,
   percent_effect_size = 1, 
   iv_intensity = 0.5,
@@ -729,21 +729,9 @@ run_all_sim <- function(data, sim_param, save_every, name_save) {
 
 sim_evol <- run_all_sim(nmmaps_data, sim_param_evol, 10000, "sim_evol")
 
-# with_progress({
-#   p <- progressor(steps = nrow(sim_param))
-#   
-#   simulations_output <- future_pmap_dfr(
-#     sim_param,
-#     compute_simulation,
-#     data = nmmaps_data,
-#     progressbar = p,
-#     .options = furrr_options(seed = TRUE)
-#   )
-# })
-
 # beepr::beep(1)
 
-# saveRDS(simulations_output, "R/Outputs/simulations_output.RDS")
+# saveRDS(sim_evol, here("R", "Outputs", "sim_evol.RDS"))
 ```
 
 #### Summarising the results
@@ -783,7 +771,7 @@ We then run this function.
 ```{r eval=FALSE}
 summary_evol <- summarise_simulations(sim_evol)
 
-# saveRDS(summary_simulations, "R/Outputs/summary_simulations.RDS")
+# saveRDS(summary_evol, here("R", "Outputs", "summary_evol.RDS"))
 ```
 
 ### Decomposing the number of observations into number of cities and days
@@ -813,18 +801,10 @@ sim_decomp_nobs <- run_all_sim(nmmaps_data, sim_param_decomp_nobs, 10000, "sim_d
 
 
 ```{r}
-
-
-summary_decomp_nobs <- summarise_simulations(sim_decomp_nobs)
+summary_decomp_nobs <- summarise_simulations(sim_decomp_nobs) %>% 
+    mutate(decomp_var = "n_obs")
 # saveRDS(summary_decomp_nobs, here("R", "Outputs", "summary_decomp_nobs.RDS"))
 
-summary_decomp_nobs %>% 
-  mutate(n_obs = as.factor(round(n_days*n_cities/100)*100)) %>% 
-  ggplot() + 
-  geom_point(aes(x = n_cities, y = power, color = n_obs)) +
-  geom_line(aes(x = n_cities, y = power, color = n_obs)) +
-  facet_wrap(~ id_method)
-  
 ```
 
 ### Decomp p_treat
@@ -859,15 +839,14 @@ sim_decomp_ptreat <-  run_all_sim(nmmaps_data, sim_param_decomp_ptreat, 10000, "
 
 ```{r}
 
-summary_decomp_ptreat <- summarise_simulations(sim_decomp_ptreat)
-# saveRDS(summary_decomp_nobs, here("R", "Outputs", "summary_decomp_nobs.RDS"))
+summary_decomp_ptreat <- summarise_simulations(sim_decomp_ptreat) %>% 
+    mutate(decomp_var = "n_treat")
+# saveRDS(summary_decomp_ptreat, here("R", "Outputs", "summary_decomp_ptreat.RDS"))
 
-summary_decomp_ptreat %>% 
-  mutate(n_treat = as.factor(round(n_days*n_cities*p_obs_treat/100)*100)) %>% 
-  ggplot() + 
-  geom_point(aes(x = p_obs_treat, y = power, color = n_treat)) +
-  geom_line(aes(x = p_obs_treat, y = power, color = n_treat)) +
-  facet_wrap(~ id_method)
+summary_decomp <- summary_decomp_nobs %>% 
+    rbind(summary_decomp_ptreat)
+
+# saveRDS(summary_decomp, here("R", "Outputs", "summary_decomp.RDS"))
 ```
 
 
