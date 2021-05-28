@@ -597,7 +597,6 @@ We will then vary the values of the parameters one after the other. We thus crea
  
 ```{r}
 vect_n_days <- c(100, 500, 1000, 2000, 3000, 4000)
-vect_n_cities <- c(68)
 vect_p_obs_treat <- c(0.01, 0.025, 0.05, 0.1, 0.25, 0.5)
 vect_percent_effect_size <- c(0.1, 0.5, 1, 2, 5, 10)
 vect_iv_intensity <- c(0.01, 0.1, 0.2, 0.5, 0.7)
@@ -625,7 +624,7 @@ add_values_param <- function(df, vect_param) {
     fill(everything(), .direction = "downup")
 }
 
-vect_of_vect_param <- c("vect_n_days", "vect_n_cities", "vect_p_obs_treat", "vect_percent_effect_size", "vect_iv_intensity", "vect_formula")
+vect_of_vect_param <- c("vect_n_days", "vect_p_obs_treat", "vect_percent_effect_size", "vect_iv_intensity", "vect_formula")
 
 sim_param_unique <- 
   map_dfr(
@@ -686,6 +685,7 @@ prepare_sim_param <- function(df_sim_param,
 } 
 
 sim_param_evol <- prepare_sim_param(sim_param_unique, n_iter = 1)
+sim_param_evol_small <- prepare_sim_param(sim_param_unique, n_iter = 1000)
 
 # write_csv(sim_param, "../Outputs/sim_param.csv")
 ```
@@ -727,7 +727,7 @@ run_all_sim <- function(data, sim_param, save_every, name_save) {
   return(output)
 }
 
-sim_evol <- run_all_sim(nmmaps_data, sim_param_evol, 10000, "sim_evol")
+sim_evol_small <- run_all_sim(nmmaps_data, sim_param_evol_small, 10000, "sim_evol_small")
 
 # beepr::beep(1)
 
