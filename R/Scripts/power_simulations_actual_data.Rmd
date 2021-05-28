@@ -552,13 +552,13 @@ compute_simulation <- function(data,
 nmmaps_data %>%
   compute_simulation(
     data = .,
-    formula = "death_total ~ temperature + temperature_squared | city + month^year + weekday | co ~ treated ",
-    quasi_exp = "random_days",
-    id_method = "IV",
+    formula = "death_total ~ treated + co + temperature + temperature_squared | city + month^year + weekday",
+    quasi_exp = "alert_co",
+    id_method = "RDD",
     iv_intensity = 0.5,
-    n_days = 100,
-    n_cities = 68,
-    percent_effect_size = 0.5,
+    n_days = 1000,
+    n_cities = 10,
+    percent_effect_size = 1,
     p_obs_treat = 0.01
   )
 ````
@@ -685,7 +685,8 @@ prepare_sim_param <- function(df_sim_param,
 } 
 
 sim_param_evol <- prepare_sim_param(sim_param_unique, n_iter = 1)
-sim_param_evol_small <- prepare_sim_param(sim_param_unique, n_iter = 1000)
+sim_param_evol_small <- prepare_sim_param(sim_param_unique, n_iter = 1) %>% 
+  filter(!(id_method == "RDD" & p_obs_treat <= 0.01)) 
 
 # write_csv(sim_param, "../Outputs/sim_param.csv")
 ```
@@ -705,7 +706,7 @@ run_all_sim <- function(data, sim_param, save_every, name_save) {
       slice((1 + save_every*(i-1)):(save_every*i))
     
     with_progress({
-      p <- progressor(steps = nrow(params_slice))
+      p <- progressor(steps = nrow(params_slice), on_exit = FALSE)
       
       intermediary_output <- future_pmap_dfr(
         params_slice,
@@ -727,7 +728,7 @@ run_all_sim <- function(data, sim_param, save_every, name_save) {
   return(output)
 }
 
-sim_evol_small <- run_all_sim(nmmaps_data, sim_param_evol_small, 10000, "sim_evol_small")
+sim_evol_small <- run_all_sim(nmmaps_data, sim_param_evol_small, 10, "sim_evol_small")
 
 # beepr::beep(1)
 
@@ -745,31 +746,38 @@ summarise_simulations <- function(data) {
     mutate(
       CI_low = estimate + se*qnorm((1-0.95)/2),
       CI_high = estimate - se*qnorm((1-0.95)/2),
+      length_CI = abs(CI_high - CI_low),
       covered = (true_effect > CI_low & true_effect < CI_high), 
-      covered = ifelse(p_value > 0.05, NA, covered) #to consider only significant estimates
+      covered_signif = ifelse(p_value > 0.05, NA, covered) #to consider only significant estimates
     ) %>% 
     group_by(formula, quasi_exp, n_days, n_cities, p_obs_treat, percent_effect_size, id_method, iv_intensity) %>%
     summarise(
       power = mean(p_value <= 0.05, na.rm = TRUE)*100, 
-      # average_p_value = mean(p_value, na.rm = TRUE),
       type_m = mean(ifelse(p_value <= 0.05, abs(estimate/true_effect), NA), na.rm = TRUE),
       type_s = sum(ifelse(p_value <= 0.05, sign(estimate) != sign(true_effect), NA), na.rm = TRUE)/n()*100,
-      coverage_rate = mean(covered, na.rm = TRUE)*100,
-      mse = mean((estimate - true_effect)^2, na.rm = TRUE),
-      mean_estimate = mean(estimate, na.rm = TRUE),
-      normalized_bias = mean(abs((estimate - true_effect/true_effect)), na.rm = TRUE),
-      estimate_true_ratio = mean(abs(estimate/true_effect), na.rm = TRUE),
+      coverage_rate = mean(covered_signif, na.rm = TRUE)*100,
+      coverage_rate_all = mean(covered, na.rm = TRUE)*100,
+      # mse = mean((estimate - true_effect)^2, na.rm = TRUE),
+      # normalized_bias = mean(abs((estimate - true_effect/true_effect)), na.rm = TRUE),
+      # estimate_true_ratio = mean(abs(estimate/true_effect), na.rm = TRUE),
       mean_f_stat = mean(f_stat, na.rm = TRUE),
+      mean_signal_to_noise = mean(estimate/length_CI, na.rm = TRUE),
       .groups	= "drop"
     ) %>% 
-    ungroup()
+    ungroup() %>% 
+    mutate(
+      outcome = str_extract(formula, "^[^\\s~]+(?=\\s?~)"),
+      n_days = as.integer(n_days),
+      n_cities = as.integer(n_cities)
+    )
 } 
 ```
 
 We then run this function.
 
 ```{r eval=FALSE}
-summary_evol <- summarise_simulations(sim_evol)
+summary_evol <- summarise_simulations(sim_evol) %>% 
+  mutate(outcome = fct_relevel(outcome, "copd_age_65_75", "resp_total", "death_total"))
 
 # saveRDS(summary_evol, here("R", "Outputs", "summary_evol.RDS"))
 ```

@@ -7,19 +7,21 @@ get_baseline_param <- function(df) {
     "percent_effect_size", 
     "id_method",
     "iv_intensity",
-    "formula"
+    "formula",
+    "outcome"
   )
   
   #Get baseline values
   baseline_param <- df %>% 
-    filter(str_detect(formula, "resp_total")) %>% 
+    filter(outcome == "resp_total") %>% 
     select(quasi_exp, n_days, n_cities, p_obs_treat, percent_effect_size, id_method, iv_intensity) %>% 
     distinct() %>% 
+    mutate(n_cities = max(n_cities)) %>% #when considering "evol_small"
     inner_join(
       df,
-      by = all_var[all_var != "formula"]
+      by = all_var[!(all_var %in% c("formula", "outcome"))]
     ) %>% 
-    filter(str_detect(formula, "death_total")) %>% 
+    filter(outcome == "death_total") %>% 
     select(all_var) %>% 
     distinct()
   
@@ -39,12 +41,16 @@ graph_evol_by_exp <- function(df, var_param = "n_days", stat = "power") {
     "percent_effect_size", 
     "id_method",
     "iv_intensity",
-    "formula"
+    "outcome"
   )
   
   df_filtered <-  get_baseline_param(df) %>% 
     select(-var_param) %>% 
-    inner_join(df, by = all_var[all_var != var_param])
+    inner_join(df, by = all_var[all_var != var_param]) %>% 
+    group_by(id_method) %>% #when the varying parameter pr stat is not available with some methods (eg iv_intensity)
+    filter(!is.na(.data[[var_param]])) %>% 
+    filter(!is.na(.data[[stat]])) %>% 
+    ungroup() 
   
   #graph itself
   graph <- df_filtered %>% 
@@ -54,7 +60,7 @@ graph_evol_by_exp <- function(df, var_param = "n_days", stat = "power") {
     ggplot(aes(x = .data[[var_param]], y = .data[[stat]])) + #, color = .data[[id_method]] + 
     geom_point() +
     geom_line(linetype = "dashed", size = 0.1) +
-    facet_wrap(~ id_method) +
+    facet_wrap(~ id_method, scales = "free_x") +
     ylim(c(0, ifelse(stat == "power", 100, NA))) +
     labs(
       title = paste(
@@ -87,12 +93,12 @@ check_distrib_estimate <- function(df) {
   
   data_true_effects <- df_baseline %>%
     group_by(id_method) %>%
-    summarize(mean_true_effect = mean(true_effect))
+    summarize(mean_true_effect = abs(mean(true_effect)))
 
   graph <- df_baseline %>%
     ggplot() +
-    geom_density(aes(x = estimate)) +
-    facet_wrap(~ id_method, scales = "free") + 
+    geom_density(aes(x = abs(estimate))) +
+    facet_wrap(~ id_method) + 
     geom_vline(data = data_true_effects, aes(xintercept = mean_true_effect)) +
     labs(
       title = "Distribution of estimates by identification method",
@@ -112,15 +118,16 @@ table_stats <- function(df, var_param = "n_days", stat = "power", method = "DID"
     "percent_effect_size", 
     "id_method",
     "iv_intensity",
-    "formula"
+    "outcome"
   )
   
   tab_out <-  get_baseline_param(df) %>% 
     select(-var_param) %>% 
     inner_join(df, by = all_var[all_var != var_param]) %>% 
-    select(stat, all_var) %>% 
+    select(stat, var_param, id_method, all_var) %>% 
     filter(id_method == method) %>% 
-    rename_with(~ str_to_title(str_replace_all(.x, "_", " ")))
+    arrange(var_param) %>% 
+    rename_with(~ str_to_title(str_replace_all(.x, "_", " "))) 
   
   return(tab_out)
 }
@@ -130,6 +137,7 @@ graph_decomp <- function(df_decomp, var_decomp, stat) {
     filter(decomp_var == var_decomp)
   
   x_var <- ifelse(var_decomp == "n_obs", "n_cities", "p_obs_treat")
+  decreasing_x_var <- ifelse(var_decomp == "n_obs", "number of days", "number of observations")
   
   graph <- df %>% 
     mutate(
@@ -139,8 +147,46 @@ graph_decomp <- function(df_decomp, var_decomp, stat) {
     ggplot() + 
     geom_point(aes(x = .data[[x_var]], y = .data[[stat]], color = .data[[var_decomp]])) +
     geom_line(aes(x = .data[[x_var]], y = .data[[stat]], color = .data[[var_decomp]])) +
-    facet_wrap(~ id_method, scales = "free_x")
+    facet_wrap(~ id_method, scales = "free_x") +
+    labs(
+      title = paste("Analysis of possible decoupling of", str_replace_all(var_decomp, "_", " ")),
+      subtitle = str_c("Representation of iso-", var_decomp),
+      y = str_to_title(str_replace_all(stat, "_", " ")),
+      x = paste(str_to_title(x_var), "(and decreasing", decreasing_x_var, ")"),
+      color = str_to_title(str_replace_all(var_decomp, "_", " "))
+    ) 
   
+  return(graph)
+}
+
+graph_ridge <- function(df, var_param = "n_days", stat = "estimate") {
+  all_var <- c(
+    "quasi_exp", 
+    "n_days", 
+    "n_cities", 
+    "p_obs_treat", 
+    "percent_effect_size", 
+    "id_method",
+    "iv_intensity"
+  )
+  
+  #only consider baseline values
+  df_filtered <-  df %>% 
+    mutate(outcome = str_extract(formula, "^[^\\s~]+(?=\\s?~)")) %>% 
+    get_baseline_param() %>% 
+    select(-var_param) %>% 
+    inner_join(df, by = c(all_var[all_var != var_param], "formula")) %>% 
+    group_by(id_method) %>% #when the varying parameter pr stat is not available with some methods (eg iv_intensity)
+    filter(!is.na(.data[[var_param]])) %>% 
+    # filter(!is.na(.data[[stat]])) %>% 
+    ungroup() %>% 
+    filter(outcome == "death_total")
+  
+  graph <- df_filtered %>%
+    ggplot() +
+    geom_density_ridges(aes(x = .data[["estimate"]], y = as.factor(.data[[var_param]]))) +
+    facet_wrap(~ id_method, scales = "free")
+
   return(graph)
 }
 

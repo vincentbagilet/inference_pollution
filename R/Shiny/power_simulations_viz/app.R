@@ -3,6 +3,7 @@ library(tidyverse)
 library(mediocrethemes)
 library(shinythemes)
 library(shinyWidgets)
+library(ggridges)
 
 set_mediocre_all()
 
@@ -25,40 +26,37 @@ ui <- fluidPage(theme = shinytheme("flatly"),
     sidebarLayout(
         sidebarPanel(
             conditionalPanel(
-                condition = "input.tabselected < '2'",
+                condition = "input.tabselected < '3'",
                 selectInput(inputId = "var_param",
                             label = "Varying parameter:",
                             choices = c(
                                 "Number of days in the study" = "n_days", 
-                                "Number of cities in the study" = "n_cities",  
                                 "Effect size" = "percent_effect_size", 
                                 "Proportion of treated units" = "p_obs_treat",
-                                # "Outcome count" = ,
+                                "Outcome" = "outcome",
                                 "IV intensity" = "iv_intensity")),
             ),
             conditionalPanel(
-                condition = "input.tabselected < '3'",
+                condition = "input.tabselected < '4'",
                 selectInput(inputId = "stat",
                             label = "Statistics:",
                             choices = c(
                                 "Power" = "power", 
                                 "Type M" = "type_m", 
                                 "Type S" = "type_s",
-                                "Coverage rate" = "coverage_rate",
-                                "MSE" = "mse", 
-                                "Mean of the estimates" = "mean_estimate",
-                                "Normalised biased" = "nomalized_bias",
-                                "Estimate to true ratio" = "estimate_true_ratio", 
+                                "Coverage rate (significant)" = "coverage_rate",
+                                "Coverage rate (all)" = "coverage_rate_all",
+                                "Signal to noise ratio" = "mean_signal_to_noise",
                                 "Average F-stat" = "mean_f_stat")),
             ),
             conditionalPanel(
-                condition = "input.tabselected == '1'",
+                condition = "input.tabselected == '2'",
                 selectInput(inputId = "method",
                             label = "Identification method:",
                             choices = c("RCT", "RDD", "OLS", "IV")),
             ),
             conditionalPanel(
-                condition = "input.tabselected == '2'",
+                condition = "input.tabselected == '3'",
                 selectInput(inputId = "var_decomp",
                             label = "Decomposition of:",
                             choices = c(
@@ -79,16 +77,21 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                 ),
                 tabPanel(
                     value = 1,
+                    "Ridge plot",
+                    plotOutput("ridge_plot"),
+                ),
+                tabPanel(
+                    value = 2,
                     "Table statistics",
                     tableOutput("table_by_exp"),
                 ),
                 tabPanel(
-                    value = 2,
+                    value = 3,
                     "Decomposition",
                     plotOutput("decomp_plot"),
                 ),
                 tabPanel(
-                    value = 3,
+                    value = 4,
                     "Checks",
                     plotOutput("check_plot"),
                 ),
@@ -124,6 +127,10 @@ server <- function(input, output) {
     
     output$decomp_plot <- renderPlot({
         graph_decomp(summary_decomp, input$var_decomp, input$stat)
+    })
+    
+    output$ridge_plot <- renderPlot({
+        graph_ridge(sim_evol,  input$var_param, input$stat)
     })
 }
 
