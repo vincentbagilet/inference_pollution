@@ -798,10 +798,10 @@ sim_param_decomp_nobs <-
     sim_param_base,
     by = c("n_cities", "n_days", "p_obs_treat", "percent_effect_size", "iv_intensity", "formula")
   ) %>% 
-  prepare_sim_param(n_iter = 1) 
+  prepare_sim_param(n_iter = 1000) 
 ```
 
-```{r}
+```{r eval=FALSE}
 sim_decomp_nobs <- NULL
 save_every <- 10000
 future::plan(multicore)
@@ -832,26 +832,100 @@ for (i in 1:ceiling(nrow(sim_param_decomp_nobs)/save_every)) {
 }
 toc()
 
-# saveRDS(simulations_decomp_nobs, here("R", "Outputs", "simulations_decomp_nobs.RDS"))
+beepr::beep(5)
+
+# saveRDS(sim_decomp_nobs, here("R", "Outputs", "sim_decomp_nobs.RDS"))
 ```
 
 
 ```{r}
 
 
-summary_decomp_nobs <- summarise_simulations(simulations_decomp_nobs)
+summary_decomp_nobs <- summarise_simulations(sim_decomp_nobs)
 # saveRDS(summary_decomp_nobs, here("R", "Outputs", "summary_decomp_nobs.RDS"))
 
 summary_decomp_nobs %>% 
   mutate(n_obs = as.factor(round(n_days*n_cities/100)*100)) %>% 
   ggplot() + 
   geom_point(aes(x = n_cities, y = power, color = n_obs)) +
-  geom_line(aes(x = n_cities, y = power, color = n_obs))
-
-
-beepr::beep(5)
+  geom_line(aes(x = n_cities, y = power, color = n_obs)) +
+  facet_wrap(~ id_method)
   
 ```
+
+### Decomp p_treat
+
+```{r}
+sim_param_decomp_ptreat <- 
+  tibble(p_obs_treat = c(0.01, 0.025, 0.05, 0.1, 0.25, 0.5)) %>%
+  crossing(n_treat = c(500, 1000, 2000)) %>%
+  mutate(
+    n_obs = round(n_treat/p_obs_treat),
+    n_cities = 50, #needs to be big enough
+    n_days = round(n_obs/n_cities)
+  ) %>% 
+  select(-n_obs, -n_treat) %>% 
+  full_join(sim_param_base, by = c("n_cities", "n_days", "p_obs_treat")) %>% 
+  fill(everything(), .direction = "updown") %>% 
+  anti_join(#because sim_param_base not in the exact set of param we want here
+    sim_param_base,
+    by = c("n_cities", "n_days", "p_obs_treat", "percent_effect_size", "iv_intensity", "formula")
+  ) %>% 
+  prepare_sim_param(n_iter = 1000) %>% 
+  filter(id_method != "OLS")
+```
+
+
+```{r}
+sim_decomp_ptreat <- NULL
+save_every <- 10000
+future::plan(multicore)
+
+tic()
+for (i in 1:ceiling(nrow(sim_param_decomp_ptreat)/save_every)) {
+  params_slice <- sim_param_decomp_ptreat %>% 
+    slice((1 + save_every*(i-1)):(save_every*i))
+  
+  with_progress({
+    p <- progressor(steps = nrow(params_slice))
+    
+    sim_decomp_ptreat_to_save <- future_pmap_dfr(
+      params_slice,
+      compute_simulation,
+      data = nmmaps_data,
+      progressbar = p,
+      .options = furrr_options(seed = TRUE)
+    )
+  })
+  
+  print(paste("Iteration =", i*save_every))
+  sim_decomp_ptreat <- sim_decomp_ptreat %>% rbind(sim_decomp_ptreat_to_save)
+  saveRDS(
+    sim_decomp_ptreat_to_save, 
+    here("R", "Outputs", "Sim_save", str_c("sim_decomp_ptreat_saved_", i,".RDS"))
+  )
+}
+toc()
+
+beepr::beep(5)
+
+# saveRDS(sim_decomp_ptreat, here("R", "Outputs", "sim_decomp_ptreat.RDS"))
+```
+
+
+```{r}
+
+summary_decomp_ptreat <- summarise_simulations(sim_decomp_ptreat)
+# saveRDS(summary_decomp_nobs, here("R", "Outputs", "summary_decomp_nobs.RDS"))
+
+summary_decomp_ptreat %>% 
+  mutate(n_treat = as.factor(round(n_days*n_cities*p_obs_treat/100)*100)) %>% 
+  ggplot() + 
+  geom_point(aes(x = p_obs_treat, y = power, color = n_treat)) +
+  geom_line(aes(x = p_obs_treat, y = power, color = n_treat)) +
+  facet_wrap(~ id_method)
+```
+
 
 <!-- # Heatmap -->
 
