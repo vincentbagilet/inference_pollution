@@ -577,8 +577,8 @@ To build `sim_param`, we first define a set of baseline values for our parameter
 
 ```{r}
 sim_param_base <- tibble(
-  n_days = 1000,
-  n_cities = 10,
+  n_days = 2500,
+  n_cities = 40,
   p_obs_treat = 0.5,
   percent_effect_size = 1, 
   iv_intensity = 0.5,
@@ -685,8 +685,6 @@ prepare_sim_param <- function(df_sim_param,
 } 
 
 sim_param_evol <- prepare_sim_param(sim_param_unique, n_iter = 1)
-sim_param_evol_small <- prepare_sim_param(sim_param_unique, n_iter = 1) %>% 
-  filter(!(id_method == "RDD" & p_obs_treat <= 0.01)) 
 
 # write_csv(sim_param, "../Outputs/sim_param.csv")
 ```
@@ -728,7 +726,7 @@ run_all_sim <- function(data, sim_param, save_every, name_save) {
   return(output)
 }
 
-sim_evol_small <- run_all_sim(nmmaps_data, sim_param_evol_small, 10, "sim_evol_small")
+# sim_evol <- run_all_sim(nmmaps_data, sim_param_evol, save_every = 10, "sim_evol")
 
 # beepr::beep(1)
 
@@ -779,8 +777,45 @@ We then run this function.
 summary_evol <- summarise_simulations(sim_evol) %>% 
   mutate(outcome = fct_relevel(outcome, "copd_age_65_75", "resp_total", "death_total"))
 
+
 # saveRDS(summary_evol, here("R", "Outputs", "summary_evol.RDS"))
 ```
+
+### Small number of observations
+
+We then want to replicate this analysis for a smaller and more realistic number of observations. 
+
+```{r}
+sim_param_base_small <- tibble(
+  n_days = 1000,
+  n_cities = 10,
+  p_obs_treat = 0.5,
+  percent_effect_size = 1, 
+  iv_intensity = 0.5,
+  formula = "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday"
+)
+
+sim_param_unique_small <- 
+  map_dfr(
+    vect_of_vect_param, 
+    add_values_param, 
+    df = sim_param_base
+  ) %>% 
+  distinct() 
+
+sim_param_evol_small <- prepare_sim_param(sim_param_unique_small, n_iter = 1) %>% 
+  filter(!(id_method == "RDD" & p_obs_treat <= 0.01)) 
+
+sim_evol_small <- run_all_sim(nmmaps_data, sim_param_evol_small, save_every = 10, "sim_evol_small")
+
+# saveRDS(sim_evol_small, here("R", "Outputs", "sim_evol_small.RDS"))
+
+summary_evol_small <- summarise_simulations(sim_evol_small) %>% 
+  mutate(outcome = fct_relevel(outcome, "copd_age_65_75", "resp_total", "death_total"))
+
+# saveRDS(summary_evol_small, here("R", "Outputs", "summary_evol_small.RDS"))
+```
+
 
 ### Decomposing the number of observations into number of cities and days
 
@@ -815,7 +850,7 @@ summary_decomp_nobs <- summarise_simulations(sim_decomp_nobs) %>%
 
 ```
 
-### Decomp p_treat
+### Decomposing the number of treated into number of observations and proportion of treated
 
 ```{r}
 sim_param_decomp_ptreat <- 

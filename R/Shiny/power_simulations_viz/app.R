@@ -8,13 +8,6 @@ library(here)
 
 set_mediocre_all()
 
-summary_evol_small <- readRDS(here("R", "Outputs", "summary_evol_small.RDS")) 
-summary_evol_large <- readRDS(here("R", "Outputs", "summary_evol.RDS")) 
-
-sim_evol_small <- readRDS(here("R", "Outputs", "sim_evol_small.RDS")) 
-sim_evol_large <- readRDS(here("R", "Outputs", "sim_evol.RDS")) 
-
-summary_decomp <- readRDS(here("R", "Outputs", "summary_decomp.RDS")) 
 
 # sim_param_base <- readRDS("data/sim_param_base.RDS")
 source("./functions_shiny.R")
@@ -50,7 +43,7 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                                 "IV intensity" = "iv_intensity")),
             ), 
             conditionalPanel(
-                condition = "input.tabselected != '3'",
+                condition = "input.tabselected != '3' && input.tabselected != '1'",
                 selectInput(inputId = "stat",
                             label = "Statistics:",
                             choices = c(
@@ -70,7 +63,7 @@ ui <- fluidPage(theme = shinytheme("flatly"),
             ),
             conditionalPanel(
                 condition = "input.tabselected == '4'",
-                selectInput(inputId = "var_decomp",
+                radioButtons(inputId = "var_decomp",
                             label = "Decomposition of:",
                             choices = c(
                                 "Number of observations" = "n_obs",

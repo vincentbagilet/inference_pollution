@@ -1,3 +1,11 @@
+summary_evol_small <- readRDS(here("R", "Outputs", "summary_evol_small.RDS")) 
+summary_evol_large <- readRDS(here("R", "Outputs", "summary_evol.RDS")) 
+
+sim_evol_small <- readRDS(here("R", "Outputs", "sim_evol_small.RDS")) 
+sim_evol_large <- readRDS(here("R", "Outputs", "sim_evol.RDS")) 
+
+summary_decomp <- readRDS(here("R", "Outputs", "summary_decomp.RDS")) 
+
 get_baseline_param <- function(df) {
   all_var <- c(
     "quasi_exp", 
