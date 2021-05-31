@@ -111,17 +111,16 @@ select_study_period <- function(data, n_days = 3000, n_cities = 68) {
 
 ## Defining the treatment
 
-Then, we create a function to draw the treatment. This function returns a boolean vector, stating whether each observation is in the treatment group or not.
+Then, we create a function to draw the treatment. This function adds a boolean vector to our data, stating whether each observation is in the treatment group or not. We consider three quasi-experiments: 
+- Random days, corresponding to a random allocation of the treatment
+- Air pollution alerts
+- No quasi-experiment
 
-For each treatment, we define the proportion of treated observations (`p_obs_treat`). The different treatments correspond to different types of quasi-experiments. Note that we will consider some identifications strategies that will only consider restricted samples (RDD and RDIT). For coding simplicity, to get an accurate proportion of treated units, we directly restrict the sample in this function. For the RDIT, we create another type of quasi experiment ("national_short"), even though the quasi experiment is actually the same as for a national intervention.
+For each treatment, we define the proportion of treated observations (`p_obs_treat`). 
 
-In this function, we made some simulations decisions: 
+Note that for the alert, we consider a RDD and therefore will restrict our sample. 
 
-- For the local intervention, to simplify, we set the beginning of the treatment as the median date. To get the desired proportion of treated units, we thus need to draw 2*`p_obs_treat` cities.
-- For the air pollution alert, we draw a threshold position (from a beta distribution, for no other reason than the shape of its PDF). For each city, we find the corresponding threshold and define a bandwidth such that `p_obs_treat` observations of the total sample are treated. Observations outside the bandwidth get a `NA` for `treated`. Thus, after calling this function, we need to filter out observations with a `NA` for `treated`.
-- In the roll out intervention, for each city, we randomly draw a treatment starting date. To get a proportion of treated days equal to `p_obs_treat`, we do not draw this date from the whole sample. We only consider dates close enough to the end of the study period such that, on average only `p_obs_treat` of the data will be treated.
-- For the short national intervention (*ie* the RDIT), we define the bandwidth such that the proportion of treated days, as compared to the overall sample size, *ie* the length of the study period, is equal to `p_obs_treat`. Note that it does not make sense to have a large `p_obs_treat` as this would correspond to the national case. We therefore limit `p_obs_treat` to be smaller than 0.5.
-- For the GAM and IV, we only consider a subset of observations to create variation across iterations
+For the air pollution alert, we draw a threshold position from a uniform distribution from 0.2 to 0.4 in order to have enough observations in our data set. If we pick the threshold position too high up in the distribution of CO concentration, we may end up with observations very far away from the samples. For each city, we find the corresponding threshold and define a bandwidth such that `p_obs_treat` observations of the total sample are treated. Observations outside the bandwidth get a `NA` for `treated`. Thus, after calling this function, we need to filter out observations with a `NA` for `treated`.
 
 ```{r}
 draw_treated <- function(data, p_obs_treat = 0.5, quasi_exp = "random_days") {
@@ -165,9 +164,9 @@ draw_treated_exp <- function(data, p_obs_treat, quasi_exp) {
 }
 
 test_treatment_data <- nmmaps_data %>% 
-  select_study_period(n_days = 3500, n_cities = 6) %>% 
+  select_study_period(n_days = 500, n_cities = 6) %>% 
   draw_treated_exp(0.5, "random_days")%>% 
-  draw_treated(0.01, "alert_co") %>% 
+  draw_treated(0.1, "alert_co") %>% 
   rename(treated_alert = treated)  
 
 graph_treatment_assignment <- function(data, method) {
@@ -200,16 +199,15 @@ test_treatment_data %>%
   graph_treatment_assignment("alert")
 ```
 
-## Creating the output if a unit is treated
+## Creating fake output
 
-We then create the output if a unit is treated, Y(1). We use different methods to generate fake health data: 
+We then create the fake output, `y_fake`. The generative process depends on the identification method. We use different methods to generate fake mortality data: 
 
-- For binary treatments, we draw 
-- For the OLS, we build a generative model that creates fake data based on the formula given.
+- For binary treatments, we draw a treatment effect from a Poisson distribution with mean corresponding to the effect size desired.
+- For the OLS, we build a generative model that creates fake data based on the formula given and with an effect corresponding to the effect size desired.
+- For the IV, we use the same method as for the OLS but previously modified the value of pollutant concentration to correspond to be affected by the treatment. The intensity is set equal to the parameter `iv_intensity` and we add some white noise drawn from a normal distribution (0, 0.1).
 
-We also create a short function to detect a pollutant among independent variables of a formula. We also use this function later.
-
-For the IV, we include the intensity of the IV in the method name. This is not very clean coding style as we should have created a new parameter. Yet, it makes the code much simpler and ultimately much clearer.
+We also create a short function to detect a pollutant among independent variables of a formula. We also use this function later. In the present document we only consider CO but we made the function more general.
 
 ```{r}
 find_pollutant <- function(formula) {
@@ -218,9 +216,9 @@ find_pollutant <- function(formula) {
     return(pollutant)
 }
 
-create_y1 <- function(data,
+create_fake_output <- function(data,
                       percent_effect_size = 0.5,
-                      id_method = "RCT", 
+                      id_method = "reduced_form", 
                       iv_intensity = NA, 
                       formula) {
   
@@ -232,7 +230,7 @@ create_y1 <- function(data,
     data <- data %>%
       group_by(.data$city) %>%
       mutate(
-        y1 = .data[[dep_var]] -
+        y_fake = .data[[dep_var]] -
           rpois(
             n(),
             mean(.data[[dep_var]], na.rm = TRUE) * percent_effect_size / 100
@@ -240,13 +238,13 @@ create_y1 <- function(data,
       ) %>%
       ungroup()
     
-  } else if (id_method == "RCT") {
+  } else if (id_method == "reduced_form") {
 
     #Just a different sign
     data <- data %>%
       group_by(.data$city) %>%
       mutate(
-        y1 = .data[[dep_var]] +
+        y_fake = .data[[dep_var]] +
           rpois(
             n(),
             mean(.data[[dep_var]], na.rm = TRUE) * percent_effect_size / 100
@@ -280,7 +278,7 @@ create_y1 <- function(data,
     #to get beta as the increase in percent
     res <- reg$residuals
     
-    data[["y1"]] <- predict(reg, data) + rnorm(res, mean(res), sd = sd(res))
+    data[["y_fake"]] <- predict(reg, data) + rnorm(res, mean(res), sd = sd(res))
     # data[["y1"]] <- ifelse(data[["y1"]] < 0, 0, data[["y1"]])
   } 
   
@@ -288,10 +286,10 @@ create_y1 <- function(data,
 } 
 ```
 
-## Estimate the model
+## Estimating the model
 
-We can then estimate our model and retrieve the point estimate and p-value.
-The model should be specified in a three part formula as follows: y ~ x | fixed effects | cluster. If one does not want to set fixed effects, a 0 should be put in the second part of the formula: y ~ x | 0 | cluster.
+We can then estimate our model and retrieve the point estimate, p-value, standard error, number of observations and f-stat.
+The model should be specified in a three part formula as follows: y ~ x | fixed effects | endo_var ~ instrument. If one does not want to set fixed effects, a 0 should be put in the second part of the formula: y ~ x | 0 | endo_var ~ instrument.
 
 ```{r}
 estimate_model <- function(data, formula) {
@@ -326,9 +324,7 @@ estimate_model <- function(data, formula) {
 
 ## Computing simulations
 
-We then want to compute simulations by running all the previous functions together. Yet, for the DiD and the ITS/RDIT, we first need to create additional dummy variables (`post` and `city_treated` for the DiD and `t` and `t_post` for the ITS/RDIT). We thus write a function which does so, `add_post_vars`:
-
-We also need to compute the true effect for each simulation. The different identification methods aims to identify different estimands (ATE, ATET, etc). We 
+We need to compute the true effect for each simulation. The different identification methods aims to identify different estimands (ATE or ATET). We therefore write a short function to compute this true effect.
 
 ```{r}
 compute_true_effect <- function(data, id_method, percent_effect_size, dep_var) {
@@ -336,7 +332,7 @@ compute_true_effect <- function(data, id_method, percent_effect_size, dep_var) {
   if (id_method %in% c("OLS", "IV")) {
     true_effect <- percent_effect_size/100*mean(data[[dep_var]])
   } else {#ATE
-    true_effect <- mean(data$y1 - data$y0, na.rm = TRUE)
+    true_effect <- mean(data$y_fake - data$y0, na.rm = TRUE)
   }
   
   return(true_effect)
@@ -352,7 +348,7 @@ compute_simulation <- function(data,
                                p_obs_treat = 0.5,
                                percent_effect_size = 1,
                                quasi_exp = "random_days",
-                               id_method = "RCT", 
+                               id_method = "reduced_form", 
                                iv_intensity = NA,
                                formula = "resp_total ~ treated",
                                progressbar = progressor()#to have a progressbar when mapping
@@ -365,15 +361,15 @@ compute_simulation <- function(data,
     select_study_period(n_days, n_cities) %>%
     mutate(y0 = .data[[dep_var]]) %>%
     draw_treated(p_obs_treat, quasi_exp) %>% 
-    create_y1(percent_effect_size, id_method, iv_intensity, formula) %>% 
+    create_fake_output(percent_effect_size, id_method, iv_intensity, formula) %>% 
     mutate(
-      yobs = y1 * treated + y0 * (1 - treated)
+      yobs = y_fake * treated + y0 * (1 - treated)
     ) %>%
     filter(!is.na(treated)) #not necessary bc dropped in lm()
   
   updated_fml <- ifelse(
     id_method %in% c("OLS", "IV"),
-    str_replace(formula, dep_var, "y1"),
+    str_replace(formula, dep_var, "y_fake"),
     str_replace(formula, dep_var, "yobs")
   )
 
@@ -403,14 +399,14 @@ compute_simulation <- function(data,
 nmmaps_data %>%
   compute_simulation(
     data = .,
-    formula = "death_total ~ treated + co + temperature + temperature_squared | city + month^year + weekday",
-    quasi_exp = "alert_co",
-    id_method = "RDD",
+    formula = "death_total ~ co + temperature + temperature_squared | city + month^year + weekday",
+    quasi_exp = "none",
+    id_method = "OLS",
     iv_intensity = 0.5,
     n_days = 1000,
     n_cities = 10,
     percent_effect_size = 1,
-    p_obs_treat = 0.01
+    p_obs_treat = 0.5
   )
 ````
 
@@ -418,13 +414,13 @@ We will then loop this function to get a large number of replications of each si
 
 # Running the simulations
 
-We can then run the simulations. But first, we define the set of parameters we want to consider.
+Before running the simulations, we need to define the set of parameters to consider. 
 
 ## Defining baseline parameters
 
-We create a table displaying in each row a set of parameters we want to have a simulation for, `sim_param`. We will then map our function `compute_simulation` on this table.
+We will create a table displaying in each row a set of parameters we want to have a simulation for, `sim_param_evol`. We will then map our function `compute_simulation` on this table.
 
-To build `sim_param`, we first define a set of baseline values for our parameters and store them in a data frame, `sim_param_base`.
+To build `sim_param_evol`, we first define a set of baseline values for our parameters and store them in a data frame, `sim_param_base`.
 
 ```{r}
 sim_param_base <- tibble(
@@ -444,7 +440,7 @@ sim_param_base <- tibble(
 
 ### Defining parameters
 
-We will then vary the values of the parameters one after the other. We thus create vectors containing the different values of the parameters we want to test.
+In a first set of simulation, we vary the values of the parameters one after the other. We thus create vectors containing the different values of the parameters we want to test.
  
 ```{r}
 vect_n_days <- c(100, 500, 1000, 2000, 3000, 4000)
@@ -459,8 +455,7 @@ vect_formula <- c(
 )
 ```
 
-
-We then want to create the actual table, varying parameters one after the other. To do so, we create a simple function `add_values_param`. This function adds the values of a parameter contained in a vector. We can then map this function on all the vectors of parameters of interest.
+We then want to create the actual table, varying the parameters one after the other. To do so, we create a simple function `add_values_param`. This function adds the values of a parameter contained in a vector. We can then loop this function on all the vectors of parameters of interest.
 
 ```{r}
 #adds all values in vect_param
@@ -486,9 +481,9 @@ sim_param_unique <-
   distinct() #bc base parameters appear twice
 ```
 
-We want to compute our simulations for this set of parameters for every quasi experiment. Note that, in order to identify the effect of interest, we consider different types of models, depending on the identification strategy considered for each quasi experiment.
+We want to compute our simulations for this set of parameters for every quasi experiment. Each quasi experiment has an associated identification strategy. Note that, in order to identify the effect of interest, we need to consider different types of equations, depending on the identification method considered. Then, for each set of parameters we want to run many iterations of the simulation, `n_iter`. It will enable us to loop `compute_simulation` directly on `sim_param_evol`.
 
-Then, for each set of parameters we want to run many iterations of the simulation, `n_iter`. We thus modify `sim_param` so that each set of parameter appears `n_iter` times. It will enable us to loop `compute_simulation` directly on `sim_param`.
+We wrap all this into a function, `prepare_sim_param`.
 
 ```{r}
 prepare_sim_param <- function(df_sim_param, 
@@ -505,7 +500,7 @@ prepare_sim_param <- function(df_sim_param,
       ),
       id_method = ifelse(
         quasi_exp == "random_days", 
-        list(c("RCT", "IV")), 
+        list(c("reduced_form", "IV")), 
         id_method
       )
     ) %>% 
@@ -542,7 +537,7 @@ sim_param_evol <- prepare_sim_param(sim_param_unique, n_iter = 1)
 
 ### Running the simulation
 
-We can then run the simulations for each set of parameter, using a `pmap_dfr` function.
+We can then run the simulations for each set of parameter, using a `pmap_dfr` function. We wrote a function to do that to save intermediary outcomes.
 
 ```{r eval=FALSE}
 run_all_sim <- function(data, sim_param, save_every, name_save) {
@@ -577,7 +572,7 @@ run_all_sim <- function(data, sim_param, save_every, name_save) {
   return(output)
 }
 
-# sim_evol <- run_all_sim(nmmaps_data, sim_param_evol, save_every = 10, "sim_evol")
+sim_evol <- run_all_sim(nmmaps_data, sim_param_evol, save_every = 10000, "sim_evol")
 
 # beepr::beep(1)
 
@@ -625,16 +620,15 @@ summarise_simulations <- function(data) {
 We then run this function.
 
 ```{r eval=FALSE}
-summary_evol <- summarise_simulations(sim_evol) %>% 
+summary_evol_large <- summarise_simulations(sim_evol_large) %>% 
   mutate(outcome = fct_relevel(outcome, "copd_age_65_75", "resp_total", "death_total"))
 
-
-# saveRDS(summary_evol, here("R", "Outputs", "summary_evol.RDS"))
+# saveRDS(summary_evol_large, here("R", "Outputs", "summary_evol_large.RDS"))
 ```
 
 ## Small number of observations
 
-We then want to replicate this analysis for a smaller and more realistic number of observations. 
+We then replicate this analysis for a smaller and more realistic number of observations (10 cities and 1000 days). 
 
 ```{r eval=FALSE}
 sim_param_base_small <- tibble(
@@ -670,7 +664,9 @@ summary_evol_small <- summarise_simulations(sim_evol_small) %>%
 
 ## Decomposing the number of observations into number of cities and days
 
-In this section, we wonder whether only the total number of observations mater or whether decreasing the number of cities studied while keeping the number of observations constant (thus increasing the number of days) affects power and type M error. We thus aim to run several simulations with an identical number of observations but different numbers of cities/days. We repeat this for 3 different number of observations (1000, 2000 and 4000) to check the robustness of our findings.
+In this section, we wonder whether only the total number of observations maters or whether decreasing the number of cities studied while keeping the number of observations constant (thus increasing the number of days) affects power and type M error. We thus run several simulations with an identical number of observations but different numbers of cities/days. We repeat this for 3 different number of observations (1000, 2000 and 4000) to check the robustness of our findings.
+
+We first define the set of parameters: 
 
 ```{r}
 sim_param_decomp_nobs <- 
@@ -687,6 +683,8 @@ sim_param_decomp_nobs <-
   prepare_sim_param(n_iter = 1000) 
 ```
 
+We then run the simulations.
+
 ```{r eval=FALSE}
 sim_decomp_nobs <- run_all_sim(nmmaps_data, sim_param_decomp_nobs, 10000, "sim_decomp_nobs")
 
@@ -699,6 +697,10 @@ summary_decomp_nobs <- summarise_simulations(sim_decomp_nobs) %>%
 ```
 
 ## Decomposing the number of treated into number of observations and proportion of treated
+
+We now then want to test whether we can combine information about the proportion of treated and the number of observations (into the number of treated). To do so, we use a methodology analog to the previous one.
+
+We first define the set of parameters: 
 
 ```{r}
 sim_param_decomp_ptreat <- 
@@ -720,6 +722,7 @@ sim_param_decomp_ptreat <-
   filter(id_method != "OLS")
 ```
 
+We then run the simulations.
 
 ```{r eval=FALSE}
 sim_decomp_ptreat <-  run_all_sim(nmmaps_data, sim_param_decomp_ptreat, 10000, "sim_decomp_ptreat")
@@ -752,7 +755,7 @@ summary_decomp <- summary_decomp_nobs %>%
 <!--   rename_with( ~ str_remove(., "vect_")) %>% -->
 <!--   crossing(rep_id = 1:n_iter) %>% -->
 <!--   select(n_days, n_cities, p_obs_treat, percent_effect_size, formula) %>% -->
-<!--   mutate(quasi_exp = "random_days", id_method = "RCT") -->
+<!--   mutate(quasi_exp = "random_days", id_method = "reduced_form") -->
 
 <!-- future::plan(multicore) -->
 <!-- tic() -->
