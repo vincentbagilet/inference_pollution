@@ -1,5 +1,5 @@
 ---
-title: "Power Simulation Exercise: actual data"
+title: "Power Simulation Exercise"
 author:
   - name: Vincent Bagilet 
     url: https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet
@@ -41,156 +41,7 @@ In this document, we carry out a simulation exercise to evaluate the inference p
 
 This document focuses on running the simulations. The results are analyzed and discussed in another document.
 
-# Description of the analysis
-
-## Data
-
-We use data from 18 cities in France over the 2013-2018 period. The data set contains records of hospital admissions and deaths, mean concentration data for various air pollutants, a bunch of weather variables and calendar control variables (such as school holidays for instance). All variables are at the daily and city level. There is therefore a unique observation per date and per city in the data set.
-
-## Background on selected quasi-experiments
-
-Note that, for now we focus on quasi experiments for which treatment is binary and homogeneous, both in time and across individuals. It is also not correlated with covariates (apart in the case of the air pollution alerts in which it is correlated with the pollutant level).
-
-### Treatment on "random" days
-
-Here, we consider interventions leading to changes in air pollution levels on some random days. Examples of such interventions include transportation strikes. Of course, dates are often not defined as random and are likely to be correlated with unobserved variables. In the present setting, we first consider the golden standard case in which these days are actually defined at random. One can think of this case as a Randomized Control Trial: it represents what would happen if an  experimenter could implement a treatment increasing pollution on random days.
-
-### National intervention
-
-Here consider interventions leading to changes in air pollution levels in all cities after a given date. Examples of such interventions include an air pollution reduction policy at a national level or a change in regulations at a national level leading to an increase in pollution level. 
-
-### Sub-national intervention
-
-Here, we consider interventions leading to changes in air pollution levels in a subset of cities after a given date. Examples of such interventions include an air pollution reduction policy at a sub-national level or a change in regulations at a sub-national level leading to an increase in pollution level. 
-
-### Rolling intervention
-
-Here, we consider interventions leading to changes in air pollution levels in a all cities but the change happens after a different date for each city. Examples of such interventions include an air pollution reduction policy at a national level whose implementation is rolled out.  
-
-### Air pollution alert
-
-Here we consider interventions that affect exposure to air pollution when air pollution levels reach a given threshold. Examples of such interventions include air pollution alerts: when pollution reaches a certain level, alerts are released, inviting people to reduce their exposure.
-
-### No quasi experiment
-
-We finally consider a case for which there is no quasi experiment. One can consider that in this case all units are treated. To measure the effect of air pollution on health in this case, we will use methods from the epidemiology literature, as discussed in the next section.
-
-## Identification method
-
-In order to estimate the parameters of interest, we use several identification methods. Most quasi-experiments are associated with a given identification method.
-
-### RCT-type
-
-The effect of a treatment on random days is estimated using a RCT type of model. The overall idea of the RCT is to compare the average number of deaths or hospital admissions in cities with treatment to cities with no treatment on the same day, controlling for differences across cities. 
-
-This identification method enables to estimate the Average Treatment Effect (ATE), *ie* a difference in mean between the treated and the control group ($\mathbb{E}[Y_{1i} - Y_{0i}]$). To do so, we use the following type of model:
-
-$$Y_{ct} = \alpha + \beta D_{ct} + \epsilon_{ct}$$
-where, as in the whole document, $Y_{ct}$ is the health outcome of interest (for instance mortality), in a city $c$, at date $t$. The parameter of interest is $\beta$ and $D_{ct}$ is a dummy equal to 1 if the city $c$ is treated at time $t$ and 0 otherwise.
-
-The identification assumption here is that the the potential outcomes are independent of the treatment (independence assumption).
-
-### Difference-In-Differences
-
-We use a Difference-In-Differences (DiD) model to estimate the effect of a sub-national treatment or a rolling intervention. The overall idea of the DID is to compare the average number of deaths or hospital admissions in cities with treatment to cities with no treatment on the same day, controlling for differences across cities.
-
-This identification method enables to estimate the Average Treatment Effect on the Treated (ATET), *ie* $\mathbb{E}[Y_{1i} - Y_{0i} | Treated_c = 1, Post_t = 1]$, where $Post_t$ is a dummy variable equal to one after the intervention and 0 otherwise. We thus have $D_{ct} = Treated_c \times Post_t$. To estimate this effect, we use the following type of model:
-
-$$Y_{ct} = \alpha + \beta D_{ct} + \gamma Treated_c + \delta Post_t + \epsilon_{ct}$$
-The key identification assumptions is parallel trends, *ie* the expected difference in outcome between the treatment and control group would have remained the same in the absence of the treatment.
-
-### Interrupted time series
-
-We use Interrupted Time Series (ITS) type of models to estimate the effect of a national treatment. The overall idea of the ITS is to compare the average number of deaths or hospital admissions before and after treatment.
-
-This identification method enables to estimate the ATET. To do so, we use the following type of model:
-
-$$Y_{ct} = \alpha + \beta D_{ct} + \gamma t + \delta t^{post}_t +  \epsilon_{ct}$$
-where $t^{post}_t$ is a time variable representing the number of days after the intervention (equal to 0 before the intervention).
-
-### Regression Discontinuity Design
-
-We use a Regression Discontinuity Design (RDD or RD) to estimate the effect of an air pollution alert type of intervention. The overall idea of the RD is to compare days just below the threshold to days just above the threshold (where exposure and health impacts are thus lower). The key identification assumption is that days just below and just above the threshold are comparable. Thus, no confounders should vary discontinuously at the threshold (local independence, $(Y_{0i}, Y_{1i}) \perp D_i|Z_i$, for $Z_i \in [c-a, c+a]$ ) and the treatment should vary at threshold (relevance, $D_i = \mathbb{1} \{Z_i \geq  c\}$).
-
-This identification method enables to estimate a Local Average Treatment Effect (LATE) at the cutoff, *ie* $\mathbb{E}[Y_{1i} - Y_{0i}|Z_i = c]$. To do so, we use the following type of model, but restricting our sample to observation just below and just above the threshold:
-
-$$Y_{ct} = \alpha + \beta D_{ct} + \epsilon_{ct}$$
-
-### Instrumental variable
-
-In all previous identification methods, we only tried to estimate a reduced form, *ie* looking at the effect of a treatment directly on mortality. We did not consider the effect of the treatment on air pollution, *ie* the mechanism. In this section, we instrument the effect of pollution on the outcome with an instrument/treatment. We basically model the effect of an exogeneous instrument on air pollution and use this information to retrieve a causal estimate of the short term effect of air pollution on health. Note that the class of treatments/instruments considered here is broader than in the previous section. 
-
-In a first step, we only consider binary instruments such as thermal inversions and high/low wind speed for instance. This type of instruments corresponds to a large share of the instruments considered in the literature. The key assumption is that these treatments only affect the health outcome variable via their effect on air pollution. 
-
-Let's denote $Z$ this instrument. We compute a 2-Stages Least Squares (2SLS) where the first stage has the form:
-
-$$Poll_{ct} = \gamma + \delta Z_{ct} + e_{ct}$$
-and the second stage:
-
-$$Y_{ct} = \alpha + \beta Poll_{ct} + \epsilon_{ct}$$
-
-### Linear model
-
-Finally, we also consider simple linear models in order to measure the correlation between the health outcome of interest and air pollution, controlling for potential confouders. The identification assumptions here are the usual OLS assumptions.
-
-We estimate a model of the form:
-
-$$Y_{ct} = \alpha + \beta Poll_{ct} + \epsilon_{ct}$$
-
-## Analysis
-
-### Overall setting
-
-To sum up the analysis, the aim is to measure the inference properties of different research designs aiming at measuring the short-term effects of air pollution on health. For simplicity, consider the daily number of death as the output variable of interest for now. We proceed as follows:
-
-1. We define the length of the study period, *ie* the number of observations, and a true effect size, $\beta_0$, representing the percentage change in the number of deaths in response to the treatment.
-1. We draw a study period randomly
-1. We define the treated days, *ie* we define a treatment variable $T_{ct}$ equal to 1 if the city $c$ is treated at time $t$ and zero otherwise. 
-1. We compute the number of deaths when treated for each  observation ($Y(1)$) based on the "true" effect of the treatment. We then derive $Y_{obs} = Y(0) × (1-T) + Y(1) × T$.
-1. We estimate our model with $Y_{obs}$ as a dependent variable and retrieve $\hat{\beta}$ and the associated p-value.
-1. We run the steps 2 to 5 $n_{iter}$ times.
-1. We compute the average bias, type M, type S and power.
-
-<!-- In the potential outcome framework, we have $Y_{ct}(0)$, the number of deaths if a city $c$ is not treated at time $t$ equal to $h_{ct}$ and $Y_{ct}(1)$, the number of deaths if this city is treated, equal to $(1 + \beta_0)h_{ct}$. We build our setting, so that we can "observe" both outcomes. The estimation is performed on the fake observed data $Y_{obs} = h^{fake}$ and we have -->
-<!-- $Y_{obs} = Y(0) × (1-T) + Y(1) × T$.  -->
-
-### Varying "parameters"
-
-Note that there are several parameters we can vary in order to evaluate the performance of the different methods: the identification strategy, the number of observations, the proportion of treated days, the true effect size and the model. In order to limit the number of simulations and for clarity, we only modify one parameter at the time, keeping others constant and equal to a baseline value. When we vary a parameter, we consider the following values:
-
-- Number of observations: we actually vary the length of the study, in days. The number of observations is approximately equal to the number of days in the study times the number of cities. We consider 100, 250, 500, 750 and 1000 days **because** ...
-- Proportion of treated days: 0.1, 0.5. The proportion of days treated matters since, while the number of observations can be large, the number of treated days may remain very small (*eg* the number of strikes). We choose these values **because** ...
-- Effect size: 0.15%, 0.5% and 1% **because** ...
-- The estimation model: we first do not include covariates, only fixed effects. We then include include different sets of covariates.
-
-We consider this set of parameters for each quasi-experiment.
-
-### Deviation from the ideal case
-
-In addition to considering an "ideal" case in which treatment is allocated randomly, the effect of the treatment is homogeneous and with perfect compliance, we can consider deviations from this "ideal" case:
-
-```{r table2, echo=FALSE, message=FALSE, warnings=FALSE, results='asis'}
-table_cases <- "
-| Allocation                  | Compliance   | Effect of the treatment  |
-|-----------------------------|:------------:|-------------------------:|
-| Random                      | Yes          | Homogeneous              |
-| Random                      | No           | Homogeneous              |
-| Correlated with covariates  | Yes          | Homogeneous              |
-| Random                      | Yes          | Heterogeneous            |
-"
-cat(table_cases) 
-```
-
-- A non-random allocation can exist in several ways. The treatment can be correlated with one covariate, another or even several covariates. It can also be correlated with this covariates in different ways: linear or a large variety of non linear ways. Even with a settled correlation form, the intensity of the correlation can vary.
-- The heterogeneity in the treatment effect can arise from variation with time, with individuals or given the value of covariates.
-
-Deviating from the ideal case therefore yields a very large number of cases. We limit ourselves to a sample of these cases.
-
-# Actual implementation
-
-In this section, we follow the steps described in the section "analysis" and carry out our analysis. We basically define a function for each step.
-
-## Loading and Formatting Data
+# Loading and Formatting Data
 
 We load the packages and the data and wrangle it into a format well suited for this analysis.
 
@@ -223,9 +74,9 @@ nmmaps_data <- readRDS(here::here("R", "Inputs", "nmmaps_data_simulations.rds"))
   mutate(temperature_squared = temperature^2)
 ```
 
-## Function definitions
+# Function definitions
 
-### Selecting the study period
+## Selecting the study period
 
 First, we create a function to randomly select a study period of a given length. This function also randomly selects a given number of cities to consider. For simplicity, we choose to have the same temporal study period for each city. This also seems realistic; a study focusing on several cities would probably consider a unique study period. 
 
@@ -258,7 +109,7 @@ select_study_period <- function(data, n_days = 3000, n_cities = 68) {
 }
 ```
 
-### Defining the treatment
+## Defining the treatment
 
 Then, we create a function to draw the treatment. This function returns a boolean vector, stating whether each observation is in the treatment group or not.
 
@@ -349,7 +200,7 @@ test_treatment_data %>%
   graph_treatment_assignment("alert")
 ```
 
-### Creating the output if a unit is treated
+## Creating the output if a unit is treated
 
 We then create the output if a unit is treated, Y(1). We use different methods to generate fake health data: 
 
@@ -437,7 +288,7 @@ create_y1 <- function(data,
 } 
 ```
 
-### Estimate the model
+## Estimate the model
 
 We can then estimate our model and retrieve the point estimate and p-value.
 The model should be specified in a three part formula as follows: y ~ x | fixed effects | cluster. If one does not want to set fixed effects, a 0 should be put in the second part of the formula: y ~ x | 0 | cluster.
@@ -473,7 +324,7 @@ estimate_model <- function(data, formula) {
 # estimate_model(draw_treated(nmmaps_data), "death_total ~  temperature + temperature_squared | city + month^year + weekday | co ~ treated")
 ```
 
-### Computing simulations
+## Computing simulations
 
 We then want to compute simulations by running all the previous functions together. Yet, for the DiD and the ITS/RDIT, we first need to create additional dummy variables (`post` and `city_treated` for the DiD and `t` and `t_post` for the ITS/RDIT). We thus write a function which does so, `add_post_vars`:
 
@@ -565,11 +416,11 @@ nmmaps_data %>%
 
 We will then loop this function to get a large number of replications of each simulation for a given set of parameters. We will also vary the values of the different parameter.
 
-## Running the simulations
+# Running the simulations
 
 We can then run the simulations. But first, we define the set of parameters we want to consider.
 
-### Defining baseline parameters
+## Defining baseline parameters
 
 We create a table displaying in each row a set of parameters we want to have a simulation for, `sim_param`. We will then map our function `compute_simulation` on this table.
 
@@ -589,9 +440,9 @@ sim_param_base <- tibble(
 # write_csv(sim_param_base, "R/Outputs/sim_param_base.csv")
 ```
 
-### Evolution with values of a given parameter
+## Evolution with values of a given parameter
 
-#### Defining parameters
+### Defining parameters
 
 We will then vary the values of the parameters one after the other. We thus create vectors containing the different values of the parameters we want to test.
  
@@ -689,7 +540,7 @@ sim_param_evol <- prepare_sim_param(sim_param_unique, n_iter = 1)
 # write_csv(sim_param, "../Outputs/sim_param.csv")
 ```
 
-#### Running the simulation
+### Running the simulation
 
 We can then run the simulations for each set of parameter, using a `pmap_dfr` function.
 
@@ -733,7 +584,7 @@ run_all_sim <- function(data, sim_param, save_every, name_save) {
 # saveRDS(sim_evol, here("R", "Outputs", "sim_evol.RDS"))
 ```
 
-#### Summarising the results
+### Summarising the results
 
 We then summarize our results, computing power, type M and so on for each set of parameters using he function `summarise_simulations`. Note that this function can only take as input a data frame produced by `compute_simulation` (or a mapped version of this function).
 
@@ -781,11 +632,11 @@ summary_evol <- summarise_simulations(sim_evol) %>%
 # saveRDS(summary_evol, here("R", "Outputs", "summary_evol.RDS"))
 ```
 
-### Small number of observations
+## Small number of observations
 
 We then want to replicate this analysis for a smaller and more realistic number of observations. 
 
-```{r}
+```{r eval=FALSE}
 sim_param_base_small <- tibble(
   n_days = 1000,
   n_cities = 10,
@@ -817,7 +668,7 @@ summary_evol_small <- summarise_simulations(sim_evol_small) %>%
 ```
 
 
-### Decomposing the number of observations into number of cities and days
+## Decomposing the number of observations into number of cities and days
 
 In this section, we wonder whether only the total number of observations mater or whether decreasing the number of cities studied while keeping the number of observations constant (thus increasing the number of days) affects power and type M error. We thus aim to run several simulations with an identical number of observations but different numbers of cities/days. We repeat this for 3 different number of observations (1000, 2000 and 4000) to check the robustness of our findings.
 
@@ -840,17 +691,14 @@ sim_param_decomp_nobs <-
 sim_decomp_nobs <- run_all_sim(nmmaps_data, sim_param_decomp_nobs, 10000, "sim_decomp_nobs")
 
 # saveRDS(sim_decomp_nobs, here("R", "Outputs", "sim_decomp_nobs.RDS"))
-```
 
-
-```{r}
 summary_decomp_nobs <- summarise_simulations(sim_decomp_nobs) %>% 
     mutate(decomp_var = "n_obs")
 # saveRDS(summary_decomp_nobs, here("R", "Outputs", "summary_decomp_nobs.RDS"))
 
 ```
 
-### Decomposing the number of treated into number of observations and proportion of treated
+## Decomposing the number of treated into number of observations and proportion of treated
 
 ```{r}
 sim_param_decomp_ptreat <- 
@@ -873,14 +721,11 @@ sim_param_decomp_ptreat <-
 ```
 
 
-```{r}
+```{r eval=FALSE}
 sim_decomp_ptreat <-  run_all_sim(nmmaps_data, sim_param_decomp_ptreat, 10000, "sim_decomp_ptreat")
 
 # saveRDS(sim_decomp_ptreat, here("R", "Outputs", "sim_decomp_ptreat.RDS"))
-```
 
-
-```{r}
 
 summary_decomp_ptreat <- summarise_simulations(sim_decomp_ptreat) %>% 
     mutate(decomp_var = "n_treat")
