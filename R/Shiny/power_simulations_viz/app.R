@@ -4,12 +4,17 @@ library(mediocrethemes)
 library(shinythemes)
 library(shinyWidgets)
 library(ggridges)
+library(here)
 
 set_mediocre_all()
 
-summary_evol <- readRDS(here("R", "Outputs", "summary_evol.RDS")) 
-sim_evol <- readRDS(here("R", "Outputs", "sim_evol.RDS")) 
-summary_decomp_ptreat <- readRDS(here("R", "Outputs", "summary_decomp.RDS")) 
+summary_evol_small <- readRDS(here("R", "Outputs", "summary_evol_small.RDS")) 
+summary_evol_large <- readRDS(here("R", "Outputs", "summary_evol.RDS")) 
+
+sim_evol_small <- readRDS(here("R", "Outputs", "sim_evol_small.RDS")) 
+sim_evol_large <- readRDS(here("R", "Outputs", "sim_evol.RDS")) 
+
+summary_decomp <- readRDS(here("R", "Outputs", "summary_decomp.RDS")) 
 
 # sim_param_base <- readRDS("data/sim_param_base.RDS")
 source("./functions_shiny.R")
@@ -26,6 +31,14 @@ ui <- fluidPage(theme = shinytheme("flatly"),
     sidebarLayout(
         sidebarPanel(
             conditionalPanel(
+                condition = "input.tabselected < '4'",
+                radioButtons(inputId = "df_size",
+                             label = "Dataset size:",
+                             choices = c(
+                                 "Large" = "large_df", 
+                                 "Small" = "small_df")),
+            ),
+            conditionalPanel(
                 condition = "input.tabselected < '3'",
                 selectInput(inputId = "var_param",
                             label = "Varying parameter:",
@@ -35,9 +48,9 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                                 "Proportion of treated units" = "p_obs_treat",
                                 "Outcome" = "outcome",
                                 "IV intensity" = "iv_intensity")),
-            ),
+            ), 
             conditionalPanel(
-                condition = "input.tabselected < '4'",
+                condition = "input.tabselected != '3'",
                 selectInput(inputId = "stat",
                             label = "Statistics:",
                             choices = c(
@@ -56,7 +69,7 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                             choices = c("RCT", "RDD", "OLS", "IV")),
             ),
             conditionalPanel(
-                condition = "input.tabselected == '3'",
+                condition = "input.tabselected == '4'",
                 selectInput(inputId = "var_decomp",
                             label = "Decomposition of:",
                             choices = c(
@@ -87,13 +100,13 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                 ),
                 tabPanel(
                     value = 3,
-                    "Decomposition",
-                    plotOutput("decomp_plot"),
+                    "Checks",
+                    plotOutput("check_plot"),
                 ),
                 tabPanel(
                     value = 4,
-                    "Checks",
-                    plotOutput("check_plot"),
+                    "Decomposition",
+                    plotOutput("decomp_plot"),
                 ),
                 
                 id = "tabselected"
@@ -106,19 +119,19 @@ ui <- fluidPage(theme = shinytheme("flatly"),
 server <- function(input, output) {
 
     output$evol_by_exp <- renderPlot({
-        graph_evol_by_exp(summary_evol, input$var_param, input$stat)
+        graph_evol_by_exp(select_df_size(input$df_size, summary = TRUE), input$var_param, input$stat)
     })
     
     output$check_plot <- renderPlot({
-        check_distrib_estimate(sim_evol)
+        check_distrib_estimate(select_df_size(input$df_size, summary = FALSE))
     })
     
     output$table_by_exp <- renderTable({
-        table_stats(summary_evol, input$var_param, input$stat, input$method)
+        table_stats(select_df_size(input$df_size, summary = TRUE), input$var_param, input$stat, input$method)
     })
     
     output$table_baseline_param <- renderTable({
-        get_baseline_param(summary_evol) %>% 
+        get_baseline_param(select_df_size(input$df_size, summary = TRUE)) %>% 
             select(-input$var_param) %>% 
             distinct() %>% 
             select(id_method, everything()) %>% 
@@ -130,7 +143,7 @@ server <- function(input, output) {
     })
     
     output$ridge_plot <- renderPlot({
-        graph_ridge(sim_evol,  input$var_param, input$stat)
+        graph_ridge(select_df_size(input$df_size, summary = FALSE),  input$var_param, input$stat)
     })
 }
 

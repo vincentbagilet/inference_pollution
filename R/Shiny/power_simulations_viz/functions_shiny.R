@@ -93,12 +93,12 @@ check_distrib_estimate <- function(df) {
   
   data_true_effects <- df_baseline %>%
     group_by(id_method) %>%
-    summarize(mean_true_effect = abs(mean(true_effect)))
+    summarize(mean_true_effect = mean(true_effect))
 
   graph <- df_baseline %>%
     ggplot() +
-    geom_density(aes(x = abs(estimate))) +
-    facet_wrap(~ id_method) + 
+    geom_density(aes(x = estimate)) +
+    facet_wrap(~ id_method, scales = "free") + 
     geom_vline(data = data_true_effects, aes(xintercept = mean_true_effect)) +
     labs(
       title = "Distribution of estimates by identification method",
@@ -190,6 +190,14 @@ graph_ridge <- function(df, var_param = "n_days", stat = "estimate") {
   return(graph)
 }
 
-
+select_df_size <- function(chr_size, summary = FALSE) {
+  if (summary == FALSE) {
+    df <- ifelse(chr_size == "large_df", "sim_evol_large", "sim_evol_small")
+  } else {
+    df <- ifelse(chr_size == "large_df", "summary_evol_large", "summary_evol_small")
+  }
+ 
+  return(get(df))
+} 
 
 
