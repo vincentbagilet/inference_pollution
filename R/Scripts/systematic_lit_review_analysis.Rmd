@@ -1,5 +1,5 @@
 ---
-title: "Systematic literature review - Analysis of abstracts"
+title: "Automatic literature review - Analysis of abstracts"
 author:
 - name: Vincent Bagilet
   url: https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet
@@ -58,11 +58,11 @@ set.seed(1)
 
 <!-- For years, the empirical economic literature has been obsessed with unbiasedness. Researchers have developed empirical methods and techniques in a quest to retrieve unbiased estimates. Yet, due to their inherent constraints, these techniques limit the set of settings in which one can retrieve causal and unbiased estimates. They also often tend to focus on limited samples of the data, leading to a reduction in sample size? This can ultimately lead to underpowered studies. As underlined by Gelman and Carlin (2014), a lack of power is often associated with type M and type S error. In a quest for unbiasedness, practitioners use methods leading to smaller sample size which can ultimately create bias (type M and type S error). We thus aim at analyzing whether the literature of short term health effects of air pollution suffers from power, type M and type S error issues. -->
 
-One of the objectives of our paper is to evaluate whether the literature of short terms health effects of air pollution suffers from power and bias issues. In this document, we carry out part of our analysis. We retrieved part of the estimates and confidence intervals of the literature in [another document](systematic_lit_review_geting_abstracts.html). To do so, we took advantage  using REGular EXPressions (regex) of a somehow standardized reporting mechanism of point estimates and confidence intervals in the abstracts. The set of articles studied in details here is therefore limited to articles describing displaying confidence intervals and point estimates in their abstracts. This convention does not exist in all disciplines. For instance, it is not common practice in the economics literature but it is much more common in the epidemiology literature. This analysis thus focuses on a selected sample of the literature.
+One of our objectives in this paper is to evaluate whether the literature of short terms health effects of air pollution suffers from power and type M error issues. In this document, we carry out part of this analysis. We retrieved most of the estimates and confidence intervals of the literature in [another document](systematic_lit_review_geting_abstracts.html). To do so, using REGular EXPressions (regex), we took advantage of a somehow standardized reporting mechanism of point estimates and confidence intervals in the abstracts. The set of articles studied in details here is therefore limited to articles displaying confidence intervals and point estimates in their abstracts. This convention is not shared by all disciplines. For instance, it is not common practice in economics but much more common in the epidemiology literature. This analysis thus focuses on a selected sample of the literature.
 
-In the present document, we first explore the characteristics of the articles considered. We only retrieve effects for a subset of papers and thus assess whether these papers are representative of the literature. We find that these papers are relatively representative of the whole literature. We then briefly explore the effects retrieved before carrying out a power analysis on these effects, implementing sensitivity tests to compute power, type M and type S error. We find a lot of heterogeneity in this literature. Some of papers do not seem to present major problems while others seem to suffer from to severe power issues. We therefore explore potential sources for this heterogeneity.
+In the present document, we first explore the characteristics of the articles considered. Since we only retrieve effects for a subset of papers, we assess whether these papers are representative of the whole literature. We find that they mostly are. We then briefly explore the effects retrieved before carrying out the actual power analysis, implementing sensitivity tests to compute power, type M and type S error. Our findings suggest important heterogeneity in this literature. Some papers do not seem to present major problems while others seem to suffer from severe power issues. We therefore explore potential sources for this heterogeneity.
 
-Key findings and graphs are presented in the [conclusion](\@concl)) section of the present document. This section has been built to be read and understood on its own. Readers who are only interested in the key findings are invited to jump straight to this section.  
+Key findings and graphs are presented in the conclusion section of the present document. This section has been built to be read and understood independently. Readers who are only interested in the key findings are invited to jump straight to this section.  
 
 <!-- write a paragraph explaining why the robustness checks make sense -->
 
@@ -141,7 +141,7 @@ effect_detected <- abstracts_and_metadata %>%
   distinct()
 ```
 
-Out of the `r nrow(abstracts_and_metadata)` valid articles returned by the query only a fraction reports estimates and confidence intervals in their abstracts. We therefore do not retrieve effects for all the articles returned by the query, mostly for the reason aforementioned. This might create some selection, making the sample of articles studied not representative of the whole literature. We investigate further the difference between articles that do and do not report confidence intervals in their abstracts in the following section. 
+Out of the `r nrow(abstracts_and_metadata)` valid articles returned by the query, only a fraction reports estimates and confidence intervals in their abstracts. We therefore do not retrieve effects for all the articles returned by the query, mostly for the reason aforementioned. This might create some selection, making the sample of articles studied not representative of the whole literature. We investigate further the difference between articles that do and do not report confidence intervals in their abstracts in the following section. 
 
 Here is a list of the valid articles. The last column shows whether at least one effect was retrieved for this article.
 
@@ -159,7 +159,7 @@ effect_detected %>%
   )
 ```
 
-In total, we **detect `r nrow(estimates)` valid effects** and associated confidence intervals. We retrieve estimates for most of the articles mentioning "CI" in the abstract:  
+In total, we **detect `r nrow(estimates)` valid effects** and associated confidence intervals. We retrieve estimates for most of the articles mentioning "confidence interval" in some form in the abstract:  
 
 ```{r}
 effect_detected %>%
@@ -185,7 +185,14 @@ In this subsection, we investigate whether there are systematic differences betw
 
 ### Qualitative random analysis
 
-First of all, we skim through a bunch of abstracts for which we retrieve an effect or not to see whether there are clear differences across study subsets. We notice that
+First of all, we skim through a bunch of abstracts for which we retrieve an effect or not to see whether there are clear differences across study subsets. 
+
+First of all, we notice that we did not select some papers displaying effects in their abstracts because they do not mention confidence intervals. We need standard errors to compute power, type M and type S error, hence why we did not select these papers. A small part of them seem to however mention p-values. We could have build on this to increase slightly our set of articles considered but it would not have drastically increased the set of articles considered. As discussed previously, we also acknowledge that our algorithm fails to detect a small share of otherwise valid estimates.
+
+We then noticed that a non negligible share of articles for which we do not detect an effect seem to to be off-topic. Our quick exploration did not show evidence of such an issue in articles for which we detected an effect. This is rather reassuring; we are filtering out non well suited papers.
+
+Finally, part of the studies for which we do not detect an effect are metanalyses (based on a quick regex search, there are about twice has much metanalyses in articles with an effect).
+<!-- effect_detected %>% mutate(meta = str_detect(abstract, "meta(\\s|-)?anal")) %>% count(meta, has_effect) -->
 
 
 <!-- ```{r} -->
@@ -199,7 +206,7 @@ First of all, we skim through a bunch of abstracts for which we retrieve an effe
 
 ### Publication date
 
-We first look into the distribution of published articles on this topic in time. We then wonder whether displaying effects in the abstract was a particular feature of a given period.
+Getting back to our automatic analysis, we first look into the distribution of published articles on this topic in time. We also wonder whether displaying effects in the abstract was a particular feature of a given period.
 
 ```{r}
 effect_detected %>% 
@@ -273,7 +280,7 @@ effect_detected %>%
 
 Most papers on this topic have been, unsurprisingly, published in multidisciplinary journals, health or physical science journals.
 
-One may notice that effects are not retrieved, *ie* not reported in the abstract or not detected, for most papers published in life science and social sciences and humanities. This might not be as problematic as they constitute a small share of the sample. There does not seem to be a particularly large imbalance in terms of journal general field for the more represented fields.
+One may notice that effects are not retrieved, *ie* not reported in the abstract or not detected, for most papers published in life science and social sciences and humanities. This is probably due to reporting practices peculiar to these fields. This might not be as problematic as they constitute a small share of the sample. There does not seem to be a particularly large imbalance in terms of journal general field for the more represented fields.
 
 ### Themes
 
@@ -318,11 +325,11 @@ theme_effect %>%
   scale_fill_discrete(name = "")
 ```
 
-Apart from a few key terms, such as CI, 95 for instance, there are no huge differences in the terms used in both subsets of abstracts. 
+Apart from a few key terms, such as CI, 95 for instance, there are no huge differences in the terms used in both subsets of abstracts. Noticeably, the term "increase" seems to appear more in abstracts where we detect an effect. This is not surprising as these papers often use sentences similar to "a 10 $\mu g/m^{3}$ increase in PM10 concentration lead to ...".
 
 ### Pollutant
 
-We take look at the pollutants considered in each article. We consider that a pollutant is studied if it is mentioned in the abstract. It is not an exact measure as some articles may mention pollutants without actually studying them but it remains an interesting metric.
+We then look at the pollutants considered in each article. We consider that a pollutant is studied if it is mentioned in the abstract. It is not an exact measure as some articles may mention pollutants without actually studying them but it remains an interesting metric.
 
 ```{r fig.asp=0.7}
 effect_detected %>% 
@@ -341,7 +348,7 @@ effect_detected %>%
 ```
 First of all, we notice that a large share of papers considered here study particulate matters (PM2.5, PM10 or both). 
 
-It seems that, when there are enough articles, the likelihood of detecting an effect does not seem to vary much with the type of pollutant. Importantly, the proportion of effects retrieved is much lower for articles for which we are not able to detect the type of pollutants studied. 
+It seems that, when the number of papers sudying a given pollutant is large, the likelihood of detecting an effect does not seem to vary much with the type of pollutant. Importantly, the proportion of effects retrieved is much lower for articles for which we are not able to detect the type of pollutants studied. 
 
 ### Outcome
 
@@ -363,11 +370,11 @@ effect_detected %>%
   scale_fill_discrete(name = "") 
 ```
 
-Most articles studied here are interested in mortality. The proportion of articles for which an effect is retrieved seems to be larger for papers studying emergency admissions than mortality. 
+Most articles studied here are interested in mortality. The proportion of articles for which an effect is retrieved seems to be larger for papers studying emergency admissions than mortality. There might therefore be some kind of selection issue along this dimension. 
 
 ### Subpopulation
 
-Some articles focus on sub-populations such as infants or elderly. We are able to detect a fraction of these articles, when these terms are mentioned in the abstract. When these terms are not mentioned, either the entire population is considered or we are not able to detect the subgroup considered. The number of articles for which a subpopulation is indicated is rather small: 
+Some articles focus on sub-populations such as infants or elders. When these terms are not mentioned, either the entire population is considered or we are not able to detect the subgroup considered. The number of articles for which a subpopulation is indicated is rather small: 
 
 ```{r}
 effect_detected %>% 
@@ -400,6 +407,7 @@ effect_detected %>%
   ) +
   scale_fill_discrete(name = "") 
 ```
+
 There does not seem to be large variations in the proportion of articles for which an effect is detected, depending on whether a subpopulation is studied or not. Yet, this proportion is a slightly larger for elders than infants, itself larger than when when no subpopulation is detected.
 
 ### Number of observations
@@ -467,9 +475,13 @@ effect_detected %>%
   scale_fill_discrete(name = "")
 ```
 
-We notice that there are large variations in the number of observations in the studies considered. However, there does not seem to be large differences along this dimension on whether an effect is retrieved or not. There seems however to be more studies around 1000 observation and less between 10,000 and 100,000 in articles for which an effect is retrieved. This is explained by the fact effects are retrieved more for studies with rather limited study period (around 3 years).
+We notice that there are large variations in the number of observations in the studies considered. However, there does not seem to be large differences along this dimension on whether an effect is retrieved or not. There seems however to be more studies around 1000 observations and less between 10,000 and 100,000 in articles for which an effect is retrieved. This is explained by the fact effects are retrieved more for studies with rather limited study period (around 3 years).
 
-Now that we have quickly compared the articles for which we retrieve an effect an those for which we do not, we can dig further into the analysis of the estimates retrieved.
+### Summary
+
+The articles for which an effect was detected, unsurprisingly, seem to be slightly different from those for which we did not detect one, based on our quick qualitative analysis. Yet, there does not seem to be important divides along the dimensions studied.
+
+We can thus now dig further into the analysis of the estimates retrieved.
 
 # Analysis of the effects
 
@@ -497,7 +509,7 @@ estimates_stats %>%
   kable_styling(position = "center")
 ```
 
-Researchers mention their key findings in the abstract and therefore probably do not report non statistically significant estimates for which the null hypothesis of no effect cannot be rejected in their abstracts. Only a very small proportion of articles do not report any statistically significant estimates in their abstract:
+Researchers mention their key findings in the abstract and therefore probably do not report in their abstracts non statistically significant estimates for which the null hypothesis of no effect cannot be rejected. Only a very small proportion of articles do not report any statistically significant estimates in their abstract:
 
 ```{r}
 estimates_stats %>% 
@@ -532,7 +544,7 @@ estimates_stats %>%
   ) 
 ```
 
-There seems to be some sort of bunching for t-scores above 1.96. In this analysis, we only consider estimates reported in the abstracts. Authors may only report significant estimates in their abstracts even though they also report non significant estimates in the body of the article. This might explain this bunching. We need to investigate this further in order to understand whether this bunching is evidence of publication bias. To do so, we could reproduce the present analysis but analyze the full texts and not only on the abstracts. 
+There seems to be some sort of bunching for t-scores above 1.96. In this analysis, we only consider estimates reported in the abstracts. Authors may only report significant estimates in their abstracts even though they also report non significant estimates in the body of the article. This might explain this bunching. We need to investigate this further in order to understand whether this bunching is evidence of publication bias. To do so, we could reproduce the present analysis but analyze the full texts and not only on the abstracts. Other techniques could be used to analyze reporting bias but are not available to us, considering the lack on information we have access to using this automatic method.
 
 ## Signal to noise ratio
  
@@ -568,15 +580,15 @@ quantile(estimates_stats$signal_noise, seq(0, 1, 0.1)) %>%
   kable_styling(position = "center")
 ```
 
-We notice that for about 55% of the estimates considered here, the magnitude of the noise is more important than those of the signal. This is particularly concerning.
+We notice that *for about 55% of the estimates considered here, the magnitude of the noise is more important than those of the signal*. This is particularly concerning.
 
 # Power analysis
 
 We then turn to the power analysis itself. The objective is to evaluate the power, type M and type S errors for each estimate. 
 
-To compute these values, we would need to know the true effect size. Yet, true effects are of course unknown. One solution could be to use estimates from the literature and meta-analyses as best guesses for these true values. Yet, in the setting of this systematic literature review, detecting what is exactly measured in each analysis is particularly challenging since there is no standardized way of reporting the results beyond mentioning confidence intervals. One study may for instance claim that a 10 $\mu g/m^{3}$ increase in PM2.5 concentration leads to an increase of x% in hospital admissions over the course of a year while another study may state that a 2% increase in ozone concentration increases the number of deaths by 3 over a month. Fortunately, for each estimate retrieved, even though we do not know what is measured, we can evaluate the precision with which it is estimated.
+To compute these values, we would need to know the true effect size. Yet, true effects are of course unknown. One solution could be to use estimates from the literature and meta-analyses as best guesses for these true values. Yet, in the setting of this automatic literature review, detecting what is exactly measured in each analysis is particularly challenging since there is no standardized way of reporting the results beyond mentioning confidence intervals. One study may for instance claim that a 10 $\mu g/m^{3}$ increase in PM2.5 concentration is associated with an increase of x% in hospital admissions over the course of a day while another study may state that a 2% increase in ozone concentration increases the number of deaths by 3 over a month. Fortunately, for each estimate retrieved, even though we do not know what is measured, we can evaluate the precision with which it is estimated.
 
-To circumvent the fact that we do not know the actual effect size, we follow a strategy suggested by Gelman and Carlin (2014). We consider a range of potential "true" effect sizes and run a sensitivity analysis. We investigate what would be the power, type M and type S error if the true effect was only a fraction of the measured effect. This enables us to assess whether the design of the study would be *good enough* to detect a smaller effect. If assuming that the true effect is 3/4 of the measured effect yields a power of 30%, there is probably a major issue with the design of this study. With this design, this (non zero) effect would only be detected 30% of the time.
+To circumvent the fact that we do not know the actual effect size, we follow a strategy suggested by Gelman and Carlin (2014). We consider a range of potential "true" effect sizes and run a sensitivity analysis. We investigate what would be the power, type M and type S error if the true effect was only a fraction of the measured effect. This enables us **to assess whether the design of the study would be *good enough* to detect a smaller effect**. If assuming that the true effect is 3/4 of the measured effect yields a power of 30%, there is probably a major issue with the design of this study. With this design, this (non zero) effect would only be detected 30% of the time.
 
 Of course, there is no reason to think *a priori* that a given effect would be overestimated. The values for power, type M and type S errors are therefore only informative. 
 
@@ -606,13 +618,18 @@ retro_analysis <- estimates_stats %>%
     typeS = computed$typeS,
     typeM = computed$typeM,
     prop_true_effect = as.numeric(str_sub(prop_true_effect, 7, nchar(prop_true_effect))),
-    prop_true_effect_phrase = str_c(prop_true_effect*100, "% of the measured effect")
+    prop_true_effect_phrase = str_c(prop_true_effect*100, "% of the measured effect"), 
+    prop_true_effect_phrase = ifelse(
+      is.na(prop_true_effect_phrase), 
+      "Lower bound of the CI", 
+      prop_true_effect_phrase
+    )
   ) %>% 
   select(-computed) %>% 
   filter(typeM < Inf) 
 ```
 
-In a first part, we investigate whether the literature might be subject to design issues. We analyze the distribution of power, type M and type S errors in the whole set of abstracts, how they evolve jointly or along several variables such as the size of the true effect. We find clear evidence of heterogeneity across articles. Some of them seem to present robust designs while others seem much more problematic, yield low power and high rates of type M error, even for large hypothesized true effect sizes.
+In a first part, we investigate whether the literature might be subject to design issues. We analyze the distribution of power, type M and type S errors in the whole set of abstracts, how they evolve jointly or along several variables such as the size of the true effect. We find clear evidence of heterogeneity across articles. Some of them seem to present robust designs while others seem much more problematic, yielding low power and high rates of type M error, even for large hypothesized true effect sizes.
 <!-- The former set of estimates display high power even for low hypothesized true effect sizes while estimates from the later set present low power for still large true effect sizes.  -->
 Thus, in a second part, we investigate potential sources of heterogeneity. 
 
@@ -630,7 +647,8 @@ retro_analysis %>%
   facet_wrap( ~ prop_true_effect_phrase) +
   labs(
     title = "Distribution of power in the literature", 
-    subtitle = "If the magnitude of true effect is a fraction of the measured effect"
+    subtitle = "If the magnitude of true effect is a fraction of the measured effect",
+    y = "Number of estimates"
   )
 # geom_density()
 
@@ -641,7 +659,8 @@ retro_analysis %>%
   facet_wrap( ~ prop_true_effect_phrase) +
   labs(
     title = "Distribution of type M error in the literature (log scale)", 
-    subtitle = "If the magnitude of true effect is a fraction of the measured effect"
+    subtitle = "If the magnitude of true effect is a fraction of the measured effect",
+    y = "Number of estimates"
   ) +
   scale_x_continuous(trans = 'log10')
 
@@ -652,7 +671,8 @@ retro_analysis %>%
   facet_wrap( ~ prop_true_effect_phrase) +
   labs(
     title = "Distribution of type S error in the literature", 
-    subtitle = "If the magnitude of true effect is a fraction of the measured effect"
+    subtitle = "If the magnitude of true effect is a fraction of the measured effect",
+    y = "Number of estimates"
   )
 ```
 
@@ -671,19 +691,19 @@ retro_analysis %>%
   facet_wrap( ~ prop_true_effect_phrase) +
   labs(
     title = "Distribution of type M error in the literature", 
-    subtitle = "If the magnitude of true effect is a fraction of the measured effect"
+    subtitle = "If the magnitude of true effect is a fraction of the measured effect",
+    y = "Number of estimates"
   ) 
 ```
 
-We find that, **even if the measured effect was close to the true effect, for a good chunk of articles, there  would be a substantial risk of type M error**. That means that, replicating each of these studies would yield, on average, to smaller effect than the reported one. 
+We find that, **even if the measured effect was close to the true effect, for a good chunk of articles, there  would be a substantial risk of type M error**. That means that, replicating each of these studies would yield, on average, a smaller effect than the reported one. 
 
-Alternatively, we can also look at what would be the power, type M and type S if the true effect was equal to the lower bound of the confidence interval. This metric may exacerbate design issues for imprecise estimates. Such estimates would be "penalized" twice for being imprecise: they have a large standard error and the hypothesized effect would be very small. Yet, this metric remains interesting as confidence intervals describe credible effect sizes. If the effect size is smaller but still credible, would the design be good enough to "detect" it?
+Alternatively, we can also look at what would be the power, type M and type S if the true effect was equal to the lower bound of the confidence interval. This metric may exacerbate design issues for imprecise estimates. Such estimates would be "penalized" twice for being imprecise: they have a large standard error and the hypothesized true effect would be very small. Yet, this metric remains interesting as confidence intervals describe credible effect sizes. If the effect size is smaller but still credible, would the design be good enough to "detect" it?
 
 ```{r}
 retro_analysis %>% 
   filter(typeM < 5) %>% 
-  filter(is.na(prop_true_effect)) %>% 
-  mutate(prop_true_effect = "low_CI") %>% 
+  filter(str_starts(prop_true_effect_phrase, "Lower")) %>% 
   pivot_longer(power:typeM, names_to = "design_stat") %>% 
   ggplot(aes(x = value)) +
   geom_histogram(bins = 10) +
@@ -692,7 +712,8 @@ retro_analysis %>%
     x = "", 
     y = "Number of estimates",
     title = "Distribution of design statistics in the literature", 
-    subtitle = "If the magnitude of true effect is equal to the lower bound of the CI"
+    subtitle = "If the magnitude of true effect is equal to the lower bound of the CI",
+    y = "Number of estimates"
   ) 
 ```
 
@@ -717,12 +738,6 @@ retro_analysis %>%
   ) %>% 
   arrange(prop_true_effect) %>% 
   select(-prop_true_effect) %>%
-  mutate(
-    prop_true_effect_phrase = ifelse(
-      is.na(prop_true_effect_phrase), 
-      "Lower bound of the CI", 
-      prop_true_effect_phrase)
-  ) %>% 
   kable(col.names = c("", "Mean", "Median", "Mean", "Median", "Mean", "Median")) %>%
   add_header_above(c('"True" effect' = 1, "Power" = 2, "Type M" = 2, "Type S" = 2)) %>%
   kable_styling(position = "center")
@@ -730,7 +745,7 @@ retro_analysis %>%
 
 ### ECDF
 
-Empirical Cumulative Distribution Functions (ECDFs) provide a broader overview of these metrics.  They inform us of the share of articles which power, type M or S errors are below a given threshold. 
+Empirical Cumulative Distribution Functions (ECDFs) provide a broader perspective on these metrics.  They inform us of the share of articles for which power, type M or S errors are below a given threshold. 
 
 ```{r}
 retro_analysis %>%
@@ -744,7 +759,7 @@ retro_analysis %>%
     title = "Empirical cumulative distribution of power in the literature",
     subtitle = "If the magnitude of true effect is a fraction of the measured effect",
     x = "Power",
-    y = "Proportion of estimates", 
+    y = "Cumulative proportion of estimates", 
     caption = "The dashed line represents the usual 80% power threshold"
   )
 
@@ -759,7 +774,7 @@ retro_analysis %>%
     title = "Empirical cumulative distribution of power in the literature",
     subtitle = "If the magnitude of true effect is a fraction of the measured effect",
     x = "Type M error",
-    y = "Proportion of estimates"
+    y = "Cumulative proportion of estimates"
   )
 
 retro_analysis %>%
@@ -772,7 +787,7 @@ retro_analysis %>%
     title = "Empirical cumulative distribution of power in the literature",
     subtitle = "If the magnitude of true effect is a fraction of the measured effect",
     x = "Type S error",
-    y = "Proportion of estimates"
+    y = "Cumulative proportion of estimates"
   ) 
 ```
 
@@ -783,8 +798,7 @@ For ECDFs too we look at what would be the power, type M and type S error if the
 ```{r}
 retro_analysis %>% 
   filter(typeM < 5) %>%
-  filter(is.na(prop_true_effect)) %>% 
-  mutate(prop_true_effect = "low_CI") %>% 
+  filter(str_starts(prop_true_effect_phrase, "Lower")) %>% 
   pivot_longer(power:typeM, names_to = "design_stat") %>% 
   ggplot(aes(x = value)) +
   stat_ecdf(geom = "line") +
@@ -815,7 +829,7 @@ retro_analysis %>%
   ) 
 ```
 
-This might be rather concerning: even if the true effect was equal to the estimated effect (and only considering statistically significant estimates), `r retro_analysis %>% filter(prop_true_effect == 1) %>% filter(t_score >= 1.96) %>% mutate(above_80 = (power > 0.8)) %>% count(above_80) %>% mutate(prop = n/sum(n)) %>% filter(!above_80) %>% .$prop*100 `% of the estimates would not reach the conventional a 80% power threshold. This is rather concerning since, due to type M error, significant estimates likely over-estimate on average the true effects. Indeed, the median type M for these estimates is `r retro_analysis %>% filter(prop_true_effect == 1) %>% filter(t_score >= 1.96) %>% mutate(above_80 = (power > 0.8)) %>% filter(!above_80) %>% .$typeM %>% median`. Considering that the true effect is equal to the estimated effect is therefore very conservative. If we assume that the true effect is equal to 3/4 of the measured effect (which is still rather conservative), the proportion of significant estimates not reaching the 80% power conventional threshold is still as high as `r retro_analysis %>% filter(prop_true_effect == 0.75) %>% filter(t_score >= 1.96) %>% mutate(above_80 = (power > 0.8)) %>% count(above_80) %>% mutate(prop = n/sum(n)) %>% filter(!above_80) %>% .$prop*100`%
+This might be rather concerning: even if the true effect was equal to the estimated effect (and only considering statistically significant estimates), `r retro_analysis %>% filter(prop_true_effect == 1) %>% filter(t_score >= 1.96) %>% mutate(above_80 = (power > 0.8)) %>% count(above_80) %>% mutate(prop = n/sum(n)) %>% filter(!above_80) %>% .$prop*100`% of the estimates would not reach the conventional a 80% power threshold. This is rather concerning since, due to type M error, significant estimates likely over-estimate on average the true effects. Indeed, the median type M for these estimates is `r retro_analysis %>% filter(prop_true_effect == 1) %>% filter(t_score >= 1.96) %>% mutate(above_80 = (power > 0.8)) %>% filter(!above_80) %>% .$typeM %>% median`. Considering that the true effect is equal to the estimated effect is therefore very conservative. If we assume that the true effect is equal to 3/4 of the measured effect (which is still rather conservative), the proportion of significant estimates not reaching the 80% power conventional threshold is still as high as `r retro_analysis %>% filter(prop_true_effect == 0.75) %>% filter(t_score >= 1.96) %>% mutate(above_80 = (power > 0.8)) %>% count(above_80) %>% mutate(prop = n/sum(n)) %>% filter(!above_80) %>% .$prop*100`%
 
 ### Link between power, type M and type S error
 
@@ -994,72 +1008,15 @@ retro_analysis %>%
 
 The overall distribution of power may seem surprising: for "large" effect sizes, the power of most studies is high while it suddenly shifts to very low as effect size decreases.
 
-### Evolution of power with publication year
-
-It might also be interesting to look at how power, type M and type S error evolved in time, *ie* with publication date.
-
-```{r}
-retro_analysis_pubdate <- retro_analysis %>% 
-  left_join(abstracts_and_metadata %>% select(doi, pub_date), by = "doi")
-
-retro_analysis_pubdate %>% 
-  filter(prop_true_effect == 0.75) %>% 
-  group_by(year = year(pub_date), prop_true_effect) %>%
-  mutate(power = mean(power, na.rm = TRUE)) %>% 
-  ungroup() %>% 
-  ggplot(aes(x = year, y = power)) +
-  geom_point() +
-  # geom_smooth(size = 0.3) +
-  # facet_wrap(~ prop_true_effect_phrase) +
-  labs(
-    title = "Evolution of mean power in the literature with publication date", 
-    x = "Publication date", 
-    y = "Power"
-  )
-
-retro_analysis_pubdate %>% 
-  filter(prop_true_effect %in% sizes_to_display) %>% 
-  group_by(year = year(pub_date), prop_true_effect) %>%
-  mutate(typeM = mean(typeM, na.rm = TRUE)) %>% 
-  ungroup() %>% 
-  ggplot(aes(x = year, y = typeM)) +
-  geom_point() +
-  # geom_smooth(size = 0.3) +
-  # geom_smooth(size = 0.3, formula = y ~ x + I(x^2)) +
-  facet_wrap(~ prop_true_effect_phrase) +
-  labs(
-    title = "Evolution of mean type M error in the literature with publication date", 
-    x = "Publication date", 
-    y = "Type M"
-  )
-
-retro_analysis_pubdate %>% 
-  filter(prop_true_effect %in% sizes_to_display) %>%  
-  group_by(year = year(pub_date), prop_true_effect) %>%
-  mutate(typeS = mean(typeS, na.rm = TRUE)) %>% 
-  ungroup() %>% 
-  ggplot(aes(x = year, y = typeS)) +
-  geom_point() + 
-  # geom_smooth(size = 0.3) +
-  facet_wrap(~ prop_true_effect_phrase) +
-  labs(
-    title = "Evolution of mean type S error in the literature with publication date", 
-    x = "Publication date", 
-    y = "Type S"
-  )
-```
-
-There does not seem to be a clear trend in the evolution of power and type S error. However, type M error seems to have peaked in the 2010s and to be decreasing again recently.
-
 ### Summary
 
-To sum up, the bulk of the estimates in this literature does not seem to suffer from low power and type M error issues. For most estimates, type S error does not seem to be an important issue in this literature. Yet, even if the measured effect was close to the true effect, a non negligible chunk of articles would display low power and a substantial risk of type M error. The power of a large chunk of estimates, at least one quarter of significant ones, might be concerning low. This low power is associated with non negligible type M error (median of 1.25). Part of the estimates are likely to be overestimated. 
+To sum up, the bulk of the estimates in this literature does not seem to suffer from low power and type M error issues. For most estimates, type S error does not seem to be an important issue in this literature. Yet, even if the measured effect was close to the true effect, a non negligible chunk of articles would display low power and a substantial risk of type M error. The power of a large chunk of estimates, at least one quarter of significant ones, might be problematically low. This low power is associated with non negligible type M error. Part of the estimates are thus likely overestimated. 
 
-We thus need to investigate further into the sources of this heterogeneity.
+We need to investigate further into the sources of this heterogeneity.
 
 # Analysis of the sources of heterogeneity
 
-In the previous section, we noticed that, while a good chunk of the literature seems not to suffer too much from power issues, a non negligible number of studies does. In this section, we thus investigate whether we can find clear sources for this heterogeneity. To simplify and clarify our analysis, we consider that an estimate has low power if its computed power is lower than 80% if the true effect is 3/4 of the measured effect. These numbers are arbitrary. 80% is the threshold usually used in power analyses but 3/4 is arbitrary and could be changed easily in a robustness check. Following this criterion, the number and proportion of estimates with low power is as follows:
+To simplify and clarify our analysis, we consider that an estimate has low power if its computed power is lower than 80% if the true effect is 3/4 of the measured effect. These numbers are arbitrary. 80% is the threshold usually used in power analyses and 3/4 is purely arbitrary and could be changed easily in a robustness check. Following this criterion, the number and proportion of estimates with low power is as follows:
 
 ```{r}
 articles_low_adequate <- retro_analysis %>% 
@@ -1077,7 +1034,20 @@ articles_low_adequate %>%
   kable_styling(position = "center")
 ```
 
-Based this criterion, **the number of studies with low power is concernedly high**.
+Based this criterion, **the number of studies with low power is concernedly high**. 
+
+Such articles are also associated with large type M errors:
+
+```{r}
+articles_low_adequate %>% 
+  group_by(low_power_phrase) %>% 
+  summarise(
+   mean_typeM = mean(typeM),
+   median_typeM = median(typeM)
+  ) %>% 
+  kable(col.names = c("Power", "Mean type M", "Median type M")) %>%
+  kable_styling(position = "center")
+```
 
 
 <!-- Non surprisingly, most of the type M and type S errors are associated with "low power" -->
@@ -1098,7 +1068,7 @@ We investigate the particularities of articles with seemingly low power. We basi
 
 ## Publication date
 
-First, we look into the distribution of publication dates.
+First, we look into the evolution of the proportion of articles with low power with publication dates.
 
 ```{r}
 set_mediocre_all(second_pair = TRUE)
@@ -1152,8 +1122,104 @@ articles_low_adequate %>%
   )
 ```
 
-**The proportion of articles with low power does not seem to have drastically evolved in time**. One may have expected that this proportion would have decreased in time as researchers have access to more and more data and computational power and as estimation methods improve. 
+**The proportion of articles with low power does not seem to have drastically evolved in time**. One may have expected that this proportion would have decreased in time as researchers have access to more and more data, computational power and as estimation methods improve. 
 <!-- It seems that articles with adequate power have been published more recently than articles with adequate power but the difference is not extreme. -->
+
+We can also look more generally at how power, type M and type S error evolved in time.
+
+```{r}
+retro_analysis_pubdate <- retro_analysis %>% 
+  left_join(abstracts_and_metadata %>% select(doi, pub_date), by = "doi")
+
+retro_analysis_pubdate %>% 
+  filter(prop_true_effect == 0.75) %>% 
+  group_by(year = year(pub_date), prop_true_effect) %>%
+  summarise(
+    power = mean(power, na.rm = TRUE),
+    n = n(),
+    groups = ".drop"
+  ) %>% 
+  ggplot() +
+  geom_point(aes(x = year, y = power, size = n), alpha = 0.6) +
+  # geom_smooth(size = 0.3) +
+  # facet_wrap(~ prop_true_effect_phrase) +
+  labs(
+    title = "Evolution of mean power in the literature with publication date", 
+    subtitle = "If the magnitude of true effect is 3/4 of the measured effect",
+    size = "Number of articles published per year",
+    x = "Publication date", 
+    y = "Power"
+  )
+
+retro_analysis_pubdate %>% 
+  filter(prop_true_effect == 0.75) %>% 
+  group_by(year = year(pub_date), prop_true_effect) %>%
+  summarise(
+    typeM = mean(typeM, na.rm = TRUE),
+    n = n(),
+    groups = ".drop"
+  ) %>% 
+  ggplot() +
+  geom_point(aes(x = year, y = typeM, size = n), alpha = 0.6) +
+  # geom_smooth(size = 0.3) +
+  # geom_smooth(size = 0.3, formula = y ~ x + I(x^2)) +
+  # facet_wrap(~ prop_true_effect_phrase) +
+  labs(
+    title = "Evolution of mean type M error in the literature with publication date", 
+    subtitle = "If the magnitude of true effect is 3/4 of the measured effect",
+    size = "Number of articles published per year",
+    x = "Publication date", 
+    y = "Type M"
+  )
+
+retro_analysis_pubdate %>% 
+  filter(prop_true_effect == 0.75) %>%  
+  group_by(year = year(pub_date), prop_true_effect) %>%
+  summarise(
+    typeS = mean(typeS, na.rm = TRUE),
+    n = n(),
+    groups = ".drop"
+  ) %>% 
+  ggplot(aes(x = year, y = typeS, size = n)) +
+  geom_point(alpha = 0.6) + 
+  # geom_smooth(size = 0.3) +
+  labs(
+    title = "Evolution of mean type S error in the literature with publication date", 
+    subtitle = "If the magnitude of true effect is 3/4 of the measured effect",
+    size = "Number of articles published per year",
+    x = "Publication date", 
+    y = "Type S"
+  )
+```
+
+There does not seem to be a clear trend in the evolution of power and type S error. However, type M error seems to increase slightly in time. This is rather concerning. One may potentially explain that by the fact that the literature is chasing smaller and smaller effects, leading to more type M error. This hypothesis is however difficult to verify since the effects we retrieved are not standardized, as mentioned previously.
+
+Carrying out an analysis by quantile clearly shows that this evolution is driven by outliers with vary large type M errors. The yearly maximum type M error rates have increased in recent years.
+
+```{r}
+retro_analysis_pubdate %>% 
+  filter(prop_true_effect == 0.75) %>% 
+  group_by(year = year(pub_date), prop_true_effect) %>%
+  summarise(
+    typeM = quantile(typeM, na.rm = TRUE),
+    quantile =  paste("Quantile:", seq(0, 1, 0.25)),
+    n = n(),
+    groups = ".drop"
+  ) %>% 
+  # filter(quantile > 0.8) %>%
+  ggplot() +
+  geom_point(aes(x = year, y = typeM)) +
+  # geom_smooth(size = 0.3) +
+  # geom_smooth(size = 0.3, formula = y ~ x + I(x^2)) +
+  facet_wrap(~ quantile, scales = "free_y") +
+  labs(
+    title = "Evolution type M error with publication date, by quantile", 
+    subtitle = "If the magnitude of true effect is 3/4 of the measured effect",
+    x = "Publication date", 
+    y = "Type M"
+  )
+```
+
 
 ## Journal and fields
 
@@ -1361,9 +1427,53 @@ articles_low_adequate %>%
   scale_fill_discrete(name = "")
 ```
 
-There does not seem to be substantial heterogeneity in terms of number of observations or length of the study period (at least in articles for which we were able to retrieve this information). We may not observe any difference in terms of number of observations because we do not have this information for many studies. We have retrieved more data about the number of cities considered and it seems that more studies with low power only consider one city. The data are imperfect but this result is not estimates from studies focusing on one city are likely to be less precise than those from studies focusing on several cities. This would be due to a smaller number of observations.)
+There does not seem to be substantial heterogeneity in terms of number of observations or length of the study period (at least in articles for which we were able to retrieve this information). We may not observe any difference in terms of number of observations because we do not have this information for many studies. We have retrieved more data about the number of cities considered and it seems that more studies with low power only consider one city. The data are imperfect but this result may come from the fact that estimates from studies focusing on one city are likely to be less precise than those from studies focusing on several cities. This would be due to a smaller number of observations.
 
 ## Summary
 
+We have seem that mean and median power do not seem to have greatly evolved in time but the average type M seems to have increased in time. This pattern seems to be driven by the fact that more and more papers with very large type M errors have been published recently. We have also seen that health science journals seem to be more prone to power issues than other journals. However, there seems to be a shared lack of concern for low power issues across all fields. Finally, we did not find evidence of obvious heterogeneity in outcome, pollutant or sub-population studied but noticed that more studies with low power only seem to be considering only one city.
+
 # Conclusion and summary {#concl}
 
+In this document, we analyze the statistical power and inference properties of the literature on short term health effects of air pollution. To do so, we retrieved `r nrow(estimates)` valid estimates from abstracts of this literature. This sample of estimates is likely rather representative of the whole set of estimates in abstracts of this literature.
+
+Our results are both reassuring and worrying. A large chunk of the estimates in this literature does not seem to suffer from low power and type M error issues. 
+Yet, even if the measured effect was close to the true effect, a non negligible chunk of articles would display low power and a substantial risk of type M error. Type S error does not seem to be an important issue in this literature. The following graphs summarise part of this information:
+
+```{r}
+retro_analysis %>%
+  filter(typeM < 5) %>% 
+  filter(prop_true_effect == 0.75) %>% 
+  pivot_longer(power:typeM, names_to = "design_stat") %>% 
+  ggplot() +
+  geom_histogram(aes(x = value), bins = 10) +
+  facet_wrap( ~ design_stat, scales = "free") +
+  labs(
+    x = "", 
+    y = "Number of estimates",
+    title = "Distribution of design statistics in the literature", 
+    subtitle = "If the magnitude of true effect is equal 3/4 of the estimated effect"
+  ) +
+  scale_fill_discrete(name = "")
+
+articles_low_adequate %>% 
+  filter(typeM < 3) %>%
+  pivot_longer(power:typeM, names_to = "design_stat") %>% 
+  filter(design_stat != "typeS") %>% 
+  ggplot(aes(x = value)) +
+  stat_ecdf(geom = "line") +
+  # geom_hline(yintercept = 0.8) +
+  # coord_flip() +
+  facet_wrap( ~ design_stat, scales = "free") +
+  labs(
+    x = "", 
+    y = "Proportion of estimates",
+    title = "Empirical cumulative distribution of design statistics in the literature", 
+    subtitle = "If the magnitude of true effect is equal 3/4 of the estimated effect",
+    caption = "Only considering estimates with a type M lower than 3"
+  ) 
+```
+
+About 40% of estimates would not reach the conventional 80% statistical power level threshold if the true effect is 3/4 the size of the measured effect. If for all studies, the true effect was 3/4 of the measured effect, the mean type M would be about 1.4. Again, this average hides a lot of heterogeneity. For the 40% of estimates with low power mentioned above, the average type M is 1.93, the median is 1.47. 
+
+We then investigated the sources of heterogeneity. Concernedly, we find that in recent years, more and more articles display very large type M errors. In addition, health science journals seem to be more prone to power issues than other journals. However, there seems to be a shared lack of concern for low power issues across all fields. Finally, we did not find evidence of obvious heterogeneity in outcome, pollutant or sub-population studied but noticed that more studies with low power only seem to be considering only one city.
