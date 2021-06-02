@@ -198,7 +198,7 @@ We then create the fake output, `y_fake`. The generative process depends on the 
 
 - For binary treatments, we draw a treatment effect from a Poisson distribution with mean corresponding to the effect size desired.
 - For the OLS, we build a generative model that creates fake data based on the formula given and with an effect corresponding to the effect size desired.
-- For the IV, we use the same method as for the OLS but previously, we modified the value of pollutant concentration through the instrument. The instrument is binary and affects pollutant concentration: $Poll_{ct}^{fake} = Poll_{ct} + \alpha T_{ct} + \epsilon_{ct}$, where $T_{ct}$ is the treatment dummy, $\alpha$ the treatment "intensity" (the `iv_intensity` in our function) and $\epsilon \sim \mathcal{N}(0, 0.1)$ a noise.
+- For the IV, we use the same method as for the OLS but previously, we modified the value of pollutant concentration through the instrument. The instrument is binary and affects pollutant concentration: $Poll_{ct}^{fake} = Poll_{ct} + \delta T_{ct} + e_{ct}$, where $T_{ct}$ is the treatment dummy, $\delta$ the treatment "intensity" (the `iv_intensity` in our function) and $e \sim \mathcal{N}(0, 0.1)$ a noise.
 
 We also create a short function to detect a pollutant among independent variables of a formula. We also use this function later. In the present document we only consider CO but we made the function more general.
 

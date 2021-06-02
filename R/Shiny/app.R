@@ -10,7 +10,7 @@ set_mediocre_all()
 
 
 # sim_param_base <- readRDS("data/sim_param_base.RDS")
-source("./functions_shiny.R")
+source(here("R/Shiny/functions_shiny.R"))
 
 #### UI ------------------
 
