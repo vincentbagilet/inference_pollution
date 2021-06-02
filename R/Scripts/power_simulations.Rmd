@@ -37,13 +37,9 @@ opts_chunk$set(fig.path = "images/",
 
 # Purpose of the document
 
-In this document, we carry out a simulation exercise to evaluate the inference properties of different research designs aiming at measuring the short-term effects of air pollution on health. We consider different types of quasi experiments and for each associate an identification strategy. 
+In this document, we carry out a simulation exercise to evaluate the inference properties of different research designs aiming at measuring the short-term effects of air pollution on health. We consider different types of quasi experiments and for each associate one or several identification strategies. 
 
 This document focuses on running the simulations. The results are analyzed and discussed in another document.
-
-# Loading and Formatting Data
-
-We load the packages and the data and wrangle it into a format well suited for this analysis.
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 library(here)
@@ -111,16 +107,13 @@ select_study_period <- function(data, n_days = 3000, n_cities = 68) {
 
 ## Defining the treatment
 
-Then, we create a function to draw the treatment. This function adds a boolean vector to our data, stating whether each observation is in the treatment group or not. We consider three quasi-experiments: 
-- Random days, corresponding to a random allocation of the treatment
-- Air pollution alerts
-- No quasi-experiment
+Then, we create a function to draw the treatment. This function adds a boolean vector to our data, stating whether each observation is in the treatment group or not. The drawing procedure depends on the quasi experiment considered (`quasi_exp`) and the proportion of treated observations (`p_obs_treat`). We consider three quasi-experiments: 
 
-For each treatment, we define the proportion of treated observations (`p_obs_treat`). 
+- Random days, corresponding to a random allocation of the treatment (`random_days`)
+- Air pollution alerts (`alert_...` with ... being the pollutant name )
+- No quasi-experiment (`none`)
 
-Note that for the alert, we consider a RDD and therefore will restrict our sample. 
-
-For the air pollution alert, we draw a threshold position from a uniform distribution from 0.2 to 0.4 in order to have enough observations in our data set. If we pick the threshold position too high up in the distribution of CO concentration, we may end up with observations very far away from the samples. For each city, we find the corresponding threshold and define a bandwidth such that `p_obs_treat` observations of the total sample are treated. Observations outside the bandwidth get a `NA` for `treated`. Thus, after calling this function, we need to filter out observations with a `NA` for `treated`.
+Note that for the alert, we will use RDD to estimate the effect of the treatment. We therefore restrict our sample to observations in a given bandwidth. We draw a threshold position from a uniform distribution from 0.2 to 0.4 in order to have enough observations in our data set. If we pick the threshold position too high up in the distribution of CO concentration, we may end up with observations very far away from the samples. For each city, we find the corresponding threshold and define a bandwidth such that `p_obs_treat` observations of the total sample are treated. Observations outside the bandwidth get a `NA` for `treated`. Thus, after calling this function, we need to filter out observations with a `NA` for `treated`.
 
 ```{r}
 draw_treated <- function(data, p_obs_treat = 0.5, quasi_exp = "random_days") {
@@ -201,11 +194,11 @@ test_treatment_data %>%
 
 ## Creating fake output
 
-We then create the fake output, `y_fake`. The generative process depends on the identification method. We use different methods to generate fake mortality data: 
+We then create the fake output, `y_fake`. The generative process depends on the identification method: 
 
 - For binary treatments, we draw a treatment effect from a Poisson distribution with mean corresponding to the effect size desired.
 - For the OLS, we build a generative model that creates fake data based on the formula given and with an effect corresponding to the effect size desired.
-- For the IV, we use the same method as for the OLS but previously modified the value of pollutant concentration to correspond to be affected by the treatment. The intensity is set equal to the parameter `iv_intensity` and we add some white noise drawn from a normal distribution (0, 0.1).
+- For the IV, we use the same method as for the OLS but previously, we modified the value of pollutant concentration through the instrument. The instrument is binary and affects pollutant concentration: $Poll_{ct}^{fake} = Poll_{ct} + \alpha T_{ct} + \epsilon_{ct}$, where $T_{ct}$ is the treatment dummy, $\alpha$ the treatment "intensity" (the `iv_intensity` in our function) and $\epsilon \sim \mathcal{N}(0, 0.1)$ a noise.
 
 We also create a short function to detect a pollutant among independent variables of a formula. We also use this function later. In the present document we only consider CO but we made the function more general.
 
@@ -286,6 +279,8 @@ create_fake_output <- function(data,
 } 
 ```
 
+The proportion of treated observations corresponds to the ratio of the number of orange dots and the total number of dots.
+
 ## Estimating the model
 
 We can then estimate our model and retrieve the point estimate, p-value, standard error, number of observations and f-stat.
@@ -324,7 +319,7 @@ estimate_model <- function(data, formula) {
 
 ## Computing simulations
 
-We need to compute the true effect for each simulation. The different identification methods aims to identify different estimands (ATE or ATET). We therefore write a short function to compute this true effect.
+Before running all these functions together to compute one simulation, we need to compute the true effect. The different identification methods aims to identify different estimands (ATE or ATET). We therefore write a short function to compute this true effect.
 
 ```{r}
 compute_true_effect <- function(data, id_method, percent_effect_size, dep_var) {
@@ -339,7 +334,7 @@ compute_true_effect <- function(data, id_method, percent_effect_size, dep_var) {
 }
 ```
 
-We can now create a function running all the previous functions together and therefore performing an iteration of the simulation for a given set of parameters. This function returns a one row data set with estimate, p-value, number of observations and true effect size. 
+We can now create a function running all the previous functions together and therefore performing an iteration of the simulation, for a given set of parameters. This function returns a one row data set with estimate, p-value, number of observations and true effect size. 
 
 ```{r}
 compute_simulation <- function(data,
@@ -399,9 +394,9 @@ compute_simulation <- function(data,
 nmmaps_data %>%
   compute_simulation(
     data = .,
-    formula = "death_total ~ co + temperature + temperature_squared | city + month^year + weekday",
-    quasi_exp = "none",
-    id_method = "OLS",
+    formula = "death_total ~ treated + co + temperature + temperature_squared | city + month^year + weekday",
+    quasi_exp = "alert_co",
+    id_method = "RDD",
     iv_intensity = 0.5,
     n_days = 1000,
     n_cities = 10,
@@ -470,7 +465,13 @@ add_values_param <- function(df, vect_param) {
     fill(everything(), .direction = "downup")
 }
 
-vect_of_vect_param <- c("vect_n_days", "vect_p_obs_treat", "vect_percent_effect_size", "vect_iv_intensity", "vect_formula")
+vect_of_vect_param <- c(
+  "vect_n_days", 
+  "vect_p_obs_treat", 
+  "vect_percent_effect_size", 
+  "vect_iv_intensity", 
+  "vect_formula"
+)
 
 sim_param_unique <- 
   map_dfr(
@@ -481,30 +482,28 @@ sim_param_unique <-
   distinct() #bc base parameters appear twice
 ```
 
-We want to compute our simulations for this set of parameters for every quasi experiment. Each quasi experiment has an associated identification strategy. Note that, in order to identify the effect of interest, we need to consider different types of equations, depending on the identification method considered. Then, for each set of parameters we want to run many iterations of the simulation, `n_iter`. It will enable us to loop `compute_simulation` directly on `sim_param_evol`.
+We want to compute our simulations for this set of parameters for every identification method so we replicate this set of parameters for each identification method (and add information about the associated quasi-experiment). Then, in order to identify the effect of interest, we need to consider different types of equations, depending on the identification method considered. For each set of parameters we want to run many iterations of the simulation so we replicate the dataset `n_iter` times. It will enable us to loop `compute_simulation` directly on `sim_param_evol`.
+
+Note that we make a bunch of small modification to have more realistic parameters. For instance, we only consider small proportions of treated observations for the RDD.
 
 We wrap all this into a function, `prepare_sim_param`.
 
 ```{r}
 prepare_sim_param <- function(df_sim_param, 
-                              vect_quasi_exp = c("random_days", "alert_co", "none"), 
+                              vect_id_methods = c("reduced_form", "RDD", "OLS", "IV"), 
                               n_iter = 10) {
   
   sim_param_clean <- df_sim_param %>%
-    crossing(vect_quasi_exp) %>%
-    rename(quasi_exp = vect_quasi_exp) %>%
+    crossing(vect_id_methods) %>%
+    rename(id_method = vect_id_methods) %>%
     mutate(
-      id_method = case_when(
-        str_starts(quasi_exp, "alert") ~ "RDD",
-        quasi_exp == "none" ~ "OLS",
-      ),
-      id_method = ifelse(
-        quasi_exp == "random_days", 
-        list(c("reduced_form", "IV")), 
-        id_method
+      quasi_exp = case_when(
+        id_method == "reduced_form" ~ "random_days",
+        str_starts(id_method, "RDD") ~ "alert_co",
+        id_method == "OLS" ~ "none",
+        id_method == "IV" ~ "random_days",
       )
     ) %>% 
-    unnest(id_method) %>% 
     mutate(
       formula = case_when(
         id_method == "OLS" ~ str_replace_all(formula, "treated", "co"),
@@ -537,7 +536,7 @@ sim_param_evol <- prepare_sim_param(sim_param_unique, n_iter = 1)
 
 ### Running the simulation
 
-We can then run the simulations for each set of parameter, using a `pmap_dfr` function. We wrote a function to do that to save intermediary outcomes.
+We can then run the simulations for each set of parameter, using a `pmap_dfr` function. We wrote a function to do that while saving intermediary outcomes (every `save_every` iteration). `name_save` is the name to use to save an intermediary outcome (to which we add `_intermediary` and the iteration number).
 
 ```{r eval=FALSE}
 run_all_sim <- function(data, sim_param, save_every, name_save) {
@@ -581,7 +580,7 @@ sim_evol <- run_all_sim(nmmaps_data, sim_param_evol, save_every = 10000, "sim_ev
 
 ### Summarising the results
 
-We then summarize our results, computing power, type M and so on for each set of parameters using he function `summarise_simulations`. Note that this function can only take as input a data frame produced by `compute_simulation` (or a mapped version of this function).
+We then build the function `summarise_simulations` to summarize our results, computing power, type M and so on for each set of parameters. Note that this function can only take as input a data frame produced by `compute_simulation` (or a mapped version of this function).
 
 ```{r}
 summarise_simulations <- function(data) {
@@ -628,7 +627,7 @@ summary_evol_large <- summarise_simulations(sim_evol_large) %>%
 
 ## Small number of observations
 
-We then replicate this analysis for a smaller and more realistic number of observations (10 cities and 1000 days). 
+We then replicate this analysis for a smaller and more realistic baseline number of observations (10 cities and 1000 days). 
 
 ```{r eval=FALSE}
 sim_param_base_small <- tibble(
@@ -664,7 +663,7 @@ summary_evol_small <- summarise_simulations(sim_evol_small) %>%
 
 ## Decomposing the number of observations into number of cities and days
 
-In this section, we wonder whether only the total number of observations maters or whether decreasing the number of cities studied while keeping the number of observations constant (thus increasing the number of days) affects power and type M error. We thus run several simulations with an identical number of observations but different numbers of cities/days. We repeat this for 3 different number of observations (1000, 2000 and 4000) to check the robustness of our findings.
+In this section, we wonder whether only the total number of observations maters or whether the ratio between number of cities and length of the study matters. We want to see whether decreasing the number of cities studied while keeping the number of observations constant (thus increasing the number of days) affects power and type M error. We thus run several simulations with an identical number of observations but different numbers of cities/days. We repeat this for 3 different number of observations (1000, 2000 and 4000) to check the robustness of our findings.
 
 We first define the set of parameters: 
 
