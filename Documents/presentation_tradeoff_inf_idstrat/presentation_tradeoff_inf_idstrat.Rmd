@@ -1,0 +1,122 @@
+---
+title: "Overcoming the omitted variable bias at the cost of type M error"
+author: "Vincent Bagilet, with Leo Zabrocki"
+date: "June 4, 2021"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    css: xaringan-themer.css
+    nature:
+      countIncrementalSlides: no
+      highlightLines: yes
+      highlightStyle: github
+  slidy_presentation:
+    highlight: pygments
+  github_document: default
+  html_notebook:
+    highlight: pygments
+    theme: simplex
+    toc: yes
+  ioslides_presentation:
+    highlight: pygments
+  pdf_document:
+    includes:
+      in_header: VB_markdown.sty
+    keep_tex: yes
+  html_document:
+    highlight: pygments
+    theme: simplex
+  beamer_presentation:
+    highlight: pygments
+    theme: VB_Beamer
+subtitle: "SusDev colloquium"
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r include=FALSE}
+library(tidyverse)
+library(retrodesign)
+library(mediocrethemes)
+
+set_mediocre_all()
+```
+
+
+```{r xaringan-themer, include = FALSE}
+library(xaringanthemer)
+style_mono_light(
+  base_color = "#00313C", #1B2754
+  text_color = "#00313C",
+  background_color = "#F9FAF7",
+  header_font_google = google_font("Josefin Sans", "400"),
+  text_font_google   = google_font("Lato", "400", "400i"),
+  header_font_weight = "bold",
+  text_bold_color = "#81402C", #"#B67F10",
+  link_color = "#81402C",
+  text_font_size = "22px",
+  header_h1_font_size = "45px",
+  header_h2_font_size = "35px",
+  header_h3_font_size = "25px",
+  text_slide_number_font_size = "16px"
+)
+```
+
+# Genesis
+
+- Worked on a related project on air pollution
+
+--
+
+- We noticed that there was a clear trade-off, worth discussing
+
+```{r echo=FALSE, out.width= 500, fig.align="center"} 
+knitr::include_graphics("images/book.gif")
+```
+
+---
+
+# Overview of type M error
+
+```{r echo=FALSE, fig.height= 8, fig.width=12, dpi = 700}
+rnorm(5000, 0.5, 1) %>% 
+  as_tibble() %>% 
+  mutate(
+    n = row_number(),
+    significant = dplyr::between(
+      value, 
+      - 1.96*sd(value), 
+      1.96*sd(value)
+    ),
+    significant = fct_rev(as.factor(significant))
+  ) %>% 
+  ggplot(aes(x = n, y = value, color = significant)) + 
+  geom_point(alpha = 0.8) +
+  geom_hline(aes(yintercept = mean(value)), linetype = "dashed", color = "#FB9637") +
+  # geom_hline(aes(yintercept = 1.96*sd(value)), color = "#FB9637") +
+  # geom_hline(aes(yintercept = - 1.96*sd(value)), color = "#FB9637") +
+  labs(
+    title = "Illustration of type Mcand S errors",
+    subtitle = "5000 draws of an estimate ~ N(0.5,1)",
+    x = "Draw",
+    y = "Point estimate",
+    color = "Significant"
+  ) +
+  theme_mediocre(background = TRUE)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
