@@ -1,15 +1,5 @@
-library(shiny)
-library(tidyverse) 
-library(mediocrethemes)
-library(shinythemes)
-library(shinyWidgets)
-library(ggridges)
+# Run this manually before launching app
 library(here)
-
-set_mediocre_all()
-
-
-# sim_param_base <- readRDS("data/sim_param_base.RDS")
 source(here("R/Shiny/functions_shiny.R"))
 
 #### UI ------------------

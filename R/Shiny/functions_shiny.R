@@ -1,3 +1,13 @@
+library(shiny)
+library(tidyverse) 
+library(mediocrethemes)
+library(shinythemes)
+library(shinyWidgets)
+library(ggridges)
+library(here)
+
+set_mediocre_all()
+
 summary_evol_small <- readRDS(here("R", "Outputs", "summary_evol_small.RDS")) 
 summary_evol_large <- readRDS(here("R", "Outputs", "summary_evol.RDS")) 
 
@@ -98,19 +108,16 @@ check_distrib_estimate <- function(df) {
       by = c("quasi_exp", "n_days", "n_cities", "p_obs_treat", "percent_effect_size", "id_method", "iv_intensity")
     ) %>% 
     filter(str_detect(formula, "death_total"))
-  
-  data_true_effects <- df_baseline %>%
-    group_by(id_method) %>%
-    summarize(mean_true_effect = mean(true_effect))
 
   graph <- df_baseline %>%
     ggplot() +
-    geom_density(aes(x = estimate)) +
+    geom_density(aes(x = true_effect - estimate)) +
     facet_wrap(~ id_method, scales = "free") + 
-    geom_vline(data = data_true_effects, aes(xintercept = mean_true_effect)) +
+    geom_vline(aes(xintercept = 0)) +
     labs(
       title = "Distribution of estimates by identification method",
       subtitle = "Comparison to the true effect",
+      x = "Difference between true effect and estimate",
       caption = "The vertical line represents the true effect"
     ) 
     
