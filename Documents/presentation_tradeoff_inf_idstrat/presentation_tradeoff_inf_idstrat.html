@@ -30,22 +30,189 @@ class: center, middle, inverse, title-slide
 
 --
 
-- We noticed that there was a clear trade-off, worth discussing
+- We noticed the existence a key trade-off between identification strategy and power
 
-&lt;img src="images/book.gif" width="500" style="display: block; margin: auto;" /&gt;
+&lt;img src="images/book.gif" width="550" style="display: block; margin: auto;" /&gt;
 
 ---
 
-# Overview of type M error
+# Type M error
 
-![](presentation_tradeoff_inf_idstrat_files/figure-html/unnamed-chunk-3-1.png)&lt;!-- --&gt;
+--
+
+&lt;img src="presentation_tradeoff_inf_idstrat_files/figure-html/unnamed-chunk-3-1.png" width="1200" /&gt;
+
+---
+
+# Overview of the central issue in this project
+
+.pull-left[
+
+1. We fear omitted variable biases
+
+1. We develop neat identification strategies
+
+1. It sometimes lead to low power
+
+1. It creates type M error
+
+1. The value obtained is wide of the mark of the true effect
+
+]
+
+--
+
+.pull-right[
+.center[ &lt;img src="images/hurdles.gif" alt="drawing" width="450"/&gt; ]
+]
+
+---
+
+# Objective of the paper
+
+- Highlight the existence of this trade off between omitted variable bias and type M error
+
+--
+
+# Objectives of this presentation
+
+--
+
+- Is this objective a decent one? 
+
+--
+
+- Should we add other objectives?
+
+--
+
+- What could/should we do to reach it?
+
+---
+class: inverse, middle, center
+
+# Why could some identification strategies lead to low power?
+
+---
+
+- **RDD**: 
+
+--
+  
+  - When `\(\searrow\)` bandwidth,
+--
+
+  - omitted variable bias `\(\searrow\)`
+--
+
+  - **BUT** number of observations also `\(\searrow\)` 
+--
+
+  - so power `\(\searrow\)` 
+--
+
+  - type M error `\(\nearrow\)`
+  
+--
+
+- **RCT**:
+
+--
+
+  - No omitted variable bias
+--
+
+  - if sample size too small or small effect, may still get a statistically significant estimate 
+--
+  
+  - **BUT** it would overestimate the "true" effect
+--
+
+  - (Not the most interesting case for our issue)
+
+---
+
+- **IV**:
+
+--
+
+  - Imprecise
+
+&lt;img src="presentation_tradeoff_inf_idstrat_files/figure-html/unnamed-chunk-4-1.png" width="750" style="display: block; margin: auto;" /&gt;
+
+--
+
+  - Lower power, higher type M error
+  
+&lt;!-- --- --&gt;
+
+&lt;!-- - **DID**:  --&gt;
+
+---
+class: inverse, middle, center
+
+# How to illustrate this trade off?
+
+---
+
+# Fake data simulations
+
+--
+
+- Very simple: y, x, binary treatment, omitted variable bias
+
+--
+
+- Different simulations for each identification strategy
+
+--
+
+- **RDD**: variation of omitted variable bias and type M with bandwidth
+
+--
+
+- **RCT**:
+  - Kills omitted variable bias
+  - Evolution of type M with number of observations and effect size
+  
+--
+  
+- **IV**:
+  - Compare omitted variable bias in OLS and type M in IV
+  - Vary strength of the instrument
+
+---
+
+# Your opinion
+
+.pull-left[
+
+- **Objective**: highlight the existence of this trade off between omitted variable bias and type M error
+
+- Is this objective a decent one? 
+
+- Should we add other objectives?
+
+- What could/should we do to reach it?
+
+]
+
+.pull-right[
+.center[ &lt;img src="images/jason_momoa.jpg" alt="drawing" width="280"/&gt; ]
+]
+
+---
+class: inverse, middle, center
+
+# Thank you
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
 <script>var slideshow = remark.create({
 "countIncrementalSlides": false,
 "highlightLines": true,
-"highlightStyle": "github"
+"highlightStyle": "github",
+"ratio": "16:9"
 });
 if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
   window.dispatchEvent(new Event('resize'));
