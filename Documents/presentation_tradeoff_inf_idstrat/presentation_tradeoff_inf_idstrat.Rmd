@@ -72,7 +72,7 @@ style_mono_light(
 
 --
 
-- We noticed the existence a key trade-off between identification strategy and power
+- We noticed the existence a key trade-off between identification strategy and statistical power
 
 ```{r echo=FALSE, out.width= 550, fig.align="center"} 
 knitr::include_graphics("images/book.gif")
@@ -191,7 +191,7 @@ class: inverse, middle, center
   - No omitted variable bias
 --
 
-  - if sample size too small or small effect, may still get a statistically significant estimate 
+  - if sample size or effect too small, may still get a statistically significant estimate 
 --
   
   - **BUT** it would overestimate the "true" effect
