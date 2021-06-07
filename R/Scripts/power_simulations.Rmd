@@ -198,7 +198,7 @@ We then create the fake output, `y_fake`. The generative process depends on the 
 
 - For binary treatments, we draw a treatment effect from a Poisson distribution with mean corresponding to the effect size desired.
 - For the OLS, we build a generative model that creates fake data based on the formula given and with an effect corresponding to the effect size desired.
-- For the IV, we use the same method as for the OLS but previously, we modified the value of pollutant concentration through the instrument. The instrument is binary and affects pollutant concentration: $Poll_{ct}^{fake} = Poll_{ct} + \delta T_{ct} + e_{ct}$, where $T_{ct}$ is the treatment dummy, $\delta$ the treatment "intensity" (the `iv_intensity` in our function) and $e \sim \mathcal{N}(0, 0.1)$ a noise.
+- For the IV, we use the same method as for the OLS but previously, we modified the value of pollutant concentration through the instrument. The instrument is binary and affects pollutant concentration: $Poll_{ct}^{fake} = Poll_{ct} + \delta T_{ct} + e_{ct}$, where $T_{ct}$ is the treatment dummy, $\delta$ the treatment "intensity" (the `iv_strength` in our function) and $e \sim \mathcal{N}(0, 0.1)$ a noise.
 
 We also create a short function to detect a pollutant among independent variables of a formula. We also use this function later. In the present document we only consider CO but we made the function more general.
 
@@ -212,7 +212,7 @@ find_pollutant <- function(formula) {
 create_fake_output <- function(data,
                       percent_effect_size = 0.5,
                       id_method = "reduced_form", 
-                      iv_intensity = NA, 
+                      iv_strength = NA, 
                       formula) {
   
   fml <- Formula::as.Formula(formula)
@@ -253,7 +253,7 @@ create_fake_output <- function(data,
     if (id_method == "IV") {
       data[[pollutant]] <- 
         data[[pollutant]] + 
-        iv_intensity*data[["treated"]] +
+        iv_strength*data[["treated"]] +
         rnorm(data[[pollutant]], 0, 0.1)
       
       #need to withdraw the first stage from the formula and add the pollutant
@@ -346,7 +346,7 @@ compute_simulation <- function(data,
                                percent_effect_size = 1,
                                quasi_exp = "random_days",
                                id_method = "reduced_form", 
-                               iv_intensity = NA,
+                               iv_strength = NA,
                                formula = "resp_total ~ treated",
                                progressbar = progressor()#to have a progressbar when mapping
                                ) {
@@ -358,7 +358,7 @@ compute_simulation <- function(data,
     select_study_period(n_days, n_cities) %>%
     mutate(y0 = .data[[dep_var]]) %>%
     draw_treated(p_obs_treat, quasi_exp) %>% 
-    create_fake_output(percent_effect_size, id_method, iv_intensity, formula) %>% 
+    create_fake_output(percent_effect_size, id_method, iv_strength, formula) %>% 
     filter(!is.na(treated)) #not necessary bc dropped in lm()
   
   updated_fml <- str_replace(formula, dep_var, "y_fake")
@@ -378,7 +378,7 @@ compute_simulation <- function(data,
       percent_effect_size = percent_effect_size,
       quasi_exp = quasi_exp,
       id_method = id_method, 
-      iv_intensity = iv_intensity,
+      iv_strength = iv_strength,
       formula = formula
     )
   
@@ -392,7 +392,7 @@ nmmaps_data %>%
     formula = "death_total ~ treated + co + temperature + temperature_squared | city + month^year + weekday",
     quasi_exp = "alert_co",
     id_method = "RDD",
-    iv_intensity = 0.5,
+    iv_strength = 0.5,
     n_days = 1000,
     n_cities = 10,
     percent_effect_size = 1,
@@ -418,7 +418,7 @@ sim_param_base <- tibble(
   n_cities = 40,
   p_obs_treat = 0.5,
   percent_effect_size = 1, 
-  iv_intensity = 0.5,
+  iv_strength = 0.5,
   formula = "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday"
 )
 
@@ -436,7 +436,7 @@ In a first set of simulation, we vary the values of the parameters one after the
 vect_n_days <- c(100, 500, 1000, 2000, 3000, 4000)
 vect_p_obs_treat <- c(0.01, 0.025, 0.05, 0.1, 0.25, 0.5)
 vect_percent_effect_size <- c(0.1, 0.5, 1, 2, 5, 10)
-vect_iv_intensity <- c(0.01, 0.1, 0.2, 0.5, 0.7)
+vect_iv_strength <- c(0.01, 0.1, 0.2, 0.5, 0.7)
 vect_formula <- c(
   # "death_total ~ treated",
   "resp_total ~ treated + temperature + temperature_squared | city + month^year + weekday",
@@ -464,7 +464,7 @@ vect_of_vect_param <- c(
   "vect_n_days", 
   "vect_p_obs_treat", 
   "vect_percent_effect_size", 
-  "vect_iv_intensity", 
+  "vect_iv_strength", 
   "vect_formula"
 )
 
@@ -514,9 +514,9 @@ prepare_sim_param <- function(df_sim_param,
     mutate(
       p_obs_treat = ifelse(id_method == "RDD", p_obs_treat/5, p_obs_treat),
       p_obs_treat = ifelse(id_method == "OLS", NA, p_obs_treat),
-      iv_intensity = ifelse(id_method != "IV", NA, iv_intensity)
+      iv_strength = ifelse(id_method != "IV", NA, iv_strength)
     ) %>% 
-    distinct() %>% #to erase the duplicates due to iv_intensity in non-iv id_methods
+    distinct() %>% #to erase the duplicates due to iv_strength in non-iv id_methods
     arrange(id_method, n_days) %>% 
     crossing(rep_id = 1:n_iter) %>%
     select(-rep_id) 
@@ -566,11 +566,11 @@ run_all_sim <- function(data, sim_param, save_every, name_save) {
   return(output)
 }
 
-sim_evol <- run_all_sim(nmmaps_data, sim_param_evol, save_every = 10000, "sim_evol")
+sim_evol_large <- run_all_sim(nmmaps_data, sim_param_evol, save_every = 10000, "sim_evol")
 
 # beepr::beep(1)
 
-# saveRDS(sim_evol, here("R", "Outputs", "sim_evol.RDS"))
+# saveRDS(sim_evol_large, here("R", "Outputs", "sim_evol_large.RDS"))
 ```
 
 ### Summarising the results
@@ -588,7 +588,7 @@ summarise_simulations <- function(data) {
       covered = (true_effect > CI_low & true_effect < CI_high), 
       covered_signif = ifelse(p_value > 0.05, NA, covered) #to consider only significant estimates
     ) %>% 
-    group_by(formula, quasi_exp, n_days, n_cities, p_obs_treat, percent_effect_size, id_method, iv_intensity) %>%
+    group_by(formula, quasi_exp, n_days, n_cities, p_obs_treat, percent_effect_size, id_method, iv_strength) %>%
     summarise(
       power = mean(p_value <= 0.05, na.rm = TRUE)*100, 
       type_m = mean(ifelse(p_value <= 0.05, abs(estimate/true_effect), NA), na.rm = TRUE),
@@ -630,7 +630,7 @@ sim_param_base_small <- tibble(
   n_cities = 10,
   p_obs_treat = 0.5,
   percent_effect_size = 1, 
-  iv_intensity = 0.5,
+  iv_strength = 0.5,
   formula = "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday"
 )
 
@@ -672,7 +672,7 @@ sim_param_decomp_nobs <-
   fill(everything(), .direction = "updown") %>% 
   anti_join(#because sim_param_base not in the exact set of param we want here
     sim_param_base,
-    by = c("n_cities", "n_days", "p_obs_treat", "percent_effect_size", "iv_intensity", "formula")
+    by = c("n_cities", "n_days", "p_obs_treat", "percent_effect_size", "iv_strength", "formula")
   ) %>% 
   prepare_sim_param(n_iter = 1000) 
 ```
@@ -710,7 +710,7 @@ sim_param_decomp_ptreat <-
   fill(everything(), .direction = "updown") %>% 
   anti_join(#because sim_param_base not in the exact set of param we want here
     sim_param_base,
-    by = c("n_cities", "n_days", "p_obs_treat", "percent_effect_size", "iv_intensity", "formula")
+    by = c("n_cities", "n_days", "p_obs_treat", "percent_effect_size", "iv_strength", "formula")
   ) %>% 
   prepare_sim_param(n_iter = 1000) %>% 
   filter(id_method != "OLS")
@@ -746,14 +746,14 @@ sim_param_base_usual_RDD <- tibble(
   n_cities = 1,
   p_obs_treat = 0.04, #approximately 143/3652
   percent_effect_size = 12, 
-  iv_intensity = NA,
+  iv_strength = NA,
   formula = "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday"
 )
 
 vect_n_days <- 3652
 vect_p_obs_treat <- c(0.01, 0.04, 0.05, 0.1)
 vect_percent_effect_size <- c(2, 5, 12, 20)
-vect_iv_intensity <- NA
+vect_iv_strength <- NA
 vect_formula <- c(
   "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday",
   "resp_total ~ treated + temperature + temperature_squared | city + month^year + weekday"
@@ -780,14 +780,14 @@ sim_param_base_usual_reduced <- tibble(
   n_cities = 5,
   p_obs_treat = 0.004, #about 45/(2200*5),
   percent_effect_size = 11, 
-  iv_intensity = NA,
+  iv_strength = NA,
   formula = "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday"
 )
 
 vect_n_days <- 2200
 vect_p_obs_treat <- c(0.004, 0.01, 0.02, 0.05, 0.1)
 vect_percent_effect_size <- c(2, 5, 11, 20)
-vect_iv_intensity <- NA
+vect_iv_strength <- NA
 vect_formula <- c(
   # "death_total ~ treated",
   "resp_total ~ treated + temperature + temperature_squared | city + month^year + weekday",
@@ -815,14 +815,14 @@ sim_param_base_usual_IV <- tibble(
   n_cities = 40,
   p_obs_treat = 0.5,
   percent_effect_size = 1.5, 
-  iv_intensity = 0.5,
+  iv_strength = 0.5,
   formula = "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday"
 )
 
 vect_n_days <- 2500
 vect_p_obs_treat <- 0.5
 vect_percent_effect_size <- 1.5
-vect_iv_intensity <- c(0.01, 0.1, 0.2, 0.5, 0.7)
+vect_iv_strength <- c(0.01, 0.1, 0.2, 0.5, 0.7)
 vect_formula <- c(
   # "death_total ~ treated",
   "resp_total ~ treated + temperature + temperature_squared | city + month^year + weekday",

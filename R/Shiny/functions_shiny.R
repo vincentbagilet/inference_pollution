@@ -9,10 +9,10 @@ library(here)
 set_mediocre_all()
 
 summary_evol_small <- readRDS(here("R", "Outputs", "summary_evol_small.RDS")) 
-summary_evol_large <- readRDS(here("R", "Outputs", "summary_evol.RDS")) 
+summary_evol_large <- readRDS(here("R", "Outputs", "summary_evol_large.RDS")) 
 
 sim_evol_small <- readRDS(here("R", "Outputs", "sim_evol_small.RDS")) 
-sim_evol_large <- readRDS(here("R", "Outputs", "sim_evol.RDS")) 
+sim_evol_large <- readRDS(here("R", "Outputs", "sim_evol_large.RDS")) 
 
 summary_decomp <- readRDS(here("R", "Outputs", "summary_decomp.RDS")) 
 
@@ -24,7 +24,7 @@ get_baseline_param <- function(df) {
     "p_obs_treat", 
     "percent_effect_size", 
     "id_method",
-    "iv_intensity",
+    "iv_strength",
     "formula",
     "outcome"
   )
@@ -32,7 +32,7 @@ get_baseline_param <- function(df) {
   #Get baseline values
   baseline_param <- df %>% 
     filter(outcome == "resp_total") %>% 
-    select(quasi_exp, n_days, n_cities, p_obs_treat, percent_effect_size, id_method, iv_intensity) %>% 
+    select(quasi_exp, n_days, n_cities, p_obs_treat, percent_effect_size, id_method, iv_strength) %>% 
     distinct() %>% 
     mutate(n_cities = max(n_cities)) %>% #when considering "evol_small"
     inner_join(
@@ -58,14 +58,14 @@ graph_evol_by_exp <- function(df, var_param = "n_days", stat = "power") {
     "p_obs_treat", 
     "percent_effect_size", 
     "id_method",
-    "iv_intensity",
+    "iv_strength",
     "outcome"
   )
   
   df_filtered <-  get_baseline_param(df) %>% 
     select(-var_param) %>% 
     inner_join(df, by = all_var[all_var != var_param]) %>% 
-    group_by(id_method) %>% #when the varying parameter pr stat is not available with some methods (eg iv_intensity)
+    group_by(id_method) %>% #when the varying parameter pr stat is not available with some methods (eg iv_strength)
     filter(!is.na(.data[[var_param]])) %>% 
     filter(!is.na(.data[[stat]])) %>% 
     ungroup() 
@@ -101,11 +101,11 @@ check_distrib_estimate <- function(df) {
   #only consider baseline values
   df_baseline <- df %>% 
     filter(str_detect(formula, "resp_total")) %>% 
-    select(quasi_exp, n_days, n_cities, p_obs_treat, percent_effect_size, id_method, iv_intensity) %>% 
+    select(quasi_exp, n_days, n_cities, p_obs_treat, percent_effect_size, id_method, iv_strength) %>% 
     distinct() %>% 
     inner_join(
       df,
-      by = c("quasi_exp", "n_days", "n_cities", "p_obs_treat", "percent_effect_size", "id_method", "iv_intensity")
+      by = c("quasi_exp", "n_days", "n_cities", "p_obs_treat", "percent_effect_size", "id_method", "iv_strength")
     ) %>% 
     filter(str_detect(formula, "death_total"))
 
@@ -132,7 +132,7 @@ table_stats <- function(df, var_param = "n_days", stat = "power", method = "DID"
     "p_obs_treat", 
     "percent_effect_size", 
     "id_method",
-    "iv_intensity",
+    "iv_strength",
     "outcome"
   )
   
@@ -182,7 +182,7 @@ graph_ridge <- function(df, var_param = "n_days", stat = "estimate") {
     "p_obs_treat", 
     "percent_effect_size", 
     "id_method",
-    "iv_intensity"
+    "iv_strength"
   )
   
   #only consider baseline values
@@ -191,7 +191,7 @@ graph_ridge <- function(df, var_param = "n_days", stat = "estimate") {
     get_baseline_param() %>% 
     select(-var_param) %>% 
     inner_join(df, by = c(all_var[all_var != var_param], "formula")) %>% 
-    group_by(id_method) %>% #when the varying parameter pr stat is not available with some methods (eg iv_intensity)
+    group_by(id_method) %>% #when the varying parameter pr stat is not available with some methods (eg iv_strength)
     filter(!is.na(.data[[var_param]])) %>% 
     # filter(!is.na(.data[[stat]])) %>% 
     ungroup() %>% 
