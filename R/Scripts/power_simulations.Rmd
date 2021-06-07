@@ -223,11 +223,12 @@ create_fake_output <- function(data,
     data <- data %>%
       group_by(.data$city) %>%
       mutate(
-        y_fake = .data[[dep_var]] -
+        y1 = .data[[dep_var]] -
           rpois(
             n(),
             mean(.data[[dep_var]], na.rm = TRUE) * percent_effect_size / 100
-          ) %>% suppressWarnings() #warnings when is.na(dep_var) eg rpois(1, NA)
+          ) %>% suppressWarnings(), #warnings when is.na(dep_var) eg rpois(1, NA)
+        y_fake = .data[["y1"]] * .data[["treated"]] + .data[[dep_var]] * (1 - .data[["treated"]])
       ) %>%
       ungroup()
     
@@ -237,11 +238,12 @@ create_fake_output <- function(data,
     data <- data %>%
       group_by(.data$city) %>%
       mutate(
-        y_fake = .data[[dep_var]] +
+        y1 = .data[[dep_var]] +
           rpois(
             n(),
             mean(.data[[dep_var]], na.rm = TRUE) * percent_effect_size / 100
-          ) %>% suppressWarnings() #warnings when is.na(dep_var) eg rpois(1, NA)
+          ) %>% suppressWarnings(), #warnings when is.na(dep_var) eg rpois(1, NA)
+        y_fake = .data[["y1"]] * .data[["treated"]] + .data[[dep_var]] * (1 - .data[["treated"]])
       ) %>%
       ungroup()
     
@@ -357,16 +359,9 @@ compute_simulation <- function(data,
     mutate(y0 = .data[[dep_var]]) %>%
     draw_treated(p_obs_treat, quasi_exp) %>% 
     create_fake_output(percent_effect_size, id_method, iv_intensity, formula) %>% 
-    mutate(
-      yobs = y_fake * treated + y0 * (1 - treated)
-    ) %>%
     filter(!is.na(treated)) #not necessary bc dropped in lm()
   
-  updated_fml <- ifelse(
-    id_method %in% c("OLS", "IV"),
-    str_replace(formula, dep_var, "y_fake"),
-    str_replace(formula, dep_var, "yobs")
-  )
+  updated_fml <- str_replace(formula, dep_var, "y_fake")
 
   sim_output <- sim_data %>%
     estimate_model(formula = updated_fml) %>% 
