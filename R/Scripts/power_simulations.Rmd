@@ -81,7 +81,7 @@ This function randomly selects a starting date for the study, early enough so th
 ```{r}
 select_study_period <- function(data, n_days = 3000, n_cities = 68) {
   dates <- data[["date"]]
-  err_proof_n_days <- min(n_days, unique(dates))
+  err_proof_n_days <- min(n_days, length(unique(dates)))
   cities <- data[["city"]]
   err_proof_n_cities <- min(n_cities, length(unique(cities)))
   
@@ -733,6 +733,132 @@ summary_decomp <- summary_decomp_nobs %>%
 
 # saveRDS(summary_decomp, here("R", "Outputs", "summary_decomp.RDS"))
 ```
+
+## Usual values in the literature
+
+In previous simulations, we varied all parameters, choosing somehow arbitrary values for the base parameters. In this section, we pick base values from the literature, for each identification method.
+
+### RDD
+
+```{r eval=FALSE}
+sim_param_base_usual_RDD <- tibble(
+  n_days = 3652,
+  n_cities = 1,
+  p_obs_treat = 0.04, #approximately 143/3652
+  percent_effect_size = 12, 
+  iv_intensity = NA,
+  formula = "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday"
+)
+
+vect_n_days <- 3652
+vect_p_obs_treat <- c(0.01, 0.04, 0.05, 0.1)
+vect_percent_effect_size <- c(2, 5, 12, 20)
+vect_iv_intensity <- NA
+vect_formula <- c(
+  "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday",
+  "resp_total ~ treated + temperature + temperature_squared | city + month^year + weekday"
+)
+
+sim_param_unique_usual_RDD <- 
+  map_dfr(
+    vect_of_vect_param, 
+    add_values_param, 
+    df = sim_param_base_usual_RDD
+  ) %>% 
+  distinct() 
+
+sim_param_evol_usual_RDD <- prepare_sim_param(sim_param_unique_usual_RDD, n_iter = 3000) %>% 
+  filter(id_method == "RDD") %>% 
+  mutate(p_obs_treat = p_obs_treat*5) #Because divide by 5 in prepare_sim_param
+```
+
+### Reduced form
+
+```{r eval=FALSE}
+sim_param_base_usual_reduced <- tibble(
+  n_days = 2200,
+  n_cities = 5,
+  p_obs_treat = 0.004, #about 45/(2200*5),
+  percent_effect_size = 11, 
+  iv_intensity = NA,
+  formula = "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday"
+)
+
+vect_n_days <- 2200
+vect_p_obs_treat <- c(0.004, 0.01, 0.02, 0.05, 0.1)
+vect_percent_effect_size <- c(2, 5, 11, 20)
+vect_iv_intensity <- NA
+vect_formula <- c(
+  # "death_total ~ treated",
+  "resp_total ~ treated + temperature + temperature_squared | city + month^year + weekday",
+  "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday",
+  "copd_age_65_75 ~ treated + temperature + temperature_squared | city + month^year + weekday"
+)
+
+sim_param_unique_usual_reduced <- 
+  map_dfr(
+    vect_of_vect_param, 
+    add_values_param, 
+    df = sim_param_base_usual_reduced
+  ) %>% 
+  distinct() 
+
+sim_param_evol_usual_reduced <- prepare_sim_param(sim_param_unique_usual_reduced, n_iter = 3000) %>% 
+  filter(id_method == "reduced_form") 
+```
+
+### IV
+
+```{r eval=FALSE}
+sim_param_base_usual_IV <- tibble(
+  n_days = 2500,
+  n_cities = 40,
+  p_obs_treat = 0.5,
+  percent_effect_size = 1.5, 
+  iv_intensity = 0.5,
+  formula = "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday"
+)
+
+vect_n_days <- 2500
+vect_p_obs_treat <- 0.5
+vect_percent_effect_size <- 1.5
+vect_iv_intensity <- c(0.01, 0.1, 0.2, 0.5, 0.7)
+vect_formula <- c(
+  # "death_total ~ treated",
+  "resp_total ~ treated + temperature + temperature_squared | city + month^year + weekday",
+  "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday",
+  "copd_age_65_75 ~ treated + temperature + temperature_squared | city + month^year + weekday"
+)
+
+sim_param_unique_usual_IV <- 
+  map_dfr(
+    vect_of_vect_param, 
+    add_values_param, 
+    df = sim_param_base_usual_IV
+  ) %>% 
+  distinct() 
+
+sim_param_evol_usual_IV <- prepare_sim_param(sim_param_unique_usual_IV, n_iter = 3000) %>% 
+  filter(id_method == "IV") 
+```
+
+### Running simulations
+
+```{r}
+sim_param_evol_usual <- sim_param_evol_usual_RDD %>% 
+  bind_rows(sim_param_evol_usual_reduced) %>% 
+  bind_rows(sim_param_evol_usual_IV)
+
+sim_evol_usual <- run_all_sim(nmmaps_data, sim_param_evol_usual, save_every = 10000, "sim_evol_usual")
+
+# saveRDS(sim_evol_usual, here("R", "Outputs", "sim_evol_usual.RDS"))
+
+summary_evol_usual <- summarise_simulations(sim_evol_usual) %>% 
+  mutate(outcome = fct_relevel(outcome, "copd_age_65_75", "resp_total", "death_total"))
+
+# saveRDS(summary_evol_usual, here("R", "Outputs", "summary_evol_usual.RDS"))
+```
+
 
 
 <!-- # Heatmap -->

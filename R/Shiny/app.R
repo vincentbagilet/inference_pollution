@@ -1,6 +1,5 @@
 # Run this manually before launching app
-library(here)
-source(here("R/Shiny/functions_shiny.R"))
+source(here::here("R/Shiny/functions_shiny.R"))
 
 #### UI ------------------
 

@@ -1,5 +1,5 @@
 ---
-title: "Power Simulation Theory and Intuition"
+title: "Power Simulation: Theory and Intuition"
 author:
   - name: Vincent Bagilet 
     url: https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet
@@ -74,13 +74,14 @@ where, as in the whole document, $Y_{ct}$ is the health outcome of interest (for
 
 The identification assumption here is that the the potential outcomes are independent of the treatment (independence assumption). In our simulations, this is verified as the treatment is allocated randomly.
 
-### Regression Discontinuity Design
+## Regression Discontinuity Design
 
 We use a Regression Discontinuity Design (RDD or RD) to estimate the effect of an air pollution alert type of intervention. The overall idea of the RD is to compare days just below the threshold to days just above the threshold (where exposure and health impacts are thus lower). The key identification assumption is that days just below and just above the threshold are comparable. Thus, no confounders should vary discontinuously at the threshold (local independence, $(Y_{0i}, Y_{1i}) \perp T_i|Z_i$, for $Z_i \in [c-a, c+a]$ ) and the treatment should vary at threshold (relevance, $D_i = \mathbb{1} \{Z_i \geq  c\}$). The way we model this, both these assumptions are verified. However, for large bandwidth, observations above and below the threshold may be less comparable.
 
 This identification method enables to estimate a Local Average Treatment Effect (LATE) at the cutoff, *ie* $\mathbb{E}[Y_{1i} - Y_{0i}|Z_i = c]$. To do so, we use the following type of model, but restricting our sample to observation just below and just above the threshold:
 
 $$Y_{ct} = \alpha + \beta T_{ct} + \epsilon_{ct}$$
+
 ## Instrumental variable
 
 In the previous identification methods, we tried to estimate a reduced form, *ie* looking at the effect of a treatment directly on mortality. We did not consider the effect of the treatment on air pollution, *ie* the mechanism. In this section, we instrument the effect of pollution on the outcome with an instrument/treatment. We basically model the effect of an exogeneous instrument on air pollution and use this information to retrieve a causal estimate of the short term effect of air pollution on health. Note that the class of treatments/instruments considered here can be broader than in the previous section. Yet, in these simulations, we only consider a treatment on random days, for simplicity.
@@ -126,6 +127,7 @@ We can vary several parameters to evaluate the sensitivity of power, type M and 
 - Number of observations: we can vary both the length of the study, in days, and the number of cities but mostly keep the number of cities considered fixed. We consider 100, 500, 1000, 2000, 3000 and 4000 days. This covers a wide range of plausible study lengths. In a first set of simulations, we consider almost "ideal" baseline parameters and thus set the number of observations to 3000. We also set the number of cities to 40
 - Proportion of treated days: 0.01, 0.025, 0.05, 0.1, 0.25, 0.5. The proportion of days treated matters since, while the number of observations can be large, the number of treated days may remain very small (*eg* the number of strikes). We choose these values **because** ...
 - Effect size: 0.1%, 0.5%, 1%, 2%, 5%, 10% **because** ...
+- Outcome considered (and therefore its distribution)
 - The estimation model: we first do not include covariates, only fixed effects. We then include include different sets of covariates.
 
 We consider this set of parameters for each identification method.
