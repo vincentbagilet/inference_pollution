@@ -15,10 +15,11 @@ ui <- fluidPage(theme = shinytheme("flatly"),
             conditionalPanel(
                 condition = "input.tabselected < '4'",
                 radioButtons(inputId = "df_size",
-                             label = "Dataset size:",
+                             label = "Dataset:",
                              choices = c(
-                                 "Large" = "large_df", 
-                                 "Small" = "small_df")),
+                                 "Large data set" = "large_df", 
+                                 "Small data set" = "small_df",
+                                 "Case studies" = "case_study_df")),
             ),
             conditionalPanel(
                 condition = "input.tabselected < '3'",

@@ -10,9 +10,13 @@ set_mediocre_all()
 
 summary_evol_small <- readRDS(here("R", "Outputs", "summary_evol_small.RDS")) 
 summary_evol_large <- readRDS(here("R", "Outputs", "summary_evol_large.RDS")) 
+summary_evol_usual <- readRDS(here("R", "Outputs", "summary_evol_usual.RDS")) 
 
 sim_evol_small <- readRDS(here("R", "Outputs", "sim_evol_small.RDS")) 
 sim_evol_large <- readRDS(here("R", "Outputs", "sim_evol_large.RDS")) 
+sim_evol_usual <- readRDS(here("R", "Outputs", "sim_evol_usual.RDS")) 
+
+case_studies_data <- readRDS(here("R", "Outputs", "case_studies_data.RDS"))
 
 summary_decomp <- readRDS(here("R", "Outputs", "summary_decomp.RDS")) 
 
@@ -34,7 +38,7 @@ get_baseline_param <- function(df) {
     filter(outcome == "resp_total") %>% 
     select(quasi_exp, n_days, n_cities, p_obs_treat, percent_effect_size, id_method, iv_strength) %>% 
     distinct() %>% 
-    mutate(n_cities = max(n_cities)) %>% #when considering "evol_small"
+    # mutate(n_cities = max(n_cities)) %>% #when considering "evol_small"
     inner_join(
       df,
       by = all_var[!(all_var %in% c("formula", "outcome"))]
@@ -117,8 +121,7 @@ check_distrib_estimate <- function(df) {
     labs(
       title = "Distribution of estimates by identification method",
       subtitle = "Comparison to the true effect",
-      x = "Difference between true effect and estimate",
-      caption = "The vertical line represents the true effect"
+      x = "Difference between true effect and estimate"
     ) 
     
   return(graph)
@@ -207,9 +210,15 @@ graph_ridge <- function(df, var_param = "n_days", stat = "estimate") {
 
 select_df_size <- function(chr_size, summary = FALSE) {
   if (summary == FALSE) {
-    df <- ifelse(chr_size == "large_df", "sim_evol_large", "sim_evol_small")
+    df <- case_when(
+      chr_size == "large_df" ~ "sim_evol_large", 
+      chr_size == "small_df" ~ "sim_evol_small",
+      chr_size == "case_study_df" ~ "sim_evol_usual")
   } else {
-    df <- ifelse(chr_size == "large_df", "summary_evol_large", "summary_evol_small")
+    df <- case_when(
+      chr_size == "large_df" ~ "summary_evol_large", 
+      chr_size == "small_df" ~ "summary_evol_small",
+      chr_size == "case_study_df" ~ "summary_evol_usual")
   }
  
   return(get(df))
