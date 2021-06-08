@@ -329,7 +329,7 @@ compute_true_effect <- function(data, id_method, percent_effect_size, dep_var) {
   if (id_method %in% c("OLS", "IV")) {
     true_effect <- percent_effect_size/100*mean(data[[dep_var]])
   } else {#ATE
-    true_effect <- mean(data$y_fake - data$y0, na.rm = TRUE)
+    true_effect <- mean(data$y1 - data$y0, na.rm = TRUE)
   }
   
   return(true_effect)
