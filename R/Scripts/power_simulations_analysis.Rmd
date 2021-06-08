@@ -53,10 +53,38 @@ library(ggridges)
 set_mediocre_all()
 
 # sim_param_base <- readRDS("data/sim_param_base.RDS")
-source(here("R/Shiny/power_simulations_viz/functions_shiny.R"))
+source(here("R/Shiny/functions_shiny.R"))
 
 # summary_simulations <- readRDS(here("R/Outputs/summary_simulations.RDS"))
 ```
+
+# Graphs paper
+
+```{r}
+baseline <- filter_baseline_var(summary_evol_small, "n_days", "type_m")  %>% 
+  bind_rows(filter_baseline_var(summary_evol_large, "n_days", "type_m"))
+
+baseline %>% 
+  mutate(
+    id_method = ifelse(id_method == "reduced_form", "Reduced form", id_method)
+  ) %>% 
+  ggplot(aes(x = n_days, y = type_m, color = as.factor(n_cities))) + #, color = .data[[id_method]] + 
+  geom_point() +
+  geom_line(linetype = "dashed", size = 0.1) +
+  facet_wrap(~ id_method, scales = "free_x") +
+  # ylim(c(0, 100)) +
+  labs(
+    # title =  "Evolution of power with the number of days",
+    # subtitle = "Comparison across identification methods",
+    x = "Number of days in the study",
+    y = "Type M error",
+    color = "Number of cities"
+  ) 
+
+ggsave(here("R/Graphs/evol_n_days.png"), dpi = 700)
+```
+
+
 
 # Shiny app
 
