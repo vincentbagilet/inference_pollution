@@ -50,11 +50,7 @@ get_baseline_param <- function(df) {
   return(baseline_param)
 }
 
-
-graph_evol_by_exp <- function(df, var_param = "n_days", stat = "power") {
-  
-  var_param_name <- str_replace_all(var_param, "_", " ") 
-  stat_name <- str_replace_all(stat, "_", " ") 
+filter_baseline_var <- function(df, var_param, stat) {
   all_var <- c(
     "quasi_exp", 
     "n_days", 
@@ -74,8 +70,26 @@ graph_evol_by_exp <- function(df, var_param = "n_days", stat = "power") {
     filter(!is.na(.data[[stat]])) %>% 
     ungroup() 
   
-  #graph itself
-  graph <- df_filtered %>% 
+  return(df_filtered)
+}
+
+
+graph_evol_by_exp <- function(df, var_param = "n_days", stat = "power") {
+  
+  var_param_name <- str_replace_all(var_param, "_", " ") 
+  stat_name <- str_replace_all(stat, "_", " ") 
+  all_var <- c(
+    "quasi_exp", 
+    "n_days", 
+    "n_cities", 
+    "p_obs_treat", 
+    "percent_effect_size", 
+    "id_method",
+    "iv_strength",
+    "outcome"
+  )
+  
+  graph <- filter_baseline_var(df, var_param = var_param, stat = stat) %>% 
     mutate(
       id_method = str_replace_all(id_method, "_", " ")
     ) %>% 
