@@ -744,14 +744,14 @@ In previous simulations, we varied all parameters, choosing somehow arbitrary va
 sim_param_base_usual_RDD <- tibble(
   n_days = 3652,
   n_cities = 1,
-  p_obs_treat = 0.04, #approximately 143/3652
+  p_obs_treat = 0.012, #approximately 43/3652
   percent_effect_size = 12, 
   iv_strength = NA,
   formula = "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday"
 )
 
 vect_n_days <- 3652
-vect_p_obs_treat <- c(0.01, 0.04, 0.05, 0.1)
+vect_p_obs_treat <- c(0.012, 0.02, 0.05, 0.1)
 vect_percent_effect_size <- c(2, 5, 12, 20)
 vect_iv_strength <- NA
 vect_formula <- c(
@@ -781,7 +781,7 @@ sim_param_base_usual_reduced <- tibble(
   p_obs_treat = 0.004, #about 45/(2200*5),
   percent_effect_size = 11, 
   iv_strength = NA,
-  formula = "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday"
+  formula = "resp_total ~ treated + temperature + temperature_squared | city + month^year + weekday"
 )
 
 vect_n_days <- 2200
