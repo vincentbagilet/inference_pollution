@@ -60,11 +60,13 @@ source(here("R/Shiny/functions_shiny.R"))
 
 # Graphs paper
 
+## Evolution of type M with the number of days
+
 ```{r}
-baseline <- filter_baseline_var(summary_evol_small, "n_days", "type_m")  %>% 
+baseline_n_days <- filter_baseline_var(summary_evol_small, "n_days", "type_m")  %>% 
   bind_rows(filter_baseline_var(summary_evol_large, "n_days", "type_m"))
 
-baseline %>% 
+baseline_n_days %>% 
   mutate(
     id_method = ifelse(id_method == "reduced_form", "Reduced form", id_method)
   ) %>% 
@@ -72,7 +74,7 @@ baseline %>%
   geom_point() +
   geom_line(linetype = "dashed", size = 0.1) +
   facet_wrap(~ id_method, scales = "free_x") +
-  # ylim(c(0, 100)) +
+  ylim(c(0, 8)) +
   labs(
     # title =  "Evolution of power with the number of days",
     # subtitle = "Comparison across identification methods",
@@ -81,10 +83,89 @@ baseline %>%
     color = "Number of cities"
   ) 
 
-ggsave(here("R/Graphs/evol_n_days.png"), dpi = 700)
+ggsave(here("R/Graphs/evol_typeM_n_days.png"), dpi = 700, width = 9, height = 6)
 ```
 
+## Evolution of power with the proportion of treated units
 
+```{r}
+baseline_power_p_treat <- filter_baseline_var(summary_evol_small, "p_obs_treat", "power")  %>% 
+  bind_rows(filter_baseline_var(summary_evol_large, "p_obs_treat", "power"))
+
+baseline_power_p_treat %>% 
+  mutate(
+    id_method = ifelse(id_method == "reduced_form", "Reduced form", id_method)
+  ) %>% 
+  ggplot(aes(x = p_obs_treat, y = power, color = as.factor(n_cities*n_days))) + #, color = .data[[id_method]] + 
+  geom_point() +
+  geom_line(linetype = "dashed", size = 0.1) +
+  facet_wrap(~ id_method, scales = "free_x") +
+  ylim(c(0, 100)) +
+  labs(
+    # title =  "Evolution of power with the number of days",
+    # subtitle = "Comparison across identification methods",
+    x = "Proportion of treated units",
+    y = "Power",
+    color = "Number of observations"
+  ) 
+
+ggsave(here("R/Graphs/evol_power_p_treat.png"), dpi = 700, width = 9, height = 4)
+```
+## Evolution of type M with the proportion of treated units
+
+```{r}
+baseline_typeM_p_treat <- filter_baseline_var(summary_evol_small, "p_obs_treat", "type_m")  %>% 
+  bind_rows(filter_baseline_var(summary_evol_large, "p_obs_treat", "type_m"))
+
+baseline_typeM_p_treat %>% 
+  mutate(
+    id_method = ifelse(id_method == "reduced_form", "Reduced form", id_method)
+  ) %>% 
+  ggplot(aes(x = p_obs_treat, y = type_m, color = as.factor(n_cities*n_days))) + #, color = .data[[id_method]] + 
+  geom_point() +
+  geom_line(linetype = "dashed", size = 0.1) +
+  facet_wrap(~ id_method, scales = "free_x") +
+  ylim(c(0, NA)) +
+  labs(
+    # title =  "Evolution of power with the number of days",
+    # subtitle = "Comparison across identification methods",
+    x = "Proportion of treated units",
+    y = "Type M error",
+    color = "Number of observations"
+  ) 
+
+ggsave(here("R/Graphs/evol_typeM_p_treat.png"), dpi = 700, width = 9, height = 4)
+```
+
+## Evolution of type M with the proportion of treated units
+
+```{r}
+baseline_iv <- filter_baseline_var(summary_evol_small, "iv_strength", "type_m")  %>% 
+  bind_rows(filter_baseline_var(summary_evol_large, "iv_strength", "type_m"))
+
+baseline_iv %>% 
+  pivot_longer(cols = c(power, type_m, mean_f_stat), names_to = "stat") %>% 
+  mutate(
+    stat = case_when(
+      stat == "mean_f_stat" ~ "F-stat",
+      stat == "type_m" ~ "Type M error",
+      stat == "power" ~ "Power",)
+  ) %>% 
+  ggplot(aes(x = iv_strength, y = value, color = as.factor(n_cities*n_days))) + #, color = .data[[id_method]] + 
+  geom_point() +
+  geom_line(linetype = "dashed", size = 0.1) +
+  facet_wrap(~ fct_rev(stat), scales = "free_y", ncol = 1) +
+  # ylim(c(0, NA)) +
+  labs(
+    # title =  "Evolution of power with the number of days",
+    # subtitle = "Comparison across identification methods",
+    x = "Strength of the IV",
+    y = "",
+    color = "N obs"
+  ) 
+
+ggsave(here("R/Graphs/evol_iv_strength.png"), dpi = 700, width = 3, height = 7)
+```
 
 # Shiny app
 
