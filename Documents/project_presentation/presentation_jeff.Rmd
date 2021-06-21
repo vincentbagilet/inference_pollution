@@ -1,0 +1,200 @@
+---
+title: "Analysis of studies on the short term health effects of air pollution"
+author: "Vincent Bagilet - Leo Zabrocki"
+date: "December 8, 2020"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    css: xaringan-themer.css
+    nature:
+      countIncrementalSlides: no
+      highlightLines: yes
+      highlightStyle: github
+  slidy_presentation:
+    highlight: pygments
+  github_document: default
+  html_notebook:
+    highlight: pygments
+    theme: simplex
+    toc: yes
+  ioslides_presentation:
+    highlight: pygments
+  pdf_document:
+    includes:
+      in_header: VB_markdown.sty
+    keep_tex: yes
+  html_document:
+    highlight: pygments
+    theme: simplex
+  beamer_presentation:
+    highlight: pygments
+    theme: VB_Beamer
+subtitle: "Discussion with Jeff"
+---
+
+```{r xaringan-themer, include = FALSE}
+library(xaringanthemer)
+style_mono_light(
+  base_color = "#00313C", #1B2754
+  text_color = "#00313C",
+  background_color = "#F9FAF7",
+  header_font_google = google_font("Josefin Sans", "400"),
+  text_font_google   = google_font("Lato", "400", "400i"),
+  header_font_weight = "bold",
+  text_bold_color = "#81402C", #"#B67F10",
+  link_color = "#81402C",
+  text_font_size = "22px",
+  header_h1_font_size = "45px",
+  header_h2_font_size = "35px",
+  header_h3_font_size = "25px",
+  text_slide_number_font_size = "16px"
+)
+```
+
+
+# Main questions
+
+- What is the usual **power** in studies of short-term health effects of air pollution?
+  
+- How do **different identification strategies** perform to estimate these effects?
+  
+- What is the impact of **missing data** on these estimates? 
+
+```{r echo=FALSE, out.width= 400, fig.align="center"} 
+knitr::include_graphics("images/pollution_paris.jpg")
+```
+  
+- *Are these (the?) relevant questions?*
+
+???
+
+- The questions we will focus on will also depend on our results: it might be the case that missing data is not a problem for instance. In this case we would not focus on this
+
+- You know why understanding the health effects of air pollution is an important question. However, I will discuss why each subquestion matters
+
+- In this presentation, I tackle each question somehow separately
+
+---
+
+# Usual power in air pollution studies
+
+## Motivation
+
+- Ioannidis et al (2017) showed that studies in economics are massively under-powered: median statistical power of 18%
+
+```{r echo=FALSE, out.width= 400, fig.align="center"} 
+knitr::include_graphics("images/broken.gif")
+```
+
+- Is there a similar issue in studies of health effects of air pollution?
+
+- Health effects of air pollution are often tiny, making them difficult to detect
+
+- Low power is associated with high rates of type M and S error
+
+---
+
+## Method
+
+- Follow Ioannidis and retrieve point estimates and s.e. of estimates
+
+- Compute power, type M and type S errors 
+
+- Literature review of causal studies: yield a set of $\sim$ 30 studies
+
+- Systematic literature review for other studies: for now, about 1000 estimates ([method](file:///Users/vincentbagilet/Documents/Research/imputation_pollution/Documents/project_presentation/htmls/systematic_lit_review.html))
+
+
+## Preliminary results (to adapt)
+
+- Causal studies: some studies have high power, others have quite low power.
+
+- Systematic literature review: similar results. 
+
+- We need to look at the characteristics of the articles with low power (to understand the sources of heterogeneity)
+
+---
+
+# Performance of different estimation methods
+
+## Method
+
+- For the sake of the example, let's focus on a simple Poisson generalized additive model:
+
+$$h_{ct} = \alpha + \beta_{c}p_{ct} + \boldsymbol{W_{ct}'\delta} +  \boldsymbol{C_{ct}'\gamma} + \epsilon_{ct}$$
+- Use both actual and fake data (here focus on actual data)
+
+1. Estimate the model on the existing data
+
+1. Define a "fake", known, effect $\beta_c$ (various "types")
+
+1. Generate noise $(\epsilon)$ and predict/generate fake hospital admission and mortality data $(h)$ based on our estimated model (1000 data sets)
+
+
+1. Compute bias, power, type I, type M, type S error
+
+---
+
+- Look how our measures of interest vary with sample size and effect size.
+
+- Repeat this for each identification strategy (with different DGPs of course)
+
+- We can also look into the impact of several other usual issues (such as measurement error)
+
+- Reproduce the same analysis with fake data (*ie* generate all the data): **How should we proceed?**
+
+---
+
+# Impact of missing values
+
+## Motivation
+
+- Air pollution data sets always display missing observations: not always clear how to handle them
+
+## Questions
+
+- Does the literature discuss missing data issues?
+
+- To what extent do missing data affect estimates? 
+
+- Are some estimation methods more robust to the missing data problems? 
+
+- How does this vary with the type of [missing data mechanism](file:///Users/vincentbagilet/Documents/Research/imputation_pollution/Documents/project_presentation/htmls/missingness_pattern_fr.html)?
+
+- If it is actually a problem, which imputation method performs better?
+
+---
+
+## Method
+
+1. Build a complete data set (how?)
+
+1. Estimate the model and find the "true" effect
+
+1. [Delete data](file:///Users/vincentbagilet/Documents/Research/imputation_pollution/Documents/project_presentation/htmls/create_missing.html) to create missing observations (create 1000 samples)
+
+1. Estimate the model on the incomplete sets 
+
+1. Compute bias, power, type I, type M, type S error
+
+1. Rerun this for different missing data mechanisms and estimation methods and compare
+
+---
+
+## Comparison of imputation methods
+
+If missing data is actually a problem:
+
+1. Redo the previous steps
+
+1. On each incomplete set, impute data for missing observations
+
+1. Estimate the model on the imputed sets 
+
+1. Compute bias, power, type I, type M, type S error
+
+1. Compare results across imputation methods and missingness patterns
+
+
+
+
