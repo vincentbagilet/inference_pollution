@@ -167,6 +167,18 @@ baseline_iv %>%
 ggsave(here("R/Graphs/evol_iv_strength.png"), dpi = 700, width = 3, height = 7)
 ```
 
+```{r}
+baseline_iv %>% 
+  # filter(mean_f_stat < 5000) %>%
+  filter(type_m < 10) %>% 
+  ggplot(aes(x = mean_f_stat, y = type_m)) +
+  geom_point() +
+  geom_line(linetype = "dashed", size = 0.1) +
+  ylim(c(0, NA))
+```
+
+
+
 # Shiny app
 
 ```{r, echo = FALSE}
