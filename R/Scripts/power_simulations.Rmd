@@ -147,7 +147,7 @@ draw_treated <- function(data, p_obs_treat = 0.5, quasi_exp = "random_days") {
 
 Both to verify that everything works well and for illustration, we can make quick plots:
 
-```{r echo=FALSE}
+```{r check_draw_treated, echo=FALSE}
 draw_treated_exp <- function(data, p_obs_treat, quasi_exp) {
   data <- draw_treated(data, p_obs_treat, quasi_exp)
   
@@ -740,7 +740,7 @@ In previous simulations, we varied all parameters, choosing somehow arbitrary va
 
 ### RDD
 
-```{r eval=FALSE}
+```{r}
 sim_param_base_usual_RDD <- tibble(
   n_days = 3652,
   n_cities = 1,
@@ -774,7 +774,7 @@ sim_param_evol_usual_RDD <- prepare_sim_param(sim_param_unique_usual_RDD, n_iter
 
 ### Reduced form
 
-```{r eval=FALSE}
+```{r}
 sim_param_base_usual_reduced <- tibble(
   n_days = 2200,
   n_cities = 5,
@@ -809,7 +809,7 @@ sim_param_evol_usual_reduced <- prepare_sim_param(sim_param_unique_usual_reduced
 
 ### IV
 
-```{r eval=FALSE}
+```{r}
 sim_param_base_usual_IV <- tibble(
   n_days = 2500,
   n_cities = 40,
@@ -844,7 +844,7 @@ sim_param_evol_usual_IV <- prepare_sim_param(sim_param_unique_usual_IV, n_iter =
 
 ### Running simulations
 
-```{r}
+```{r eval=FALSE}
 sim_param_evol_usual <- sim_param_evol_usual_RDD %>% 
   bind_rows(sim_param_evol_usual_reduced) %>% 
   bind_rows(sim_param_evol_usual_IV)

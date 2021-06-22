@@ -62,7 +62,7 @@ source(here("R/Shiny/functions_shiny.R"))
 
 ## Evolution of type M with the number of days
 
-```{r}
+```{r graph_typeM_ndays}
 baseline_n_days <- filter_baseline_var(summary_evol_small, "n_days", "type_m")  %>% 
   bind_rows(filter_baseline_var(summary_evol_large, "n_days", "type_m"))
 
@@ -88,7 +88,7 @@ ggsave(here("R/Graphs/evol_typeM_n_days.png"), dpi = 700, width = 9, height = 6)
 
 ## Evolution of power with the proportion of treated units
 
-```{r}
+```{r graph_power_ptreat}
 baseline_power_p_treat <- filter_baseline_var(summary_evol_small, "p_obs_treat", "power")  %>% 
   bind_rows(filter_baseline_var(summary_evol_large, "p_obs_treat", "power"))
 
@@ -111,9 +111,10 @@ baseline_power_p_treat %>%
 
 ggsave(here("R/Graphs/evol_power_p_treat.png"), dpi = 700, width = 9, height = 4)
 ```
+
 ## Evolution of type M with the proportion of treated units
 
-```{r}
+```{r graph_typeM_ptreat}
 baseline_typeM_p_treat <- filter_baseline_var(summary_evol_small, "p_obs_treat", "type_m")  %>% 
   bind_rows(filter_baseline_var(summary_evol_large, "p_obs_treat", "type_m"))
 
@@ -137,9 +138,9 @@ baseline_typeM_p_treat %>%
 ggsave(here("R/Graphs/evol_typeM_p_treat.png"), dpi = 700, width = 9, height = 4)
 ```
 
-## Evolution of type M with the proportion of treated units
+## Evolution of type M with IV strength
 
-```{r}
+```{r graph_typeM_IVstrength}
 baseline_iv <- filter_baseline_var(summary_evol_small, "iv_strength", "type_m")  %>% 
   bind_rows(filter_baseline_var(summary_evol_large, "iv_strength", "type_m"))
 
@@ -167,7 +168,7 @@ baseline_iv %>%
 ggsave(here("R/Graphs/evol_iv_strength.png"), dpi = 700, width = 3, height = 7)
 ```
 
-```{r}
+```{r graph_typeM_fstat}
 baseline_iv %>% 
   # filter(mean_f_stat < 5000) %>%
   filter(type_m < 10) %>% 
@@ -181,12 +182,12 @@ baseline_iv %>%
 
 # Shiny app
 
-```{r, echo = FALSE}
-shinyAppDir(
-  here("R/Shiny/power_simulations_viz"),
-  options = list(width = "100%", height = 1300)
-)
-```
+<!-- ```{r, echo = FALSE} -->
+<!-- shinyAppDir( -->
+<!--   here("R/Shiny/power_simulations_viz"), -->
+<!--   options = list(width = "100%", height = 1300) -->
+<!-- ) -->
+<!-- ``` -->
 
 <!-- # Quick analysis -->
 
