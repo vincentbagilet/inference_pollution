@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Analysis of studies on the short term health effects of air pollution</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Vincent Bagilet - Leo Zabrocki" />
+    <meta name="date" content="2020-12-08" />
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Analysis of studies on the short term health effects of air pollution
+## Discussion with Jeff
+### Vincent Bagilet - Leo Zabrocki
+### December 8, 2020
+
+---
+
+
+
+
+
+# Main questions
+
+- What is the usual **power** in studies of short-term health effects of air pollution?
+  
+- How do **different identification strategies** perform to estimate these effects?
+  
+- What is the impact of **missing data** on these estimates? 
+
+&lt;img src="images/pollution_paris.jpg" width="400" style="display: block; margin: auto;" /&gt;
+  
+- *Are these (the?) relevant questions?*
+
+???
+
+- The questions we will focus on will also depend on our results: it might be the case that missing data is not a problem for instance. In this case we would not focus on this
+
+- You know why understanding the health effects of air pollution is an important question. However, I will discuss why each subquestion matters
+
+- In this presentation, I tackle each question somehow separately
+
+---
+
+# Usual power in air pollution studies
+
+## Motivation
+
+- Ioannidis et al (2017) showed that studies in economics are massively under-powered: median statistical power of 18%
+
+&lt;img src="images/broken.gif" width="400" style="display: block; margin: auto;" /&gt;
+
+- Is there a similar issue in studies of health effects of air pollution?
+
+- Health effects of air pollution are often tiny, making them difficult to detect
+
+- Low power is associated with high rates of type M and S error
+
+---
+
+## Method
+
+- Follow Ioannidis and retrieve point estimates and s.e. of estimates
+
+- Compute power, type M and type S errors 
+
+- Literature review of causal studies: yield a set of `\(\sim\)` 30 studies
+
+- Systematic literature review for other studies: for now, about 1000 estimates ([method](file:///Users/vincentbagilet/Documents/Research/imputation_pollution/Documents/project_presentation/htmls/systematic_lit_review.html))
+
+
+## Preliminary results (to adapt)
+
+- Causal studies: some studies have high power, others have quite low power.
+
+- Systematic literature review: similar results. 
+
+- We need to look at the characteristics of the articles with low power (to understand the sources of heterogeneity)
+
+---
+
+# Performance of different estimation methods
+
+## Method
+
+- For the sake of the example, let's focus on a simple Poisson generalized additive model:
+
+`$$h_{ct} = \alpha + \beta_{c}p_{ct} + \boldsymbol{W_{ct}'\delta} +  \boldsymbol{C_{ct}'\gamma} + \epsilon_{ct}$$`
+- Use both actual and fake data (here focus on actual data)
+
+1. Estimate the model on the existing data
+
+1. Define a "fake", known, effect `\(\beta_c\)` (various "types")
+
+1. Generate noise `\((\epsilon)\)` and predict/generate fake hospital admission and mortality data `\((h)\)` based on our estimated model (1000 data sets)
+
+
+1. Compute bias, power, type I, type M, type S error
+
+---
+
+- Look how our measures of interest vary with sample size and effect size.
+
+- Repeat this for each identification strategy (with different DGPs of course)
+
+- We can also look into the impact of several other usual issues (such as measurement error)
+
+- Reproduce the same analysis with fake data (*ie* generate all the data): **How should we proceed?**
+
+---
+
+# Impact of missing values
+
+## Motivation
+
+- Air pollution data sets always display missing observations: not always clear how to handle them
+
+## Questions
+
+- Does the literature discuss missing data issues?
+
+- To what extent do missing data affect estimates? 
+
+- Are some estimation methods more robust to the missing data problems? 
+
+- How does this vary with the type of [missing data mechanism](file:///Users/vincentbagilet/Documents/Research/imputation_pollution/Documents/project_presentation/htmls/missingness_pattern_fr.html)?
+
+- If it is actually a problem, which imputation method performs better?
+
+---
+
+## Method
+
+1. Build a complete data set (how?)
+
+1. Estimate the model and find the "true" effect
+
+1. [Delete data](file:///Users/vincentbagilet/Documents/Research/imputation_pollution/Documents/project_presentation/htmls/create_missing.html) to create missing observations (create 1000 samples)
+
+1. Estimate the model on the incomplete sets 
+
+1. Compute bias, power, type I, type M, type S error
+
+1. Rerun this for different missing data mechanisms and estimation methods and compare
+
+---
+
+## Comparison of imputation methods
+
+If missing data is actually a problem:
+
+1. Redo the previous steps
+
+1. On each incomplete set, impute data for missing observations
+
+1. Estimate the model on the imputed sets 
+
+1. Compute bias, power, type I, type M, type S error
+
+1. Compare results across imputation methods and missingness patterns
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"countIncrementalSlides": false,
+"highlightLines": true,
+"highlightStyle": "github"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

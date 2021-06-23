@@ -1,0 +1,24 @@
+name: "."
+title: "Inference, Health and Air Pollution"
+theme: air_pollution_website.css
+description: |
+  Inference Design in Studies of Acute Health Effects of Air Pollution
+output_dir: "docs"
+navbar:
+  logo: "images/mask.png"
+  right:
+    - text: "Home"
+      href: index.html
+    - text: "Literature review"
+      menu:
+        - text: "Retrieving abstracts for automatic literature review"
+          href: automatic_lit_review_getting_abstracts.html
+        - text: "---"
+    - text: "Simulations"
+      menu:
+        - text: "Overall approach"
+          href: notes_methodology.html
+        - text: "Running the simulations"
+          href: power_simulations.html
+  search: false
+output: distill::distill_article

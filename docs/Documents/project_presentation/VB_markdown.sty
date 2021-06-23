@@ -1,0 +1,130 @@
+\NeedsTeXFormat{LaTeX2e}
+ 
+%\ProvidesPackage{VB_markdown}[2016/01/11 Extension personnelle, V2.0]
+ 
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[english, francais]{babel}
+%\RequirePackage[top=2.6cm,bottom=2.6cm,left=2.6cm,right=2.6cm]{geometry}
+%\RequirePackage[pdftex]{graphicx}
+\RequirePackage{amsmath}
+\RequirePackage{amssymb}
+\RequirePackage{mathrsfs}
+\RequirePackage{setspace}
+\RequirePackage{fancyhdr}
+\RequirePackage{wrapfig}
+\RequirePackage[hyphens]{url}
+\RequirePackage[final]{pdfpages} 
+%\RequirePackage[Rejne]{fncychap}
+%\RequirePackage{titlesec}
+\RequirePackage{cancel}
+\RequirePackage{lscape}
+\RequirePackage{sectsty}
+\RequirePackage{ulem}
+\RequirePackage{lscape}
+\RequirePackage{multicol}
+\RequirePackage{eurosym}
+\RequirePackage{titling}
+\RequirePackage{nameref}
+\RequirePackage{natbib}
+\RequirePackage{csquotes}
+\RequirePackage{booktabs}
+\RequirePackage{array}
+\RequirePackage[bottom]{footmisc}
+\RequirePackage{multirow}
+\RequirePackage[flushleft]{threeparttable}
+\RequirePackage{titling}
+
+\sloppy
+
+\hypersetup{ backref=true, %permet d'ajouter des liens dans...
+pagebackref=true, %...les bibliographies
+hyperindex=true, %ajoute des liens dans les index.
+colorlinks=false, %colorise les liens
+breaklinks=true, %permet le retour à la ligne dans les liens trop longs
+urlcolor= black, %couleur des hyperliens
+linkcolor= black, %couleur des liens internes
+bookmarks=true, %créé des signets pour Acrobat
+bookmarksopen=true
+%si les signets Acrobat sont créés, %les afficher complètement. %informations apparaissant dans %dans les informations du document %sous Acrobat.
+}
+
+\title{}
+
+%%%%%%%%%%%%%%%%
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\nouppercase{\leftmark}}
+\renewcommand{\sectionmark}[1]{\markboth{\textit{\bsc{\thesection~ #1}}}{}}
+%\chead{\leftmark}
+\fancypagestyle{plain}{
+\fancyhead{}
+\renewcommand{\headrulewidth}{0pt}}
+\renewcommand{\footrulewidth}{0.5pt}
+\fancyfoot[C]{\textsc{Page \thepage}} 
+%\fancyfoot[R]{\begin{picture}(63,12) \put(-80,-13){\includegraphics[width=5cm]{logo.png}}
+%\end{picture}}
+
+ \renewcommand{\chaptermark}[1]{\markboth{#1}{}}
+
+
+\renewcommand{\thesection}{\Roman{section}}
+\sectionfont{{} \mdseries \scshape}
+\renewcommand{\thesubsection}{\Roman{section}. \arabic{subsection}}
+\subsectionfont{{} \quad \mdseries \scshape}
+\subsubsectionfont{{} \quad \quad \mdseries \scshape}
+%\titlespacing{\chapter}{0pt}{-30pt}{22pt}[0pt]
+
+
+
+%\setcounter{tocdepth}{3}     % Dans la table des matieres
+\setcounter{secnumdepth}{3} 
+
+%\RequirePackage[shortlabels]{enumitem}
+%\setlist[itemize]{label=\textbullet}
+
+\definecolor{darkblue}{rgb}{0.0, 0.0, 0.55}
+\renewcommand{\emph}[1]{\textcolor{darkblue}{#1}}
+
+
+\newcolumntype{H}{>{\setbox0=\hbox\bgroup}c<{\egroup}@{}} %to hide one column in tables
+\newcolumntype{L}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}m{#1}}
+
+
+%Matlab in LaTeX
+\usepackage[framed]{matlab-prettifier} %numbered,
+
+\let\ph\mlplaceholder % shorter macro
+\lstMakeShortInline"
+
+\lstset{
+  style              = Matlab-editor,
+  basicstyle         = \mlttfamily,
+  escapechar         = ",
+  mlshowsectionrules = true,
+}
+
+\onehalfspacing
+
+
+%%%%% Title format %%%%%%
+
+%%%%% Title, author, date format %%%%%%
+
+
+         \pretitle{\vspace{-2.4cm} \begin{center} \LARGE \bfseries \scshape}
+         \posttitle{\end{center}}
+         
+        
+        \preauthor{\begin{center}\large \mdseries}
+        \postauthor{\end{center}}
+        
+        \newcommand{\institution}[1]{}
+        
+        \predate{\date{}}
+         \postdate{}
+
+ 
+ %%%%%%%%%%%%%
