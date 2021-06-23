@@ -1,7 +1,7 @@
 ---
 title: "Inference Design in Studies of Acute Health Effects of Air Pollution"
 description: |
-  This website gathers code and additional material for the paper [Inference Design in Studies of Acute Health Effects of Air Pollution](paper.pdf) by Vincent Bagilet and Léo Zabrocki.
+  This website gathers code and additional material for the paper [Inference Design in Studies on Acute Health Effects of Air Pollution](paper.pdf) by Vincent Bagilet and Léo Zabrocki.
 site: distill::distill_website
 ---
 

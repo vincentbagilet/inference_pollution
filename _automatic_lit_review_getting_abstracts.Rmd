@@ -110,7 +110,7 @@ metadata_scopus <- search$scopus$data %>%
   ) %>% 
   select(-coverDate)
 
-saveRDS(metadata_scopus, "../Outputs/metadata_scopus.RDS")
+saveRDS(metadata_scopus, "R/Outputs/metadata_scopus.RDS")
 
 metadata_entrez <- search_entrez$entrez$data %>% #search_entrez$entrez$data 
   as_tibble() %>% 
@@ -126,7 +126,7 @@ metadata_entrez <- search_entrez$entrez$data %>% #search_entrez$entrez$data
   ) %>% 
   select(-pubdate)
 
-saveRDS(metadata_entrez, "../Outputs/metadata_entrez.RDS")
+saveRDS(metadata_entrez, "R/Outputs/metadata_entrez.RDS")
 
 metadata_lit_review <- metadata_scopus %>% 
   rbind(metadata_entrez) %>% 
@@ -143,7 +143,7 @@ metadata_lit_review <- metadata_scopus %>%
   ungroup() %>%
   distinct(title, .keep_all = TRUE)
 
-# saveRDS(metadata_lit_review, "../Outputs/metadata_lit_review.RDS")
+# saveRDS(metadata_lit_review, "R/Outputs/metadata_lit_review.RDS")
 ```
 
 # Retreiving abstracts
@@ -203,7 +203,7 @@ abstracts <- metadata_lit_review %>%
   get_abstracts()  %>% 
   left_join(metadata_lit_review, by = "doi") 
 
-# saveRDS(abstracts, "../Outputs/abstracts.RDS")
+# saveRDS(abstracts, "R/Outputs/abstracts.RDS")
 ```
 
 # Retreiving effects and confidence interavals
@@ -312,7 +312,7 @@ estimates <- detected_effects %>%
   filter(!is.na(effect)) %>%  
   filter(effect > low_CI & effect < up_CI)
 
-# saveRDS(estimates, "../Outputs/estimates.RDS")
+# saveRDS(estimates, "R/Outputs/estimates.RDS")
 ```
 
 The `estimates` data frame displays, in each row, a point estimate and the lower and upper band of the CI along with the DOI of the article from which this estimate is extracted. We retrieved `r nrow(estimates)` valid point estimates and associated confidence intervals. We analyze them further in another document.
@@ -652,7 +652,7 @@ abstracts_and_metadata <- abstracts %>%
   ) %>% #some articles have been published twice
   ungroup()
 
-# saveRDS(abstracts_and_metadata, "../Outputs/abstracts_and_metadata.RDS")
+# saveRDS(abstracts_and_metadata, "R/Outputs/abstracts_and_metadata.RDS")
 ```
 
 

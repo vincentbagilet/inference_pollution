@@ -14,7 +14,6 @@ output:
   distill::distill_article: 
     toc: true
     toc_float: true
-  html_notebook: default
 editor_options: 
   chunk_output_type: console
 ---

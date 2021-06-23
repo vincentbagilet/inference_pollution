@@ -2,13 +2,13 @@ name: "."
 title: "Inference, Health and Air Pollution"
 theme: air_pollution_website.css
 description: |
-  Inference Design in Studies of Acute Health Effects of Air Pollution
+  Inference Design in Studies on Acute Health Effects of Air Pollution
 output_dir: "docs"
 exclude: ["Documents", "R"]
 navbar:
   logo: "images/mask.png"
   right:
-    - label: "Home"
+    - text: "Home"
       href: index.html
     - text: "Paper"
       href: paper.pdf
