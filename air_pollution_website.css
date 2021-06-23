@@ -30,7 +30,6 @@ html {
   --hover-color:      rgba(0, 25, 74, 0.4);
   /*-- Specify custom fonts ~~~ must be imported above   --*/
   --heading-font:    "Lora", serif;
-  /*--mono-font:       "Lora", serif; */
   --body-font:       "Lora", serif;
   --navbar-font:     "Lora", serif;  /* websites + blogs only */
 }
