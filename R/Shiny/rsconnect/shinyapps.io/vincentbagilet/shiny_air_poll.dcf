@@ -1,0 +1,13 @@
+name: shiny_air_poll
+title: shiny_air_poll
+username:
+account: vincentbagilet
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4310117
+bundleId: 4747585
+url: https://vincentbagilet.shinyapps.io/shiny_air_poll/
+when: 1624454634.97229
+lastSyncTime: 1624454634.97237
+asMultiple: FALSE
+asStatic: FALSE

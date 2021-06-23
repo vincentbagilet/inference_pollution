@@ -86,14 +86,14 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 </style>
 
   <!--radix_placeholder_meta_tags-->
-  <title>Inference, Health and Air Pollution: Inference Design in Studies of Acute Health Effects of Air Pollution</title>
+  <title>Inference, Health and Air Pollution: Inference Design in Studies on Acute Health Effects of Air Pollution</title>
   
   <meta property="description" itemprop="description" content="This website gathers code and additional material for the paper [Inference Design in Studies on Acute Health Effects of Air Pollution](paper.pdf) by Vincent Bagilet and Léo Zabrocki."/>
   
   
   
   <!--  https://developers.facebook.com/docs/sharing/webmasters#markup -->
-  <meta property="og:title" content="Inference, Health and Air Pollution: Inference Design in Studies of Acute Health Effects of Air Pollution"/>
+  <meta property="og:title" content="Inference, Health and Air Pollution: Inference Design in Studies on Acute Health Effects of Air Pollution"/>
   <meta property="og:type" content="article"/>
   <meta property="og:description" content="This website gathers code and additional material for the paper [Inference Design in Studies on Acute Health Effects of Air Pollution](paper.pdf) by Vincent Bagilet and Léo Zabrocki."/>
   <meta property="og:locale" content="en_US"/>
@@ -101,14 +101,14 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   
   <!--  https://dev.twitter.com/cards/types/summary -->
   <meta property="twitter:card" content="summary"/>
-  <meta property="twitter:title" content="Inference, Health and Air Pollution: Inference Design in Studies of Acute Health Effects of Air Pollution"/>
+  <meta property="twitter:title" content="Inference, Health and Air Pollution: Inference Design in Studies on Acute Health Effects of Air Pollution"/>
   <meta property="twitter:description" content="This website gathers code and additional material for the paper [Inference Design in Studies on Acute Health Effects of Air Pollution](paper.pdf) by Vincent Bagilet and Léo Zabrocki."/>
   
   <!--/radix_placeholder_meta_tags-->
   <!--radix_placeholder_rmarkdown_metadata-->
   
   <script type="text/json" id="radix-rmarkdown-metadata">
-  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","site"]}},"value":[{"type":"character","attributes":{},"value":["Inference Design in Studies of Acute Health Effects of Air Pollution"]},{"type":"character","attributes":{},"value":["This website gathers code and additional material for the paper [Inference Design in Studies on Acute Health Effects of Air Pollution](paper.pdf) by Vincent Bagilet and Léo Zabrocki.\n"]},{"type":"character","attributes":{},"value":["distill::distill_website"]}]}
+  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","site"]}},"value":[{"type":"character","attributes":{},"value":["Inference Design in Studies on Acute Health Effects of Air Pollution"]},{"type":"character","attributes":{},"value":["This website gathers code and additional material for the paper [Inference Design in Studies on Acute Health Effects of Air Pollution](paper.pdf) by Vincent Bagilet and Léo Zabrocki.\n"]},{"type":"character","attributes":{},"value":["distill::distill_website"]}]}
   </script>
   <!--/radix_placeholder_rmarkdown_metadata-->
   <!--radix_placeholder_navigation_in_header-->
@@ -1871,9 +1871,9 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
     /*-- Main font sizes --*/
     --title-size:      50px;
     --body-size:       1.06rem;
-    --code-size:       14px;
+    --code-size:       13px;
     --aside-size:      12px;
-    --fig-cap-size:    13px;
+    --fig-cap-size:    12px;
     /*-- Main font colors --*/
     --title-color:     rgba(0, 25, 74, 0.8);
     --header-color:    rgba(0, 25, 74, 0.8);
@@ -2113,7 +2113,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <!--radix_placeholder_front_matter-->
 
 <script id="distill-front-matter" type="text/json">
-{"title":"Inference Design in Studies of Acute Health Effects of Air Pollution","description":"This website gathers code and additional material for the paper [Inference Design in Studies on Acute Health Effects of Air Pollution](paper.pdf) by Vincent Bagilet and Léo Zabrocki.","authors":[]}
+{"title":"Inference Design in Studies on Acute Health Effects of Air Pollution","description":"This website gathers code and additional material for the paper [Inference Design in Studies on Acute Health Effects of Air Pollution](paper.pdf) by Vincent Bagilet and Léo Zabrocki.","authors":[]}
 </script>
 
 <!--/radix_placeholder_front_matter-->
@@ -2154,6 +2154,9 @@ Simulations
 <a href="power_simulations_analysis.html">Analysing simulations results</a>
 </div>
 </div>
+<a href="https://github.com/vincentbagilet/inference_pollution" aria-label="Link to source">
+<i class="fab fa-github" aria-hidden="true"></i>
+</a>
 <a href="javascript:void(0);" class="nav-toggle">&#9776;</a>
 </div>
 </nav>
@@ -2163,7 +2166,7 @@ Simulations
 <!--/radix_placeholder_site_before_body-->
 
 <div class="d-title">
-<h1>Inference Design in Studies of Acute Health Effects of Air Pollution</h1>
+<h1>Inference Design in Studies on Acute Health Effects of Air Pollution</h1>
 <!--radix_placeholder_categories-->
 <!--/radix_placeholder_categories-->
 <p><p>This website gathers code and additional material for the paper <a href="paper.pdf">Inference Design in Studies on Acute Health Effects of Air Pollution</a> by Vincent Bagilet and Léo Zabrocki.</p></p>
@@ -2172,7 +2175,7 @@ Simulations
 
 <div class="d-article">
 <p>All the (<code>R</code>) code for this project is available in <a href="https://github.com/vincentbagilet/inference_pollution">its GitHub directory</a>.</p>
-<h1 id="abstract">Abstract</h1>
+<h2 id="abstract">Abstract</h2>
 <p>We explore statistical power issues of various empirical strategies implemented to estimate the short-term health effect of air pollution. Through an extensive literature review, we retrieve the estimates and standard errors of nearly all studies published on this topic, which rely both on standard outcomes regressions and causal inference methods. We find that a non-negligible share of studies may suffer from low power issues and could thereby exaggerate effect sizes. The analysis of published results highlights potential shortcomings of the literature but does not enable to precisely identify drivers of theses issues. We therefore run realistic simulations to investigate how statistical power varies with the treatment effect size, the number of observations, the proportion of treated units as well as the distribution of the outcome. Instrumental variable estimates, when statistically significant, are more likely to overestimate true effect sizes than naive estimates. Researchers should also pay attention to the number of treated units and the average count of health outcomes as they are important drivers of statistical power and may lead to greatly overestimated true effect sizes.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
 <!--radix_placeholder_article_footer-->

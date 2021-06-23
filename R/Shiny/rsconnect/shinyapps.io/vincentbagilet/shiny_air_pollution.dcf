@@ -1,0 +1,13 @@
+name: shiny_air_pollution
+title: shiny_air_pollution
+username:
+account: vincentbagilet
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4310053
+bundleId: 4747384
+url: https://vincentbagilet.shinyapps.io/shiny_air_pollution/
+when: 1624451691.93239
+lastSyncTime: 1624451691.93241
+asMultiple: FALSE
+asStatic: FALSE

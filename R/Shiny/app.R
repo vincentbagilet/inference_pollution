@@ -1,5 +1,12 @@
-# Run this manually before launching app
-source(here::here("R/Shiny/functions_shiny.R"))
+#to publish online
+dir.create('~/.fonts')
+file.copy("www/Lato.ttf", "~/.fonts")
+system('fc-cache -f ~/.fonts')
+
+source("functions_shiny.R")
+
+#in local
+# source(here::here("R/Shiny/functions_shiny.R"))
 
 #### UI ------------------
 

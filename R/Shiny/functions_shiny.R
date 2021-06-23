@@ -1,24 +1,39 @@
 library(shiny)
 library(tidyverse) 
-library(mediocrethemes)
+# library(mediocrethemes)
 library(shinythemes)
 library(shinyWidgets)
 library(ggridges)
 library(here)
 
 set_mediocre_all()
+# theme_set(theme_minimal())
 
-summary_evol_small <- readRDS(here("R", "Outputs", "summary_evol_small.RDS")) 
-summary_evol_large <- readRDS(here("R", "Outputs", "summary_evol_large.RDS")) 
-summary_evol_usual <- readRDS(here("R", "Outputs", "summary_evol_usual.RDS")) 
+#to publish app
+# summary_evol_small <- readRDS("data/summary_evol_small.RDS")
+# summary_evol_large <- readRDS("data/summary_evol_large.RDS")
+# summary_evol_usual <- readRDS("data/summary_evol_usual.RDS") 
+# 
+# sim_evol_small <- readRDS("data/sim_evol_small.RDS")
+# sim_evol_large <- readRDS("data/sim_evol_large.RDS") 
+# sim_evol_usual <- readRDS("data/sim_evol_usual.RDS")
+# 
+# case_studies_data <- readRDS("data/case_studies_data.RDS")
+# 
+# summary_decomp <- readRDS("data/summary_decomp.RDS")
 
-sim_evol_small <- readRDS(here("R", "Outputs", "sim_evol_small.RDS")) 
-sim_evol_large <- readRDS(here("R", "Outputs", "sim_evol_large.RDS")) 
-sim_evol_usual <- readRDS(here("R", "Outputs", "sim_evol_usual.RDS")) 
+#in local
+summary_evol_small <- readRDS(here("R", "Outputs", "summary_evol_small.RDS"))
+summary_evol_large <- readRDS(here("R", "Outputs", "summary_evol_large.RDS"))
+summary_evol_usual <- readRDS(here("R", "Outputs", "summary_evol_usual.RDS"))
+
+sim_evol_small <- readRDS(here("R", "Outputs", "sim_evol_small.RDS"))
+sim_evol_large <- readRDS(here("R", "Outputs", "sim_evol_large.RDS"))
+sim_evol_usual <- readRDS(here("R", "Outputs", "sim_evol_usual.RDS"))
 
 case_studies_data <- readRDS(here("R", "Outputs", "case_studies_data.RDS"))
 
-summary_decomp <- readRDS(here("R", "Outputs", "summary_decomp.RDS")) 
+summary_decomp <- readRDS(here("R", "Outputs", "summary_decomp.RDS"))
 
 get_baseline_param <- function(df) {
   all_var <- c(

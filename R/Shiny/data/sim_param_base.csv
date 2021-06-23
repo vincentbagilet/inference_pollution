@@ -1,2 +1,0 @@
-n_days,n_cities,p_obs_treat,percent_effect_size,formula
-2000,68,0.5,0.5,death_total ~ treated + temperature + temperature_squared | city + month^year + weekday

@@ -1,0 +1,331 @@
+---
+title: "Analysis of power simulations"
+author:
+  - name: Vincent Bagilet 
+    url: https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet
+    affiliation: Columbia University
+    affiliation_url: https://www.columbia.edu/
+  - name: Léo Zabrocki 
+    url: https://www.parisschoolofeconomics.eu/en/
+    affiliation: Paris School of Economics
+    affiliation_url: https://www.parisschoolofeconomics.eu/en/
+date: "`r Sys.Date()`"
+runtime: shiny
+# output: distill::distill_article
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+```{r setup, include=FALSE, results='hide', warning=FALSE}
+library(knitr)
+opts_chunk$set(fig.path = "images/",
+               cache.path = "cache/",
+               cache = FALSE,
+               echo = TRUE, #set to false to hide code
+               message = FALSE,
+               warning = FALSE,
+               out.width = "85%",
+               dpi = 200,
+               fig.align = "center")  
+```  
+
+## Purpose of the document
+
+In this document, we analyze the results of our simulations.
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+library(tidyverse) 
+library(readr)
+library(mediocrethemes)
+library(shiny)
+library(here)
+library(shinythemes)
+library(shinyWidgets)
+library(ggridges)
+
+set_mediocre_all()
+
+# sim_param_base <- readRDS("data/sim_param_base.RDS")
+source(here("R/Shiny/functions_shiny.R"))
+
+# summary_simulations <- readRDS(here("R/Outputs/summary_simulations.RDS"))
+```
+
+## Overall results
+
+First of all, we built a Shiny app to analyze all our results. This app was helpful considering the large number of output variables and parameters considered. 
+
+<iframe src="https://vincentbagilet.shinyapps.io/shiny_air_poll/" class="l-screen-inset shaded" height="1000px"></iframe>
+
+## Graphs in the paper
+
+In this section, we display the code used to generate the graphs in the paper. 
+
+### Evolution of type M with the number of days
+
+```{r graph_typeM_ndays}
+baseline_n_days <- filter_baseline_var(summary_evol_small, "n_days", "type_m")  %>% 
+  bind_rows(filter_baseline_var(summary_evol_large, "n_days", "type_m"))
+
+baseline_n_days %>% 
+  mutate(
+    id_method = ifelse(id_method == "reduced_form", "Reduced form", id_method)
+  ) %>% 
+  ggplot(aes(x = n_days, y = type_m, color = as.factor(n_cities))) + #, color = .data[[id_method]] + 
+  geom_point() +
+  geom_line(linetype = "dashed", size = 0.1) +
+  facet_wrap(~ id_method, scales = "free_x") +
+  ylim(c(0, 8)) +
+  labs(
+    # title =  "Evolution of power with the number of days",
+    # subtitle = "Comparison across identification methods",
+    x = "Number of days in the study",
+    y = "Type M error",
+    color = "Number of cities"
+  ) 
+
+# ggsave(here("R/Graphs/evol_typeM_n_days.png"), dpi = 700, width = 9, height = 6)
+```
+
+### Evolution of power with the proportion of treated units
+
+```{r graph_power_ptreat}
+baseline_power_p_treat <- filter_baseline_var(summary_evol_small, "p_obs_treat", "power")  %>% 
+  bind_rows(filter_baseline_var(summary_evol_large, "p_obs_treat", "power"))
+
+baseline_power_p_treat %>% 
+  mutate(
+    id_method = ifelse(id_method == "reduced_form", "Reduced form", id_method)
+  ) %>% 
+  ggplot(aes(x = p_obs_treat, y = power, color = as.factor(n_cities*n_days))) + #, color = .data[[id_method]] + 
+  geom_point() +
+  geom_line(linetype = "dashed", size = 0.1) +
+  facet_wrap(~ id_method, scales = "free_x") +
+  ylim(c(0, 100)) +
+  labs(
+    # title =  "Evolution of power with the number of days",
+    # subtitle = "Comparison across identification methods",
+    x = "Proportion of treated units",
+    y = "Power",
+    color = "Number of observations"
+  ) 
+
+# ggsave(here("R/Graphs/evol_power_p_treat.png"), dpi = 700, width = 9, height = 4)
+```
+
+### Evolution of type M with the proportion of treated units
+
+```{r graph_typeM_ptreat}
+baseline_typeM_p_treat <- filter_baseline_var(summary_evol_small, "p_obs_treat", "type_m")  %>% 
+  bind_rows(filter_baseline_var(summary_evol_large, "p_obs_treat", "type_m"))
+
+baseline_typeM_p_treat %>% 
+  mutate(
+    id_method = ifelse(id_method == "reduced_form", "Reduced form", id_method)
+  ) %>% 
+  ggplot(aes(x = p_obs_treat, y = type_m, color = as.factor(n_cities*n_days))) + #, color = .data[[id_method]] + 
+  geom_point() +
+  geom_line(linetype = "dashed", size = 0.1) +
+  facet_wrap(~ id_method, scales = "free_x") +
+  ylim(c(0, NA)) +
+  labs(
+    # title =  "Evolution of power with the number of days",
+    # subtitle = "Comparison across identification methods",
+    x = "Proportion of treated units",
+    y = "Type M error",
+    color = "Number of observations"
+  ) 
+
+# ggsave(here("R/Graphs/evol_typeM_p_treat.png"), dpi = 700, width = 9, height = 4)
+```
+
+### Evolution of type M with IV strength
+
+```{r graph_typeM_IVstrength}
+baseline_iv <- filter_baseline_var(summary_evol_small, "iv_strength", "type_m")  %>% 
+  bind_rows(filter_baseline_var(summary_evol_large, "iv_strength", "type_m"))
+
+baseline_iv %>% 
+  pivot_longer(cols = c(power, type_m, mean_f_stat), names_to = "stat") %>% 
+  mutate(
+    stat = case_when(
+      stat == "mean_f_stat" ~ "F-stat",
+      stat == "type_m" ~ "Type M error",
+      stat == "power" ~ "Power",)
+  ) %>% 
+  ggplot(aes(x = iv_strength, y = value, color = as.factor(n_cities*n_days))) + #, color = .data[[id_method]] + 
+  geom_point() +
+  geom_line(linetype = "dashed", size = 0.1) +
+  facet_wrap(~ fct_rev(stat), scales = "free_y", ncol = 1) +
+  # ylim(c(0, NA)) +
+  labs(
+    # title =  "Evolution of power with the number of days",
+    # subtitle = "Comparison across identification methods",
+    x = "Strength of the IV",
+    y = "",
+    color = "N obs"
+  ) 
+
+# ggsave(here("R/Graphs/evol_iv_strength.png"), dpi = 700, width = 3, height = 7)
+```
+
+<!-- ```{r graph_typeM_fstat} -->
+<!-- baseline_iv %>%  -->
+<!--   # filter(mean_f_stat < 5000) %>% -->
+<!--   filter(type_m < 10) %>%  -->
+<!--   ggplot(aes(x = mean_f_stat, y = type_m)) + -->
+<!--   geom_point() + -->
+<!--   geom_line(linetype = "dashed", size = 0.1) + -->
+<!--   ylim(c(0, NA)) -->
+<!-- ``` -->
+
+
+<!-- ```{r, echo = FALSE} -->
+<!-- shinyAppDir( -->
+<!--   here("R/Shiny/power_simulations_viz"), -->
+<!--   options = list(width = "100%", height = 1300) -->
+<!-- ) -->
+<!-- ``` -->
+
+<!-- ## Quick analysis -->
+
+<!-- First, we graph of the evolution of type M, type S and power for each quasi-experiment as a function of different parameters, holding other parameters constant. This function takes as input a "summary_simulations" type of data frame. -->
+
+<!-- ```{r} -->
+<!-- graph_evol_by_exp <- function(df, var_param = "n_days_study", stat = "power") { -->
+
+<!--   var_param_name <- str_replace_all(var_param, "_", " ") -->
+<!--   stat_name <- str_replace_all(stat, "_", " ") -->
+
+<!--   #considering baseline values -->
+<!--   df_filtered <- df %>%  -->
+<!--     filter(str_detect(formula, "temperature")) #to only consider the model with all covariates -->
+
+<!--   if (var_param != "p_treat") { -->
+<!--     df_filtered <- df_filtered %>%  -->
+<!--       filter(p_treat == sim_param_base[["p_treat"]]) -->
+<!--   }  -->
+<!--   if (!(var_param %in% c("n_days_study", "average_n_obs"))) { -->
+<!--     df_filtered <- df_filtered %>%  -->
+<!--       filter(n_days_study == sim_param_base[["n_days_study"]]) -->
+<!--   }  -->
+<!--   if (var_param != "percent_effect_size") { -->
+<!--     df_filtered <- df_filtered %>%  -->
+<!--       filter(percent_effect_size == sim_param_base[["percent_effect_size"]]) -->
+<!--   } -->
+
+<!--   #graph itself -->
+<!--   graph <- df_filtered %>%  -->
+<!--     mutate( -->
+<!--       quasi_exp = str_to_sentence(str_replace_all(quasi_exp, "_", " ")) -->
+<!--     ) %>%  -->
+<!--     ggplot(aes(x = .data[[var_param]], y = .data[[stat]])) + #, color = .data[[quasi_exp]] +  -->
+<!--     geom_point() + -->
+<!--     geom_line(linetype = "dashed", size = 0.1) + -->
+<!--     facet_wrap(~ quasi_exp) + -->
+<!--     ylim(c(0, ifelse(stat == "power", 100, NA))) + -->
+<!--     labs( -->
+<!--       title = paste( -->
+<!--         str_to_title(stat_name), ifelse(stat == "power", "increases", "decreases"), -->
+<!--         "with", var_param_name -->
+<!--       ), -->
+<!--       subtitle = "Comparison across quasi-experiments", -->
+<!--       x = var_param_name, -->
+<!--       y = str_to_title(stat_name) -->
+<!--     )  -->
+<!--     # theme(legend.position = "none") -->
+
+<!--   return(graph) -->
+<!-- }  -->
+
+<!-- # graph_evol_by_exp(summary_simulations) -->
+<!-- ``` -->
+
+<!-- We then plot all the graphs. To do so, we create a tibble containing every  parameter and statistics we want to plot and map our function on this tibble. -->
+
+<!-- ```{r} -->
+<!-- stat <- c("power", "type_m", "type_s") -->
+<!-- var_param <-  c("n_days_study", "average_n_obs", "percent_effect_size", "p_treat") -->
+
+<!-- param_by_exp <- crossing(stat, var_param) -->
+
+<!-- pmap(param_by_exp, graph_evol_by_exp, df = summary_simulations) -->
+<!-- ``` -->
+
+<!-- We can also plot the graphs for each parameter separately, for a better readability. -->
+
+<!-- ### Length study -->
+
+<!-- ```{r} -->
+<!-- map( -->
+<!--   stat,  -->
+<!--   graph_evol_by_exp,  -->
+<!--   df = summary_simulations,  -->
+<!--   var_param = "n_days_study" -->
+<!-- ) -->
+
+<!-- map( -->
+<!--   stat,  -->
+<!--   graph_evol_by_exp,  -->
+<!--   df = summary_simulations,  -->
+<!--   var_param = "average_n_obs" -->
+<!-- ) -->
+<!-- ``` -->
+
+<!-- ### Effect size -->
+
+<!-- ```{r} -->
+<!-- map( -->
+<!--   stat,  -->
+<!--   graph_evol_by_exp,  -->
+<!--   df = summary_simulations,  -->
+<!--   var_param = "percent_effect_size" -->
+<!-- ) -->
+<!-- ``` -->
+
+<!-- ### Proportion of treated days -->
+
+<!-- ```{r} -->
+<!-- map( -->
+<!--   stat,  -->
+<!--   graph_evol_by_exp,  -->
+<!--   df = summary_simulations,  -->
+<!--   var_param = "p_treat" -->
+<!-- ) -->
+<!-- ``` -->
+
+
+<!-- ```{r} -->
+<!-- # check_distrib_estimate <- function(df) { -->
+<!-- #  -->
+<!-- #   #only consider baseline values -->
+<!-- #   df_baseline <- df %>%  -->
+<!-- #     filter(str_detect(formula, "resp_total")) %>%  -->
+<!-- #     select(quasi_exp, n_days, n_cities, p_obs_treat, percent_effect_size, id_method) %>%  -->
+<!-- #     inner_join( -->
+<!-- #       df, -->
+<!-- #       by = c("quasi_exp", "n_days", "n_cities", "p_obs_treat", "percent_effect_size", "id_method") -->
+<!-- #     ) %>%  -->
+<!-- #     filter(str_detect(formula, "death_total")) -->
+<!-- #  -->
+<!-- #   graph <- df_baseline %>% -->
+<!-- #     # mutate(significant = (p_value < 0.05)) %>% -->
+<!-- #     filter(id_method == "OLS") %>% -->
+<!-- #     ggplot() + -->
+<!-- #     geom_density(aes(x = estimate)) + -->
+<!-- #     geom_vline(aes(xintercept = mean(true_effect))) + -->
+<!-- #     # facet_wrap(~ id_method) -->
+<!-- #     labs( -->
+<!-- #       title = "Distribution of estimates by identification method", -->
+<!-- #       subtitle = "Comparison to the true effect" -->
+<!-- #     ) -->
+<!-- #      -->
+<!-- #   return(graph) -->
+<!-- # } -->
+
+<!-- ``` -->
+
+

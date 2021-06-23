@@ -1873,9 +1873,9 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
     /*-- Main font sizes --*/
     --title-size:      50px;
     --body-size:       1.06rem;
-    --code-size:       14px;
+    --code-size:       13px;
     --aside-size:      12px;
-    --fig-cap-size:    13px;
+    --fig-cap-size:    12px;
     /*-- Main font colors --*/
     --title-color:     rgba(0, 25, 74, 0.8);
     --header-color:    rgba(0, 25, 74, 0.8);
@@ -2167,6 +2167,9 @@ Simulations
 <a href="power_simulations_analysis.html">Analysing simulations results</a>
 </div>
 </div>
+<a href="https://github.com/vincentbagilet/inference_pollution" aria-label="Link to source">
+<i class="fab fa-github" aria-hidden="true"></i>
+</a>
 <a href="javascript:void(0);" class="nav-toggle">&#9776;</a>
 </div>
 </nav>
@@ -2199,31 +2202,14 @@ Simulations
 <li><a href="#articles-characteristics">Articles characteristics</a><ul>
 <li><a href="#themes">Themes</a></li>
 <li><a href="#detection-of-effects">Detection of effects</a></li>
-<li><a href="#representativity-of-articles-for-which-an-effect-was-retrieved">Representativity of articles for which an effect was retrieved</a><ul>
-<li><a href="#qualitative-random-analysis">Qualitative random analysis</a></li>
-<li><a href="#publication-date">Publication date</a></li>
-<li><a href="#journal-and-fields">Journal and fields</a></li>
-<li><a href="#themes-1">Themes</a></li>
-<li><a href="#pollutant">Pollutant</a></li>
-<li><a href="#outcome">Outcome</a></li>
-<li><a href="#subpopulation">Subpopulation</a></li>
-<li><a href="#number-of-observations">Number of observations</a></li>
-<li><a href="#summary">Summary</a></li>
-</ul></li>
+<li><a href="#representativity-of-articles-for-which-an-effect-was-retrieved">Representativity of articles for which an effect was retrieved</a></li>
 </ul></li>
 <li><a href="#analysis-of-the-effects">Analysis of the effects</a><ul>
 <li><a href="#significance">Significance</a></li>
 <li><a href="#t-scores">T-scores</a></li>
 <li><a href="#signal-to-noise-ratio">Signal to noise ratio</a></li>
 </ul></li>
-<li><a href="#power-analysis">Power analysis</a><ul>
-<li><a href="#graphical-analysis">Graphical analysis</a></li>
-<li><a href="#table">Table</a></li>
-<li><a href="#ecdf">ECDF</a></li>
-<li><a href="#link-between-power-type-m-and-type-s-error">Link between power, type M and type S error</a></li>
-<li><a href="#design-calculations-and-effect-size">Design calculations and effect size</a></li>
-<li><a href="#summary-1">Summary</a></li>
-</ul></li>
+<li><a href="#power-analysis">Power analysis</a></li>
 <li><a href="#analysis-of-the-sources-of-heterogeneity">Analysis of the sources of heterogeneity</a><ul>
 <li><a href="#publication-date-1">Publication date</a></li>
 <li><a href="#journal-and-fields-1">Journal and fields</a></li>
@@ -2242,14 +2228,14 @@ Simulations
 body {
 text-align: justify}
 </style>
-<h1 id="purpose-of-the-document">Purpose of the document</h1>
+<h2 id="purpose-of-the-document">Purpose of the document</h2>
 <!-- For years, the empirical economic literature has been obsessed with unbiasedness. Researchers have developed empirical methods and techniques in a quest to retrieve unbiased estimates. Yet, due to their inherent constraints, these techniques limit the set of settings in which one can retrieve causal and unbiased estimates. They also often tend to focus on limited samples of the data, leading to a reduction in sample size? This can ultimately lead to underpowered studies. As underlined by Gelman and Carlin (2014), a lack of power is often associated with type M and type S error. In a quest for unbiasedness, practitioners use methods leading to smaller sample size which can ultimately create bias (type M and type S error). We thus aim at analyzing whether the literature of short term health effects of air pollution suffers from power, type M and type S error issues. -->
 <p>One of our objectives in this paper is to evaluate whether the literature of short terms health effects of air pollution suffers from power and type M error issues. In this document, we carry out part of this analysis. We retrieved most of the estimates and confidence intervals of the literature in <a href="systematic_lit_review_geting_abstracts.html">another document</a>. To do so, using REGular EXPressions (regex), we took advantage of a somehow standardized reporting mechanism of point estimates and confidence intervals in the abstracts. The set of articles studied in details here is therefore limited to articles displaying confidence intervals and point estimates in their abstracts. This convention is not shared by all disciplines. For instance, it is not common practice in economics but much more common in the epidemiology literature. This analysis thus focuses on a selected sample of the literature.</p>
 <p>In the present document, we first explore the characteristics of the articles considered. Since we only retrieve effects for a subset of papers, we assess whether these papers are representative of the whole literature. We find that they mostly are. We then briefly explore the effects retrieved before carrying out the actual power analysis, implementing sensitivity tests to compute power, type M and type S error. Our findings suggest important heterogeneity in this literature. Some papers do not seem to present major problems while others seem to suffer from severe power issues. We therefore explore potential sources for this heterogeneity.</p>
 <p>Key findings and graphs are presented in the conclusion section of the present document. This section has been built to be read and understood independently. Readers who are only interested in the key findings are invited to jump straight to this section.</p>
 <!-- write a paragraph explaining why the robustness checks make sense -->
-<!-- # Key findings -->
-<h1 id="articles-characteristics">Articles characteristics</h1>
+<!-- ## Key findings -->
+<h2 id="articles-characteristics">Articles characteristics</h2>
 <p>Before diving into the power analysis itself, we look at the characteristics of the articles considered.</p>
 <p>We retrieved the articles from PubMed and Scopus using the following query on May 18, 2021:</p>
 <p>‘TITLE((“air pollution” OR “air quality” OR “particulate matter” OR ozone OR “nitrogen dioxide” OR “sulfur dioxide” OR “PM10” OR “PM2.5” OR “carbon dioxide” OR “carbon monoxide”) AND (“emergency” OR “mortality” OR “stroke” OR “cerebrovascular” OR “cardiovascular” OR “death” OR “hospitalization”) AND NOT (“long term” OR “long-term”)) AND “short term”’</p>
@@ -2257,7 +2243,7 @@ text-align: justify}
 
 </div>
 <p>This query enables us to retrieve 1834 valid abstracts.</p>
-<h2 id="themes">Themes</h2>
+<h3 id="themes">Themes</h3>
 <p>We can briefly explore the main (unsurprising) themes of the articles:</p>
 <div class="layout-chunk" data-layout="l-body">
 <p><img src="images/unnamed-chunk-3-1.png" width="85%" style="display: block; margin: auto;" /></p>
@@ -2265,7 +2251,7 @@ text-align: justify}
 <div class="layout-chunk" data-layout="l-body">
 <p><img src="images/unnamed-chunk-4-1.png" width="85%" style="display: block; margin: auto;" /></p>
 </div>
-<h2 id="detection-of-effects">Detection of effects</h2>
+<h3 id="detection-of-effects">Detection of effects</h3>
 <!-- Not all abstracts display effects and confidence intervals. We thus want to assess whether there are noticeable differences between articles for which we retrieve confidence intervals and those for which we do not. This quick exploration will also provide additional information and descriptive statistics on the whole set of articles. -->
 <div class="layout-chunk" data-layout="l-body">
 
@@ -2322,9 +2308,9 @@ No
 </table>
 </div>
 <p>Note that a bunch of abstracts contain the phrase “CI” without actually displaying effects and confidence intervals. Our algorithm seems to make a reasonably good job at detecting effects and CI when they are indeed displayed in an abstract. In addition, there is no reason to think that our ability to detect an effect would be correlated with power issues in the paper. Hence, we feel rather confident assuming that our detection algorithm selects a random (along our dimension of interest) sample of estimates among all estimates displayed in abstracts.</p>
-<h2 id="representativity-of-articles-for-which-an-effect-was-retrieved">Representativity of articles for which an effect was retrieved</h2>
+<h3 id="representativity-of-articles-for-which-an-effect-was-retrieved">Representativity of articles for which an effect was retrieved</h3>
 <p>In this subsection, we investigate whether there are systematic differences between articles for which we retrieved an effect and articles that do not display an effect in their abstract or for which we did not detect one. We build this analysis such that it also provides general information about the entire set of articles.</p>
-<h3 id="qualitative-random-analysis">Qualitative random analysis</h3>
+<h4 id="qualitative-random-analysis">Qualitative random analysis</h4>
 <p>First of all, we skim through a bunch of abstracts for which we retrieve an effect or not to see whether there are clear differences across study subsets.</p>
 <p>First of all, we notice that we did not select some papers displaying effects in their abstracts because they do not mention confidence intervals. We need standard errors to compute power, type M and type S error, hence why we did not select these papers. A small part of them seem to however mention p-values. We could have build on this to increase slightly our set of articles considered but it would not have drastically increased the set of articles considered. As discussed previously, we also acknowledge that our algorithm fails to detect a small share of otherwise valid estimates.</p>
 <p>We then noticed that a non negligible share of articles for which we do not detect an effect seem to to be off-topic. Our quick exploration did not show evidence of such an issue in articles for which we detected an effect. This is rather reassuring; we are filtering out non well suited papers.</p>
@@ -2336,40 +2322,40 @@ No
 <!--   .$abstract %>%  -->
 <!--   str_view_all("~") -->
 <!-- ``` -->
-<h3 id="publication-date">Publication date</h3>
+<h4 id="publication-date">Publication date</h4>
 <p>Getting back to our automatic analysis, we first look into the distribution of published articles on this topic in time. We also wonder whether displaying effects in the abstract was a particular feature of a given period.</p>
 <div class="layout-chunk" data-layout="l-body">
 <p><img src="images/unnamed-chunk-8-1.png" width="85%" style="display: block; margin: auto;" /></p>
 </div>
 <p>First, we notice that the number of articles published on short-term health effects of air pollution has been increasing rather strongly since the 1980s. The first article for which an effect is detected was published in 1992. We only found 12 articles published before 1992. This can be explained by the fact that, in most places, air pollution has only been measured consistently since the 1990s.</p>
 <p>Even though there are slightly more recent (2010-2020) articles for which effects are retrieved, the difference does not seem to be substantial. Distributions of articles for which an effect has been retrieved and not are rather similar.</p>
-<h3 id="journal-and-fields">Journal and fields</h3>
+<h4 id="journal-and-fields">Journal and fields</h4>
 <p>We then look into the journals and academic fields in which articles on short term health effect of air pollution have been published. The results by journals are rather messy so we focus on journal areas and subareas.</p>
 <div class="layout-chunk" data-layout="l-body">
 <p><img src="images/unnamed-chunk-9-1.png" width="85%" style="display: block; margin: auto;" /><img src="images/unnamed-chunk-9-2.png" width="85%" style="display: block; margin: auto;" /></p>
 </div>
 <p>Most papers on this topic have been, unsurprisingly, published in multidisciplinary journals, health or physical science journals.</p>
 <p>One may notice that effects are not retrieved, <em>ie</em> not reported in the abstract or not detected, for most papers published in life science and social sciences and humanities. This is probably due to reporting practices peculiar to these fields. This might not be as problematic as they constitute a small share of the sample. There does not seem to be a particularly large imbalance in terms of journal general field for the more represented fields.</p>
-<h3 id="themes-1">Themes</h3>
+<h4 id="themes-1">Themes</h4>
 <p>We then wonder if the words used in each sets of abstracts differ between the two sets of articles.</p>
 <div class="layout-chunk" data-layout="l-body">
 <p><img src="images/unnamed-chunk-10-1.png" width="85%" style="display: block; margin: auto;" /></p>
 </div>
 <p>Apart from a few key terms, such as CI, 95 for instance, there are no huge differences in the terms used in both subsets of abstracts. Noticeably, the term “increase” seems to appear more in abstracts where we detect an effect. This is not surprising as these papers often use sentences similar to “a 10 <span class="math inline">\(\mu g/m^{3}\)</span> increase in PM10 concentration lead to …”.</p>
-<h3 id="pollutant">Pollutant</h3>
+<h4 id="pollutant">Pollutant</h4>
 <p>We then look at the pollutants considered in each article. We consider that a pollutant is studied if it is mentioned in the abstract. It is not an exact measure as some articles may mention pollutants without actually studying them but it remains an interesting metric.</p>
 <div class="layout-chunk" data-layout="l-body">
 <p><img src="images/unnamed-chunk-11-1.png" width="85%" style="display: block; margin: auto;" /></p>
 </div>
 <p>First of all, we notice that a large share of papers considered here study particulate matters (PM2.5, PM10 or both).</p>
 <p>It seems that, when the number of papers sudying a given pollutant is large, the likelihood of detecting an effect does not seem to vary much with the type of pollutant. Importantly, the proportion of effects retrieved is much lower for articles for which we are not able to detect the type of pollutants studied.</p>
-<h3 id="outcome">Outcome</h3>
+<h4 id="outcome">Outcome</h4>
 <p>As for pollutants, for some articles, we were able to retrieve studied outcomes depending on the words used in an abstract. We classified them into two categories: mortality and emergency.</p>
 <div class="layout-chunk" data-layout="l-body">
 <p><img src="images/unnamed-chunk-12-1.png" width="85%" style="display: block; margin: auto;" /></p>
 </div>
 <p>Most articles studied here are interested in mortality. The proportion of articles for which an effect is retrieved seems to be larger for papers studying emergency admissions than mortality. There might therefore be some kind of selection issue along this dimension.</p>
-<h3 id="subpopulation">Subpopulation</h3>
+<h4 id="subpopulation">Subpopulation</h4>
 <p>Some articles focus on sub-populations such as infants or elders. When these terms are not mentioned, either the entire population is considered or we are not able to detect the subgroup considered. The number of articles for which a subpopulation is indicated is rather small:</p>
 <div class="layout-chunk" data-layout="l-body">
 <table class="table" style="margin-left: auto; margin-right: auto;">
@@ -2408,7 +2394,7 @@ No or unknown
 <p><img src="images/unnamed-chunk-14-1.png" width="85%" style="display: block; margin: auto;" /></p>
 </div>
 <p>There does not seem to be large variations in the proportion of articles for which an effect is detected, depending on whether a subpopulation is studied or not. Yet, this proportion is a slightly larger for elders than infants, itself larger than when when no subpopulation is detected.</p>
-<h3 id="number-of-observations">Number of observations</h3>
+<h4 id="number-of-observations">Number of observations</h4>
 <p>We then look at the number of observations, the length of the the study period and the number of cities considered. Importantly, we only retrieve this information for a very limited subset of articles.</p>
 <div class="layout-chunk" data-layout="l-body">
 <table class="table" style="margin-left: auto; margin-right: auto;">
@@ -2465,12 +2451,12 @@ True
 <p><img src="images/unnamed-chunk-16-1.png" width="85%" style="display: block; margin: auto;" /><img src="images/unnamed-chunk-16-2.png" width="85%" style="display: block; margin: auto;" /><img src="images/unnamed-chunk-16-3.png" width="85%" style="display: block; margin: auto;" /></p>
 </div>
 <p>We notice that there are large variations in the number of observations in the studies considered. However, there does not seem to be large differences along this dimension on whether an effect is retrieved or not. There seems however to be more studies around 1000 observations and less between 10,000 and 100,000 in articles for which an effect is retrieved. This is explained by the fact effects are retrieved more for studies with rather limited study period (around 3 years).</p>
-<h3 id="summary">Summary</h3>
+<h4 id="summary">Summary</h4>
 <p>The articles for which an effect was detected, unsurprisingly, seem to be slightly different from those for which we did not detect one, based on our quick qualitative analysis. Yet, there does not seem to be important divides along the dimensions studied.</p>
 <p>We can thus now dig further into the analysis of the estimates retrieved.</p>
-<h1 id="analysis-of-the-effects">Analysis of the effects</h1>
+<h2 id="analysis-of-the-effects">Analysis of the effects</h2>
 <p>In this section, we briefly analyze the effects retrieved, their statistical significance and their precision.</p>
-<h2 id="significance">Significance</h2>
+<h3 id="significance">Significance</h3>
 <p>First, we notice that most of the effects retrieved here are significant (at the usual 5% threshold).</p>
 <div class="layout-chunk" data-layout="l-body">
 <table class="table" style="margin-left: auto; margin-right: auto;">
@@ -2555,13 +2541,13 @@ Yes
 </tbody>
 </table>
 </div>
-<h2 id="t-scores">T-scores</h2>
+<h3 id="t-scores">T-scores</h3>
 <p>We then look into the distribution of the t-scores.</p>
 <div class="layout-chunk" data-layout="l-body">
 <p><img src="images/unnamed-chunk-19-1.png" width="85%" style="display: block; margin: auto;" /></p>
 </div>
 <p>There seems to be some sort of bunching for t-scores above 1.96. In this analysis, we only consider estimates reported in the abstracts. Authors may only report significant estimates in their abstracts even though they also report non significant estimates in the body of the article. This might explain this bunching. We need to investigate this further in order to understand whether this bunching is evidence of publication bias. To do so, we could reproduce the present analysis but analyze the full texts and not only on the abstracts. Other techniques could be used to analyze reporting bias but are not available to us, considering the lack on information we have access to using this automatic method.</p>
-<h2 id="signal-to-noise-ratio">Signal to noise ratio</h2>
+<h3 id="signal-to-noise-ratio">Signal to noise ratio</h3>
 <p>We then plot the distribution of the signal to noise ratio, <em>ie</em> the ratio of the point estimate and the width of the confidence interval.</p>
 <div class="layout-chunk" data-layout="l-body">
 <p><img src="images/unnamed-chunk-20-1.png" width="85%" style="display: block; margin: auto;" /></p>
@@ -2672,7 +2658,7 @@ Percentage of estimates with a lower signal to noise ratio
 </table>
 </div>
 <p>We notice that <em>for about 55% of the estimates considered here, the magnitude of the noise is more important than those of the signal</em>. This is particularly concerning.</p>
-<h1 id="power-analysis">Power analysis</h1>
+<h2 id="power-analysis">Power analysis</h2>
 <p>We then turn to the power analysis itself. The objective is to evaluate the power, type M and type S errors for each estimate.</p>
 <p>To compute these values, we would need to know the true effect size. Yet, true effects are of course unknown. One solution could be to use estimates from the literature and meta-analyses as best guesses for these true values. Yet, in the setting of this automatic literature review, detecting what is exactly measured in each analysis is particularly challenging since there is no standardized way of reporting the results beyond mentioning confidence intervals. One study may for instance claim that a 10 <span class="math inline">\(\mu g/m^{3}\)</span> increase in PM2.5 concentration is associated with an increase of x% in hospital admissions over the course of a day while another study may state that a 2% increase in ozone concentration increases the number of deaths by 3 over a month. Fortunately, for each estimate retrieved, even though we do not know what is measured, we can evaluate the precision with which it is estimated.</p>
 <p>To circumvent the fact that we do not know the actual effect size, we follow a strategy suggested by Gelman and Carlin (2014). We consider a range of potential “true” effect sizes and run a sensitivity analysis. We investigate what would be the power, type M and type S error if the true effect was only a fraction of the measured effect. This enables us <strong>to assess whether the design of the study would be <em>good enough</em> to detect a smaller effect</strong>. If assuming that the true effect is 3/4 of the measured effect yields a power of 30%, there is probably a major issue with the design of this study. With this design, this (non zero) effect would only be detected 30% of the time.</p>
@@ -2682,7 +2668,7 @@ Percentage of estimates with a lower signal to noise ratio
 
 </div>
 <p>In a first part, we investigate whether the literature might be subject to design issues. We analyze the distribution of power, type M and type S errors in the whole set of abstracts, how they evolve jointly or along several variables such as the size of the true effect. We find clear evidence of heterogeneity across articles. Some of them seem to present robust designs while others seem much more problematic, yielding low power and high rates of type M error, even for large hypothesized true effect sizes. <!-- The former set of estimates display high power even for low hypothesized true effect sizes while estimates from the later set present low power for still large true effect sizes.  --> Thus, in a second part, we investigate potential sources of heterogeneity.</p>
-<h3 id="graphical-analysis">Graphical analysis</h3>
+<h4 id="graphical-analysis">Graphical analysis</h4>
 <p>We first explore graphically the distribution of power, type M and type S error across simulations and for different magnitudes of the true effect.</p>
 <div class="layout-chunk" data-layout="l-body">
 <p><img src="images/unnamed-chunk-23-1.png" width="85%" style="display: block; margin: auto;" /><img src="images/unnamed-chunk-23-2.png" width="85%" style="display: block; margin: auto;" /><img src="images/unnamed-chunk-23-3.png" width="85%" style="display: block; margin: auto;" /></p>
@@ -2698,7 +2684,7 @@ Percentage of estimates with a lower signal to noise ratio
 <p><img src="images/unnamed-chunk-25-1.png" width="85%" style="display: block; margin: auto;" /></p>
 </div>
 <p>Unsurprisingly, the conclusions remain similar: most articles do not seems to suffer from power issues but a non negligible chunk of articles does.</p>
-<h3 id="table">Table</h3>
+<h4 id="table">Table</h4>
 <p>We then look more precisely at actual numbers, looking at the median and mean power, type M and type S errors for different true effect sizes.</p>
 <div class="layout-chunk" data-layout="l-body">
 <table class="table" style="margin-left: auto; margin-right: auto;">
@@ -2982,7 +2968,7 @@ Lower bound of the CI
 </tbody>
 </table>
 </div>
-<h3 id="ecdf">ECDF</h3>
+<h4 id="ecdf">ECDF</h4>
 <p>Empirical Cumulative Distribution Functions (ECDFs) provide a broader perspective on these metrics. They inform us of the share of articles for which power, type M or S errors are below a given threshold.</p>
 <div class="layout-chunk" data-layout="l-body">
 <p><img src="images/unnamed-chunk-27-1.png" width="85%" style="display: block; margin: auto;" /><img src="images/unnamed-chunk-27-2.png" width="85%" style="display: block; margin: auto;" /><img src="images/unnamed-chunk-27-3.png" width="85%" style="display: block; margin: auto;" /></p>
@@ -2993,7 +2979,7 @@ Lower bound of the CI
 <p><img src="images/unnamed-chunk-28-1.png" width="85%" style="display: block; margin: auto;" /><img src="images/unnamed-chunk-28-2.png" width="85%" style="display: block; margin: auto;" /></p>
 </div>
 <p>This might be rather concerning: even if the true effect was equal to the estimated effect (and only considering statistically significant estimates), 22.2992254% of the estimates would not reach the conventional a 80% power threshold. This is rather concerning since, due to type M error, significant estimates likely over-estimate on average the true effects. Indeed, the median type M for these estimates is 1.2501204. Considering that the true effect is equal to the estimated effect is therefore very conservative. If we assume that the true effect is equal to 3/4 of the measured effect (which is still rather conservative), the proportion of significant estimates not reaching the 80% power conventional threshold is still as high as 37.3420302%</p>
-<h3 id="link-between-power-type-m-and-type-s-error">Link between power, type M and type S error</h3>
+<h4 id="link-between-power-type-m-and-type-s-error">Link between power, type M and type S error</h4>
 <p>We then look how type M and type S error evolve with power for the estimates considered.</p>
 <div class="layout-chunk" data-layout="l-body">
 <p><img src="images/unnamed-chunk-29-1.png" width="85%" style="display: block; margin: auto;" /><img src="images/unnamed-chunk-29-2.png" width="85%" style="display: block; margin: auto;" /></p>
@@ -3002,7 +2988,7 @@ Lower bound of the CI
 <div class="layout-chunk" data-layout="l-body">
 <p><img src="images/unnamed-chunk-30-1.png" width="85%" style="display: block; margin: auto;" /></p>
 </div>
-<h3 id="design-calculations-and-effect-size">Design calculations and effect size</h3>
+<h4 id="design-calculations-and-effect-size">Design calculations and effect size</h4>
 <p>We then investigate how average power, type M and type S evolve as a proportion of the true effect size.</p>
 <div class="layout-chunk" data-layout="l-body">
 <p><img src="images/unnamed-chunk-31-1.png" width="85%" style="display: block; margin: auto;" /><img src="images/unnamed-chunk-31-2.png" width="85%" style="display: block; margin: auto;" /><img src="images/unnamed-chunk-31-3.png" width="85%" style="display: block; margin: auto;" /></p>
@@ -3021,10 +3007,10 @@ Lower bound of the CI
 <p><img src="images/unnamed-chunk-34-1.png" width="85%" style="display: block; margin: auto;" /><img src="images/unnamed-chunk-34-2.png" width="85%" style="display: block; margin: auto;" /></p>
 </div>
 <p>The overall distribution of power may seem surprising: for “large” effect sizes, the power of most studies is high while it suddenly shifts to very low as effect size decreases.</p>
-<h3 id="summary-1">Summary</h3>
+<h4 id="summary-1">Summary</h4>
 <p>To sum up, the bulk of the estimates in this literature does not seem to suffer from low power and type M error issues. For most estimates, type S error does not seem to be an important issue in this literature. Yet, even if the measured effect was close to the true effect, a non negligible chunk of articles would display low power and a substantial risk of type M error. The power of a large chunk of estimates, at least one quarter of significant ones, might be problematically low. This low power is associated with non negligible type M error. Part of the estimates are thus likely overestimated.</p>
 <p>We need to investigate further into the sources of this heterogeneity.</p>
-<h1 id="analysis-of-the-sources-of-heterogeneity">Analysis of the sources of heterogeneity</h1>
+<h2 id="analysis-of-the-sources-of-heterogeneity">Analysis of the sources of heterogeneity</h2>
 <p>To simplify and clarify our analysis, we consider that an estimate has low power if its computed power is lower than 80% if the true effect is 3/4 of the measured effect. These numbers are arbitrary. 80% is the threshold usually used in power analyses and 3/4 is purely arbitrary and could be changed easily in a robustness check. Following this criterion, the number and proportion of estimates with low power is as follows:</p>
 <div class="layout-chunk" data-layout="l-body">
 <table class="table" style="margin-left: auto; margin-right: auto;">
@@ -3123,7 +3109,7 @@ Low power
 <!--   scale_fill_discrete(name = "") -->
 <!-- ``` -->
 <p>We investigate the particularities of articles with seemingly low power. We basically reproduce the same analyses as the ones used to compare articles for which we retrieved an effect or not.</p>
-<h2 id="publication-date-1">Publication date</h2>
+<h3 id="publication-date-1">Publication date</h3>
 <p>First, we look into the evolution of the proportion of articles with low power with publication dates.</p>
 <div class="layout-chunk" data-layout="l-body">
 <p><img src="images/unnamed-chunk-37-1.png" width="85%" style="display: block; margin: auto;" /></p>
@@ -3138,46 +3124,46 @@ Low power
 <div class="layout-chunk" data-layout="l-body">
 <p><img src="images/unnamed-chunk-39-1.png" width="85%" style="display: block; margin: auto;" /></p>
 </div>
-<h2 id="journal-and-fields-1">Journal and fields</h2>
+<h3 id="journal-and-fields-1">Journal and fields</h3>
 <p>We then look into the distribution of articles in journals and fields. We filter out articles from life sciences and social sciences &amp; humanities journals since only a very limited number of articles have been published in such journals.</p>
 <div class="layout-chunk" data-layout="l-body">
 <p><img src="images/unnamed-chunk-40-1.png" width="85%" style="display: block; margin: auto;" /><img src="images/unnamed-chunk-40-2.png" width="85%" style="display: block; margin: auto;" /></p>
 </div>
 <p>It seems that articles published in health sciences journals are less prone to power issues than articles published in other types of journals. This is somehow confirmed when looking at more precise subjects: the proportion of articles displaying low power is much lower in medicine journals than in “environment” and “chemistry” journals.</p>
 <p>Some of the heterogeneity may come from the leniency of the journals with regards to these issues. Interestingly, not many fields have a very low rate of articles with low power. This might reveal an across the board lack of awareness of power issues. Yet, while our knowledge of the medicine literature is extremely limited, we seem to remember that, when applying for randomized experiments, researchers in medicine have to perform power calculations in order to properly design their study. Some of them therefore pay carefull attention to power issues and this might explain the lower rate of articles with low power in such journals.</p>
-<h2 id="themes-2">Themes</h2>
+<h3 id="themes-2">Themes</h3>
 <p>We then investigate whether the themes appearing in the abstracts are different in articles with adequate or low power.</p>
 <div class="layout-chunk" data-layout="l-body">
 <p><img src="images/unnamed-chunk-41-1.png" width="85%" style="display: block; margin: auto;" /></p>
 </div>
 <p>There does not seem to be a clear difference in the terms used in abstracts for articles with low and adequate power. The only noticeable difference, not visible in this graph, is the use of the term “relative”. Articles with low power mention it much less that articles with adequate power. This difference is rather unclear.</p>
-<h2 id="pollutant-1">Pollutant</h2>
+<h3 id="pollutant-1">Pollutant</h3>
 <p>We also look into potential disparities in terms of pollutant:</p>
 <div class="layout-chunk" data-layout="l-body">
 <p><img src="images/unnamed-chunk-42-1.png" width="85%" style="display: block; margin: auto;" /></p>
 </div>
 <p>There does not seem to be stark differences by pollutant type. While some differences seem to appear for BC and Air Quality Index, these pollutants are only studied in a limited sample of studies.</p>
-<h2 id="outcome-1">Outcome</h2>
+<h3 id="outcome-1">Outcome</h3>
 <p>We then compare the power as a function of the outcome studied (mortality or hospital admissions).</p>
 <div class="layout-chunk" data-layout="l-body">
 <p><img src="images/unnamed-chunk-43-1.png" width="85%" style="display: block; margin: auto;" /></p>
 </div>
 <p>There does not seem to be any heterogeneity along this dimension.</p>
-<h2 id="subpopulation-1">Subpopulation</h2>
+<h3 id="subpopulation-1">Subpopulation</h3>
 <p>We then turn to the sub-population studied.</p>
 <div class="layout-chunk" data-layout="l-body">
 <p><img src="images/unnamed-chunk-44-1.png" width="85%" style="display: block; margin: auto;" /></p>
 </div>
 <p>There does not seem to be stark variations along this dimension either.</p>
-<h2 id="number-of-observations-1">Number of observations</h2>
+<h3 id="number-of-observations-1">Number of observations</h3>
 <p>Finally, we explore the link between power and the number of observations. Remember that, for a lot of articles, we were not able to recover information about the number of observations (number of cities or length of the study). Hence, these results are purely suggestive.</p>
 <div class="layout-chunk" data-layout="l-body">
 <p><img src="images/unnamed-chunk-45-1.png" width="85%" style="display: block; margin: auto;" /><img src="images/unnamed-chunk-45-2.png" width="85%" style="display: block; margin: auto;" /><img src="images/unnamed-chunk-45-3.png" width="85%" style="display: block; margin: auto;" /></p>
 </div>
 <p>There does not seem to be substantial heterogeneity in terms of number of observations or length of the study period (at least in articles for which we were able to retrieve this information). We may not observe any difference in terms of number of observations because we do not have this information for many studies. We have retrieved more data about the number of cities considered and it seems that more studies with low power only consider one city. The data are imperfect but this result may come from the fact that estimates from studies focusing on one city are likely to be less precise than those from studies focusing on several cities. This would be due to a smaller number of observations.</p>
-<h2 id="summary-2">Summary</h2>
+<h3 id="summary-2">Summary</h3>
 <p>We have seem that mean and median power do not seem to have greatly evolved in time but the average type M seems to have increased in time. This pattern seems to be driven by the fact that more and more papers with very large type M errors have been published recently. We have also seen that health science journals seem to be more prone to power issues than other journals. However, there seems to be a shared lack of concern for low power issues across all fields. Finally, we did not find evidence of obvious heterogeneity in outcome, pollutant or sub-population studied but noticed that more studies with low power only seem to be considering only one city.</p>
-<h1 id="concl">Conclusion and summary</h1>
+<h2 id="concl">Conclusion and summary</h2>
 <p>In this document, we analyze the statistical power and inference properties of the literature on short term health effects of air pollution. To do so, we retrieved 2666 valid estimates from abstracts of this literature. This sample of estimates is likely rather representative of the whole set of estimates in abstracts of this literature.</p>
 <p>Our results are both reassuring and worrying. A large chunk of the estimates in this literature does not seem to suffer from low power and type M error issues. Yet, even if the measured effect was close to the true effect, a non negligible chunk of articles would display low power and a substantial risk of type M error. Type S error does not seem to be an important issue in this literature. The following graphs summarise part of this information:</p>
 <div class="layout-chunk" data-layout="l-body">
