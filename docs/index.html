@@ -2129,6 +2129,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <div class="nav-right">
 <a href="index.html">Home</a>
 <a href="paper.pdf">Paper</a>
+<span class="nav-dropdown-header">Intuition</span>
 <div class="nav-dropdown">
 <button class="nav-dropbtn">
 Literature review
@@ -2152,6 +2153,9 @@ Simulations
 <a href="notes_methodology.html">Overall approach</a>
 <a href="power_simulations.html">Running the simulations</a>
 <a href="power_simulations_analysis.html">Analysing simulations results</a>
+<hr/>
+<span class="nav-dropdown-header">Exploratory data analysis</span>
+<span class="nav-dropdown-header">Data wrangling</span>
 </div>
 </div>
 <a href="https://github.com/vincentbagilet/inference_pollution" aria-label="Link to source">
@@ -2176,7 +2180,7 @@ Simulations
 <div class="d-article">
 <p>All the (<code>R</code>) code for this project is available in <a href="https://github.com/vincentbagilet/inference_pollution">its GitHub directory</a>.</p>
 <h2 id="abstract">Abstract</h2>
-<p>We explore statistical power issues of various empirical strategies implemented to estimate the short-term health effect of air pollution. Through an extensive literature review, we retrieve the estimates and standard errors of nearly all studies published on this topic, which rely both on standard outcomes regressions and causal inference methods. We find that a non-negligible share of studies may suffer from low power issues and could thereby exaggerate effect sizes. The analysis of published results highlights potential shortcomings of the literature but does not enable to precisely identify drivers of theses issues. We therefore run realistic simulations to investigate how statistical power varies with the treatment effect size, the number of observations, the proportion of treated units as well as the distribution of the outcome. Instrumental variable estimates, when statistically significant, are more likely to overestimate true effect sizes than naive estimates. Researchers should also pay attention to the number of treated units and the average count of health outcomes as they are important drivers of statistical power and may lead to greatly overestimated true effect sizes.</p>
+<p>We explore statistical power characteristics of various empirical strategies implemented to estimate the short-term health effect of air pollution. Through an extensive literature review, we retrieve the estimates and standard errors of a large number of studies published on this topic. We find that a non-negligible share of studies may suffer from low power issues and could thereby exaggerate effect sizes. The analysis of published results highlights potential shortcomings of the literature but does not enable to precisely identify drivers of theses issues. We therefore run realistic simulations to investigate how statistical power varies with the treatment effect size, the number of observations, the proportion of treated units as well as the distribution of the outcome. Usual causal identification methods implemented in this literature, such as instrumental variable (IV), regression discontinuity design (RD) or difference-in-differences (DiD), may yield overestimated effect sizes. This issue is driven by the imprecision of the IV estimator and the small number of exogenous shocks usually exploited in DiD and RD designs. When focusing on particular groups such as the elderly or children, researchers should be aware that statistical power is lowered by the limited average count of health outcomes.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
 <!--radix_placeholder_article_footer-->
 <!--/radix_placeholder_article_footer-->
