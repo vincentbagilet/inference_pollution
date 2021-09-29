@@ -1,5 +1,5 @@
 ---
-title: "Automatic literature review - Getting abstracts"
+title: "Automated literature review - Getting abstracts"
 author:
 - name: Vincent Bagilet
   url: https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet
@@ -51,9 +51,9 @@ set.seed(1)
 
 ## Purpose of the document
 
-In the present document, we retrieve abstracts for our automatic review of the literature on short term health effects of air pollution, focusing mainly on the epidemiology literature. We take advantage of a somehow standardized reporting mechanism to retrieve point estimates and confidence intervals from the abstracts using REGular EXPressions (regex). 
+In the present document, we retrieve abstracts for our automated review of the literature on short term health effects of air pollution, focusing mainly on the epidemiology literature. We take advantage of a somehow standardized reporting mechanism to retrieve point estimates and confidence intervals from the abstracts using REGular EXPressions (regex). 
 
-The algorithm we wrote is not perfect: it probably does not detect all estimates and may pick up some incorrect point estimates and/or standard error. However, based on quick non-automatic checks we ran, these potential issues seem very limited. Retrieving all this information via careful reading of the abstracts would have been extremely cumbersome. This automatic analysis is an important time saver. Importantly, the analysis carried out for this literature could be easily replicated for another literature, based on the code used and described in this document.
+The algorithm we wrote is not perfect: it probably does not detect all estimates and may pick up some incorrect point estimates and/or standard error. However, based on quick non-automated checks we ran, these potential issues seem very limited. Retrieving all this information via careful reading of the abstracts would have been extremely cumbersome. This automated analysis is an important time saver. Importantly, the analysis carried out for this literature could be easily replicated for another literature, based on the code used and described in this document.
 
 ## Selecting articles and retrieving metadata
 
@@ -217,7 +217,6 @@ Now that we have retrieved the abstracts, we want to extract the effects and ass
 - CI: any couple of numbers following by less than 4 characters a string describing a confidence interval ("95%", "CI", "confidence interval"). We also consider confidence intervals of the shape "(-8.7, 54.7)": it needs to have a shape "(number separator number)" and needs to be preceded by a number, less than 5 characters away.
 - Effect: the first number preceding by less than 30 characters a similar string describing a confidence interval (apart numbers used to describe the "95" of a 95% CI).
 
-
 ```{r find_effects}
 string_confint <- str_c(
   "((?<!(\\d\\.|\\d))95\\s?%|(?<!(\\d\\.|\\d))95\\s(per(\\s?)cent)|",
@@ -295,7 +294,7 @@ str_view_all(
 Once the effects and CI are identified, some wrangling is necessary in order to get the data into a usable format. We also choose to **drop effects which do not fall into the CI** (62 estimates) in order to get rid off most of the poorly detected effects-CIs. 
 
 ```{r wrangling_effects}
-estimates <- detected_effects %>% 
+estimates_to_clean <- detected_effects %>% 
   filter(lengths(effect) == lengths(CI)) %>% #if number of effects != nb of CI for a sentence,
   #can't attribute effects to CI so, drop sentence
   unnest(c(effect, CI), keep_empty = TRUE) %>%
@@ -308,9 +307,47 @@ estimates <- detected_effects %>%
     up_CI = ifelse(is.na(low_CI), NA, up_CI),
     effect = ifelse(is.na(low_CI), NA, effect)
   ) %>% 
-  select(doi, effect, low_CI, up_CI) %>%
   filter(!is.na(effect)) %>%  
   filter(effect > low_CI & effect < up_CI)
+```
+
+### Expression in terms of percentage change
+
+Note that some effects are reported in terms of relative risks or odds ratios. We need to express all estimates in terms of percentage increase or raw increases in order to have $H_0: \text{effect} = 0$. Some abstracts, while mentioning "Relative Risk", still report their estimates in terms of percentage. Others report their estimates in terms of actual relative risks, *ie* in the form 1.024 for a 2.4% increase for instance. We want to convert these terms into percentage changes. 
+
+We therefore detect abstracts mentioning "Relative Risk" or "Risk Ratio" and among these effects, we retrieve those expressed in actual (RR) terms and those expressed in percents. We then convert expressed in RR terms to percent. To limit further potential misdetection, we only transform effects that are between 0 and 2.
+
+
+
+```{r}
+estimates_RR <- estimates_to_clean %>% 
+  group_by(abstract) %>% 
+  mutate(
+    RR = str_detect(abstract, "((R|r)elative (R|r)isks?|(R|r)isk (R|r)atios?|\\WRR\\W)"),
+    OR = str_detect(abstract, "(O|o)dds (R|r)atios?|\\WOR\\W")
+  ) %>% 
+  ungroup() %>% 
+  mutate(
+    effect_percent = str_detect(sentence, str_c("\\D", effect, "%")),
+    effect = ifelse((OR|RR) & !effect_percent & between(effect, 0, 2), (effect - 1)*100, effect),
+    low_CI = ifelse((OR|RR) & !effect_percent & between(effect, 0, 2), (low_CI - 1)*100, low_CI),
+    up_CI = ifelse((OR|RR) & !effect_percent & between(effect, 0, 2), (up_CI - 1)*100, up_CI),
+  ) %>%
+  select(doi, effect, low_CI, up_CI)
+```
+
+
+### Filtering out invalid articles
+
+Reading manually through the abstracts for, we notice that some of the articles returned by the query do not correspond to the type of articles we want to study. For instance, some articles look at the impact of air pollution on animal health. Other articles returned by the query are actually studying long term effects. We therefore looked at all the abstracts and created a dummy variable describing whether these abstracts should be included in the analysis or not.
+We filtered at this stage to minimize the number of abstracts to read.
+
+```{r checked_abstracts}
+valid_articles <- read_csv("R/Inputs/valid_articles.csv",
+                           col_types = cols(valid = col_logical(), title = col_skip()))
+
+estimates <- estimates_RR %>% 
+  left_join(valid_articles, by = "doi") 
 
 # saveRDS(estimates, "R/Outputs/estimates.RDS")
 ```
@@ -650,15 +687,11 @@ abstracts_and_metadata <- abstracts %>%
     pub_date == max(pub_date, na.rm = TRUE) | 
       is.na(pub_date)
   ) %>% #some articles have been published twice
-  ungroup()
+  ungroup() 
 
 # saveRDS(abstracts_and_metadata, "R/Outputs/abstracts_and_metadata.RDS")
 ```
 
 
-<!-- ```{r} -->
-<!-- str_view_all( -->
-<!--     sentences_with_CI$sentence[random_sentences], "(1|10)\\s?(μ|m)\\s?g\\s?(\\.|\\/|\\⋅)?m(\\-|\\−|\\s)?3(?=\\s?)") -->
-<!-- ``` -->
 
 

@@ -1,5 +1,5 @@
 ---
-title: "Automatic literature review - Analysis of abstracts"
+title: "Automated literature review - Analysis of abstracts"
 author:
 - name: Vincent Bagilet
   url: https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet
@@ -80,7 +80,7 @@ abstracts_and_metadata <- readRDS(here("R", "Outputs", "abstracts_and_metadata.R
 estimates <- readRDS(here("R", "Outputs", "estimates.RDS"))
 ```
 
-This query enables us to retrieve `r nrow(abstracts_and_metadata)` valid abstracts.
+This query enables us to retrieve `r nrow(abstracts_and_metadata)` abstracts.
 
 ### Themes
 
@@ -140,25 +140,9 @@ effect_detected <- abstracts_and_metadata %>%
   distinct()
 ```
 
-Out of the `r nrow(abstracts_and_metadata)` valid articles returned by the query, only a fraction reports estimates and confidence intervals in their abstracts. We therefore do not retrieve effects for all the articles returned by the query, mostly for the reason aforementioned. This might create some selection, making the sample of articles studied not representative of the whole literature. We investigate further the difference between articles that do and do not report confidence intervals in their abstracts in the following section. 
+Out of the `r nrow(abstracts_and_metadata)` articles returned by the query, only a fraction reports estimates and confidence intervals in their abstracts. We therefore do not retrieve effects for all the articles returned by the query, mostly for the reason aforementioned. This might create some selection, making the sample of articles studied not representative of the whole literature. We investigate further the difference between articles that do and do not report confidence intervals in their abstracts in the following section. 
 
-Here is a list of the valid articles. The last column shows whether at least one effect was retrieved for this article.
-
-```{r}
-effect_detected %>% 
-  select(authors, pub_date, title, journal, has_effect_phrase) %>% 
-  datatable(
-    colnames = c(
-      "Authors", 
-      "Publication date", 
-      "Title", 
-      "Journal", 
-      "Effect retrieved"
-    )
-  )
-```
-
-In total, we **detect `r nrow(estimates)` valid effects** and associated confidence intervals. We retrieve estimates for most of the articles mentioning "confidence interval" in some form in the abstract:  
+We detect `r nrow(estimates)` effects and associated confidence intervals. We retrieve estimates for most of the articles mentioning "confidence interval" in some form in the abstract:  
 
 ```{r}
 effect_detected %>%
@@ -178,9 +162,53 @@ effect_detected %>%
 
 Note that a bunch of abstracts contain the phrase "CI" without actually displaying effects and confidence intervals. Our algorithm seems to make a reasonably good job at detecting effects and CI when they are indeed displayed in an abstract. In addition, there is no reason to think that our ability to detect an effect would be correlated with power issues in the paper. Hence, we feel rather confident assuming that our detection algorithm selects a random (along our dimension of interest) sample of estimates among all estimates displayed in abstracts.
 
+However, the initial query also returned articles that do not correspond to the type of papers we want to study. For instance, some articles look at the impact of air pollution on animal health. Other articles returned by the query are actually studying long term effects. We therefore skimmed through all the titles and abstracts for which an effect was retrieved and created a dummy variable describing whether these articles should be included in the analysis or not.
+
+```{r}
+effect_detected %>%
+  filter(has_effect) %>% 
+  count(valid) %>% 
+  mutate(
+    prop = n/sum(n),
+    valid_effect = ifelse(valid, "Yes", "No")
+  ) %>% 
+  arrange(desc(valid_effect)) %>% 
+  select(valid_effect, n, prop) %>% 
+  kable(
+    col.names = c("Valid article", "Number of articles", "Proportion"),
+    caption = "Number of articles that display astimates and correspond to our study criteria"
+  ) %>%
+  kable_styling(position = "center")
+```
+
+We therefore manually filter out `r effect_detected %>% filter(has_effect) %>% count(valid) %>% mutate(prop = n/sum(n)) %>% filter(!valid) %>% .$prop*100 %>% signif(., 2)`% of the articles for which we retrieved an effect.
+
+Overall, our corpus is **composed of `r effect_detected %>% filter(valid) %>% nrow()`** articles for which we **detect `r estimates %>% filter(valid) %>% nrow()` estimates**.
+
+Here is a list of the valid articles. 
+
+```{r}
+effect_valid <- effect_detected %>% 
+  filter(valid) %>% 
+  select(-valid) 
+
+effect_valid %>% 
+  select(authors, pub_date, title, journal) %>% 
+  datatable(
+    colnames = c(
+      "Authors", 
+      "Publication date", 
+      "Title", 
+      "Journal"
+    )
+  )
+```
+
 ### Representativity of articles for which an effect was retrieved
 
 In this subsection, we investigate whether there are systematic differences between articles for which we retrieved an effect and articles that do not display an effect in their abstract or for which we did not detect one. We build this analysis such that it also provides general information about the entire set of articles. 
+
+Note that we manually selected articles that correspond to the type of articles we are interested in this study, *ie* investigating the short term health effect of air pollution, only from the sample of articles for which we detected an effect. Hence, for articles where no effect was detected, we did not perform the manual filtering. In the present section, we consider the full set of articles, which includes articles that we end up manually filtering out. The fact that the set of articles considered here is larger than the final set is not problematic because the present section mainly aims to evaluate the quality of our detection algorithm. We do not expect the algorithm to perform widely differently for articles that look at similar but slightly different questions than ours.
 
 #### Qualitative random analysis
 
@@ -191,11 +219,11 @@ First of all, we notice that we did not select some papers displaying effects in
 We then noticed that a non negligible share of articles for which we do not detect an effect seem to to be off-topic. Our quick exploration did not show evidence of such an issue in articles for which we detected an effect. This is rather reassuring; we are filtering out non well suited papers.
 
 Finally, part of the studies for which we do not detect an effect are metanalyses (based on a quick regex search, there are about twice has much metanalyses in articles with an effect).
-<!-- effect_detected %>% mutate(meta = str_detect(abstract, "meta(\\s|-)?anal")) %>% count(meta, has_effect) -->
+<!-- effect_valid %>% mutate(meta = str_detect(abstract, "meta(\\s|-)?anal")) %>% count(meta, has_effect) -->
 
 
 <!-- ```{r} -->
-<!-- effect_detected %>%  -->
+<!-- effect_valid %>%  -->
 <!--   filter(has_effect) %>%  -->
 <!--   slice_sample(n = 3) %>%  -->
 <!--   .$abstract %>%  -->
@@ -205,7 +233,7 @@ Finally, part of the studies for which we do not detect an effect are metanalyse
 
 #### Publication date
 
-Getting back to our automatic analysis, we first look into the distribution of published articles on this topic in time. We also wonder whether displaying effects in the abstract was a particular feature of a given period.
+Getting back to our automated analysis, we first look into the distribution of published articles on this topic in time. We also wonder whether displaying effects in the abstract was a particular feature of a given period.
 
 ```{r}
 effect_detected %>% 
@@ -492,7 +520,8 @@ First, we notice that most of the effects retrieved here are significant (at the
 
 ```{r}
 estimates_stats <- estimates %>%
-  filter(!is.na(effect)) %>% 
+  filter(valid) %>% 
+  select(-valid) %>% 
   mutate(
     significant = (low_CI > 0 | up_CI < 0), 
     signal_noise = abs(effect/(up_CI - low_CI)),
@@ -543,7 +572,7 @@ estimates_stats %>%
   ) 
 ```
 
-There seems to be some sort of bunching for t-scores above 1.96. In this analysis, we only consider estimates reported in the abstracts. Authors may only report significant estimates in their abstracts even though they also report non significant estimates in the body of the article. This might explain this bunching. We need to investigate this further in order to understand whether this bunching is evidence of publication bias. To do so, we could reproduce the present analysis but analyze the full texts and not only on the abstracts. Other techniques could be used to analyze reporting bias but are not available to us, considering the lack on information we have access to using this automatic method.
+There seems to be some sort of bunching for t-scores above 1.96. In this analysis, we only consider estimates reported in the abstracts. Authors may only report significant estimates in their abstracts even though they also report non significant estimates in the body of the article. This might explain this bunching. We need to investigate this further in order to understand whether this bunching is evidence of publication bias. To do so, we could reproduce the present analysis but analyze the full texts and not only on the abstracts. Other techniques could be used to analyze reporting bias but are not available to us, considering the lack on information we have access to using this automated method.
 
 ### Signal to noise ratio
  
@@ -574,7 +603,8 @@ quantile(estimates_stats$signal_noise, seq(0, 1, 0.1)) %>%
     col.names = c(
       "Signal to noise ratio",
       "Percentage of estimates with a lower signal to noise ratio"
-    )
+    ), 
+    digits = 2
   ) %>%
   kable_styling(position = "center")
 ```
@@ -585,7 +615,7 @@ We notice that *for about 55% of the estimates considered here, the magnitude of
 
 We then turn to the power analysis itself. The objective is to evaluate the power, type M and type S errors for each estimate. 
 
-To compute these values, we would need to know the true effect size. Yet, true effects are of course unknown. One solution could be to use estimates from the literature and meta-analyses as best guesses for these true values. Yet, in the setting of this automatic literature review, detecting what is exactly measured in each analysis is particularly challenging since there is no standardized way of reporting the results beyond mentioning confidence intervals. One study may for instance claim that a 10 $\mu g/m^{3}$ increase in PM2.5 concentration is associated with an increase of x% in hospital admissions over the course of a day while another study may state that a 2% increase in ozone concentration increases the number of deaths by 3 over a month. Fortunately, for each estimate retrieved, even though we do not know what is measured, we can evaluate the precision with which it is estimated.
+To compute these values, we would need to know the true effect size. Yet, true effects are of course unknown. One solution could be to use estimates from the literature and meta-analyses as best guesses for these true values. Yet, in the setting of this automated literature review, detecting what is exactly measured in each analysis is particularly challenging since there is no standardized way of reporting the results beyond mentioning confidence intervals. One study may for instance claim that a 10 $\mu g/m^{3}$ increase in PM2.5 concentration is associated with an increase of x% in hospital admissions over the course of a day while another study may state that a 2% increase in ozone concentration increases the number of deaths by 3 over a month. Fortunately, for each estimate retrieved, even though we do not know what is measured, we can evaluate the precision with which it is estimated.
 
 To circumvent the fact that we do not know the actual effect size, we follow a strategy suggested by Gelman and Carlin (2014). We consider a range of potential "true" effect sizes and run a sensitivity analysis. We investigate what would be the power, type M and type S error if the true effect was only a fraction of the measured effect. This enables us **to assess whether the design of the study would be *good enough* to detect a smaller effect**. If assuming that the true effect is 3/4 of the measured effect yields a power of 30%, there is probably a major issue with the design of this study. With this design, this (non zero) effect would only be detected 30% of the time.
 
@@ -1473,6 +1503,6 @@ articles_low_adequate %>%
   ) 
 ```
 
-About 40% of estimates would not reach the conventional 80% statistical power level threshold if the true effect is 3/4 the size of the measured effect. If for all studies, the true effect was 3/4 of the measured effect, the mean type M would be about 1.4. Again, this average hides a lot of heterogeneity. For the 40% of estimates with low power mentioned above, the average type M is 1.93, the median is 1.47. 
+About `r articles_low_adequate %>% count(low_power) %>% mutate(prop = n/sum(n)) %>% filter(low_power) %>% .$prop*100 %>% signif(., 2)`% of estimates would not reach the conventional 80% statistical power level threshold if the true effect is 3/4 the size of the measured effect. If for all studies, the true effect was 3/4 of the measured effect, the mean type M would be about `r articles_low_adequate %>% summarise(mean_typeM = mean(typeM)) %>%  .$mean_typeM %>% signif(., 2)`. Again, this average hides a lot of heterogeneity. For the 40% of estimates with low power mentioned above, the average type M is `r articles_low_adequate %>% group_by(low_power) %>% summarise(mean_typeM = mean(typeM)) %>% filter(low_power) %>% .$mean_typeM %>% signif(., 2)`, the median is `r articles_low_adequate %>% group_by(low_power) %>% summarise(median_typeM = median(typeM)) %>% filter(low_power) %>% .$median_typeM %>% signif(., 2)`. 
 
 We then investigated the sources of heterogeneity. Concernedly, we find that in recent years, more and more articles display very large type M errors. In addition, health science journals seem to be more prone to power issues than other journals. However, there seems to be a shared lack of concern for low power issues across all fields. Finally, we did not find evidence of obvious heterogeneity in outcome, pollutant or sub-population studied but noticed that more studies with low power only seem to be considering only one city.

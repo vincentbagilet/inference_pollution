@@ -1,7 +1,7 @@
 ---
-title: "Inference Design in Studies on Acute Health Effects of Air Pollution"
+title: "Why Acute Health Effects of Air Pollution Could be Inflated"
 description: |
-  This website gathers code and additional material for the paper [Inference Design in Studies on Acute Health Effects of Air Pollution](paper.pdf) by Vincent Bagilet and Léo Zabrocki.
+  This website gathers code and additional material for the paper [Why Acute Health Effects of Air Pollution Could be Inflated](paper.pdf) by Vincent Bagilet and Léo Zabrocki.
 site: distill::distill_website
 ---
 
@@ -13,8 +13,48 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ```
 
-All the (`R`) code for this project is available in [its GitHub directory](https://github.com/vincentbagilet/inference_pollution).
+## Structure of the website
 
-## Abstract
+- A PDF version of the current version of the paper is accessible through the "[Paper](paper.pdf)" tab.
+- The "Intuition" tab describes, though a simple example, the main mechanism that may lead to overestimating acute health effects of air pollution. This example is built on a simulation whose code is presented in this tab.
+- The code used to gather and analyze the literature can be accessed through the "Literature review" tab.
+- The "Simulation" tab describes the data wrangling process, a brief exploratory data analysis, the simulation choices that we made, all the code used for these simulations and resulting graphics that users can explore through a Shiny app. 
+- In the tab "Avoiding traps", we put ourselves in the shoes of a researcher interested in running a study on the short term health effects of air pollution and through an example, we suggest a methodology to address the issues raised in our paper.
+- All the `R` code for this project is available in [its GitHub directory](https://github.com/vincentbagilet/inference_pollution).
 
-We explore statistical power characteristics of various empirical strategies implemented to estimate the short-term health effect of air pollution. Through an extensive literature review, we retrieve the estimates and standard errors of a large number of studies published on this topic. We find that a non-negligible share of studies may suffer from low power issues and could thereby exaggerate effect sizes. The analysis of published results highlights potential shortcomings of the literature but does not enable to precisely identify drivers of theses issues. We therefore run realistic simulations to investigate how statistical power varies with the treatment effect size, the number of observations, the proportion of treated units as well as the distribution of the outcome. Usual causal identification methods implemented in this literature, such as instrumental variable (IV), regression discontinuity design (RD) or difference-in-differences (DiD), may yield overestimated effect sizes. This issue is driven by the imprecision of the IV estimator and the small number of exogenous shocks usually exploited in DiD and RD designs. When focusing on particular groups such as the elderly or children, researchers should be aware that statistical power is lowered by the limited average count of health outcomes.
+## Plain language summary
+
+*In this paper, we assess the ability of different statistical methods and research designs to accurately measure the short term health effects of air pollution. Based on our findings, we build a list of recommendations and pitfalls to avoid in future studies.*
+
+The negative health consequences of long term exposition to air pollution are well known to the general public. Yet, a vast scientific literature has shown that short term impacts can also be dramatic. Air pollution peaks increase the number of deaths and admissions in hospitals for respiratory and cardiovascular causes, even immediately on the day of the event. Importantly, the literature has shown that even low levels of air pollution can impair health. All this evidence led to the implementation of public policies to mitigate these adverse health effects. Accurate estimations of the short term health effects of air pollution are therefore crucial as they directly inform policies.
+
+These effects are often of small magnitude, especially when considering the impact of small pollution peaks. To detect and measure them accurately, one therefore needs methods that are particularly precise. A precise study will return a small range of values within which one can be confident that the true effect lies. If a method is not precise enough, this range will be large and it will not be possible to know what the exact effect is. Research in statistics has shown that, coupled with the usual statistical practices, imprecision often lead to exaggerating effect sizes. Studies using imprecise methods might therefore overestimate the short term health effects of air pollution. 
+
+To evaluate whether existing studies are likely to overestimate these effects, we carry out an extensive review of the literature. We analyze the precision of papers in this literature and find that while many studies present an adequate precision, a substantial share of studies do not and are likely to overestimate the effects. The analysis of published results highlights potential shortcomings of the literature but does not enable us to identify clear drivers of these issues. To pinpoint them, we run simulations. We add fake effects to real data and test the ability of different methods to pick up these fake effects. We also measure to what extent each method overestimate the effects. We find that some methods systematically perform poorly and greatly exaggerate the effects. For all methods, using a small sample or focusing on a sub-population leads to an overestimation of the effects.
+
+Our findings induce a series of guidance for future studies investigating the short term health effects of air pollution. Overall, researchers should pay careful attention to the precision of their studies to avoid overestimation. In some cases, the use of certain methods should be avoided. In general, sample size should be large enough to be able to measure the effects accurately. We recommend researchers, before starting their analyses, to run simulations to evaluate whether they are at risk of overestimating the effects they are trying to measure. After running their analysis, we advise researchers to run an other battery of quick tests to confirm that the effect they find is not exaggerated.
+
+
+<!-- Worse, this lack of precision may prevent us from being able to tell if there is actually an effect or not. If zero is included in this range, zero will be a potential value for the effect. It is therefore possible that there is no effect. The imprecision of our method prevent us from being able to say if there is an effect or not. This method will only pick up large effects. We will not be able to say that the effect is not zero. In this case, we will not be able to say that there is actually an effect when the effect is large enough to overcome this imprecision, *ie* when 0 is not in the range of possible values. -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
