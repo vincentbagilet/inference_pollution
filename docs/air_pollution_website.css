@@ -83,6 +83,28 @@ h1, h2, h3 {
   color: rgba(0, 25, 74, 0.8);
 }
 
+p {
+  color: rgba(0, 0, 0, 0.8);
+}
+
+a {
+	color: rgba(0, 25, 74, 0.8);
+}
+
+a:hover {
+	color: rgba(0, 25, 74, 0.4);
+}
+
+/* Buttons on postcard */
+.btn-outline-dark {
+    color: rgba(0, 25, 74, 0.8);
+}
+
+.btn-outline-dark:hover {
+    background-color: rgba(0, 25, 74, 0.8);
+    color: white;
+}
+
 /*body {
   background-color: rgba(249, 250, 247, 0.8);
 }*/
