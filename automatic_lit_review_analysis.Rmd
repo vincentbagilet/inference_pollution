@@ -1,5 +1,6 @@
 ---
-title: "Automated literature review - Analysis of abstracts"
+title: "Automated literature review: analysis of abstracts"
+description: "In this document, we analyze abstracts to evaluate whether the literature of short terms health effects of air pollution suffers from power issues."
 author:
 - name: Vincent Bagilet
   url: https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet

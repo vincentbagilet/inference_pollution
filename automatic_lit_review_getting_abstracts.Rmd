@@ -1,5 +1,6 @@
 ---
-title: "Automated literature review - Getting abstracts"
+title: "Automated literature review: getting abstracts"
+description: "In the present document, we retrieve abstracts for our automated review of the literature on short term health effects of air pollution, focusing mainly on the epidemiology literature."
 author:
 - name: Vincent Bagilet
   url: https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet
@@ -49,9 +50,9 @@ set_mediocre_all()
 set.seed(1)
 ```
 
-## Purpose of the document
+## Overall approach
 
-In the present document, we retrieve abstracts for our automated review of the literature on short term health effects of air pollution, focusing mainly on the epidemiology literature. We take advantage of a somehow standardized reporting mechanism to retrieve point estimates and confidence intervals from the abstracts using REGular EXPressions (regex). 
+We take advantage of a somehow standardized reporting mechanism to retrieve point estimates and confidence intervals from the abstracts using REGular EXPressions (regex). 
 
 The algorithm we wrote is not perfect: it probably does not detect all estimates and may pick up some incorrect point estimates and/or standard error. However, based on quick non-automated checks we ran, these potential issues seem very limited. Retrieving all this information via careful reading of the abstracts would have been extremely cumbersome. This automated analysis is an important time saver. Importantly, the analysis carried out for this literature could be easily replicated for another literature, based on the code used and described in this document.
 

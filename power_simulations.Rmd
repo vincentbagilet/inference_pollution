@@ -1,5 +1,6 @@
 ---
-title: "Power Simulation Exercise"
+title: "Running power simulations"
+description: "In this document, we carry out a simulation exercise to evaluate the inference properties of different research designs aiming at measuring the short-term effects of air pollution on health. We consider different types of quasi experiments and for each associate one or several identification strategies."
 author:
   - name: Vincent Bagilet 
     url: https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet
@@ -34,10 +35,6 @@ opts_chunk$set(fig.path = "images/",
                dpi = 200,
                fig.align = "center")  
 ```  
-
-## Purpose of the document
-
-In this document, we carry out a simulation exercise to evaluate the inference properties of different research designs aiming at measuring the short-term effects of air pollution on health. We consider different types of quasi experiments and for each associate one or several identification strategies. 
 
 This document focuses on running the simulations. The results are analyzed and discussed in another document.
 
