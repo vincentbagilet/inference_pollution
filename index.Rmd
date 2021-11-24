@@ -12,16 +12,16 @@ output:
  
 Hi and welcome!
 
-This website gathers code and additional material for the paper [Why Acute Health Effects of Air Pollution Could be Inflated](paper.pdf) by Vincent Bagilet and Léo Zabrocki.
+This website gathers code and additional material for the paper [Why Acute Health Effects of Air Pollution Could be Inflated](paper.pdf) by [Vincent Bagilet](https://vincentbagilet.github.io/) and [Léo Zabrocki](https://lzabrocki.github.io/).
 
 The website is structured as follows: 
 
 - A PDF version of the current version of the paper is accessible through the "[Paper](paper.pdf)" tab.
-- A plain language summary is available in the "Summary" tab.
-- The "Intuition" tab describes, though a simple example, the main mechanism that may lead to overestimating acute health effects of air pollution. This example is built on a simulation whose code is presented in this tab.
+- A plain language summary is available in the "[Summary](summary.html)" tab.
+- The "[Intuition](intuition.html)" tab describes, though a simple example, the main mechanism that may lead to overestimating acute health effects of air pollution. This example is built on a simulation whose code is presented in this tab.
 - The code used to gather and analyze the literature can be accessed through the "Literature review" tab.
 - The "Simulations" tab describes the data wrangling process, a brief exploratory data analysis, the simulation choices that we made, all the code used for these simulations and resulting graphics that users can explore through a Shiny app. 
-- In the tab "Avoiding traps", we put ourselves in the shoes of a researcher interested in running a study on the short term health effects of air pollution and through an example, we suggest a methodology to address the issues raised in our paper.
+- In the tab "[Avoiding traps](traps.html)", we put ourselves in the shoes of a researcher interested in running a study on the short term health effects of air pollution and through an example, we suggest a methodology to address the issues raised in our paper.
 - All the R code for this project is available in [its GitHub directory](https://github.com/vincentbagilet/inference_pollution).
 
 

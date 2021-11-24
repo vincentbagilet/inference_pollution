@@ -4,7 +4,7 @@ theme: air_pollution_website.css
 output_dir: "docs"
 exclude: ["Documents", "R"]
 navbar:
-  # logo: "images/mask.png"
+  # logo: "images/mask_3.png"
   right:
     # - text: "Home"
     #   href: index.html
