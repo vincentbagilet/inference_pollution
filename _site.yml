@@ -22,6 +22,7 @@ navbar:
           href: automatic_lit_review_analysis.html
         - text: "---"
         - text: "Analysis of the causal literature"
+          href: causal_literature_overview.html
     - text: "Simulations"
       menu:
         - text: "Overall approach"
@@ -33,8 +34,8 @@ navbar:
         - text: "---"
         - text: "Exploratory data analysis"
         - text: "Data wrangling"
-    - text: "Avoiding traps"
-      href: traps.html
+    # - text: "Avoiding traps"
+    #   href: traps.html
   source_url: https://github.com/vincentbagilet/inference_pollution
   search: false
 output: distill::distill_article

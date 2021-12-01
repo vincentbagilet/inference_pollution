@@ -1,0 +1,1107 @@
+---
+title: "Overview of Results found in the Causal Inference Literature"
+author:
+  - name: Léo Zabrocki 
+    url: https://www.parisschoolofeconomics.eu/
+    affiliation: Paris School of Economics
+    affiliation_url: https://www.parisschoolofeconomics.eu/
+  - name: Vincent Bagilet 
+    url: https://vincentbagilet.github.io/
+    affiliation: Columbia University - SIPA
+    affiliation_url: https://www.sipa.columbia.edu/
+date: "`r Sys.Date()`"
+output:
+  distill::distill_article:
+    keep_md: true
+    toc: true
+    toc_depth: 3
+editor_options: 
+  chunk_output_type: console
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(cache.path = "cache/",
+               cache = FALSE,
+               # fig.path = "images/",
+               echo = TRUE, #set to false to hide code
+               message = FALSE,
+               warning = FALSE,
+               out.width = "100%",
+               fig.width = 9,
+               dpi = 200,
+               fig.align = "center")
+```
+
+In this document, we explore the acute effects of air pollutants on health outcomes found in the causal inference literature. Using an extensive search strategy on Google Scholar, PubMed, Connected Papers and journal websites, we found a corpus of 29 relevant articles. 
+
+For each article, we retrieved the method used by the authors, which health outcome and air pollutant they study, the point estimate and the standard error of the main result. As each paper focuses on different pollutants and outcomes, we standardize the estimates using the standard deviations of the independent and outcome variables (the formula we used is available here [here ](https://stats.stackexchange.com/questions/451358/calculating-the-standard-errors-of-the-standardized-regression-coefficients-from)):
+
+* If we denote $\beta_{unstandardized}$ the unstandardized estimate, SD$_{X}$ the standard deviation of the treatment and SD$_{Y$  the standard deviation of the health outcome, the standardized estimate is equal to $\beta_{standardized} = \beta \times \frac{SD_{X}}{SD_{Y}}$.
+* The standardized standard error SE$_{standardized}$ is then equal to $SE_{standardized} = SE_{unstandardized} \times \frac{\beta_{standardized}}{\beta_{unstandardized}}$.
+
+For very few papers, we had to infer the mean and standard deviation of a pollutant or an health outcome with statistics such as the median and the quartiles. We use the formula found [here](https://stats.stackexchange.com/questions/256456/how-to-calculate-mean-and-standard-deviation-from-median-and-quartiles).
+
+Our document is organized as follows:
+
+* In the first section, we explore the distribution of the main metrics we retrieved, such as standardized estimate, sample size, first stage *F*-statistic for instrumental variable design. We also display the relationship between estimated effect sizes and the precision of these estimates.
+
+* In the second section, we draw the forest plots of results by research design.
+
+* In the third section, we compute the statistical power, the type M error and the probability to make a type S error for each paper using different guesses of true effect sizes. For this task, we rely on the very convenient [retrodesign](https://cran.r-project.org/web/packages/retrodesign/vignettes/Intro_To_retrodesign.html) package.
+
+* In the fourth and last section, we mine the texts of the articles to understand to which extent researchers rely on the null hypothesis significance testing framework.
+
+
+Should you have any questions or find coding errors, please do not hesitate to reach use at **vincent.bagilet@columbia.edu** and **leo.zabrocki@psemail.eu**.
+
+# Loading and Formatting Data
+
+We load the packages:
+
+```{r, echo=TRUE}
+# load packages
+library(here) # for files paths organization
+library(readxl) # for reading xlsx files
+library(tidyverse) # for data manipulation and visualisation
+library(retrodesign) # formulas for type-m and type-s errors
+library(pdftools) # for text mining pdf
+library(knitr) # for tables
+library(kableExtra) # for building nice tables
+library(ggbeeswarm) # for bees swarm plots
+library(patchwork) # for combining plots
+library(Cairo) # for printing specific fonts
+library(mediocrethemes)
+
+set_mediocre_all()
+#color for beeswarm graphs
+my_blue <- "#00313C"
+my_orange <- "#FB9637"
+```
+
+We load the literature review data:
+
+```{r, echo=FALSE}
+# load literature review data
+data <-
+  # open data
+  readRDS(here::here(
+    "R",
+    "Data_Leo",
+    "data_literature_review.rds"
+  ))  %>%
+  mutate(paper_label = paste(paper_id, "et al.", paste0("(", publication_year, ")"))) %>%
+  mutate_at(vars(sd_outcome, sample_size), ~ as.numeric(.)) %>%
+  mutate(f_statistic = ifelse(
+    str_detect(first_stage_statistic, "F"),
+    str_extract(first_stage_statistic, "\\d+"),
+    NA
+  ) %>% as.numeric(.))
+
+# display the table
+data %>%
+  rmarkdown::paged_table(.)
+```
+
+We retrieved data for `r data %>% select(paper_id, publication_year) %>% distinct() %>% nrow()` articles. We then compute standardized effects and their associated 99% and 95% confidence intervals.
+
+```{r}
+# compute standardized estimates and standard errors
+data <- data %>%
+  mutate(
+    standardized_estimate = ifelse(
+      standardized_effect == "No",
+      estimate * sd_independent_variable / sd_outcome,
+      estimate
+    ),
+    standardized_standard_error =  ifelse(
+      standardized_effect == "No",
+      standard_error * standardized_estimate / estimate,
+      standard_error
+    )
+  )
+
+# compute confidence intervals
+data <- data %>%
+  mutate(
+    upper_bound_95 = standardized_estimate + (-qnorm((1 - 0.95) / 2) * standardized_standard_error),
+    lower_bound_95 = standardized_estimate - (-qnorm((1 - 0.95) / 2) * standardized_standard_error),
+    upper_bound_99 = standardized_estimate + (-qnorm((1 - 0.99) / 2) * standardized_standard_error),
+    lower_bound_99 = standardized_estimate - (-qnorm((1 - 0.99) / 2) * standardized_standard_error),
+  )
+```
+
+# Overview of Main Metrics Distribution
+
+In this section, we explore the distribution of standardized, sample sizes and first-stage *F*-statistics. We also explore the relationship between estimated effect sizes and the inverse of standard errors, a metric for an estimate's precision.
+
+### Standardized Estimates
+
+We select the standardized estimates for causal inference methods (we omit first stage and conventional time series estimates). We display below the summary statistics for the distribution of standardized estimates:
+
+
+```{r echo=FALSE}
+# select standardized estimates for all models but first stage
+data_estimates <- data %>%
+  filter(!model %in% c("First Stage", "Conventional Time Series")) %>%
+  drop_na(standardized_estimate)
+
+# display sample sizes
+data_estimates %>%
+  summarise(
+    "Min" = min(standardized_estimate, na.rm = TRUE),
+    "First Quartile" = quantile(standardized_estimate, na.rm = TRUE)[2],
+    "Mean" = mean(standardized_estimate, na.rm = TRUE),
+    "Median" = median(standardized_estimate, na.rm = TRUE),
+    "Third Quartile" = quantile(standardized_estimate, na.rm = TRUE)[4],
+    "Maximum" = max(standardized_estimate, na.rm = TRUE)
+  ) %>%
+  kable(., align = rep("c", 6))
+```
+
+We draw the beeswarm plot of standardized estimates:
+
+```{r, fig.asp=0.35, echo=FALSE}
+# make the graph
+graph_standardized_effect_bees <- data_estimates %>%
+  ggplot(., aes(x = "1", y = standardized_estimate)) +
+  geom_hline(yintercept = mean(data_estimates$standardized_estimate),
+             colour = my_orange) +
+  ggbeeswarm::geom_quasirandom(shape = 16,
+                               width = 0.2,
+                               colour = my_blue) +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  xlab("") + ylab("Standardized Estimates") +
+  ggtitle("Distribution of Standardized Estimates in the Literature") +
+  coord_flip() +
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  )
+
+# display the graph
+graph_standardized_effect_bees
+
+# save the graph
+# ggsave(
+#   graph_standardized_effect_bees +
+#     theme(plot.title = element_blank()),
+#   filename = here::here(
+#     "3.outputs",
+#     "1.figures",
+#     "1.overview",
+#     "graph_standardized_effect_bees.pdf"
+#   ),
+#   width = 15,
+#   height = 6,
+#   units = "cm",
+#   device = cairo_pdf
+# )
+```
+
+We see that half of the studies estimated effect sizes below `r round(mean(data_estimates$standardized_estimate, na.rm = TRUE), 1)` standard deviation.  6 studies found very large effect sizes superior to 0.5 standard deviation.
+
+To reduce a bit the the heterogeneity between studies, we plot the same graph by mortality and hospital admission outcomes:
+
+```{r, fig.asp=0.35, echo=FALSE}
+# make the graph
+graph_standardized_effect_bees_outcome <- data_estimates %>%
+  filter(health_outcome_type %in% c("Hospital", "Mortality")) %>%
+  group_by(health_outcome_type) %>%
+  mutate(mean_effect = mean(standardized_estimate)) %>%
+  ungroup() %>%
+  mutate(health_outcome_type = ifelse(health_outcome_type == "Hospital", "Hospital Outcomes", "Mortality Outcomes")) %>%
+  ggplot(., aes(x = health_outcome_type, y = standardized_estimate)) +
+  ggbeeswarm::geom_quasirandom(shape = 16, width = 0.2, colour = my_blue) +
+  geom_vline(aes(xintercept = mean_effect), colour = my_orange) +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  xlab("") + ylab("Standardized Estimates") +
+  ggtitle("Distribution of Standardized Estimates in the Literature") +
+  coord_flip() +
+  xlab("") + ylab("Standardized Effect") +
+  ggtitle("Distribution of Standardized Effect in the Literature")
+
+# display the graph
+graph_standardized_effect_bees_outcome
+
+# save the graph
+# ggsave(
+#     graph_standardized_effect_bees_outcome +
+#   theme(plot.title = element_blank()),
+#   filename = here::here(
+#     "3.outputs",
+#     "1.figures", "1.overview",
+#     "graph_standardized_effect_bees_outcome.pdf"
+#   ),
+#   width = 20,
+#   height = 10,
+#   units = "cm",
+#   device = cairo_pdf
+# )
+```
+
+### Sample Sizes
+
+We display below the distribution of studies' sample sizes:
+
+```{r echo=FALSE}
+# display sample sizes
+data_estimates %>%
+  summarise(
+    "Min" = min(sample_size, na.rm = TRUE),
+    "First Quartile" = quantile(sample_size, na.rm = TRUE)[2],
+    "Mean" = mean(sample_size, na.rm = TRUE),
+    "Median" = median(sample_size, na.rm = TRUE),
+    "Third Quartile" = quantile(sample_size, na.rm = TRUE)[4],
+    "Maximum" = max(sample_size, na.rm = TRUE)
+  ) %>%
+  kable(., align = rep("c", 6))
+```
+
+The median number of observations in the causal inference literature is about 15,000. We display the distribution of sample sizes using a beeswarm plot with a log base 10 scale:
+
+```{r, fig.asp=0.35, echo=FALSE}
+# make the graph
+graph_sample_size_bees <- data_estimates %>%
+  ggplot(., aes(x = "1", y = sample_size)) +
+  ggbeeswarm::geom_quasirandom(shape = 16, width = 0.2, color = my_blue) +
+  geom_hline(aes(yintercept = median(sample_size, na.rm = TRUE)), colour = my_orange) +
+  scale_y_log10(
+    breaks = scales::trans_breaks("log10", function(x)
+      10 ^ x),
+    labels = scales::trans_format("log10", scales::math_format(10 ^
+                                                                 .x))
+  ) +
+  xlab("") + ylab("Sample Size") +
+  ggtitle("Distribution of Sample Sizes in the Literature") +
+  coord_flip() +
+  theme(axis.text.y = element_blank(),
+        axis.ticks.y = element_blank())
+
+# display the graph
+graph_sample_size_bees
+
+# save the graph
+# ggsave(
+#   graph_sample_size_bees +
+#   theme(plot.title = element_blank()),
+#   filename = here::here(
+#     "3.outputs",
+#     "1.figures", "1.overview",
+#     "graph_sample_size_bees.pdf"
+#   ),
+#   width = 15,
+#   height = 6,
+#   units = "cm",
+#   device = cairo_pdf
+# )
+```
+
+### First *F*-Statistics
+
+
+In the causal inference literature, `r nrow(data %>% filter(model %in% c("First Stage")))` studies are based on an instrumental variable research design. The strength of the instrument is often assessed with the first stage *F*-statistic. We display below descriptive statistics for the first *F*-statistics distribution:
+
+```{r echo=FALSE}
+# display sample sizes
+data %>%
+  filter(model %in% c("First Stage")) %>%
+  select(paper_id, publication_year, f_statistic) %>%
+  distinct() %>%
+  summarise(
+    "Min" = min(f_statistic, na.rm = TRUE),
+    "First Quartile" = quantile(f_statistic, na.rm = TRUE)[2],
+    "Mean" = mean(f_statistic, na.rm = TRUE),
+    "Median" = median(f_statistic, na.rm = TRUE),
+    "Third Quartile" = quantile(f_statistic, na.rm = TRUE)[4],
+    "Maximum" = max(f_statistic, na.rm = TRUE)
+  ) %>%
+  kable(., align = rep("c", 6))
+```
+
+Half of the first stage *F*-statistics are below 31. We display the distribution of first-stage *F*-Statistics with a beeswarm plot and a log base 10 scale:
+
+```{r, fig.asp=0.35, echo=FALSE}
+# make the graph
+graph_f_statistic_bees <- data %>%
+  filter(model %in% c("First Stage")) %>%
+  ggplot(., aes(x = "1", y = f_statistic)) +
+  ggbeeswarm::geom_quasirandom(shape = 16,
+                               width = 0.2,
+                               color = my_blue) +
+  scale_y_log10(
+    breaks = scales::trans_breaks("log10", function(x)
+      10 ^ x),
+    labels = scales::trans_format("log10", scales::math_format(10 ^
+                                                                 .x))
+  ) +
+  xlab("") + ylab("F-Statistic") +
+  ggtitle("Distribution of F-Statistics in the Literature") +
+  coord_flip() +
+  theme(axis.text.y = element_blank(),
+        axis.ticks.y = element_blank())
+
+# display the graph
+graph_f_statistic_bees
+
+# save the graph
+# ggsave(
+#   graph_f_statistic_bees +
+#     theme(plot.title = element_blank()),
+#   filename = here::here(
+#     "3.outputs",
+#     "1.figures",
+#     "1.overview",
+#     "graph_f_statistic_bees.pdf"
+#   ),
+#   width = 15,
+#   height = 5,
+#   units = "cm",
+#   device = cairo_pdf
+# )
+```
+
+### Estimated Effect Sizes versus Precision
+
+We plot below the relationship between the standardized estimates and the inverse of the standard errors:
+
+```{r, fig.asp=0.5, echo=FALSE}
+# make the graph
+graph_estimate_se <- data_estimates %>%
+  mutate(inverse_se = 1 / standardized_standard_error) %>%
+  ggplot(.,
+         aes(x = inverse_se, y = standardized_estimate, label = paper_label)) +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    colour = my_orange,
+    linetype = "dashed"
+  ) +
+  ggrepel::geom_text_repel(
+    size = 3,
+    colour = "gray50",
+    min.segment.length = 0,
+    segment.size = 0.2,
+    box.padding = 0.5,
+    force = 1,
+    point.padding = unit(0.3, 'cm'),
+    max.overlaps = Inf
+  ) +
+  geom_point(colour = my_blue, size = 1.5) +
+  scale_x_log10(
+    breaks = scales::trans_breaks("log10", function(x)
+      10 ^ x),
+    labels = scales::trans_format("log10", scales::math_format(10 ^
+                                                                 .x))
+  ) +
+  scale_y_log10(
+    breaks = scales::trans_breaks("log10", function(x)
+      10 ^ x),
+    labels = scales::trans_format("log10", scales::math_format(10 ^
+                                                                 .x))
+  ) +
+  xlab("Precision (Inverse of Standard Errors)") + ylab("Standardized \nEstimates") +
+  ggtitle("Distribution of Standardized Estimates versus Precision") 
+
+# display the graph
+graph_estimate_se
+
+# save the graph
+# ggsave(
+#   graph_estimate_se +
+#     theme(plot.title = element_blank()),
+#   filename = here::here(
+#     "3.outputs",
+#     "1.figures",
+#     "1.overview",
+#     "graph_estimate_se.pdf"
+#   ),
+#   width = 25,
+#   height = 15,
+#   units = "cm",
+#   device = cairo_pdf
+# )
+```
+
+We clearly see a negative linear relationship between estimated effect sizes and precision. To limit a bit the heterogenity between studies, we also reproduce the previous graph but by health outcomes:
+
+```{r, fig.asp=0.5, echo=FALSE}
+# make the graph
+graph_estimate_se_outcome <- data_estimates %>%
+  mutate(inverse_se = 1 / standardized_standard_error) %>%
+  filter(health_outcome_type %in% c("Mortality", "Hospital")) %>%
+  ggplot(., aes(x = inverse_se, y = standardized_estimate, label = paper_label)) +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    colour = my_orange,
+    linetype = "dashed"
+  ) +
+  ggrepel::geom_text_repel(
+    size = 3,
+    colour = "gray50",
+    min.segment.length = 0,
+    segment.size = 0.2,
+    box.padding = 0.5,
+    force = 1,
+    point.padding = unit(0.3, 'cm'),
+    max.overlaps = Inf
+  ) +
+  geom_point(colour = my_blue, size = 1.5) +
+  scale_x_log10(
+    breaks = scales::trans_breaks("log10", function(x)
+      10 ^ x),
+    labels = scales::trans_format("log10", scales::math_format(10 ^
+                                                                 .x))
+  ) +
+  scale_y_log10(
+    breaks = scales::trans_breaks("log10", function(x)
+      10 ^ x),
+    labels = scales::trans_format("log10", scales::math_format(10 ^
+                                                                 .x))
+  ) +
+  facet_wrap( ~ fct_rev(health_outcome_type)) +
+  xlab("Inverse of Standard Errors") + ylab("Standardized Estimates") +
+  ggtitle("Distribution of Standardized Estimates versus Inverse of Standard Errors")
+
+# display the graph
+graph_estimate_se_outcome
+
+# save the graph
+# ggsave(
+#   graph_estimate_se_outcome +
+#     theme(plot.title = element_blank()),
+#   filename = here::here(
+#     "3.outputs",
+#     "1.figures",
+#     "1.overview",
+#     "graph_estimate_se_outcome.pdf"
+#   ),
+#   width = 30,
+#   height = 15,
+#   units = "cm",
+#   device = cairo_pdf
+# )
+```
+
+
+# Forest Plots
+
+In this section, we create forest plots. For each study and empirical strategy, we display the standardized estimates with their associated 95% confidence intervals. We first create the relevant data set.
+
+```{r echo=FALSE}
+data_forest_plots <- data %>%
+  select(
+    paper_id,
+    publication_year,
+    context,
+    model,
+    outcome,
+    health_outcome_type,
+    independent_variable,
+    sample_size,
+    standardized_estimate,
+    upper_bound_95:lower_bound_99
+  ) %>%
+  mutate(
+    publication_year = str_c("(", publication_year, ")", sep = ""),
+    author_date = str_c(paper_id, "et al.", publication_year, sep = " ")
+  ) %>%
+  mutate(sample_size = scales::comma(sample_size)) %>%
+  mutate(sample_size = ifelse(paper_id == "Isphording", "?", sample_size)) %>%
+  select(
+    author_date,
+    context,
+    model,
+    sample_size,
+    outcome,
+    health_outcome_type,
+    independent_variable,
+    standardized_estimate,
+    upper_bound_95,
+    lower_bound_95
+  )
+```
+
+### 2SLS Estimates
+
+We display below the forest plot for all 2SLS estimates:
+
+```{r, fig.asp=0.5, echo=FALSE}
+# data for 2sls
+data_table_2sls <- data_forest_plots %>%
+  filter(model == "Instrumental Variable") %>%
+  arrange(standardized_estimate) %>%
+  mutate(row_number = row_number()) %>%
+  mutate(shading = ifelse((row_number %% 2) == 0, "gray95", "white"))
+
+# graph confidence intervals
+forest_2sls <- ggplot(
+  data_table_2sls,
+  aes(
+    x = standardized_estimate,
+    y = reorder(author_date, abs(standardized_estimate)),
+    xmin = lower_bound_95,
+    xmax = upper_bound_95
+  )
+) +
+  geom_vline(xintercept = 0, color = my_orange) +
+  geom_pointrange(colour = my_blue, lwd = 0.3, fatten = 0.8) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  xlab("Standardized Estimate") + ylab("")
+
+# display forest plot
+forest_2sls
+
+# save the forest plot
+# ggsave(
+#   forest_2sls +
+#   theme(plot.title = element_blank()),
+#   filename = here::here(
+#     "3.outputs",
+#     "1.figures", "1.overview",
+#     "forest_2sls.pdf"
+#   ),
+#   width = 20,
+#   height = 10,
+#   units = "cm",
+#   device = cairo_pdf
+# )
+```
+
+We display below the forest plot for 2SLS estimates focused on mortality outcomes:
+
+```{r, fig.asp=0.5, echo=FALSE}
+# data for 2sls on mortality outcomes
+data_table_2sls_mortality <- data_table_2sls %>%
+  filter(health_outcome_type == "Mortality") %>%
+  arrange(standardized_estimate) %>%
+  mutate(row_number = row_number()) %>%
+  mutate(shading = ifelse((row_number %% 2) == 0, "gray95", "white"))
+
+# graph confidence intervals
+forest_2sls_mortality <- ggplot(
+  data_table_2sls_mortality,
+  aes(
+    x = standardized_estimate,
+    y = reorder(author_date, abs(standardized_estimate)),
+    xmin = lower_bound_95,
+    xmax = upper_bound_95
+  )
+) +
+  geom_vline(xintercept = 0, color = my_orange) +
+  geom_vline(xintercept = 0, color = my_orange) +
+  geom_pointrange(colour = my_blue, lwd = 0.3, fatten = 0.8) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  xlab("Standardized Estimate") + ylab("")
+
+# display forest plot
+forest_2sls_mortality
+
+# save the forest plot
+# ggsave(
+#   forest_2sls_mortality +
+#   theme(plot.title = element_blank()),
+#   filename = here::here(
+#     "3.outputs",
+#     "1.figures", "1.overview",
+#     "forest_2sls_mortality.pdf"
+#   ),
+#   width = 20,
+#   height = 10,
+#   units = "cm",
+#   device = cairo_pdf
+# )
+```
+
+We display below the forest plot for 2SLS estimates focused on hospital outcomes:
+
+```{r, fig.asp=0.5, echo=FALSE}
+# data for 2sls on hospital outcomes
+data_table_2sls_hospital <- data_table_2sls %>%
+  filter(health_outcome_type == "Hospital") %>%
+  arrange(standardized_estimate) %>%
+  mutate(row_number = row_number()) %>%
+  mutate(shading = ifelse((row_number %% 2) == 0, "gray95", "white"))
+
+# graph confidence intervals
+forest_2sls_hospital <- ggplot(
+  data_table_2sls_hospital,
+  aes(
+    x = standardized_estimate,
+    y = reorder(author_date, abs(standardized_estimate)),
+    xmin = lower_bound_95,
+    xmax = upper_bound_95
+  )
+) +
+  geom_vline(xintercept = 0, color = my_orange) +
+  geom_vline(xintercept = 0, color = my_orange) +
+  geom_pointrange(colour = my_blue, lwd = 0.3, fatten = 0.8) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  xlab("Standardized Estimate") + ylab("")
+
+# display forest plot
+forest_2sls_hospital
+
+# save the forest plot
+# ggsave(
+#   forest_2sls_hospital +
+#   theme(plot.title = element_blank()),
+#   filename = here::here(
+#     "3.outputs",
+#     "1.figures", "1.overview",
+#     "forest_2sls_hospital.pdf"
+#   ),
+#   width = 20,
+#   height = 10,
+#   units = "cm",
+#   device = cairo_pdf
+# )
+```
+
+### Reduced-Form Estimates
+
+For articles based on an instrumental variable strategy, we also display below the reduced-form estimates:
+
+```{r, fig.asp=0.5, echo=FALSE}
+# data for reduced-form estimates
+data_table_reduced_form <- data_forest_plots %>%
+  filter(model == "Reduced-Form") %>%
+  filter(author_date != "Chen et al. (2018)") %>%
+  arrange(standardized_estimate) %>%
+  mutate(row_number = row_number()) %>%
+  mutate(shading = ifelse((row_number %% 2) == 0, "gray95", "white"))
+
+# graph confidence intervals
+forest_reduced_form <- ggplot(
+  data_table_reduced_form,
+  aes(
+    x = standardized_estimate,
+    y = reorder(author_date, abs(standardized_estimate)),
+    xmin = lower_bound_95,
+    xmax = upper_bound_95
+  )
+) +
+  geom_vline(xintercept = 0, color = my_orange) +
+  geom_pointrange(colour = my_blue, lwd = 0.3, fatten = 0.8) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  xlab("Standardized Estimate") + ylab("")
+  
+
+# display forest plot
+forest_reduced_form
+
+# save the forest plot
+# ggsave(
+#   forest_reduced_form +
+#   theme(plot.title = element_blank()),
+#   filename = here::here(
+#     "3.outputs",
+#     "1.figures", "1.overview",
+#     "forest_reduced_forms.pdf"
+#   ),
+#   width = 20,
+#   height = 10,
+#   units = "cm",
+#   device = cairo_pdf
+# )
+```
+
+### Conventional Time Series Estimates
+
+Several papers fit a conventional time series model in order to compare the resulting estimates with those of a 2SLS procedure:  
+
+```{r, fig.asp=0.5, echo=FALSE}
+# data ols time series versus iv
+data_table_time_series <- data_forest_plots %>%
+  filter(model %in% c("Conventional Time Series", "Instrumental Variable")) %>%
+  group_by(author_date) %>%
+  mutate(n = n()) %>%
+  filter(n>1) %>%
+  filter(author_date != "Liu et al. (2019)") %>%
+  ungroup() %>%
+  mutate(sample_size = ifelse(author_date == "Halliday et al. (2018)", "17745-6195", sample_size)) %>%
+  arrange(fct_rev(model), standardized_estimate) %>%
+  mutate(row = 1:n()) %>%
+  group_by(author_date) %>%
+  mutate(row = min(row)) %>%
+  ungroup() %>%
+  arrange(row, author_date) %>%
+  mutate(shading = c(rep(rep(c("gray95", "white"), each = 2), 4), "gray95", "gray95")) 
+
+# graph confidence intervals
+forest_time_series <- ggplot(
+  data_table_time_series,
+  aes(
+    x = standardized_estimate,
+    y = reorder(author_date, row),
+    xmin = lower_bound_95,
+    xmax = upper_bound_95,
+    shape = model)
+) +
+  geom_vline(xintercept = 0, color = my_orange) +
+  geom_pointrange(position = position_dodge(width = 0.4)) +
+  xlab("Standardized Estimate") + ylab("") +
+  # scale_colour_identity() +
+  labs(shape = "Model:") 
+
+# display forest plot
+forest_time_series
+
+# save the forest plot
+# ggsave(
+#   forest_time_series +
+#   theme(plot.title = element_blank()),
+#   filename = here::here(
+#     "3.outputs",
+#     "1.figures", "1.overview",
+#     "forest_time_series.pdf"
+#   ),
+#   width = 20,
+#   height = 10,
+#   units = "cm",
+#   device = cairo_pdf
+# )
+```
+
+# Statistical Power, Type M and S Errors
+
+In this section, we compute the statistical power, the exaggeration factor (Type M error) and the probability to make a type S error for each study. We rely on the `retrodesign` package.
+
+### Computing Statistical Power, Type M and S errors
+
+To compute the three metrics, we need to make an assumption about the true effect size of each study. We find three different ways to proceed:
+
+1. We first define the true effect sizes as a decreasing fraction of the estimates. We want to see how the overall distribution of the three metrics evolve with as we decrease the hypothesized true effect size.
+2. We then take as the true effect size what what was found with a standard OLS model for papers based on instrumental variable design.
+
+```{r}
+# test type-m and type-s errors
+data_retrodesign <- data %>%
+  filter(!(model %in% c("First Stage", "Conventional Time Series"))) %>%
+  filter(paper_id != "Beard") %>%
+  filter(lower_bound_95 > 0) %>%
+  drop_na(health_outcome_type) %>%
+  select(paper_label, model, estimate, standard_error) %>%
+  mutate(model = fct_relevel(
+    model,
+    "Reduced-Form",
+    "Instrumental Variable",
+    "Difference in Differences"
+  ))
+```
+
+
+### True Effect Sizes as Fractions of Estimates
+
+For each study, we compute the statistical power, the exaggeration factor and the probability to make a type S error by defining their true effect sizes as decreasing fraction of the estimates. 
+
+```{r}
+# compute power, type m and s errors for decreasing true effect sizes
+data_retrodesign_fraction <- data_retrodesign %>%
+  crossing(percentage = seq(1:100)/100) %>%
+  mutate(hypothetical_effect_size = percentage*estimate) %>%
+  mutate(
+    power = map2(
+      hypothetical_effect_size,
+      standard_error,
+      ~ retro_design(.x, .y)$power * 100
+    ),
+    type_s = map2(
+      hypothetical_effect_size,
+      standard_error,
+      ~ retro_design(.x, .y)$typeS * 100
+    ),
+    type_m = map2(
+      hypothetical_effect_size,
+      standard_error,
+      ~ retro_design(.x, .y)$typeM
+    )
+  ) %>%
+  unnest(cols = c(power, type_s, type_m)) %>%
+  filter(percentage >= 0.25)
+```
+
+We plot below the three metrics for the different scenarios:
+
+```{r fig.asp=0.8, echo=FALSE}
+# plot results
+power_plot <- data_retrodesign_fraction %>%
+    ggplot(., aes(
+    x = (1 - percentage)*100,
+    y = power,
+    group = paper_label
+  )) +
+  geom_hline(yintercept = 80, size = 0.25, colour = my_orange) +
+  geom_vline(xintercept = 25, size = 0.25, colour = my_orange) +
+  geom_line(colour = my_blue, alpha = 0.6) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  facet_wrap(~ model) +
+  xlab("Effect Size Reduction (%)") + ylab("Statistical Power (%)") +
+  
+  theme(axis.title.y = ggplot2::element_text(
+        hjust = 1,
+        size = 12,
+        angle = 90,
+        margin = margin(r = 0.2, unit = "cm")
+      ))
+
+type_m_plot <- data_retrodesign_fraction %>%
+    ggplot(., aes(
+    x = (1 - percentage)*100,
+    y = type_m,
+    group = paper_label
+  )) +
+  geom_hline(yintercept = 1.5, size = 0.25, colour = my_orange) +
+  geom_vline(xintercept = 25, size = 0.25, colour = my_orange) +
+  geom_line(colour = my_blue, alpha = 0.6) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  facet_wrap(~ model) +
+  xlab("Effect Size Reduction (%)") + ylab("Exaggeration Factor") +
+  
+  theme(axis.title.y = ggplot2::element_text(
+        hjust = 1,
+        size = 12,
+        angle = 90,
+        margin = margin(r = 0.2, unit = "cm")
+      ),
+      strip.text.x = element_blank())
+  
+  
+# combine plots
+graph_retrodesign_fraction <- power_plot / type_m_plot +
+  plot_annotation(title = "Statistical Power and Type M Error for Decreasing Fraction of Estimates")
+
+# display the graph
+graph_retrodesign_fraction
+
+# save the forest plot
+# ggsave(
+#   graph_retrodesign_fraction +
+#     theme(plot.title = element_blank(),
+#           plot.subtitle = element_blank()),
+#   filename = here::here(
+#     "3.outputs",
+#     "1.figures",
+#     "1.overview",
+#     "graph_retrodesign_fraction.pdf"
+#   ),
+#   width = 30,
+#   height = 17,
+#   units = "cm",
+#   device = cairo_pdf
+# )
+```
+
+We display below summary statistics for the scenario where true effect sizes are equal to 75% of observed estimates:
+
+```{r echo=FALSE}
+data_retrodesign_fraction %>%
+  filter(percentage == 0.75) %>%
+  pivot_longer(
+    cols = c(power, type_m, type_s),
+    names_to = "metric",
+    values_to = "value"
+  ) %>%
+  mutate(
+    metric = case_when(
+      metric == "power" ~ "Statistical Power (%)",
+      metric == "type_m" ~ "Exaggeration Factor",
+      metric == "type_s" ~ "Type S Probability (%)"
+    )
+  ) %>%
+  group_by(metric) %>%
+  summarise(
+    "Min" = min(value, na.rm = TRUE),
+    "First Quartile" = quantile(value, na.rm = TRUE)[2],
+    "Mean" = mean(value, na.rm = TRUE),
+    "Median" = median(value, na.rm = TRUE),
+    "Third Quartile" = quantile(value, na.rm = TRUE)[4],
+    "Maximum" = max(value, na.rm = TRUE)
+  ) %>%
+  mutate_at(vars(-metric), ~ round(., 1)) %>%
+  rename(Metric = metric) %>%
+  kable(., align = rep("c", 6))
+```
+
+We also display below summary statistics for the scenario where true effect sizes are equal to 50% of observed estimates:
+
+```{r echo=FALSE}
+data_retrodesign_fraction %>%
+  filter(percentage == 0.50) %>%
+  pivot_longer(
+    cols = c(power, type_m, type_s),
+    names_to = "metric",
+    values_to = "value"
+  ) %>%
+  mutate(
+    metric = case_when(
+      metric == "power" ~ "Statistical Power (%)",
+      metric == "type_m" ~ "Exaggeration Factor",
+      metric == "type_s" ~ "Type S Probability (%)"
+    )
+  ) %>%
+  group_by(metric) %>%
+  summarise(
+    "Min" = min(value, na.rm = TRUE),
+    "First Quartile" = quantile(value, na.rm = TRUE)[2],
+    "Mean" = mean(value, na.rm = TRUE),
+    "Median" = median(value, na.rm = TRUE),
+    "Third Quartile" = quantile(value, na.rm = TRUE)[4],
+    "Maximum" = max(value, na.rm = TRUE)
+  ) %>%
+  mutate_at(vars(-metric), ~ round(., 1)) %>%
+  rename(Metric = metric) %>%
+  kable(., align = rep("c", 6))
+```
+
+### True Effect Sizes Equal to OLS Estimates for IV Designs
+
+We also computed statistical power, the exaggeration factor and the probability to make a type S error for the 9 articles based on instrumental variables which also displayed the estimates for a standard OLS model:
+
+```{r echo=FALSE}
+# first retrieve iv designs standard errors
+data_retrodesign_iv <- data_retrodesign %>%
+  filter(model == "Instrumental Variable") %>%
+  select(paper_label, standard_error)
+
+# then retrieve ols estimates
+data_retrodesign_ols <- data %>%
+  filter(model == "Conventional Time Series") %>%
+  select(paper_label, estimate)
+
+# merge the two
+data_retrodesign_iv <-
+  left_join(data_retrodesign_iv, data_retrodesign_ols, by = "paper_label") %>%
+  drop_na(estimate)
+
+# compute power, type m and s errors for decreasing true effect sizes
+data_retrodesign_iv %>%
+  mutate(
+    power = map2(estimate,
+                 standard_error,
+                 ~ retro_design(.x, .y)$power * 100),
+    type_s = map2(estimate,
+                  standard_error,
+                  ~ retro_design(.x, .y)$typeS * 100),
+    type_m = map2(estimate,
+                  standard_error,
+                  ~ retro_design(.x, .y)$typeM)
+  ) %>%
+  unnest(cols = c(power, type_s, type_m)) %>%
+  mutate_at(vars(power, type_s, type_m), ~ round(., 1)) %>%
+  select(-standard_error, -estimate) %>%
+  rename(
+    Paper = paper_label,
+    "Statistical Power (%)" = power,
+    "Probability of Type S Error (%)" = type_s,
+    "Exaggeration Factor" = type_m
+  ) %>%
+  kable(., align = c("lccc"))
+```
+
+# Statistical Inference Narrative
+
+In this section, we mine the text of articles to explore how researcher report their statistical inference procedure. Do they mention issues regarding the statistical power of their study? Do they talk about the precision of their estimates or only report them as "statistically significant"? 
+
+```{r}
+# get pdf files folder path
+folder_articles <-
+  here::here("1.data", "1.selected_articles")
+
+# get the path for each file and add the associated city name
+data_articles <-
+  tibble(file_path_article = list.files(
+    path = folder_articles,
+    pattern = ".pdf",
+    full.names = F
+  )) %>%
+  mutate(paper_id = str_remove(string = file_path_article, pattern = ".pdf"))
+
+# function to convert PDF to text
+function_pdf_to_text <- function(file_path_article) {
+  pdftools::pdf_text(here::here("1.data", "1.selected_articles", file_path_article)) %>%
+    paste(sep = " ") %>%
+    stringr::str_replace_all(fixed("\n"), " ") %>%
+    stringr::str_replace_all(fixed("\r"), " ") %>%
+    stringr::str_replace_all(fixed("\t"), " ") %>%
+    stringr::str_replace_all(fixed("\""), " ") %>%
+    paste(sep = " ", collapse = " ") %>%
+    stringr::str_squish() %>%
+    stringr::str_replace_all("- ", "") %>%
+    tolower()
+}
+
+# function to retrieve the article's title
+function_pdf_title <- function(file_path_article) {
+  pdftools::pdf_info(here::here("1.data", "1.selected_articles", file_path_article))[["keys"]][["Title"]]
+}
+
+# get article titles
+data_articles <- data_articles %>%
+  mutate(title = map(file_path_article, ~ function_pdf_title(.)))
+
+# convert all PDFs to texts
+data_articles <- data_articles %>%
+  mutate(text = map(file_path_article, ~ function_pdf_to_text(.)))
+
+# count occurence of statistical terms
+data_articles <- data_articles %>%
+  mutate(
+    n_power = str_count(text, "statistical power"),
+    n_statistically_significant = str_count(text, "statistically significant"),
+    n_significant = str_count(text, "significant"),
+    n_insignificant = str_count(text, "insignificant"),
+    n_precise = str_count(text, "precise"),
+    n_imprecise = str_count(text, "imprecise"),
+    n_ci = str_count(text, "confidence interval")
+  ) %>%
+  select(-text,-title)
+```
+
+We display the proportion of articles where at least one occurence of a term appears:
+
+```{r echo=FALSE}
+data_articles %>%
+  mutate_at(
+    vars(
+      n_power,
+      n_statistically_significant,
+      n_significant,
+      n_insignificant,
+      n_precise,
+      n_imprecise
+    ),
+    ~ ifelse(. > 0, 1, 0)
+  ) %>%
+  summarise_at(
+    vars(
+      n_power,
+      n_statistically_significant,
+      n_significant,
+      n_insignificant,
+      n_precise,
+      n_imprecise
+    ),
+    ~ mean(.) * 100
+  ) %>%
+  rename(
+    "Power (%)" = n_power,
+    "Statistically Significant (%)" = n_statistically_significant,
+    "significant" = n_significant,
+    "Insignificant (%)" = n_insignificant,
+    "Precise (%)" = n_precise,
+    "Imprecise (%)" = n_imprecise
+  ) %>%
+  mutate_all(., ~ round(., 0)) %>%
+  kable(., align = rep("c", 5))
+```
+
