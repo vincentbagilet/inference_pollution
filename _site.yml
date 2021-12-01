@@ -9,7 +9,7 @@ navbar:
     # - text: "Home"
     #   href: index.html
     - text: "Paper"
-      href: paper.pdf
+      href: wp_bagilet_zabrocki.pdf
     - text: "Summary"
       href: summary.html
     - text: "Intuition"
