@@ -62,9 +62,9 @@ In order to estimate the parameters of interest, we use several identification m
 
 ### Reduced form
 
-We use a reduced form model to estimate the effect of a treatment on random days. The overall idea of the reduced form approach is to only compare the average number of deaths or hospital admissions in cities with treatment to cities with no treatment on the same day, controlling for differences across cities. In such approach, we do not model the impact of the treatement on air pollution.
+We use a reduced form model to estimate the effect of a treatment on random days. The overall idea of the reduced form approach is to only compare the average number of deaths or hospital admissions in cities with treatment to cities with no treatment on the same day, controlling for differences across cities. In such approach, we do not model the impact of the treatment on air pollution.
 
-This identification method enables to estimate the Average Treatment Effect (ATE), *ie* a difference in mean between the treated and the control group ($\mathbb{E}[Y_{1i} - Y_{0i}]$). To do so, we use the following type of model:
+This identification method enables to estimate the Average Treatment Effect (ATE, $\mathbb{E}[Y_{1i} - Y_{0i}]$). Since the treatment is allocated at random, it is equal to the difference in mean between the treated and the control group. To do so, we use the following type of model:
 
 $$Y_{ct} = \alpha + \beta T_{ct} + \epsilon_{ct}$$
 where, as in the whole document, $Y_{ct}$ is the health outcome of interest (for instance mortality), in a city $c$, at date $t$. The parameter of interest is $\beta$ (we use this notation for all models) and $T_{ct}$ is a dummy equal to 1 if the city $c$ is treated at time $t$ and 0 otherwise.
