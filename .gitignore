@@ -40,6 +40,6 @@ vignettes/*.pdf
 
 # Data
 R/Inputs
-R/Outputs
+R/Outputs/Sim_save
 R/Old/Data
 R/Data_Leo

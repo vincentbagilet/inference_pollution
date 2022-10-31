@@ -530,10 +530,10 @@ sim_param_evol <- prepare_sim_param(sim_param_unique, n_iter = 1)
 
 We can then run the simulations for each set of parameter, using a `pmap_dfr` function. We wrote a function to do that while saving intermediary outcomes (every `save_every` iteration). `name_save` is the name to use to save an intermediary outcome (to which we add `_intermediary` and the iteration number).
 
-```{r eval=FALSE}
+```{r run_all_sim}
 run_all_sim <- function(data, sim_param, save_every, name_save) {
   output <- NULL
-  future::plan(multicore)
+  future::plan(multisession, workers = availableCores() - 1)
   
   tic()
   for (i in 1:ceiling(nrow(sim_param)/save_every)) {
@@ -562,7 +562,10 @@ run_all_sim <- function(data, sim_param, save_every, name_save) {
   toc()
   return(output)
 }
+```
 
+
+```{r run_sim, eval=FALSE}
 sim_evol_large <- run_all_sim(nmmaps_data, sim_param_evol, save_every = 10000, "sim_evol")
 
 # beepr::beep(1)
@@ -737,7 +740,7 @@ In previous simulations, we varied all parameters, choosing somehow arbitrary va
 
 #### RDD
 
-```{r}
+```{r RDD_usual}
 sim_param_base_usual_RDD <- tibble(
   n_days = 3652,
   n_cities = 1,
@@ -748,13 +751,10 @@ sim_param_base_usual_RDD <- tibble(
 )
 
 vect_n_days <- 3652
-vect_p_obs_treat <- c(0.012, 0.02, 0.05, 0.1)
-vect_percent_effect_size <- c(2, 5, 12, 20)
+vect_p_obs_treat <- c(0.012, 0.02, 0.03, 0.04, 0.05, 0.1)
+vect_percent_effect_size <- 8
 vect_iv_strength <- NA
-vect_formula <- c(
-  "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday",
-  "resp_total ~ treated + temperature + temperature_squared | city + month^year + weekday"
-)
+vect_formula <- c("death_total ~ treated + temperature + temperature_squared | city + month^year + weekday")
 
 sim_param_unique_usual_RDD <- 
   map_dfr(
@@ -764,7 +764,8 @@ sim_param_unique_usual_RDD <-
   ) %>% 
   distinct() 
 
-sim_param_evol_usual_RDD <- prepare_sim_param(sim_param_unique_usual_RDD, n_iter = 3000) %>% 
+sim_param_evol_usual_RDD <- 
+  prepare_sim_param(sim_param_unique_usual_RDD, n_iter = 3000) %>% 
   filter(id_method == "RDD") %>% 
   mutate(p_obs_treat = p_obs_treat*5) #Because divide by 5 in prepare_sim_param
 ```
@@ -775,20 +776,17 @@ sim_param_evol_usual_RDD <- prepare_sim_param(sim_param_unique_usual_RDD, n_iter
 sim_param_base_usual_reduced <- tibble(
   n_days = 2200,
   n_cities = 5,
-  p_obs_treat = 0.004, #about 45/(2200*5),
-  percent_effect_size = 11, 
+  p_obs_treat = 0.005, #57/(2200*5)
+  percent_effect_size = 34, 
   iv_strength = NA,
   formula = "resp_total ~ treated + temperature + temperature_squared | city + month^year + weekday"
 )
 
 vect_n_days <- 2200
-vect_p_obs_treat <- c(0.004, 0.01, 0.02, 0.05, 0.1)
-vect_percent_effect_size <- c(2, 5, 11, 20)
+vect_p_obs_treat <- c(0.005, 0.01, 0.02, 0.05, 0.1)
+vect_percent_effect_size <- c(8, 17, 34)
 vect_iv_strength <- NA
 vect_formula <- c(
-  # "death_total ~ treated",
-  "resp_total ~ treated + temperature + temperature_squared | city + month^year + weekday",
-  "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday",
   "copd_age_65_75 ~ treated + temperature + temperature_squared | city + month^year + weekday"
 )
 
@@ -800,7 +798,8 @@ sim_param_unique_usual_reduced <-
   ) %>% 
   distinct() 
 
-sim_param_evol_usual_reduced <- prepare_sim_param(sim_param_unique_usual_reduced, n_iter = 3000) %>% 
+sim_param_evol_usual_reduced <- 
+  prepare_sim_param(sim_param_unique_usual_reduced, n_iter = 3000) %>% 
   filter(id_method == "reduced_form") 
 ```
 
@@ -819,13 +818,9 @@ sim_param_base_usual_IV <- tibble(
 vect_n_days <- 2500
 vect_p_obs_treat <- 0.5
 vect_percent_effect_size <- 1.5
-vect_iv_strength <- c(0.01, 0.1, 0.2, 0.5, 0.7)
+vect_iv_strength <- seq(0.1, 0.8, by = 0.1)
 vect_formula <- c(
-  # "death_total ~ treated",
-  "resp_total ~ treated + temperature + temperature_squared | city + month^year + weekday",
-  "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday",
-  "copd_age_65_75 ~ treated + temperature + temperature_squared | city + month^year + weekday"
-)
+  "death_total ~ treated + temperature + temperature_squared | city + month^year + weekday")
 
 sim_param_unique_usual_IV <- 
   map_dfr(
@@ -835,8 +830,9 @@ sim_param_unique_usual_IV <-
   ) %>% 
   distinct() 
 
-sim_param_evol_usual_IV <- prepare_sim_param(sim_param_unique_usual_IV, n_iter = 3000) %>% 
-  filter(id_method == "IV") 
+sim_param_evol_usual_IV <- 
+  prepare_sim_param(sim_param_unique_usual_IV, n_iter = 3000) %>% 
+  filter(id_method == "IV")
 ```
 
 #### Running simulations
@@ -848,12 +844,12 @@ sim_param_evol_usual <- sim_param_evol_usual_RDD %>%
 
 sim_evol_usual <- run_all_sim(nmmaps_data, sim_param_evol_usual, save_every = 10000, "sim_evol_usual")
 
-# saveRDS(sim_evol_usual, here("R", "Outputs", "sim_evol_usual.RDS"))
+saveRDS(sim_evol_usual, here("R", "Outputs", "sim_evol_usual.RDS"))
 
 summary_evol_usual <- summarise_simulations(sim_evol_usual) %>% 
   mutate(outcome = fct_relevel(outcome, "copd_age_65_75", "resp_total", "death_total"))
 
-# saveRDS(summary_evol_usual, here("R", "Outputs", "summary_evol_usual.RDS"))
+saveRDS(summary_evol_usual, here("R", "Outputs", "summary_evol_usual.RDS"))
 ```
 
 
