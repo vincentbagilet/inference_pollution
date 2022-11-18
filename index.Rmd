@@ -1,28 +1,24 @@
 ---
-title: "Why Acute Health Effects of Air Pollution Could be Inflated"
+title: "Why Some Acute Health Effects of Air Pollution Could be Inflated"
 image: "images/illustration_car.png"
 angle: 130
 site: distill::distill_website
 links:
-  - label: '`r fontawesome::fa("github")` GitHub'
-    url: "https://github.com/vincentbagilet/inference_pollution"
+  # - label: '`r fontawesome::fa("github")` GitHub'
+  #   url: "https://github.com/vincentbagilet/inference_pollution"
+  - label: 'Vincent Bagilet'
+    url: "https://vincentbagilet.github.io/"
+  - label: 'Léo Zabrocki-Hallak'
+    url: "https://lzabrocki.github.io/"
 output:
   postcards::trestles
 ---
  
 Hi and welcome!
 
-This website gathers code and additional material for the paper [Why Acute Health Effects of Air Pollution Could be Inflated](wp_bagilet_zabrocki.pdf) by [Vincent Bagilet](https://vincentbagilet.github.io/) and [Léo Zabrocki](https://lzabrocki.github.io/).
+This website gathers code and additional material for the paper [Why Some Acute Health Effects of Air Pollution Could be Inflated](wp_bagilet_zabrocki.pdf) by [Vincent Bagilet](https://vincentbagilet.github.io/) and [Léo Zabrocki-Hallak](https://lzabrocki.github.io/).
 
-The website is still under construction. It is structured as follows: 
-
-- A PDF version of the current version of the paper is accessible through the "[Paper](wp_bagilet_zabrocki.pdf)" tab.
-- A plain language summary is available in the "[Summary](summary.html)" tab.
-- The "[Intuition](intuition.html)" tab describes, though a simple example, the main mechanism that may lead to overestimating acute health effects of air pollution. This example is built on a simulation whose code is presented in this tab.
-- The code used to gather and analyze the literature can be accessed through the "Literature review" tab.
-- The "Simulations" tab describes the data wrangling process, a brief exploratory data analysis, the simulation choices that we made, all the code used for these simulations and resulting graphics that users can explore through a Shiny app. 
-<!-- - In the tab "[Avoiding traps](traps.html)", we put ourselves in the shoes of a researcher interested in running a study on the short term health effects of air pollution and through an example, we suggest a methodology to address the issues raised in our paper. -->
-- All the R code for this project is available in [its GitHub directory](https://github.com/vincentbagilet/inference_pollution).
+In this paper, we assess the ability of different statistical methods and research designs to accurately measure the short term health effects of air pollution. Based on our findings, we build a list of recommendations and pitfalls to avoid in future studies.
 
 
 
