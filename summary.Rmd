@@ -1,9 +1,15 @@
 ---
-title: "Plain language summary"
+title: "Summaries"
 description: |
   In this paper, we assess the ability of different statistical methods and research designs to accurately measure the short term health effects of air pollution. Based on our findings, we build a list of recommendations and pitfalls to avoid in future studies.
 site: distill::distill_website
 ---
+
+# Abstract
+
+Hundreds of studies have shown that air pollution affects health in the very short-run. Their results have played a key role in setting air quality standards. Yet, estimated effect sizes can vary widely across studies. Analyzing the results published in epidemiology and economics, we find that a substantial share of estimates are likely to be inflated due publication bias and a lack of statistical power. We then run real data simulations to identify the design parameters causing these issues. We show that this exaggeration may be driven by the small number of exogenous shocks leveraged, by the limited strength of the instruments used or by sparse outcomes. These concerns could extend to studies in other fields relying on comparable research designs. Our paper provides a principled workflow to evaluate and avoid the risk of exaggeration when conducting an observational study.
+
+# Plain language summary
 
 The negative health consequences of long term exposition to air pollution are well known to the general public. Yet, a vast scientific literature has shown that short term impacts can also be disastrous. Air pollution peaks increase the number of deaths and admissions in hospitals for respiratory and cardiovascular causes, even immediately on the day of the event. Importantly, the literature has shown that even low levels of air pollution can impair health. All this evidence led to the implementation of public policies to mitigate these adverse health effects. Inaccurate estimations of the short term health effects of air pollution may lead to an inadequate public policy response to this issue.
 

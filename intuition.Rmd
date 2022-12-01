@@ -1,20 +1,17 @@
 ---
 title: "Understanding Consequences of Low Statistical Power in the NHST Framework"
-description: |
-  An Imaginary but Illustrative Experiment.
 author:
   - name: Vincent Bagilet 
     url: https://vincentbagilet.github.io/
     affiliation: Columbia University
     affiliation_url: https://www.columbia.edu/
-  - name: Léo Zabrocki 
-    url: https://www.parisschoolofeconomics.eu/en/
-    affiliation: Paris School of Economics
-    affiliation_url: https://www.parisschoolofeconomics.eu/en/
+  - name: Léo Zabrocki-Hallak
+    url: https://lzabrocki.github.io/
+    affiliation: RFF-CMCC EIEE
+    affiliation_url: https://www.eiee.org/
 date: "`r Sys.Date()`"
 output:
   distill::distill_article:
-    keep_md: true
     toc: true
     toc_depth: 2
 editor_options: 
@@ -27,43 +24,42 @@ text-align: justify}
 </style>
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(cache.path = "cache/",
-               cache = FALSE,
-               # fig.path = "images/",
-               echo = TRUE, #set to false to hide code
-               message = FALSE,
-               warning = FALSE,
-               out.width = "85%",
-               dpi = 200,
-               fig.align = "center")
+knitr::opts_chunk$set(
+  cache.path = "cache/",
+  cache = FALSE,
+  fig.path = "images/",
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  out.width = "85%",
+  dpi = 300,
+  fig.align = "center"
+)
 ```
-
 
 Researchers working in the null hypothesis significance testing framework (NHST) are often unaware that statistically significant estimates cannot be trusted when their studies have a low statistical power. As explained by [Andrew Gelman and John Carlin (2014)](https://journals.sagepub.com/doi/full/10.1177/1745691614551642), when a study has a low statistical power (i.e., a low probability to get a statistically significant estimate), researchers have a higher chance to get statistically significant estimates that are inflated and of the wrong sign compared to the true effect size they are trying to capture. [Andrew Gelman and John Carlin (2014)](https://journals.sagepub.com/doi/full/10.1177/1745691614551642) call these two issues Type M (for magnitude) and S (for sign) errors. Studies on the acute health effects of air pollution may be prone to such matters as effect sizes are considered to be relatively small ([Michelle L. Bell et al. (2004)](https://www.annualreviews.org/doi/pdf/10.1146/annurev.publhealth.25.102802.124329), [Roger D. Peng Francesca Dominici (2008)](https://www.springer.com/gp/book/9780387781662)).
 
-
 In this document, we simulate a fictional randomized experiment on the impact of fine particulate matters PM$_{2.5}$ on daily mortality to help researchers build their intuition on the consequences of low statistical power.
-
-Should you have any questions or find coding errors, please do not hesitate to reach use at **vincent.bagilet@columbia.edu** and **leo.zabrocki@psemail.eu**.
 
 # Loading Packages
 
-We first load the packages:
+We first load the packages and our custom ggplot2 themes:
 
-```{r packages, message=FALSE, warning=FALSE}
-# loading packages
-library(here) # for files paths organization
-library(tidyverse) # for data manipulation and visualization
-library(lmtest) # for inference of estimated coefficients
-library(sandwich) # for robust standard errors
-library(patchwork) # for combining plots
-library(knitr) # for building the document
-library(DT) # for building nice table
-library(mediocrethemes)
+```{r packages}
+library("groundhog")
+packages <- c(
+  "here",
+  "tidyverse", 
+  "lmtest", 
+  "sandwich",
+  "patchwork", 
+  "knitr",
+  "DT",
+  "vincentbagilet/mediocrethemes"
+)
+groundhog.library(packages, "2022-11-28")
 
-set.seed(42)
-
-set_mediocre_all()
+set_mediocre_all(pal = "leo") 
 ```
 
 # Setting-up the Experiment
@@ -75,7 +71,10 @@ To simulate the experiment, we create a Science Table where we observe the poten
 * We draw the distribution of non-accidental mortality counts $Y_i(0)$ from a Negative Binomial distribution with a mean of 106 and a dispersion of 38 (parameter `size` in the `rnbinom` function). The variance is equal to $\simeq$ 402. We choose the parameters to approximate the distribution of non-accidental mortality counts in a major European city.
 * Our average treatment effect of the air pollutant increase leads to about 1 additional death, which represents a 1% increase in the mean of the outcome. It is a larger effect than what has been found in a very large study based on 625 cities. C. Liu *et al*. (New England Journal of Medecine, 2019) found that a 10 $\mu g/m^{3}$ in PM$_{2.5}$ was associated with an increase of 0.68% (95% CI, 0.59 to 0.77) in daily all-cause mortality.
 
-```{r create_science_table}
+```{r}
+# set the seed
+set.seed(42)
+
 # create science table
 data_science_table <-
   tibble(index = c(1:366), y_0 = rnbinom(366, mu = 106, size = 38)) %>%
@@ -84,7 +83,7 @@ data_science_table <-
 
 We display below the Science Table:
 
-```{r display_science_table, echo=FALSE}
+```{r}
 # display the science table
 data_science_table %>%
   mutate(individual_treatment_effect = paste("+", y_1 - y_0)) %>%
@@ -101,7 +100,7 @@ data_science_table %>%
 
 And we plot below the full density distribution of the two potential outcomes:
 
-```{r plot_density_pot_out, echo=FALSE, message=FALSE}
+```{r}
 # plot the density distributions of the potential outcomes
 graph_density_po <- data_science_table %>%
   rename("Y(0)" = y_0, "Y(1)" = y_1) %>%
@@ -110,21 +109,22 @@ graph_density_po <- data_science_table %>%
                values_to = "values") %>%
   group_by(`Potential Outcomes`) %>%
   mutate(mean_outcomes = mean(values)) %>%
-  ggplot(aes(x = values)) +
-  geom_density(aes(
-    colour = `Potential Outcomes`, 
-    fill = `Potential Outcomes`
-  ), alpha = 0) +
+  ggplot(
+    aes(x = values, colour = `Potential Outcomes`, fill = `Potential Outcomes`)
+  ) +
+  geom_density() +
   geom_vline(
     aes(xintercept = mean_outcomes, colour = `Potential Outcomes`),
     linetype = "dashed",
     key_glyph = "rect"
   ) +
-  xlab("Daily Count of Non-Accidental Deaths") + ylab("") +
   labs(
-    colour = "Potential Outcomes:", 
-    fill = "Potential Outcomes:"
-  ) 
+    x = "Daily Count of Non-Accidental Deaths",
+    y = NULL,
+    colour = "Potential Outcomes:",,
+    fill = "Potential Outcomes:") +
+  theme(axis.text.y = element_blank(),
+        axis.ticks.y = element_blank())
 
 # display the graph
 graph_density_po
@@ -135,136 +135,9 @@ graph_density_po
 #   filename = here::here("3.outputs", "graph_density_po.pdf"),
 #   width = 20,
 #   height = 10,
-#   units = "cm",
-#   device = cairo_pdf
+#   units = "cm"
 # )
 ```
-
-
-```{r eval=FALSE, include=FALSE}
-#
-# figures for paper's presentation
-#
-
-# first plot
-graph_density_po_1 <- data_science_table %>%
-  rename("Y(0)" = y_0, "Y(1)" = y_1) %>%
-  pivot_longer(cols = -c(index),
-               names_to = "Potential Outcomes",
-               values_to = "values") %>%
-  group_by(`Potential Outcomes`) %>%
-  mutate(mean_outcomes = mean(values)) %>%
-  ggplot(. , aes(x = values, colour = `Potential Outcomes`)) +
-  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  geom_density() +
-  geom_vline(aes(xintercept = mean_outcomes, colour = `Potential Outcomes`),
-             key_glyph = "rect") +
-  scale_colour_manual(values = c(NA, NA)) +
-  xlab("Daily Count of Non-Accidental Deaths") + ylab("") +
-  theme_custom() +
-  guides(colour = FALSE) +
-  theme(axis.text.y = element_blank(),
-        axis.ticks.y = element_blank())
-
-ggsave(
-  graph_density_po_1,
-  filename = here::here("3.outputs", "graph_density_po_1.pdf"),
-  width = 20,
-  height = 10,
-  units = "cm",
-  device = cairo_pdf
-)
-
-# second plot
-graph_density_po_2 <- data_science_table %>%
-  rename("Y(0)" = y_0, "Y(1)" = y_1) %>%
-  pivot_longer(cols = -c(index),
-               names_to = "Potential Outcomes",
-               values_to = "values") %>%
-  group_by(`Potential Outcomes`) %>%
-  mutate(mean_outcomes = mean(values)) %>%
-  ggplot(. , aes(x = values, colour = `Potential Outcomes`)) +
-  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  geom_density() +
-  geom_vline(
-    aes(xintercept = mean_outcomes, colour = `Potential Outcomes`),
-    linetype = "dashed",
-    key_glyph = "rect"
-  ) +
-  annotate(
-    "text",
-    x = 80,
-    y = 0.015,
-    label = "Y(0)",
-    size = 10,
-    colour = blue
-  ) +
-  scale_colour_manual(values = c(blue, NA)) +
-  xlab("Daily Count of Non-Accidental Deaths") + ylab("") +
-  theme_custom() +
-  guides(colour = FALSE) +
-  theme(axis.text.y = element_blank(),
-        axis.ticks.y = element_blank())
-
-ggsave(
-  graph_density_po_2,
-  filename = here::here("3.outputs", "graph_density_po_2.pdf"),
-  width = 20,
-  height = 10,
-  units = "cm",
-  device = cairo_pdf
-)
-
-
-# third plot
-graph_density_po_3 <- data_science_table %>%
-  rename("Y(0)" = y_0, "Y(1)" = y_1) %>%
-  pivot_longer(cols = -c(index),
-               names_to = "Potential Outcomes",
-               values_to = "values") %>%
-  group_by(`Potential Outcomes`) %>%
-  mutate(mean_outcomes = mean(values)) %>%
-  ggplot(. , aes(x = values, colour = `Potential Outcomes`)) +
-  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  geom_density() +
-  geom_vline(
-    aes(xintercept = mean_outcomes, colour = `Potential Outcomes`),
-    linetype = "dashed",
-    key_glyph = "rect"
-  ) +
-  annotate(
-    "text",
-    x = 80,
-    y = 0.015,
-    label = "Y(0)",
-    size = 10,
-    colour = blue
-  ) +
-  annotate(
-    "text",
-    x = 125,
-    y = 0.015,
-    label = "Y(1)",
-    size = 10,
-    colour = orange
-  ) +
-  scale_colour_manual(values = c(blue, orange)) +
-  xlab("Daily Count of Non-Accidental Deaths") + ylab("") +
-  theme_custom() +
-  guides(colour = FALSE) +
-  theme(axis.text.y = element_blank(),
-        axis.ticks.y = element_blank())
-
-ggsave(
-  graph_density_po_3,
-  filename = here::here("3.outputs", "graph_density_po_3.pdf"),
-  width = 20,
-  height = 10,
-  units = "cm",
-  device = cairo_pdf
-)
-```
-
 
 # Running the Experiment and Understanding its Inference Properties
 
@@ -274,10 +147,10 @@ In this section, we make the mad scientist run and analyze his experiment. We th
 
 The scientist runs a complete experiment where half of the units are randomly assigned to the treatment. We display below the Science Table and the outcomes observed by the scientists. $W$ is a binary variable representing the treatment allocation (i.e., it is equal to 1 is the unit is treated and 0 otherwise) and $Y^{\text{obs}}$ is the potential outcome observed by the scientist given the treatment assignment.
 
-```{r display_one_it, echo=FALSE}
+```{r}
 # we load the treatment assignment obtained by the scientist
 data_scientist_treatment_assignment <-
-  readRDS(here::here("R", "Data_Leo", "data_scientist_treatment_assignment.RDS"))
+  readRDS(here::here("data", "mad_scientist", "data_scientist_treatment_assignment.RDS"))
 
 # display table
 data_scientist_treatment_assignment %>%
@@ -300,7 +173,7 @@ data_scientist_treatment_assignment %>%
 
 The scientist then estimates the average treatment effect:
 
-```{r compute_one_it}
+```{r}
 # we compute the estimate of the treatment effect
 scientist_result <- data_scientist_treatment_assignment %>%
   # express observed outcomes according to
@@ -312,11 +185,7 @@ scientist_result <- data_scientist_treatment_assignment %>%
   broom::tidy(., conf.int = TRUE) %>%
   filter(term == "w") %>%
   select(estimate, p.value, conf.low, conf.high)
-```   
 
-The results are as follows:
-
-```{r display_res_one_it, echo=FALSE}
 # display results
 scientist_result %>%
   mutate_all( ~ round(., 2)) %>%
@@ -327,8 +196,7 @@ scientist_result %>%
     "95% CI Upper Bound" = conf.high
   ) %>%
   kable(., align = rep('c', 4))
-```
-
+```   
 
 He obtains an estimate for the treatment effect of 4.16 with a *p*-value of $\simeq$ 0.04. "Hooray", the estimate is statistically significant at the 5% level. The "significant" result fulfills the scientist who immediately starts writing his research paper.
 
@@ -359,6 +227,8 @@ We run 10,000 experiments with the code below:
 
 ```{r, eval = FALSE}
 # run 1000 additional experiments
+set.seed(42)
+
 results_10000_experiments <-
   rerun(10000, function_run_experiment(data_science_table)) %>%
   bind_rows()
@@ -367,18 +237,15 @@ results_10000_experiments <-
 beepr::beep(sound = 5)
 
 # save simulation results
-# saveRDS(
-#   results_10000_experiments, 
-#   here::here("R", "Data_Leo", "data_results_10000_experiments.RDS")
-# )
+saveRDS(results_10000_experiments, here::here("data", "mad_scientist", "data_results_10000_experiments.RDS"))
 ```  
 
-As it takes few minutes, we load the results that we already stored in the `data_results_10000_experiments.RDS` file:
+As it takes few minutes, we load the results that we already stored in the `data_results_10000_experiments.RDS` file in the `1.data` folder:
 
 ```{r}
 # load results
 data_results_10000_experiments <-
-  readRDS(here::here("R", "Data_Leo", "data_results_10000_experiments.RDS"))
+  readRDS(here::here("data", "mad_scientist", "data_results_10000_experiments.RDS"))
 
 # add scientist's result
 data_results_10000_experiments <-
@@ -387,7 +254,7 @@ data_results_10000_experiments <-
 
 As done by the [retrodesign](https://andytimm.github.io/2019/02/05/Intro_To_retrodesign.html) R package, we plot the estimates of all experiments and color them according to the 5% statistical significance threshold:
 
-```{r, fig.asp=0.57, echo=FALSE}
+```{r}
 # add iteration index
 data_results_10000_experiments <- data_results_10000_experiments %>%
   mutate(iteration = 1:10001) %>%
@@ -397,283 +264,83 @@ data_results_10000_experiments <- data_results_10000_experiments %>%
 graph_experiment_results_dots <-
   ggplot(
     data_results_10000_experiments,
-    aes(x = iteration, y = estimate, color = statistically_significant)
+    aes(x = iteration, y = estimate, color = statistically_significant, shape = statistically_significant)
   ) +
-  geom_point(shape = 16,
-             size = 1,
-             alpha = 0.6) +
-  geom_hline(yintercept = 1,
-             size = 0.5,
-             colour = "black") +
+  geom_point(size = 1, alpha = 0.8) +
+  scale_shape_manual(
+    name = "Statistically Significant at the 5% Level", 
+    values = c(1, 16)
+  ) +
+  scale_color_manual(
+    name = "Statistically Significant at the 5% Level", 
+    values = c("#0081a7", "#f07167")
+  ) +
+  geom_linerange(xmin = 1, xmax = 10000, y = 1, size = 0.5,
+             colour = "black",
+             linetype = "solid") +
   scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
   scale_y_continuous(breaks = scales::pretty_breaks(n = 14)) +
-  labs(
-    x = "Iteration", 
-    y = "Estimate", 
-    color = "Statistically Significant at the 5% Level"
-  ) +
-  guides(colour = guide_legend(override.aes = list(alpha = 1, size = 3)))
+  xlab("Iteration") + ylab("Estimate") +
+  guides(colour = guide_legend(override.aes = list(alpha = 1, size = 3))) +
+  theme(panel.grid.major.y = element_blank(),
+        # axis ticks
+        axis.ticks.x = element_line(size = 0.5, color = "black"),
+        axis.ticks.y = element_line(size = 0.5, color = "black"),
+        axis.ticks.length = unit(0.15, "cm"),
+        legend.justification = "left")
+
 
 # display the graph
 graph_experiment_results_dots
 
-# save the graph
-# ggsave(
-#   graph_experiment_results_dots,
-#   filename = here::here("3.outputs", "graph_experiment_results.pdf"),
-#   width = 20,
-#   height = 10,
-#   units = "cm",
-#   device = cairo_pdf
-# )
-```
-
-```{r eval=FALSE, include=FALSE}
-#
-# figures for paper's presentation
-#
-
-# first plot
-graph_experiment_results_dots_1 <-
-  ggplot(
-    data_results_10000_experiments,
-    aes(x = iteration, y = estimate, color = statistically_significant)
-  ) +
-  geom_point(
-    shape = 16,
-    size = 1,
-    alpha = 0.6,
-    colour = NA
-  ) +
-  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  scale_y_continuous(breaks = scales::pretty_breaks(n = 14)) +
-  xlab("Iteration") + ylab("Estimate") +
-  theme_custom()
-
+#save the graph
 ggsave(
-  graph_experiment_results_dots_1,
-  filename = here::here("3.outputs", "graph_experiment_results_dots_1.pdf"),
-  width = 20,
-  height = 10,
-  units = "cm",
-  device = cairo_pdf
-)
-
-# second plot
-graph_experiment_results_dots_2 <-
-  ggplot(
-    data_results_10000_experiments,
-    aes(x = iteration, y = estimate, color = statistically_significant)
-  ) +
-  geom_point(
-    shape = 16,
-    size = 1,
-    alpha = 0.6,
-    colour = blue
-  ) +
-  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  scale_y_continuous(breaks = scales::pretty_breaks(n = 14)) +
-  xlab("Iteration") + ylab("Estimate") +
-  theme_custom()
-
-ggsave(
-  graph_experiment_results_dots_2,
-  filename = here::here("3.outputs", "graph_experiment_results_dots_2.pdf"),
-  width = 20,
-  height = 10,
-  units = "cm",
-  device = cairo_pdf
-)
-
-# third plot
-graph_experiment_results_dots_3 <-
-  ggplot(
-    data_results_10000_experiments,
-    aes(x = iteration, y = estimate, color = statistically_significant)
-  ) +
-  geom_point(shape = 16,
-             size = 1,
-             alpha = 0.6) +
-  scale_color_manual(values = c(blue, orange)) +
-  annotate(
-    "text",
-    x = 5000,
-    y = -8,
-    label = "Red = Statistically Significant at the 5% Level",
-    size = 5,
-    colour = orange
-  ) +
-  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  scale_y_continuous(breaks = scales::pretty_breaks(n = 14)) +
-  xlab("Iteration") + ylab("Estimate") +
-  theme_custom() +
-  guides(colour = FALSE)
-
-ggsave(
-  graph_experiment_results_dots_3,
-  filename = here::here("3.outputs", "graph_experiment_results_dots_3.pdf"),
-  width = 20,
-  height = 10,
-  units = "cm",
-  device = cairo_pdf
-)
-
-# fourth plot
-graph_experiment_results_dots_4 <-
-  ggplot(
-    data_results_10000_experiments,
-    aes(x = iteration, y = estimate, color = statistically_significant)
-  ) +
-  geom_point(shape = 16,
-             size = 1,
-             alpha = 0.6) +
-  geom_hline(yintercept = 1,
-             size = 0.5,
-             colour = "black") +
-  scale_color_manual(values = c(blue, orange)) +
-  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  scale_y_continuous(breaks = scales::pretty_breaks(n = 14)) +
-  xlab("Iteration") + ylab("Estimate") +
-  theme_custom() +
-  guides(colour = FALSE)
-
-ggsave(
-  graph_experiment_results_dots_4,
-  filename = here::here("3.outputs", "graph_experiment_results_dots_4.pdf"),
-  width = 20,
-  height = 10,
-  units = "cm",
-  device = cairo_pdf
+  graph_experiment_results_dots,
+  filename = here::here("images", "graph_experiment_results.pdf"),
+  width = 30,
+  height = 15,
+  units = "cm"
 )
 ```
 
 We can see on this graph that statistically significant estimates overestimate the true effect size. Besides, a fraction of significant estimates are of the wrong sign! As an alternative visualization of the replication exercise, we also plot 100 point estimates with their 95% confidence intervals:
 
-```{r, echo = FALSE, message = FALSE, warning = FALSE}
+```{r}
 # create the graph
 graph_ci <- data_results_10000_experiments %>%
   slice(1:100) %>%
   mutate(iteration = row_number(),
          significant = ifelse(p.value <= 0.05, "True", "False")) %>%
-  ggplot(.,
-         aes(
-           x = iteration,
-           colour = significant,
-           y = estimate,
-           ymin = conf.low,
-           ymax = conf.high
-         )) +
-  geom_hline(yintercept = 0, colour = "black") +
-  geom_pointrange(lwd = 0.3) +
-  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  scale_y_continuous(breaks = scales::pretty_breaks(n = 15)) +
-  labs(
-    x = "Iteration", 
-    y = "Estimate", 
-    color = "Statistically Significant at the 5% Level"
-  ) 
-
-# display the graph
-graph_ci
-
-# save the graph
-# ggsave(
-#   graph_ci,
-#   filename = here::here("3.outputs", "graph_ci.pdf"),
-#   width = 30,
-#   height = 12,
-#   units = "cm",
-#   device = cairo_pdf
-# )
-```       
-       
-       
-```{r eval=FALSE, include=FALSE}
-#
-# figures for the job market presentation
-#
-
-# first figure
-graph_ci_1 <- data_results_10000_experiments %>%
-  slice(1:100) %>%
-  mutate(
-    iteration = row_number(),
-    scientist_result = ifelse(iteration == 1, "True", "False")
-  ) %>%
   ggplot(
-    .,
     aes(
       x = iteration,
-      colour = scientist_result,
+      colour = significant,
       y = estimate,
       ymin = conf.low,
       ymax = conf.high
     )
   ) +
-  geom_hline(yintercept = 0,
-             size = 0.1,
-             colour = "black") +
+  geom_hline(yintercept = 0, colour = "black") +
   geom_pointrange(lwd = 0.3) +
-  scale_colour_manual(values = c(NA, orange)) +
   scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  scale_y_continuous(breaks = scales::pretty_breaks(n = 15)) +
-  xlab("Iteration") + ylab("Estimate") +
-  theme_custom() +
-  guides(colour = FALSE)
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 8)) +
+  labs(x = "Iteration",
+       y = "Estimate",
+       color = "Statistically Significant at the 5% Level")
 
-ggsave(
-  graph_ci_1,
-  filename = here::here("3.outputs", "graph_ci_1.pdf"),
-  width = 20,
-  height = 10,
-  units = "cm",
-  device = cairo_pdf
-)
+# display the graph
+graph_ci
 
-
-# second figure
-graph_ci_2 <- data_results_10000_experiments %>%
-  slice(1:100) %>%
-  mutate(iteration = row_number(),
-         significant = ifelse(p.value <= 0.05, "True", "False")) %>%
-  ggplot(.,
-         aes(
-           x = iteration,
-           colour = significant,
-           y = estimate,
-           ymin = conf.low,
-           ymax = conf.high
-         )) +
-  geom_hline(yintercept = 0,
-             size = 0.1,
-             colour = "black") +
-  geom_pointrange(lwd = 0.3) +
-  scale_colour_manual(values = c(blue, orange)) +
-  annotate(
-    "text",
-    x = 60,
-    y = -8,
-    label = "Red = Statistically Significant at the 5% Level",
-    size = 5,
-    colour = orange
-  ) +
-  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  scale_y_continuous(breaks = scales::pretty_breaks(n = 15)) +
-  xlab("Iteration") + ylab("Estimate") +
-  theme_custom() +
-  guides(colour = FALSE)
-
-ggsave(
-  graph_ci_2,
-  filename = here::here("3.outputs", "graph_ci_2.pdf"),
-  width = 20,
-  height = 10,
-  units = "cm",
-  device = cairo_pdf
-)
-```
-
-
+# # save the graph
+# ggsave(
+#   graph_ci,
+#   filename = here::here("3.outputs", "graph_ci.pdf"),
+#   width = 30,
+#   height = 12,
+#   units = "cm"
+# )
+```       
+       
 ### Computing Statistical Power, Type M and S Errors
 
 To understand the inference properties of this experiment, we compute three metrics:
@@ -725,6 +392,9 @@ Only `r ci_coverage_rate`% the intervals capture the true effect size! With lowe
 Now, imagine that the mad scientist is able to triple the sample of his experiment. We add 732 additional observations:
 
 ```{r, echo=TRUE}
+# set the seed
+set.seed(42)
+
 # add extra data
 extra_data <-
   tibble(index = c(367:1098),
@@ -741,31 +411,29 @@ We run 10,000 experiments for a sample of 1098 daily observations:
 
 ```{r, eval = FALSE}
 # run 10000 additional experiments
-results_large_sample_experiments <- 
-  rerun(10000, function_run_experiment(data_science_table)) %>%
+set.seed(42)
+
+results_large_sample_experiments <- rerun(10000, function_run_experiment(data_science_table)) %>%
   bind_rows()
 
 # make sound when code has finished to run
 beepr::beep(sound = 5)
 
 # save simulation results
-# saveRDS(
-#   results_large_sample_experiments, 
-#   here::here("R", "Data_Leo", "data_results_large_sample_experiments.RDS")
-# )
+saveRDS(results_large_sample_experiments, here::here("data", "mad_scientist", "data_results_large_sample_experiments.RDS"))
 ```  
 
-As it takes few minutes, we load the results that we have already stored in the `data_results_large_sample_experiments.RDS` file.
+As it takes few minutes, we load the results that we have already stored in the `data_results_large_sample_experiments.RDS` file of the `1.data` folder:
 
-```{r echo=FALSE}
+```{r}
 # load results
 data_results_large_sample_experiments <-
-  readRDS(here::here("R", "Data_Leo", "data_results_large_sample_experiments.RDS"))
+  readRDS(here::here("data", "mad_scientist", "data_results_large_sample_experiments.RDS"))
 ```  
 
 We plot the density distribution of the initial and new experiment:
 
-```{r echo=FALSE, message = FALSE, warning = FALSE}
+```{r, fig.width=10, fig.height=5}
 # add sample size indicator
 data_results_10000_experiments <- data_results_10000_experiments %>%
   mutate(sample_size = "366 Observations")
@@ -777,85 +445,22 @@ data_results_large_sample_experiments <-
 # draw density distribution of estimates
 graph_estimates_large_sample <- data_results_10000_experiments %>%
   bind_rows(., data_results_large_sample_experiments) %>%
-  ggplot(aes(
-    x = estimate, 
-    colour = fct_rev(sample_size), 
-    fill = fct_rev(sample_size))
-  ) +
+  ggplot(., aes(x = estimate, colour = fct_rev(sample_size))) +
   geom_density() +
+  scale_color_manual(name = "Sample Size", values = c("#0081a7", "#f07167")) +
   scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
   xlab("Estimates") + ylab("") +
-  labs(
-    x = "Estimates", 
-    y = "", 
-    color = "Sample Size",
-    fill = "Sample Size"
-  ) +
   theme(axis.text.y = element_blank(),
         axis.ticks.y = element_blank())
 
-graph_estimates_large_sample
-
-# save the graph
+# # save the graph
 # ggsave(
 #   graph_estimates_large_sample,
 #   filename = here::here("3.outputs", "graph_estimates_large_sample.pdf"),
 #   width = 20,
 #   height = 10,
-#   units = "cm",
-#   device = cairo_pdf
+#   units = "cm"
 # )
-```
-
-
-```{r eval=FALSE, include=FALSE}
-#
-# figure paper's presentation
-#
-
-
-# draw density distribution of estimates
-graph_estimates_large_sample_pres <- data_results_10000_experiments %>%
-  bind_rows(., data_results_large_sample_experiments) %>%
-  ggplot(., aes(x = estimate, colour = fct_rev(sample_size))) +
-  geom_vline(xintercept = 1) +
-  geom_density() +
-  scale_color_manual(name = "Sample Size", values = c(blue, orange)) +
-  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  annotate(
-    "text",
-    x = -3,
-    y = 0.1,
-    label = "366 Obs.",
-    size = 5,
-    colour = blue
-  ) +
-  annotate(
-    "text",
-    x = -1,
-    y = 0.3,
-    label = "1098 Obs.",
-    size = 5,
-    colour = orange
-  ) +
-  xlab("Estimates") + ylab("") +
-  guides(colour = FALSE) +
-  theme_custom() +
-  theme(axis.text.y = element_blank(),
-        axis.ticks.y = element_blank())
-
-# display the graph
-graph_estimates_large_sample_pres
-
-# save the graph
-ggsave(
-  graph_estimates_large_sample_pres,
-  filename = here::here("3.outputs", "graph_estimates_large_sample_pres.pdf"),
-  width = 20,
-  height = 10,
-  units = "cm",
-  device = cairo_pdf
-)
 ```
 
 We compute below the statistical power of this larger experiment:
@@ -866,7 +471,7 @@ power_large_exp <- data_results_large_sample_experiments %>%
   summarise(statistical_power = round(sum(p.value <= 0.05) / n() * 100, 0))
 ```
 
-The statistical power of this experiment is equal to `r `power_large_exp`%. We compute the average type M error:
+The statistical power of this experiment is equal to `r power_large_exp`%. We compute the average type M error:
 
 ```{r}
 # compute type m error
@@ -896,6 +501,5 @@ ci_coverage_rate_large_exp <-
 ```
 
 The coverage of 95% confidence intervals is equal to `r ci_coverage_rate_large_exp`%.
-
 
 With a sample size three times bigger, the statistical power of the experiment has increased but is still very low. Consequently, the exaggeration factor has decreased from `r type_m_large_exp` to `r type_m_large_exp`. The probability to make a type S error has been reduced a lot and is close to 1. The coverage rate of confidence intervals has increased but is still far from its 95% theoretical target.

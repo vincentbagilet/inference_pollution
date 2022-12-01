@@ -1,0 +1,27 @@
+Package: mediocrethemes
+Type: Package
+Title: Not particularly nice nor ugly ggplot themes
+Version: 0.1.3
+Authors@R: person("Vincent", "Bagilet", email = "vincent.bagilet@columbia.edu",
+      role = c("aut", "cre"))
+Description: This package provides not particularly nice and, hopefully, not particularly ugly ggplot themes.
+License: MIT + file LICENSE
+Encoding: UTF-8
+URL: https://vincentbagilet.github.io/mediocrethemes/
+LazyData: true
+Depends: R (>= 2.10), ggplot2 (>= 3.3.2)
+RoxygenNote: 7.2.1
+Suggests: knitr, rmarkdown, lintr, testthat
+VignetteBuilder: knitr
+Imports: grDevices, showtext, sysfonts, showtextdb, xaringanthemer,
+        curl, systemfonts
+RemoteType: git2r
+RemoteUrl:
+        file:///Users/vincentbagilet/R_groundhog/groundhog_library//git_clones/github/vincentbagilet_mediocrethemes
+RemoteRef: 273740b6a73fcadb39d00d6e2d4a9eaf26d000ba
+RemoteSha: 273740b6a73fcadb39d00d6e2d4a9eaf26d000ba
+NeedsCompilation: no
+Packaged: 2022-12-01 03:02:17 UTC; vincentbagilet
+Author: Vincent Bagilet [aut, cre]
+Maintainer: Vincent Bagilet <vincent.bagilet@columbia.edu>
+Built: R 4.2.2; ; 2022-12-01 03:02:20 UTC; unix

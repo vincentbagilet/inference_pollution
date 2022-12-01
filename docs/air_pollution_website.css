@@ -22,12 +22,12 @@ html {
   --aside-size:      12px;
   --fig-cap-size:    12px;
   /*-- Main font colors --*/
-  --title-color:     rgba(0, 25, 74, 0.8);
-  --header-color:    rgba(0, 25, 74, 0.8);
+  --title-color:     rgba(0, 129, 167, 1);
+  --header-color:    rgba(0, 129, 167, 1);
   --body-color:      rgba(0, 0, 0, 0.8);
   --aside-color:     rgba(0, 0, 0, 0.6);
   --fig-cap-color:   rgba(0, 0, 0, 0.6);
-  --hover-color:      rgba(0, 25, 74, 0.4);
+  --hover-color:      rgba(0, 129, 167, 0.6);
   /*-- Specify custom fonts ~~~ must be imported above   --*/
   --heading-font:    "Lora", serif;
   --body-font:       "Lora", serif;
@@ -62,9 +62,9 @@ d-appendix {
 .distill-site-header {
   --font-family:      'Lora', serif;
   --title-size:       21px;
-  --text-color:       rgba(0, 25, 74, 0.8);
+  --text-color:       rgba(0, 129, 167, 1);
   --text-size:        18px;
-  --hover-color:      rgba(0, 25, 74, 0.4);
+  --hover-color:      rgba(0, 129, 167, 0.6);
   --bkgd-color:       rgba(255, 255, 255, 0.8);
 }
 
@@ -80,7 +80,7 @@ d-appendix {
 
 /* Postcard headers */
 h1, h2, h3 {
-  color: rgba(0, 25, 74, 0.8);
+  color: rgba(0, 129, 167, 1);
 }
 
 p {
@@ -88,20 +88,20 @@ p {
 }
 
 a {
-	color: rgba(0, 25, 74, 0.8);
+	color: rgba(0, 129, 167, 1);
 }
 
 a:hover {
-	color: rgba(0, 25, 74, 0.4);
+	color: rgba(0, 129, 167, 0.6);
 }
 
 /* Buttons on postcard */
 .btn-outline-dark {
-    color: rgba(0, 25, 74, 0.8);
+    color: rgba(0, 129, 167, 1);
 }
 
 .btn-outline-dark:hover {
-    background-color: rgba(0, 25, 74, 0.8);
+    background-color: rgba(0, 129, 167, 1);
     color: white;
 }
 

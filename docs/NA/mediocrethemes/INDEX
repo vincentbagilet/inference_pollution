@@ -1,0 +1,9 @@
+colors_table            A table with different colors combinations for
+                        the theme
+palette_mediocre_d      Mediocre color palette
+scale_mediocre_d        Mediocre color scales
+set_mediocre_all        Sets the mediocre theme and colors for the
+                        whole document.
+theme_mediocre          Defines the ggplot theme with the default R
+                        colors.
+xaringan_mediocre       Mediocre xanringan theme
