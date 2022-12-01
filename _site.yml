@@ -32,12 +32,12 @@ navbar:
         - text: "Running the simulations"
           href: power_simulations.html
         - text: "Analysing simulations results"
-          href: power_simulations_analysis.html
+          href: simulation_results.html
         - text: "---"
         - text: "Exploratory data analysis"
         - text: "Data wrangling"
-    # - text: "Avoiding traps"
-    #   href: traps.html
+    - text: "Recommendations"
+      href: case_study_retro_power_analysis.html
   source_url: https://github.com/vincentbagilet/inference_pollution
   search: false
 output: distill::distill_article

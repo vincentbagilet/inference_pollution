@@ -27,10 +27,11 @@ text-align: justify}
 knitr::opts_chunk$set(
   cache.path = "cache/",
   cache = FALSE,
+  fig.path = "images/",
   echo = FALSE,
   message = FALSE,
   warning = FALSE,
-  out.width = "100%",
+  out.width = "85%",
   dpi = 300,
   fig.align = "center"
 )
