@@ -362,7 +362,7 @@ Apart from a few key terms, such as CI, 95 for instance, there are no huge diffe
 
 We then look at the pollutants considered in each article. We consider that a pollutant is studied if it is mentioned in the abstract. It is not an exact measure as some articles may mention pollutants without actually studying them but it remains an interesting metric.
 
-```{r fig.asp=0.7}
+```{r}
 effect_detected %>% 
   unnest(pollutant) %>% 
   mutate(pollutant = ifelse(is.na(pollutant), "Pollutant not detected", pollutant)) %>% 
@@ -386,7 +386,7 @@ It seems that, when the number of papers sudying a given pollutant is large, the
 
 As for pollutants, for some articles, we were able to retrieve studied outcomes depending on the words used in an abstract. We classified them into two categories: mortality and emergency.
 
-```{r fig.asp=0.7}
+```{r}
 effect_detected %>% 
   unnest(outcome) %>% 
   mutate(outcome = ifelse(is.na(outcome), "Outcome not detected", outcome)) %>% 
@@ -424,7 +424,7 @@ effect_detected %>%
 
 Looking more in details into the detection of effects, we get the following pattern:
 
-```{r fig.asp=0.7}
+```{r}
 effect_detected %>% 
   unnest(subpop) %>% 
   mutate(subpop = ifelse(is.na(subpop), "No subpopulation not detected", subpop)) %>% 
@@ -469,7 +469,7 @@ len %>%
 
 Our analysis is therefore to be taken with caution as there is a critical lack of information for this category.
 
-```{r fig.asp=0.7}
+```{r}
 effect_detected %>% 
   ggplot() +
   geom_density(aes(x = n_obs, color = has_effect_phrase), fill = NA) +
