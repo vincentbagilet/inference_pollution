@@ -20,6 +20,8 @@ navbar:
           href: automatic_lit_review_getting_abstracts.html
         - text: "Analysis of the standard literature"
           href: automatic_lit_review_analysis.html
+        - text: "Study of a meta-analysis"
+          href: meta_analysis_epi.html
         - text: "---"
         - text: "Analysis of the causal literature"
           href: causal_literature_overview.html

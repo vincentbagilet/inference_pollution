@@ -37,16 +37,18 @@ opts_chunk$set(fig.path = "images/",
 ```  
 
 ```{r packages, include=FALSE}
-library(tidyverse)
-library(fulltext)
-library(tidytext)
-library(wordcloud)
-library(retrodesign)
-library(mediocrethemes)
-library(lubridate)
-library(DT)
+library("groundhog")
+packages <- c(
+  "tidyverse", 
+  "tidytext", 
+  "wordcloud",
+  "retrodesign", 
+  "lubridate",
+  # "fulltext", #does not run with the last R version
+  "DT"
+)
+groundhog.library(packages, "2022-11-28")
 
-set_mediocre_all()
 set.seed(1)
 ```
 
@@ -111,7 +113,7 @@ metadata_scopus <- search$scopus$data %>%
   ) %>% 
   select(-coverDate)
 
-saveRDS(metadata_scopus, "R/Outputs/metadata_scopus.RDS")
+saveRDS(metadata_scopus, "data/literature_review_epi/outputs/metadata_scopus.RDS")
 
 metadata_entrez <- search_entrez$entrez$data %>% #search_entrez$entrez$data 
   as_tibble() %>% 
@@ -127,7 +129,7 @@ metadata_entrez <- search_entrez$entrez$data %>% #search_entrez$entrez$data
   ) %>% 
   select(-pubdate)
 
-saveRDS(metadata_entrez, "R/Outputs/metadata_entrez.RDS")
+saveRDS(metadata_entrez, "data/literature_review_epi/outputs/metadata_entrez.RDS")
 
 metadata_lit_review <- metadata_scopus %>% 
   rbind(metadata_entrez) %>% 
@@ -144,7 +146,7 @@ metadata_lit_review <- metadata_scopus %>%
   ungroup() %>%
   distinct(title, .keep_all = TRUE)
 
-# saveRDS(metadata_lit_review, "R/Outputs/metadata_lit_review.RDS")
+# saveRDS(metadata_lit_review, "data/literature_review_epi/outputs/metadata_lit_review.RDS")
 ```
 
 ## Retreiving abstracts
@@ -204,13 +206,13 @@ abstracts <- metadata_lit_review %>%
   get_abstracts()  %>% 
   left_join(metadata_lit_review, by = "doi") 
 
-# saveRDS(abstracts, "R/Outputs/abstracts.RDS")
+# saveRDS(abstracts, "data/literature_review_epi/outputs/abstracts.RDS")
 ```
 
 ## Retreiving effects and confidence interavals
 
 ```{r load_abstracts, include=FALSE}
-abstracts <- readRDS("R/Outputs/abstracts.RDS")
+abstracts <- readRDS("data/literature_review_epi/outputs/abstracts.RDS")
 ```
 
 Now that we have retrieved the abstracts, we want to extract the effects and associated confidence intervals. Part of the literature, displays directly effects and 95% confidence intervals in their abstracts.^[We analyze the characteristics of articles doing so in another document.] We identify effects and CIs as follows:
@@ -344,13 +346,13 @@ Reading manually through the abstracts for, we notice that some of the articles 
 We filtered at this stage to minimize the number of abstracts to read.
 
 ```{r checked_abstracts}
-valid_articles <- read_csv("R/Inputs/valid_articles.csv",
+valid_articles <- read_csv("data/literature_review_epi/inputs/valid_articles.csv",
                            col_types = cols(valid = col_logical(), title = col_skip()))
 
 estimates <- estimates_RR %>% 
   left_join(valid_articles, by = "doi") 
 
-# saveRDS(estimates, "R/Outputs/estimates.RDS")
+# saveRDS(estimates, "data/literature_review_epi/outputs/estimates.RDS")
 ```
 
 The `estimates` data frame displays, in each row, a point estimate and the lower and upper band of the CI along with the DOI of the article from which this estimate is extracted. We retrieved `r nrow(estimates)` valid point estimates and associated confidence intervals. We analyze them further in another document.
@@ -452,7 +454,7 @@ abstracts_in_numbers <- abstracts_only %>%
   mutate(abstract = str_remove_all(abstract, "-"))
 
 #Source: https://simplemaps.com/data/world-cities
-worldcities <- read_csv("R/Inputs/worldcities.csv")
+worldcities <- read_csv("data/literature_review_epi/inputs/worldcities.csv")
 
 worldcities_large <- worldcities %>%
   mutate(
@@ -622,7 +624,7 @@ Note that, some journals mention several of these fields as references. We choos
 
 ```{r journals}
 subject_subsubject_corres <-
-  read_csv("R/Inputs/scopus_subject_corres.csv") %>%
+  read_csv("data/literature_review_epi/inputs/scopus_subject_corres.csv") %>%
   rename(
     area_code = Code,
     subsubject_area = Field, 
@@ -630,7 +632,7 @@ subject_subsubject_corres <-
   ) %>%
   drop_na()
 
-journal_subsubject_corres <- read_csv("R/Inputs/scopus_journal_subsubject.csv") %>% 
+journal_subsubject_corres <- read_csv("data/literature_review_epi/inputs/scopus_journal_subsubject.csv") %>% 
   rename(
     journal = Title,
     subsubject_area = `Scopus Sub-Subject Area`,
@@ -690,7 +692,7 @@ abstracts_and_metadata <- abstracts %>%
   ) %>% #some articles have been published twice
   ungroup() 
 
-# saveRDS(abstracts_and_metadata, "R/Outputs/abstracts_and_metadata.RDS")
+# saveRDS(abstracts_and_metadata, "data/literature_review_epi/outputs/abstracts_and_metadata.RDS")
 ```
 
 
