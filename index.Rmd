@@ -8,17 +8,15 @@ links:
   #   url: "https://github.com/vincentbagilet/inference_pollution"
   - label: 'Vincent Bagilet'
     url: "https://vincentbagilet.github.io/"
-  - label: 'Léo Zabrocki-Hallak'
-    url: "https://lzabrocki.github.io/"
 output:
   postcards::trestles
 ---
  
 Hi and welcome!
 
-This website gathers code and additional material for the paper [Why Some Acute Health Effects of Air Pollution Could be Inflated](wp_bagilet_zabrocki.pdf) by [Vincent Bagilet](https://vincentbagilet.github.io/) and [Léo Zabrocki-Hallak](https://lzabrocki.github.io/).
+This is the website for the paper [Why Some Acute Health Effects of Air Pollution Could be Inflated](wp_bagilet_zabrocki.pdf). It gathers the paper, all the code and some additional material.
 
-In this paper, we assess the ability of different statistical methods and research designs to accurately measure the short term health effects of air pollution. Based on our findings, we build a list of recommendations and pitfalls to avoid in future studies.
+In this paper, I assess the ability of different statistical methods and research designs to accurately measure the short term health effects of air pollution. Based on the findings, I build a list of recommendations and pitfalls to avoid in future studies.
 
 
 

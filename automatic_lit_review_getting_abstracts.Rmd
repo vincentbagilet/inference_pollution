@@ -1,15 +1,6 @@
 ---
 title: "Automated literature review: getting abstracts"
 description: "In the present document, we retrieve abstracts for our automated review of the literature on short term health effects of air pollution, focusing mainly on the epidemiology literature."
-author:
-- name: Vincent Bagilet
-  url: https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet
-  affiliation: Columbia University
-  affiliation_url: https://www.columbia.edu/
-- name: Léo Zabrocki
-  url: https://www.parisschoolofeconomics.eu/en/
-  affiliation: Paris School of Economics
-  affiliation_url: https://www.parisschoolofeconomics.eu/en/
 date: "`r Sys.Date()`"
 output:
   distill::distill_article: 

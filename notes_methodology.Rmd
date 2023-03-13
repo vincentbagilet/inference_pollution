@@ -1,15 +1,6 @@
 ---
 title: "Power Simulations: Theory and Intuition"
 description: "In this document, we discuss the 'theory' behind our simulations and the overall implementation for these simulations."
-author:
-  - name: Vincent Bagilet 
-    url: https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet
-    affiliation: Columbia University
-    affiliation_url: https://www.columbia.edu/
-  - name: Léo Zabrocki 
-    url: https://www.parisschoolofeconomics.eu/en/
-    affiliation: Paris School of Economics
-    affiliation_url: https://www.parisschoolofeconomics.eu/en/
 date: "`r Sys.Date()`"
 output: 
   distill::distill_article:

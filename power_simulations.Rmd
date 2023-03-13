@@ -1,15 +1,6 @@
 ---
 title: "Running power simulations"
 description: "In this document, we carry out a simulation exercise to evaluate the inference properties of different research designs aiming at measuring the short-term effects of air pollution on health. We consider different types of quasi experiments and for each associate one or several identification strategies."
-author:
-  - name: Vincent Bagilet 
-    url: https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet
-    affiliation: Columbia University
-    affiliation_url: https://www.columbia.edu/
-  - name: Léo Zabrocki-Hallak
-    url: https://www.parisschoolofeconomics.eu/en/
-    affiliation: Paris School of Economics
-    affiliation_url: https://www.parisschoolofeconomics.eu/en/
 date: "`r Sys.Date()`"
 output: 
   distill::distill_article:

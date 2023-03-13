@@ -1,14 +1,5 @@
 ---
 title: "Retrospective Power Analysis of the Causal Inference Literature"
-author:
-  - name: Vincent Bagilet 
-    url: https://vincentbagilet.github.io/
-    affiliation: Columbia University - SIPA
-    affiliation_url: https://www.sipa.columbia.edu/
-  - name: Léo Zabrocki -Hallak
-    url: https://lzabrocki.github.io/
-    affiliation: RFF-CMCC EIEE
-    affiliation_url: https://www.eiee.org/
 date: "`r Sys.Date()`"
 output:
   distill::distill_article:

@@ -1,14 +1,5 @@
 ---
 title: "Results of Prospective Power Simulations"
-author:
-  - name: Vincent Bagilet 
-    url: https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet
-    affiliation: Columbia University
-    affiliation_url: https://www.columbia.edu/
-  - name: Léo Zabrocki-Hallak 
-    url: https://lzabrocki.github.io/
-    affiliation: RFF-CMCC EIEE
-    affiliation_url: https://www.eiee.org/
 date: "`r Sys.Date()`"
 output: 
   distill::distill_article:
