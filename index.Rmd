@@ -1,5 +1,5 @@
 ---
-title: "Why Some Acute Health Effects of Air Pollution Could be Inflated"
+title: "Estimating Small Effects: Short-term Health Effects of Air Pollution"
 image: "images/illustration_car.png"
 angle: 130
 site: distill::distill_website
@@ -14,11 +14,10 @@ output:
  
 Hi and welcome!
 
-This is the website for the paper [Why Some Acute Health Effects of Air Pollution Could be Inflated](wp_bagilet_zabrocki.pdf). It gathers the paper, all the code and some additional material.
+This is the website for the paper [Estimating Small Effects: Short-term Health Effects of Air Pollution](inference_pollution.pdf). It gathers the paper, all the code and some additional material.
 
-In this paper, I assess the ability of different statistical methods and research designs to accurately measure the short term health effects of air pollution. Based on the findings, I build a list of recommendations and pitfalls to avoid in future studies.
+In this paper, I assess the ability of various research designs in measuring small effects, that of air pollution on health in the short-term. 
 
-
-
+A previous version of this project was co-authored with Léo Zabrocki-Hallak who extensively contributed to this project.
 
 
