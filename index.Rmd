@@ -14,7 +14,7 @@ output:
  
 Hi and welcome!
 
-This is the website for the paper [Estimating Small Effects: Short-term Health Effects of Air Pollution](inference_pollution.pdf). It gathers the paper, all the code and some additional material.
+This is the website for the paper [Estimating Small Effects: Short-term Health Effects of Air Pollution](inference_pollution_paper.pdf). It gathers the paper, all the code and some additional material.
 
 In this paper, I assess the ability of various research designs in measuring small effects, that of air pollution on health in the short-term. 
 

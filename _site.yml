@@ -9,7 +9,7 @@ navbar:
     # - text: "Home"
     #   href: index.html
     - text: "Paper"
-      href: wp_bagilet_zabrocki.pdf
+      href: inference_pollution_paper.pdf
     - text: "Summary"
       href: summary.html
     - text: "Intuition"
