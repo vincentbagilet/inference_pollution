@@ -1,5 +1,5 @@
 ---
-title: "Understanding Consequences of Low Statistical Power in the NHST Framework"
+title: "Low Statistical Power in the NHST Framework"
 date: "`r Sys.Date()`"
 output:
   distill::distill_article:
@@ -14,11 +14,11 @@ body {
 text-align: justify}
 </style>
 
-```{r setup, include=FALSE}
+```{r intuition_setup, include=FALSE}
 knitr::opts_chunk$set(
   cache.path = "cache/",
   cache = FALSE,
-  fig.path = "images/",
+  fig.path = "images/intuition/",
   echo = FALSE,
   message = FALSE,
   warning = FALSE,
@@ -36,7 +36,7 @@ In this document, we simulate a fictional randomized experiment on the impact of
 
 We first load the packages and our custom ggplot2 themes:
 
-```{r packages}
+```{r intuition_packages}
 library("groundhog")
 packages <- c(
   "here",
@@ -62,7 +62,9 @@ To simulate the experiment, we create a Science Table where we observe the poten
 * We draw the distribution of non-accidental mortality counts $Y_i(0)$ from a Negative Binomial distribution with a mean of 106 and a dispersion of 38 (parameter `size` in the `rnbinom` function). The variance is equal to $\simeq$ 402. We choose the parameters to approximate the distribution of non-accidental mortality counts in a major European city.
 * Our average treatment effect of the air pollutant increase leads to about 1 additional death, which represents a 1% increase in the mean of the outcome. It is a larger effect than what has been found in a very large study based on 625 cities. C. Liu *et al*. (New England Journal of Medecine, 2019) found that a 10 $\mu g/m^{3}$ in PM$_{2.5}$ was associated with an increase of 0.68% (95% CI, 0.59 to 0.77) in daily all-cause mortality.
 
-```{r}
+We display below the Science Table:
+
+```{r intuition_science_table}
 # set the seed
 set.seed(42)
 
@@ -70,11 +72,7 @@ set.seed(42)
 data_science_table <-
   tibble(index = c(1:366), y_0 = rnbinom(366, mu = 106, size = 38)) %>%
   mutate(y_1 = y_0 + rpois(n(), mean(y_0) * 1 / 100))
-```
 
-We display below the Science Table:
-
-```{r}
 # display the science table
 data_science_table %>%
   mutate(individual_treatment_effect = paste("+", y_1 - y_0)) %>%
@@ -91,7 +89,7 @@ data_science_table %>%
 
 And we plot below the full density distribution of the two potential outcomes:
 
-```{r}
+```{r intuition_density_distrib}
 # plot the density distributions of the potential outcomes
 graph_density_po <- data_science_table %>%
   rename("Y(0)" = y_0, "Y(1)" = y_1) %>%
@@ -138,7 +136,7 @@ In this section, we make the mad scientist run and analyze his experiment. We th
 
 The scientist runs a complete experiment where half of the units are randomly assigned to the treatment. We display below the Science Table and the outcomes observed by the scientists. $W$ is a binary variable representing the treatment allocation (i.e., it is equal to 1 is the unit is treated and 0 otherwise) and $Y^{\text{obs}}$ is the potential outcome observed by the scientist given the treatment assignment.
 
-```{r}
+```{r intuition_science_table_obs}
 # we load the treatment assignment obtained by the scientist
 data_scientist_treatment_assignment <-
   readRDS(here::here("data", "mad_scientist", "data_scientist_treatment_assignment.RDS"))
@@ -164,7 +162,7 @@ data_scientist_treatment_assignment %>%
 
 The scientist then estimates the average treatment effect:
 
-```{r}
+```{r intuition_ate}
 # we compute the estimate of the treatment effect
 scientist_result <- data_scientist_treatment_assignment %>%
   # express observed outcomes according to
@@ -195,7 +193,7 @@ He obtains an estimate for the treatment effect of 4.16 with a *p*-value of $\si
 
 Unfortunately for the scientist, we are in position where we have much more information than him. We observe the two potential outcomes of each day and we know that the treatment effect is about +1 daily death. To gauge the inference properties of an experiment with this sample size, we replicate 10,000 additional experiments. We use the following function to carry out one iteration of the experiment:
 
-```{r}
+```{r intuition_run_exp, echo=TRUE}
 # first add the treatment vector to the science table
 data_science_table <- data_science_table %>%
   mutate(w = c(rep(0, n() / 2), rep(1, n() / 2)))
@@ -216,7 +214,7 @@ function_run_experiment <- function(data) {
 
 We run 10,000 experiments with the code below:
 
-```{r, eval = FALSE}
+```{r intuition_iterate, eval = FALSE}
 # run 1000 additional experiments
 set.seed(42)
 
@@ -233,7 +231,7 @@ saveRDS(results_10000_experiments, here::here("data", "mad_scientist", "data_res
 
 As it takes few minutes, we load the results that we already stored in the `data_results_10000_experiments.RDS` file in the `1.data` folder:
 
-```{r}
+```{r intuition_load_exp}
 # load results
 data_results_10000_experiments <-
   readRDS(here::here("data", "mad_scientist", "data_results_10000_experiments.RDS"))
@@ -245,7 +243,7 @@ data_results_10000_experiments <-
 
 As done by the [retrodesign](https://andytimm.github.io/2019/02/05/Intro_To_retrodesign.html) R package, we plot the estimates of all experiments and color them according to the 5% statistical significance threshold:
 
-```{r}
+```{r intuition_all_draws}
 # add iteration index
 data_results_10000_experiments <- data_results_10000_experiments %>%
   mutate(iteration = 1:10001) %>%
@@ -296,7 +294,7 @@ ggsave(
 
 We can see on this graph that statistically significant estimates overestimate the true effect size. Besides, a fraction of significant estimates are of the wrong sign! As an alternative visualization of the replication exercise, we also plot 100 point estimates with their 95% confidence intervals:
 
-```{r}
+```{r intuition_few_draws}
 # create the graph
 graph_ci <- data_results_10000_experiments %>%
   slice(1:100) %>%

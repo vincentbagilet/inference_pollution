@@ -1,5 +1,5 @@
 ---
-title: "Estimating Small Effects: Short-term Health Effects of Air Pollution"
+title: "Accurately Estimating Relatively Small Effects: Air Pollution and Health"
 image: "images/illustration_car.png"
 angle: 130
 site: distill::distill_website
@@ -14,10 +14,10 @@ output:
  
 Hi and welcome!
 
-This is the website for the paper [Estimating Small Effects: Short-term Health Effects of Air Pollution](inference_pollution_paper.pdf). It gathers the paper, all the code and some additional material.
+This is the website for the paper [Accurately Estimating Relatively Small Effects: Air Pollution and Health](inference_pollution_paper.pdf). It gathers the paper, all the code and some additional material.
 
 In this paper, I assess the ability of various research designs in measuring small effects, that of air pollution on health in the short-term. 
 
-A previous version of this project was co-authored with Léo Zabrocki-Hallak who extensively contributed to this project.
+A previous version of this project was co-authored with Léo Zabrocki-Hallak who extensively contributed to this project
 
 

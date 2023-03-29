@@ -88,22 +88,22 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 
 
   <!--radix_placeholder_meta_tags-->
-  <title>Inference, Health and Air Pollution: Summaries</title>
+  <title>Small Effects, Air Pollution and Health: Summaries</title>
 
   <meta property="description" itemprop="description" content="In this paper, we assess the ability of different statistical methods and research designs to accurately measure the short term health effects of air pollution. Based on our findings, we build a list of recommendations and pitfalls to avoid in future studies."/>
 
 
 
   <!--  https://developers.facebook.com/docs/sharing/webmasters#markup -->
-  <meta property="og:title" content="Inference, Health and Air Pollution: Summaries"/>
+  <meta property="og:title" content="Small Effects, Air Pollution and Health: Summaries"/>
   <meta property="og:type" content="article"/>
   <meta property="og:description" content="In this paper, we assess the ability of different statistical methods and research designs to accurately measure the short term health effects of air pollution. Based on our findings, we build a list of recommendations and pitfalls to avoid in future studies."/>
   <meta property="og:locale" content="en_US"/>
-  <meta property="og:site_name" content="Inference, Health and Air Pollution"/>
+  <meta property="og:site_name" content="Small Effects, Air Pollution and Health"/>
 
   <!--  https://dev.twitter.com/cards/types/summary -->
   <meta property="twitter:card" content="summary"/>
-  <meta property="twitter:title" content="Inference, Health and Air Pollution: Summaries"/>
+  <meta property="twitter:title" content="Small Effects, Air Pollution and Health: Summaries"/>
   <meta property="twitter:description" content="In this paper, we assess the ability of different statistical methods and research designs to accurately measure the short term health effects of air pollution. Based on our findings, we build a list of recommendations and pitfalls to avoid in future studies."/>
 
   <!--/radix_placeholder_meta_tags-->
@@ -1921,11 +1921,11 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
     --body-color:      rgba(0, 0, 0, 0.8);
     --aside-color:     rgba(0, 0, 0, 0.6);
     --fig-cap-color:   rgba(0, 0, 0, 0.6);
-    --hover-color:      rgba(0, 129, 167, 0.6);
+    --hover-color:     rgba(0, 129, 167, 0.6);
     /*-- Specify custom fonts ~~~ must be imported above   --*/
-    --heading-font:    "Lora", serif;
+    --heading-font:    "Lato", sans-serif;
     --body-font:       "Lora", serif;
-    --navbar-font:     "Lora", serif;  /* websites + blogs only */
+    --navbar-font:     "Lato", sans-serif;  /* websites + blogs only */
   }
 
   /*-- ARTICLE METADATA --*/
@@ -1954,12 +1954,17 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   /* These properties only apply to Distill sites and blogs  */
 
   .distill-site-header {
-    --font-family:      'Lora', serif;
+    --font-family:      'Lato', sans-serif;
     --title-size:       21px;
     --text-color:       rgba(0, 129, 167, 1);
     --text-size:        18px;
     --hover-color:      rgba(0, 129, 167, 0.6);
     --bkgd-color:       rgba(255, 255, 255, 0.8);
+    font-variant:       small-caps;
+  }
+
+  .nav-dropdown .nav-dropbtn {
+    font-variant: small-caps;
   }
 
   .distill-site-footer {
@@ -1974,30 +1979,31 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 
   /* Postcard headers */
   h1, h2, h3 {
-    color: rgba(0, 129, 167, 1);
+    color:              rgba(0, 129, 167, 1);
+    font-variant:       small-caps;
   }
 
   p {
-    color: rgba(0, 0, 0, 0.8);
+    color:              rgba(0, 0, 0, 0.8);
   }
 
   a {
-  	color: rgba(0, 129, 167, 1);
+  	color:              rgba(0, 129, 167, 1);
   }
 
   a:hover {
-  	color: rgba(0, 129, 167, 0.6);
+  	color:              rgba(0, 129, 167, 0.6);
   }
 
   /* Buttons on postcard */
   .btn-outline-dark {
-      color: rgba(0, 129, 167, 1);
-      border-color: rgba(0, 129, 167, 1);
+      color:            rgba(0, 129, 167, 1);
+      border-color:     rgba(0, 129, 167, 1);
   }
 
   .btn-outline-dark:hover {
       background-color: rgba(0, 129, 167, 1);
-      color: white;
+      color:            white;
   }
 
   /*body {
@@ -2186,7 +2192,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <header class="header header--fixed" role="banner">
 <nav class="distill-site-nav distill-site-header">
 <div class="nav-left">
-<a href="index.html" class="title">Inference, Health and Air Pollution</a>
+<a href="index.html" class="title">Small Effects, Air Pollution and Health</a>
 </div>
 <div class="nav-right">
 <a href="inference_pollution_paper.pdf">Paper</a>
@@ -2199,11 +2205,11 @@ Literature review
 <span class="down-arrow">&#x25BE;</span>
 </button>
 <div class="nav-dropdown-content">
-<a href="automatic_lit_review_getting_abstracts.html">Retrieving abstracts from the standard literature</a>
-<a href="automatic_lit_review_analysis.html">Analysis of the standard literature</a>
+<a href="std_lit_getting_abstracts.html">Retrieving abstracts from the standard literature</a>
+<a href="std_lit_analysis.html">Analysis of the standard literature</a>
 <a href="meta_analysis_epi.html">Study of a meta-analysis</a>
 <hr/>
-<a href="causal_literature_overview.html">Analysis of the causal literature</a>
+<a href="causal_lit_overview.html">Analysis of the causal literature</a>
 </div>
 </div>
 <div class="nav-dropdown">
@@ -2213,15 +2219,15 @@ Simulations
 <span class="down-arrow">&#x25BE;</span>
 </button>
 <div class="nav-dropdown-content">
-<a href="notes_methodology.html">Overall approach</a>
-<a href="power_simulations.html">Running the simulations</a>
-<a href="simulation_results.html">Analysing simulations results</a>
+<a href="notes_methodo.html">Overall approach</a>
+<a href="power_sim.html">Running the simulations</a>
+<a href="sim_results.html">Analysing simulations results</a>
 <hr/>
 <span class="nav-dropdown-header">Exploratory data analysis</span>
 <span class="nav-dropdown-header">Data wrangling</span>
 </div>
 </div>
-<a href="case_study_retro_power_analysis.html">Recommendations</a>
+<a href="how_to_retro.html">Recommendations</a>
 <a href="https://github.com/vincentbagilet/inference_pollution" aria-label="Link to source">
 <i class="fab fa-github" aria-hidden="true"></i>
 </a>

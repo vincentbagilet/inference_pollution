@@ -1,0 +1,114 @@
+---
+title: "Power Simulations: Theory and Intuition"
+description: "In this document, we discuss the 'theory' behind our simulations and the overall implementation for these simulations."
+date: "`r Sys.Date()`"
+output: 
+  distill::distill_article:
+    toc: true
+editor_options: 
+  chunk_output_type: console
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+```{r setup, include=FALSE, results='hide', warning=FALSE}
+library(knitr)
+opts_chunk$set(fig.path = "images/notes_metodo/",
+               cache.path = "cache/",
+               cache = FALSE,
+               echo = TRUE, #set to false to hide code
+               message = FALSE,
+               warning = FALSE,
+               out.width = "85%",
+               dpi = 200,
+               fig.align = "center")  
+```  
+
+## Data
+
+We use data from 68 cities in the US over the 1987-1997 period. This data is a subset of the US National Morbidity, Mortality, and Air Pollution Study (NMMAPS). The data set contains records of deaths, mean concentration data for carbon monoxide (CO), temperature data and calendar control variables (such as school holidays for instance). All variables are at the daily and city level. There is therefore a unique observation per date and per city in the data set.
+
+## Background on selected quasi-experiments
+
+We focus on quasi experiments for which treatment is binary and homogeneous, both in time and across individuals. Treatment is also not correlated with covariates (apart for air pollution alerts in which case treatment is of course correlated with the pollutant level).
+
+### Treatment on "random" days
+
+Here, we consider interventions leading to changes in air pollution levels on some random days. Examples of such interventions include transportation strikes. Of course, dates are often not defined as random and are likely to be correlated with unobserved variables. In the present setting, we first consider the golden standard case in which these days are actually defined at random. One can think of this case as a Randomized Control Trial: it represents what would happen if an  experimenter could implement a treatment increasing pollution on random days.
+
+### Air pollution alert
+
+Here, we consider interventions that affect exposure to air pollution when air pollution levels reach a given threshold. Examples of such interventions include air pollution alerts: when pollution reaches a certain level, alerts are released, inviting people to reduce their exposure.
+
+### No quasi experiment
+
+We finally consider a case for which there is no quasi experiment. One can consider that in this case all units are treated. To measure the effect of air pollution on health in this case, we will use methods from the epidemiology literature, as discussed in the next section.
+
+## Identification method
+
+In order to estimate the parameters of interest, we use several identification methods. We associate each identification method with a given quasi-experiment.
+
+### Reduced form
+
+We use a reduced form model to estimate the effect of a treatment on random days. The overall idea of the reduced form approach is to only compare the average number of deaths or hospital admissions in cities with treatment to cities with no treatment on the same day, controlling for differences across cities. In such approach, we do not model the impact of the treatment on air pollution.
+
+This identification method enables to estimate the Average Treatment Effect (ATE, $\mathbb{E}[Y_{1i} - Y_{0i}]$). Since the treatment is allocated at random, it is equal to the difference in mean between the treated and the control group. To do so, we use the following type of model:
+
+$$Y_{ct} = \alpha + \beta T_{ct} + \epsilon_{ct}$$
+where, as in the whole document, $Y_{ct}$ is the health outcome of interest (for instance mortality), in a city $c$, at date $t$. The parameter of interest is $\beta$ (we use this notation for all models) and $T_{ct}$ is a dummy equal to 1 if the city $c$ is treated at time $t$ and 0 otherwise.
+
+The identification assumption here is that the the potential outcomes are independent of the treatment (independence assumption). In our simulations, this is verified as the treatment is allocated randomly.
+
+### Regression Discontinuity Design
+
+We use a Regression Discontinuity Design (RDD or RD) to estimate the effect of an air pollution alert type of intervention. The overall idea of the RD is to compare days just below the threshold to days just above the threshold (where exposure and health impacts are thus lower). The key identification assumption is that days just below and just above the threshold are comparable. Thus, no confounders should vary discontinuously at the threshold (local independence, $(Y_{0i}, Y_{1i}) \perp T_i|Z_i$, for $Z_i \in [c-a, c+a]$ ) and the treatment should vary at threshold (relevance, $T_i = \mathbb{1} \{Z_i \geq  c\}$). The way we model this, both these assumptions are verified. However, for large bandwidth, observations above and below the threshold may be less comparable.
+
+This identification method enables to estimate a Local Average Treatment Effect (LATE) at the cutoff, *ie* $\mathbb{E}[Y_{1i} - Y_{0i}|Z_i = c]$. To do so, we use the following type of model, but restricting our sample to observation just below and just above the threshold:
+
+$$Y_{ct} = \alpha + \beta T_{ct} + \epsilon_{ct}$$
+
+### Instrumental variable
+
+In the previous identification methods, we tried to estimate a reduced form, *ie* looking at the effect of a treatment directly on mortality. We did not consider the effect of the treatment on air pollution, *ie* the mechanism. In this section, we instrument the effect of pollution on the outcome with an instrument/treatment. We basically model the effect of an exogeneous instrument on air pollution and use this information to retrieve a causal estimate of the short term effect of air pollution on health. Note that the class of treatments/instruments considered here can be broader than in the previous section. Yet, in these simulations, we only consider a treatment on random days, for simplicity.
+
+In a first step, we only consider binary instruments such as thermal inversions and high/low wind speed for instance. This type of instruments corresponds to a large share of the instruments considered in the literature. The key assumption is that these treatments only affect the health outcome variable via their effect on air pollution. Since the treatment is drawn randomly this is verified in our simulations.
+
+Let's denote $Z$ this instrument. We compute a 2-Stages Least Squares (2SLS) where the first stage has the form:
+
+$$Poll_{ct} = \gamma + \delta Z_{ct} + e_{ct}$$
+and the second stage:
+
+$$Y_{ct} = \alpha + \beta Poll_{ct} + \epsilon_{ct}$$
+
+### Linear model
+
+Finally, we also consider simple linear models in order to measure the correlation between the health outcome of interest and air pollution, `test` controlling for potential confounders. The identification assumptions here are the usual OLS assumptions.
+
+We estimate a model of the form:
+
+$$Y_{ct} = \alpha + \beta Poll_{ct} + \epsilon_{ct}$$
+
+## Analysis
+
+### Overall setting
+
+To sum up the analysis, the aim is to measure the inference properties of different research designs aiming at measuring the short-term effects of air pollution on health. For simplicity, consider the daily number of death as the output variable of interest for now. We proceed as follows:
+
+<!-- 1. We define the length of the study period, *ie* the number of observations, and a true effect size, $\beta_0$, representing the percentage change in the number of deaths in response to the treatment. -->
+1. We draw a study period randomly.
+1. We define the treated days, *ie* we define a treatment variable $T_{ct}$ equal to 1 if the city $c$ is treated at time $t$ and zero otherwise. 
+1. We create a fake number of deaths, modifying the observed number of deaths and adding the treatment effect.
+1. We estimate our model with $Y_{obs}$ as a dependent variable and retrieve $\hat{\beta}$.
+1. We run the steps 1 through 5 $n_{iter}$ times.
+1. We compute the type M, type S, power and other statistics of interest.
+
+<!-- In the potential outcome framework, we have $Y_{ct}(0)$, the number of deaths if a city $c$ is not treated at time $t$ equal to $h_{ct}$ and $Y_{ct}(1)$, the number of deaths if this city is treated, equal to $(1 + \beta_0)h_{ct}$. We build our setting, so that we can "observe" both outcomes. The estimation is performed on the fake observed data $Y_{obs} = h^{fake}$ and we have -->
+<!-- $Y_{obs} = Y(0) × (1-T) + Y(1) × T$.  -->
+
+### Varying "parameters"
+
+We can vary several parameters to evaluate the sensitivity of power, type M and type S to the value of these parameters: the identification method, the number of observations, the proportion of treated days, the true effect size and the model specification. In order to limit the number of simulations and for clarity, in our analysis, we only modify one parameter at the time, keeping others constant and equal to a baseline value. 
+

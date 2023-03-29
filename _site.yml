@@ -1,5 +1,5 @@
 name: "."
-title: "Inference, Health and Air Pollution"
+title: "Small Effects, Air Pollution and Health"
 theme: air_pollution_website.css
 output_dir: "docs"
 exclude: ["Documents", "R"]
@@ -17,27 +17,27 @@ navbar:
     - text: "Literature review"
       menu:
         - text: "Retrieving abstracts from the standard literature"
-          href: automatic_lit_review_getting_abstracts.html
+          href: std_lit_getting_abstracts.html
         - text: "Analysis of the standard literature"
-          href: automatic_lit_review_analysis.html
+          href: std_lit_analysis.html
         - text: "Study of a meta-analysis"
           href: meta_analysis_epi.html
         - text: "---"
         - text: "Analysis of the causal literature"
-          href: causal_literature_overview.html
+          href: causal_lit_overview.html
     - text: "Simulations"
       menu:
         - text: "Overall approach"
-          href: notes_methodology.html
+          href: notes_methodo.html
         - text: "Running the simulations"
-          href: power_simulations.html
+          href: power_sim.html
         - text: "Analysing simulations results"
-          href: simulation_results.html
+          href: sim_results.html
         - text: "---"
         - text: "Exploratory data analysis"
         - text: "Data wrangling"
     - text: "Recommendations"
-      href: case_study_retro_power_analysis.html
+      href: how_to_retro.html
   source_url: https://github.com/vincentbagilet/inference_pollution
   search: false
 output: distill::distill_article
