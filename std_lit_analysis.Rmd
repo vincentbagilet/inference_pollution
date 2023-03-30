@@ -610,7 +610,7 @@ We notice that *for about 55% of the estimates considered here, the magnitude of
 
 # Retrospective Power analysis
 
-We then turn to the power analysis itself. The objective is to evaluate the power, type M and type S errors for each estimate. 
+We then turn to the power analysis. The objective is to evaluate the power, type M and type S errors for each estimate. 
 
 To compute these values, we would need to know the true effect size. Yet, true effects are of course unknown. One solution could be to use estimates from the literature and meta-analyses as best guesses for these true values. Yet, in the setting of this automated literature review, detecting what is exactly measured in each analysis is particularly challenging since there is no standardized way of reporting the results beyond mentioning confidence intervals. One study may for instance claim that a 10 $\mu g/m^{3}$ increase in PM2.5 concentration is associated with an increase of x% in hospital admissions over the course of a day while another study may state that a 2% increase in ozone concentration increases the number of deaths by 3 over a month. Fortunately, for each estimate retrieved, even though we do not know what is measured, we can evaluate the precision with which it is estimated.
 
@@ -628,7 +628,7 @@ We then compute and plot power and exaggeration curves. They represent the stati
 data_retrodesign_fraction <- estimates_stats %>%
   filter(abs(t_score) >= 1.96) %>%
   mutate(id = 1:nrow(.)) %>%
-  crossing(percentage = seq(from = 50, to = 100, by = 1) / 100) %>%
+  crossing(percentage = seq(from = 30, to = 100, by = 1) / 100) %>%
   mutate(hypothetical_effect_size = percentage * effect) %>%
   mutate(
     power = map2(hypothetical_effect_size,
@@ -715,10 +715,11 @@ ggsave(
   graph_retrodesign_epi,
   filename = here::here(
     "images",
+    "std_lit_analysis",
     "graph_retrodesign_epi.pdf"
   ),
-  width = 30,
-  height = 15,
+  width = 18,
+  height = 10,
   units = "cm"
   # device = cairo_pdf
 )

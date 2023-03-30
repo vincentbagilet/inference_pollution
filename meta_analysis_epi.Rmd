@@ -18,7 +18,7 @@ text-align: justify}
 knitr::opts_chunk$set(
   cache.path = "cache/",
   cache = FALSE,
-  fig.path = "images/",
+  fig.path = "images/meta_analysis_epi/",
   echo = FALSE,
   message = FALSE,
   warning = FALSE,
