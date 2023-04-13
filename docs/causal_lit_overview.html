@@ -93,8 +93,8 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 
 
   <!--  https://schema.org/Article -->
-  <meta property="article:published" itemprop="datePublished" content="2023-03-29"/>
-  <meta property="article:created" itemprop="dateCreated" content="2023-03-29"/>
+  <meta property="article:published" itemprop="datePublished" content="2023-04-13"/>
+  <meta property="article:created" itemprop="dateCreated" content="2023-04-13"/>
 
   <!--  https://developers.facebook.com/docs/sharing/webmasters#markup -->
   <meta property="og:title" content="Small Effects, Air Pollution and Health: Retrospective Power Analysis of the Causal Inference Literature"/>
@@ -110,7 +110,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <!--radix_placeholder_rmarkdown_metadata-->
 
   <script type="text/json" id="radix-rmarkdown-metadata">
-  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","date","output","editor_options"]}},"value":[{"type":"character","attributes":{},"value":["Retrospective Power Analysis of the Causal Inference Literature"]},{"type":"character","attributes":{},"value":["2023-03-29"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["toc","toc_depth"]}},"value":[{"type":"logical","attributes":{},"value":[true]},{"type":"integer","attributes":{},"value":[3]}]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["chunk_output_type"]}},"value":[{"type":"character","attributes":{},"value":["console"]}]}]}
+  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","date","output","editor_options"]}},"value":[{"type":"character","attributes":{},"value":["Retrospective Power Analysis of the Causal Inference Literature"]},{"type":"character","attributes":{},"value":["2023-04-13"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["toc","toc_depth"]}},"value":[{"type":"logical","attributes":{},"value":[true]},{"type":"integer","attributes":{},"value":[3]}]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["chunk_output_type"]}},"value":[{"type":"character","attributes":{},"value":["console"]}]}]}
   </script>
   <!--/radix_placeholder_rmarkdown_metadata-->
   <!--radix_placeholder_navigation_in_header-->
@@ -2186,7 +2186,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <!--radix_placeholder_front_matter-->
 
 <script id="distill-front-matter" type="text/json">
-{"title":"Retrospective Power Analysis of the Causal Inference Literature","authors":[],"publishedDate":"2023-03-29T00:00:00.000-04:00"}
+{"title":"Retrospective Power Analysis of the Causal Inference Literature","authors":[],"publishedDate":"2023-04-13T00:00:00.000-04:00"}
 </script>
 
 <!--/radix_placeholder_front_matter-->
@@ -2288,26 +2288,6 @@ text-align: justify}
 <h1 id="set-up">Set-Up</h1>
 <h3 id="packages-and-data">Packages and Data</h3>
 <p>We load the packages:</p>
-<div class="layout-chunk" data-layout="l-body">
-<div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='st'><a href='https://groundhogr.com/'>"groundhog"</a></span><span class='op'>)</span></span>
-<span><span class='va'>packages</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span></span>
-<span>  <span class='st'>"here"</span>,</span>
-<span>  <span class='st'>"tidyverse"</span>, </span>
-<span>  <span class='st'>"knitr"</span>,</span>
-<span>  <span class='st'>"retrodesign"</span>, </span>
-<span>  <span class='st'>"Cairo"</span>,</span>
-<span>  <span class='st'>"kableExtra"</span>,</span>
-<span>  <span class='st'>"patchwork"</span></span>
-<span>  <span class='co'># "vincentbagilet/mediocrethemes"</span></span>
-<span><span class='op'>)</span></span>
-<span></span>
-<span><span class='fu'><a href='https://rdrr.io/pkg/groundhog/man/groundhog.library.html'>groundhog.library</a></span><span class='op'>(</span><span class='va'>packages</span>, <span class='st'>"2022-11-28"</span><span class='op'>)</span></span>
-<span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://vincentbagilet.github.io/mediocrethemes/'>mediocrethemes</a></span><span class='op'>)</span></span>
-<span></span>
-<span><span class='fu'><a href='https://vincentbagilet.github.io/mediocrethemes/reference/set_mediocre_all.html'>set_mediocre_all</a></span><span class='op'>(</span>pal <span class='op'>=</span> <span class='st'>"leo"</span><span class='op'>)</span></span></code></pre>
-</div>
-</div>
 <p>We load the literature review data:</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
@@ -2479,10 +2459,18 @@ Maximum
 <div class="layout-chunk" data-layout="l-body">
 <p><img src="images/causal_lit_overview/graph_t_statistics-1.png" width="85%" style="display: block; margin: auto;" /></p>
 </div>
+<p>We then restrict the sample to studies published in economics journals. The figure remains essentially the same.</p>
+<div class="layout-chunk" data-layout="l-body">
+<p><img src="images/causal_lit_overview/graph_distribution_t_econ-1.png" width="85%" style="display: block; margin: auto;" /></p>
+</div>
 <h3 id="estimated-effect-sizes-versus-precision">Estimated Effect Sizes versus Precision</h3>
 <p>We plot below the relationship between the absolute values of standardized estimates and the inverse of their standard errors. We do not include control outcomes (“placebo” tests) and conventional time series estimates.</p>
 <div class="layout-chunk" data-layout="l-body">
 <p><img src="images/causal_lit_overview/graph_effect_size_vs_precision-1.png" width="85%" style="display: block; margin: auto;" /></p>
+</div>
+<p>For economics journals, we then compare top 5 to other journals.</p>
+<div class="layout-chunk" data-layout="l-body">
+<p><img src="images/causal_lit_overview/graph_effect_size_vs_precision_field-1.png" width="85%" style="display: block; margin: auto;" /></p>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 

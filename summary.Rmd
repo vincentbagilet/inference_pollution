@@ -1,13 +1,13 @@
 ---
 title: "Summaries"
 description: |
-  In this paper, we assess the ability of different statistical methods and research designs to accurately measure the short term health effects of air pollution. Based on our findings, we build a list of recommendations and pitfalls to avoid in future studies.
+  This paper aims to identify tangible design parameters that might lead to inaccurate estimates of relatively small effects, the short-term health effects of air pollution. Based on our findings, we build a list of recommendations and pitfalls to avoid in future studies.
 site: distill::distill_website
 ---
 
 # Abstract
 
-Hundreds of studies have shown that air pollution affects health in the very short-run. Their results have played a key role in setting air quality standards. Yet, estimated effect sizes can vary widely across studies. Analyzing the results published in epidemiology and economics, we find that a substantial share of estimates are likely to be inflated due publication bias and a lack of statistical power. We then run real data simulations to identify the design parameters causing these issues. We show that this exaggeration may be driven by the small number of exogenous shocks leveraged, by the limited strength of the instruments used or by sparse outcomes. These concerns could extend to studies in other fields relying on comparable research designs. Our paper provides a principled workflow to evaluate and avoid the risk of exaggeration when conducting an observational study.
+This paper identifies tangible design parameters that might lead to inaccurate estimates of relatively small effects, the short-term health effects of air pollution. A lack of statistical power not only makes relatively small effects difficult to detect but resulting published estimates might exaggerate true effect sizes. We first document the existence of this issue in the epidemiology and economics literature of interest. Then, we identify its drivers using real data simulations that replicate most prevailing inference methods. Finally, we argue relevance to other settings and propose a principled workflow to evaluate and avoid exaggeration when conducting a non-experimental study.
 
 # Plain language summary
 

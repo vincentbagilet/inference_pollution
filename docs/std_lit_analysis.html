@@ -93,8 +93,8 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 
 
   <!--  https://schema.org/Article -->
-  <meta property="article:published" itemprop="datePublished" content="2023-03-29"/>
-  <meta property="article:created" itemprop="dateCreated" content="2023-03-29"/>
+  <meta property="article:published" itemprop="datePublished" content="2023-04-13"/>
+  <meta property="article:created" itemprop="dateCreated" content="2023-04-13"/>
 
   <!--  https://developers.facebook.com/docs/sharing/webmasters#markup -->
   <meta property="og:title" content="Small Effects, Air Pollution and Health: Automated literature review: analysis of abstracts"/>
@@ -110,7 +110,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <!--radix_placeholder_rmarkdown_metadata-->
 
   <script type="text/json" id="radix-rmarkdown-metadata">
-  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","date","output","editor_options"]}},"value":[{"type":"character","attributes":{},"value":["Automated literature review: analysis of abstracts"]},{"type":"character","attributes":{},"value":["2023-03-29"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["toc","toc_float"]}},"value":[{"type":"logical","attributes":{},"value":[true]},{"type":"logical","attributes":{},"value":[true]}]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["chunk_output_type"]}},"value":[{"type":"character","attributes":{},"value":["console"]}]}]}
+  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","date","output","editor_options"]}},"value":[{"type":"character","attributes":{},"value":["Automated literature review: analysis of abstracts"]},{"type":"character","attributes":{},"value":["2023-04-13"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["toc","toc_float"]}},"value":[{"type":"logical","attributes":{},"value":[true]},{"type":"logical","attributes":{},"value":[true]}]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["chunk_output_type"]}},"value":[{"type":"character","attributes":{},"value":["console"]}]}]}
   </script>
   <!--/radix_placeholder_rmarkdown_metadata-->
   <!--radix_placeholder_navigation_in_header-->
@@ -2195,7 +2195,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <!--radix_placeholder_front_matter-->
 
 <script id="distill-front-matter" type="text/json">
-{"title":"Automated literature review: analysis of abstracts","authors":[],"publishedDate":"2023-03-29T00:00:00.000-04:00"}
+{"title":"Automated literature review: analysis of abstracts","authors":[],"publishedDate":"2023-04-13T00:00:00.000-04:00"}
 </script>
 
 <!--/radix_placeholder_front_matter-->
@@ -2780,7 +2780,7 @@ Percentage of estimates with a lower signal to noise ratio
 </div>
 <p>We notice that <em>for about 55% of the estimates considered here, the magnitude of the noise is more important than those of the signal</em>. This is particularly concerning.</p>
 <h1 id="retrospective-power-analysis">Retrospective Power analysis</h1>
-<p>We then turn to the power analysis itself. The objective is to evaluate the power, type M and type S errors for each estimate.</p>
+<p>We then turn to the power analysis. The objective is to evaluate the power, type M and type S errors for each estimate.</p>
 <p>To compute these values, we would need to know the true effect size. Yet, true effects are of course unknown. One solution could be to use estimates from the literature and meta-analyses as best guesses for these true values. Yet, in the setting of this automated literature review, detecting what is exactly measured in each analysis is particularly challenging since there is no standardized way of reporting the results beyond mentioning confidence intervals. One study may for instance claim that a 10 <span class="math inline">\(\mu g/m^{3}\)</span> increase in PM2.5 concentration is associated with an increase of x% in hospital admissions over the course of a day while another study may state that a 2% increase in ozone concentration increases the number of deaths by 3 over a month. Fortunately, for each estimate retrieved, even though we do not know what is measured, we can evaluate the precision with which it is estimated.</p>
 <p>To circumvent the fact that we do not know the actual effect size, we follow a strategy suggested by Gelman and Carlin (2014). We consider a range of potential “true” effect sizes and run a sensitivity analysis. We investigate what would be the power, type M and type S error if the true effect was only a fraction of the measured effect. This enables us <strong>to assess whether the design of the study would be <em>good enough</em> to detect a smaller effect</strong>. If assuming that the true effect is half of the measured effect yields a power of 30%, there is probably a major issue with the design of this study. With this design, this (non zero) effect would only be detected 30% of the time.</p>
 <p>Of course, there is no reason to think <em>a priori</em> that a given effect would be overestimated. The values for power, type M and type S errors are therefore only informative.</p>

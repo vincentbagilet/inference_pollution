@@ -47,7 +47,7 @@ Our document is organized as follows:
 
 We load the packages:
 
-```{r load_packages, echo=TRUE}
+```{r load_packages, include=FALSE, echo=TRUE}
 library("groundhog")
 packages <- c(
   "here",
@@ -57,10 +57,12 @@ packages <- c(
   "Cairo",
   "kableExtra",
   "patchwork",
-  "vincentbagilet/mediocrethemes"
+  "mediocrethemes"
+  # "vincentbagilet/mediocrethemes"
 )
 
-groundhog.library(packages, "2022-11-28")
+# groundhog.library(packages, "2022-11-28")
+lapply(packages, library, character.only = TRUE)
 
 set_mediocre_all(pal = "leo")
 ```
@@ -315,7 +317,6 @@ graph_distribution_t <- data_literature %>%
 graph_distribution_t
 
 ggsave(
-  graph_distribution_t,
   filename = here::here(
     "images",
     "causal_lit_overview",
@@ -327,6 +328,53 @@ ggsave(
   # device = cairo_pdf
 )
 ```
+
+We then restrict the sample to studies published in economics journals. The figure remains essentially the same.
+
+```{r graph_distribution_t_econ, echo=FALSE}
+graph_distrib_t_econ <- data_literature %>%
+  filter(field == "economics") |> 
+  mutate(table = stringr::word(source_results, 1, sep = "-")) %>%
+  group_by(paper_label, table) %>%
+  mutate(n_tests = 1/n()) %>%
+  group_by(paper_label) %>%
+  mutate(n_tables = 1/length(unique(table))) %>%
+  ungroup() %>%
+  mutate(weight = n_tests*n_tables) %>%
+  ggplot(., aes(x = abs(estimate/standard_error), y = ..density.., weight = weight)) + 
+  geom_histogram(bins = 60, colour = "white", alpha = 0.6) +
+  geom_density(bw = 0.35, fill = NA, size = 0.9) +
+  geom_vline(xintercept = 1.96, size = 0.9, colour = "#f07167") +
+  # geom_curve(aes(x = 5, y = 0.37,
+  #            xend = 2.1, yend = 0.27),
+  #            curvature = -0.3,
+  #            arrow = arrow(length = unit(0.42, "cm")),
+  #            colour = "#f07167",
+  #            lineend = "round") +
+  # annotate("text", x = 5.5, y = 0.38, label = "5% Significance Threshold", colour = "#f07167", size = 6) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  labs(
+    title = "Weighted Distribution of the t-statistics",
+    subtitle = "Only estimates from economics journals.",
+    x = "t-statistic",
+    y = "Density"
+  )
+
+graph_distrib_t_econ
+
+ggsave(
+  filename = here::here(
+    "images",
+    "causal_lit_overview",
+    "graph_distribution_t_econ.pdf"
+  ),
+  width = 14,
+  height = 12,
+  units = "cm"
+  # device = cairo_pdf
+)
+```
+
 
 ### Estimated Effect Sizes versus Precision
 
@@ -349,7 +397,7 @@ graph_effect_precision <- data_literature %>%
     colour = "#f07167",
     linetype = "dashed"
   ) +
-  geom_point(shape = 16, colour = "#0081a7", fill = NA, size = 1.8, alpha = 0.6) +
+  geom_point(shape = 16, size = 1.8, alpha = 0.6) +
   scale_x_log10(
     breaks = scales::trans_breaks("log10", function(x)
       10 ^ x),
@@ -374,6 +422,68 @@ ggsave(
     "images",
     "causal_lit_overview",
     "graph_effect_precision.pdf"
+  ),
+  width = 14,
+  height = 12,
+  units = "cm"
+  # device = cairo_pdf
+)
+```
+
+For economics journals, we then compare top 5 to other journals.
+
+```{r graph_effect_size_vs_precision_field}
+# make the graph of effect sizes versus precision
+graph_effect_precision_field <- data_literature %>%
+  mutate(
+    top5 = (journal %in% c("AER", "JPE", "Econometrica", "ReStud", "QJE")),
+    top5_name = ifelse(top5, "Top 5", "Other economics journal")
+  ) |> 
+  filter(field == "economics") |> 
+  mutate(inverse_se = 1 / standardized_standard_error) %>%
+  # drop control outcomes
+  filter(control_outcome==0) %>%
+  # drop conventional time series models
+  filter(!(empirical_strategy %in% c("conventional time series", "conventional time series - suggestive evidence"))) %>%
+  ggplot(.,
+         aes(x = inverse_se, y = abs(standardized_estimate), color = top5_name)) +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    size = 0.9, 
+    # colour = "#f07167",
+    linetype = "dashed"
+  ) +
+  geom_point(shape = 16, size = 1.8, alpha = 0.6) +
+  scale_x_log10(
+    breaks = scales::trans_breaks("log10", function(x)
+      10 ^ x),
+    labels = scales::trans_format("log10", scales::math_format(10 ^
+                                                                 .x))
+  ) +
+  scale_y_log10(
+    breaks = scales::trans_breaks("log10", function(x)
+      10 ^ x),
+    labels = scales::trans_format("log10", scales::math_format(10 ^
+                                                                 .x))
+  ) +
+  labs(
+    x = "Precision (Inverse of Standard Errors)",
+    y = "Standardized Effect Sizes",
+    title = "Standardized Estimates vs. Precision", 
+    subtitle = "Comparison between econoics journals",
+    color = NULL
+  ) 
+
+# display the graph
+graph_effect_precision_field
+
+ggsave(
+  graph_effect_precision_field,
+  filename = here::here(
+    "images",
+    "causal_lit_overview",
+    "graph_effect_precision_field.pdf"
   ),
   width = 14,
   height = 12,
