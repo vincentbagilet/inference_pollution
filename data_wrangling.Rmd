@@ -1,0 +1,188 @@
+---
+title: "Data Wrangling"
+description: |
+  In this document, we retreive and wrangle the NMMAPS City Data.
+author:
+  - name: Vincent Bagilet 
+    url: https://www.vincentbagilet.github.io/
+    affiliation: Columbia University
+    affiliation_url: https://www.columbia.edu/
+date: "May 11, 2021"
+output: distill::distill_article
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+```{r setup_wrangling, include=FALSE, results='hide', warning=FALSE}
+library(knitr)
+opts_chunk$set(fig.path = "images/data_wrangling/",
+               cache.path = "cache/",
+               cache = FALSE,
+               echo = TRUE, #set to false to hide code
+               message = FALSE,
+               warning = FALSE,
+               eval = FALSE,
+               out.width = "85%",
+               dpi = 200,
+               fig.align = "center")  
+```  
+
+```{r package_wrangling, echo=TRUE, message=FALSE, warning=FALSE, code_folding='Show code to load packages'}
+library(rmarkdown)
+library(knitr) 
+library(here) 
+library(tidyverse) 
+library(lubridate) 
+```
+
+# Raw data
+
+To access the raw data, we use the `NMMAPSdata` R package and developed by Roger D. Peng and Leah J. Welty that contains the data of the National Morbidity, Mortality, and Air Pollution Study (NMMAPS). Unfortunately, the package is not longer available on CRAN but its archives are extremely [well-documented](https://journal.r-project.org/articles/RN-2004-011/RN-2004-011.pdf) and allow to easily rebuild the dataset. We store all the raw `.rda` data, city by city in a folder. 
+
+# Loading the raw data
+
+First we create a dataframe with paths to the data.
+
+```{r paths_data_wrangling, message = FALSE, warning = FALSE}
+folder_raw_data <- here::here("data", "raw_data", "city_data")
+
+city_data <- tibble(file_path = list.files(path = folder_raw_data,
+                        pattern = ".rda", 
+                        full.names = F)) %>%
+  mutate(city = str_remove(string = file_path, pattern = ".rda"))
+```
+
+Then, we write two functions that load and  wrangle the data, `load_rda` and `wrangle_city_data` respectively.
+
+```{r load_wrangle_wrangling}
+load_rda <- function(fileName) {
+  #loads an RData file, and returns it
+  load(fileName)
+  get(ls()[ls() != "fileName"])
+}
+
+wrangle_city_data <- function(file_path){
+  data <- load_rda(here::here("data", "raw_data", "city_data", file_path)) %>%
+      select(
+        date,
+        agecat,
+        accident,
+        copd,
+        cvd,
+        death,
+        inf,
+        pneinf,
+        pneu,
+        resp,
+        tmean,
+        pm10mean,
+        pm25mean,
+        o3mean,
+        so2mean,
+        no2mean,
+        comean
+      ) %>%
+      rename("temperature" = tmean) %>%
+      # convert temperature to celcius degrees
+      mutate(temperature = (temperature-32)/1.8) %>%
+      mutate(
+        agecat = case_when(
+          agecat == 1 ~ "age_below_65",
+          agecat == 2 ~ "age_65_75",
+          agecat == 3 ~ "age_above_75"
+        ),
+        date = lubridate::ymd(date)
+      )
+    
+    names(data) <- str_remove_all(names(data), "mean")
+    
+    # reshape to wide by age categories
+    data <- data %>%
+      pivot_wider(names_from = agecat,
+                  values_from = c(accident:resp)) %>%
+      mutate(
+        accident_total = rowSums(select(., starts_with("accident"))),
+        copd_total = rowSums(select(., starts_with("copd"))),
+        cvd_total = rowSums(select(., starts_with("cvd"))),
+        death_total = rowSums(select(., starts_with("death"))),
+        inf_total = rowSums(select(., starts_with("inf"))),
+        pneinf_total = rowSums(select(., starts_with("pneinf"))),
+        pneu_total = rowSums(select(., starts_with("pneu"))),
+        resp_total = rowSums(select(., starts_with("resp")))
+      )
+  
+  return(data)
+} 
+```
+
+We then apply this function to each file path.
+
+```{r create_city_data}
+city_data <- city_data %>%
+  mutate(data = map(file_path, wrangle_city_data)) %>%
+  select(-file_path) %>%
+  unnest(cols = c(data))
+```
+
+# Adding variables
+
+We then add useful variables to the dataset. First, we start with city-level metadata stored in the "codebook" folder.
+
+```{r metadata_wrangling}
+metadata_city <- load_rda(here::here("data", "raw_data", "codebook", "cities.rda")) %>%
+  select(city, cityname, state, statename) %>%
+  mutate(cityname = paste0(cityname, paste0(", ", state))) %>%
+  select(-state) %>%
+  rename("city_name" = cityname, "state" = statename)
+  
+city_data <- left_join(city_data, metadata_city, by = "city") %>%
+  select(-city) %>%
+  rename(city = city_name)
+```
+
+We then add calendar variables (weekday, month and year).
+
+```{r calendar_wrangling}
+city_data <- city_data %>%
+  mutate(weekday = wday(date, label = TRUE, abbr = FALSE),
+         month = month(date, label = TRUE, abbr = FALSE),
+         year = as.factor(year(date)))
+```
+
+Finally, we fix negative values of $CO$ and convert its concentrations from $ppb$ to $\mu g.m^{-3}$
+
+```{r fix_co_wrangling}
+city_data <- city_data %>%
+  mutate(
+    co = ifelse(co < 0, abs(co), co),
+    co = 1.145*co
+  )
+```
+
+# Save data
+
+We can now save the data after reordering the variables.
+
+```{r save_data_wrangling, echo=TRUE}
+
+# save data
+city_data <- city_data %>%
+  select(city, state, date, weekday, month, year, temperature:co,
+         accident_age_below_65, accident_age_65_75, accident_age_above_75, 
+         accident_total,
+         copd_age_below_65, copd_age_65_75, copd_age_above_75, copd_total,
+         cvd_age_below_65, cvd_age_65_75, cvd_age_above_75, cvd_total,
+         death_age_below_65, death_age_65_75, death_age_above_75, death_total,
+         inf_age_below_65, inf_age_65_75, inf_age_above_75, inf_total,
+         pneinf_age_below_65, pneu_age_65_75, pneu_age_above_75, pneu_total,
+         resp_age_below_65, resp_age_65_75, resp_age_above_75, resp_total) %>%
+  saveRDS(., here::here("data", "clean_data", "nmmaps_data.rds"))
+```
+
+
+
+
+

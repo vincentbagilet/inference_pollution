@@ -93,8 +93,8 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 
 
   <!--  https://schema.org/Article -->
-  <meta property="article:published" itemprop="datePublished" content="2023-04-13"/>
-  <meta property="article:created" itemprop="dateCreated" content="2023-04-13"/>
+  <meta property="article:published" itemprop="datePublished" content="2023-04-25"/>
+  <meta property="article:created" itemprop="dateCreated" content="2023-04-25"/>
 
   <!--  https://developers.facebook.com/docs/sharing/webmasters#markup -->
   <meta property="og:title" content="Small Effects, Air Pollution and Health: Low Statistical Power in the NHST Framework"/>
@@ -110,7 +110,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <!--radix_placeholder_rmarkdown_metadata-->
 
   <script type="text/json" id="radix-rmarkdown-metadata">
-  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","date","output","editor_options"]}},"value":[{"type":"character","attributes":{},"value":["Low Statistical Power in the NHST Framework"]},{"type":"character","attributes":{},"value":["2023-04-13"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["toc","toc_depth"]}},"value":[{"type":"logical","attributes":{},"value":[true]},{"type":"integer","attributes":{},"value":[2]}]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["chunk_output_type"]}},"value":[{"type":"character","attributes":{},"value":["console"]}]}]}
+  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","date","output","editor_options"]}},"value":[{"type":"character","attributes":{},"value":["Low Statistical Power in the NHST Framework"]},{"type":"character","attributes":{},"value":["2023-04-25"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["toc","toc_depth"]}},"value":[{"type":"logical","attributes":{},"value":[true]},{"type":"integer","attributes":{},"value":[2]}]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["chunk_output_type"]}},"value":[{"type":"character","attributes":{},"value":["console"]}]}]}
   </script>
   <!--/radix_placeholder_rmarkdown_metadata-->
   <!--radix_placeholder_navigation_in_header-->
@@ -2193,7 +2193,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <!--radix_placeholder_front_matter-->
 
 <script id="distill-front-matter" type="text/json">
-{"title":"Low Statistical Power in the NHST Framework","authors":[],"publishedDate":"2023-04-13T00:00:00.000-04:00"}
+{"title":"Low Statistical Power in the NHST Framework","authors":[],"publishedDate":"2023-04-25T00:00:00.000+02:00"}
 </script>
 
 <!--/radix_placeholder_front_matter-->
@@ -2228,12 +2228,12 @@ Simulations
 <span class="down-arrow">&#x25BE;</span>
 </button>
 <div class="nav-dropdown-content">
+<a href="data_wrangling.html">Data wrangling</a>
+<a href="data_cleaning.html">Data cleaning</a>
+<hr/>
 <a href="notes_methodo.html">Overall approach</a>
 <a href="power_sim.html">Running the simulations</a>
 <a href="sim_results.html">Analysing simulations results</a>
-<hr/>
-<span class="nav-dropdown-header">Exploratory data analysis</span>
-<span class="nav-dropdown-header">Data wrangling</span>
 </div>
 </div>
 <a href="how_to_retro.html">Recommendations</a>
@@ -2346,20 +2346,20 @@ p-value
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span><span class='co'># first add the treatment vector to the science table</span></span>
-<span><span class='va'>data_science_table</span> <span class='op'>&lt;-</span> <span class='va'>data_science_table</span> <span class='op'>%&gt;%</span></span>
-<span>  <span class='fu'>mutate</span><span class='op'>(</span>w <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>0</span>, <span class='fu'>n</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>/</span> <span class='fl'>2</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>1</span>, <span class='fu'>n</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>/</span> <span class='fl'>2</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span></span>
+<span><span class='va'>data_science_table</span> <span class='op'>&lt;-</span> <span class='va'>data_science_table</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>w <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>0</span>, <span class='fu'><a href='https://dplyr.tidyverse.org/reference/context.html'>n</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>/</span> <span class='fl'>2</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>1</span>, <span class='fu'><a href='https://dplyr.tidyverse.org/reference/context.html'>n</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>/</span> <span class='fl'>2</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span></span>
 <span></span>
 <span><span class='co'># function to run an experiment</span></span>
 <span><span class='co'># takes the data as input</span></span>
 <span><span class='va'>function_run_experiment</span> <span class='op'>&lt;-</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>data</span><span class='op'>)</span> <span class='op'>{</span></span>
-<span>  <span class='va'>data</span> <span class='op'>%&gt;%</span></span>
-<span>    <span class='fu'>mutate</span><span class='op'>(</span>w <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/sample.html'>sample</a></span><span class='op'>(</span><span class='va'>w</span>, replace <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>,</span>
-<span>           y_obs <span class='op'>=</span> <span class='va'>w</span> <span class='op'>*</span> <span class='va'>y_1</span> <span class='op'>+</span> <span class='op'>(</span><span class='fl'>1</span> <span class='op'>-</span> <span class='va'>w</span><span class='op'>)</span> <span class='op'>*</span> <span class='va'>y_0</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
-<span>    <span class='fu'><a href='https://rdrr.io/r/stats/lm.html'>lm</a></span><span class='op'>(</span><span class='va'>y_obs</span> <span class='op'>~</span> <span class='va'>w</span>, data <span class='op'>=</span> <span class='va'>.</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
-<span>    <span class='fu'>lmtest</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/pkg/lmtest/man/coeftest.html'>coeftest</a></span><span class='op'>(</span><span class='va'>.</span>, vcov <span class='op'>=</span> <span class='va'>vcovHC</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
-<span>    <span class='fu'>broom</span><span class='fu'>::</span><span class='fu'><a href='https://generics.r-lib.org/reference/tidy.html'>tidy</a></span><span class='op'>(</span><span class='va'>.</span>, conf.int <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
-<span>    <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>term</span> <span class='op'>==</span> <span class='st'>"w"</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
-<span>    <span class='fu'>select</span><span class='op'>(</span><span class='va'>estimate</span>, <span class='va'>p.value</span>, <span class='va'>conf.low</span>, <span class='va'>conf.high</span><span class='op'>)</span></span>
+<span>  <span class='va'>data</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>    <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>w <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/sample.html'>sample</a></span><span class='op'>(</span><span class='va'>w</span>, replace <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>,</span>
+<span>           y_obs <span class='op'>=</span> <span class='va'>w</span> <span class='op'>*</span> <span class='va'>y_1</span> <span class='op'>+</span> <span class='op'>(</span><span class='fl'>1</span> <span class='op'>-</span> <span class='va'>w</span><span class='op'>)</span> <span class='op'>*</span> <span class='va'>y_0</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>    <span class='fu'><a href='https://rdrr.io/r/stats/lm.html'>lm</a></span><span class='op'>(</span><span class='va'>y_obs</span> <span class='op'>~</span> <span class='va'>w</span>, data <span class='op'>=</span> <span class='va'>.</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>    <span class='fu'>lmtest</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/pkg/lmtest/man/coeftest.html'>coeftest</a></span><span class='op'>(</span><span class='va'>.</span>, vcov <span class='op'>=</span> <span class='va'>vcovHC</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>    <span class='fu'>broom</span><span class='fu'>::</span><span class='fu'><a href='https://generics.r-lib.org/reference/tidy.html'>tidy</a></span><span class='op'>(</span><span class='va'>.</span>, conf.int <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>    <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>term</span> <span class='op'>==</span> <span class='st'>"w"</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>    <span class='fu'><a href='https://dplyr.tidyverse.org/reference/select.html'>select</a></span><span class='op'>(</span><span class='va'>estimate</span>, <span class='va'>p.value</span>, <span class='va'>conf.low</span>, <span class='va'>conf.high</span><span class='op'>)</span></span>
 <span><span class='op'>}</span></span></code></pre>
 </div>
 </div>
@@ -2412,14 +2412,14 @@ p-value
 <span></span>
 <span><span class='co'># add extra data</span></span>
 <span><span class='va'>extra_data</span> <span class='op'>&lt;-</span></span>
-<span>  <span class='fu'>tibble</span><span class='op'>(</span>index <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>367</span><span class='op'>:</span><span class='fl'>1098</span><span class='op'>)</span>,</span>
-<span>         y_0 <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/NegBinomial.html'>rnbinom</a></span><span class='op'>(</span><span class='fl'>732</span>, mu <span class='op'>=</span> <span class='fl'>106</span>, size <span class='op'>=</span> <span class='fl'>38</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
-<span>  <span class='fu'>mutate</span><span class='op'>(</span>y_1 <span class='op'>=</span> <span class='va'>y_0</span> <span class='op'>+</span> <span class='fu'><a href='https://rdrr.io/r/stats/Poisson.html'>rpois</a></span><span class='op'>(</span><span class='fu'>n</span><span class='op'>(</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>y_0</span><span class='op'>)</span> <span class='op'>*</span> <span class='fl'>1</span> <span class='op'>/</span> <span class='fl'>100</span><span class='op'>)</span><span class='op'>)</span></span>
+<span>  <span class='fu'><a href='https://tibble.tidyverse.org/reference/tibble.html'>tibble</a></span><span class='op'>(</span>index <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>367</span><span class='op'>:</span><span class='fl'>1098</span><span class='op'>)</span>,</span>
+<span>         y_0 <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/NegBinomial.html'>rnbinom</a></span><span class='op'>(</span><span class='fl'>732</span>, mu <span class='op'>=</span> <span class='fl'>106</span>, size <span class='op'>=</span> <span class='fl'>38</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>y_1 <span class='op'>=</span> <span class='va'>y_0</span> <span class='op'>+</span> <span class='fu'><a href='https://rdrr.io/r/stats/Poisson.html'>rpois</a></span><span class='op'>(</span><span class='fu'><a href='https://dplyr.tidyverse.org/reference/context.html'>n</a></span><span class='op'>(</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>y_0</span><span class='op'>)</span> <span class='op'>*</span> <span class='fl'>1</span> <span class='op'>/</span> <span class='fl'>100</span><span class='op'>)</span><span class='op'>)</span></span>
 <span></span>
 <span><span class='co'># merge with initial data</span></span>
-<span><span class='va'>data_science_table</span> <span class='op'>&lt;-</span> <span class='fu'>bind_rows</span><span class='op'>(</span><span class='va'>data_science_table</span>, <span class='va'>extra_data</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span><span class='va'>data_science_table</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/bind.html'>bind_rows</a></span><span class='op'>(</span><span class='va'>data_science_table</span>, <span class='va'>extra_data</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
 <span>  <span class='co'># add treatment indicator</span></span>
-<span>  <span class='fu'>mutate</span><span class='op'>(</span>w <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>0</span>, <span class='fl'>549</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>1</span>, <span class='fl'>549</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span></span></code></pre>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>w <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>0</span>, <span class='fl'>549</span><span class='op'>)</span>, <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>1</span>, <span class='fl'>549</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span></span></code></pre>
 </div>
 </div>
 <p>We run 10,000 experiments for a sample of 1098 daily observations:</p>

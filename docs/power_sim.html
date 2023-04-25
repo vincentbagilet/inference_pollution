@@ -94,8 +94,8 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 
 
   <!--  https://schema.org/Article -->
-  <meta property="article:published" itemprop="datePublished" content="2023-04-13"/>
-  <meta property="article:created" itemprop="dateCreated" content="2023-04-13"/>
+  <meta property="article:published" itemprop="datePublished" content="2023-04-25"/>
+  <meta property="article:created" itemprop="dateCreated" content="2023-04-25"/>
 
   <!--  https://developers.facebook.com/docs/sharing/webmasters#markup -->
   <meta property="og:title" content="Small Effects, Air Pollution and Health: Running power simulations"/>
@@ -113,7 +113,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <!--radix_placeholder_rmarkdown_metadata-->
 
   <script type="text/json" id="radix-rmarkdown-metadata">
-  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","date","output","editor_options"]}},"value":[{"type":"character","attributes":{},"value":["Running power simulations"]},{"type":"character","attributes":{},"value":["In this document, we carry out a simulation exercise to evaluate the inference properties of different research designs aiming at measuring the short-term effects of air pollution on health. We consider different types of quasi experiments and for each associate one or several identification strategies."]},{"type":"character","attributes":{},"value":["2023-04-13"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["toc"]}},"value":[{"type":"logical","attributes":{},"value":[true]}]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["chunk_output_type"]}},"value":[{"type":"character","attributes":{},"value":["console"]}]}]}
+  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","date","output","editor_options"]}},"value":[{"type":"character","attributes":{},"value":["Running power simulations"]},{"type":"character","attributes":{},"value":["In this document, we carry out a simulation exercise to evaluate the inference properties of different research designs aiming at measuring the short-term effects of air pollution on health. We consider different types of quasi experiments and for each associate one or several identification strategies."]},{"type":"character","attributes":{},"value":["2023-04-25"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["toc"]}},"value":[{"type":"logical","attributes":{},"value":[true]}]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["chunk_output_type"]}},"value":[{"type":"character","attributes":{},"value":["console"]}]}]}
   </script>
   <!--/radix_placeholder_rmarkdown_metadata-->
   <!--radix_placeholder_navigation_in_header-->
@@ -2187,7 +2187,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <!--radix_placeholder_front_matter-->
 
 <script id="distill-front-matter" type="text/json">
-{"title":"Running power simulations","description":"In this document, we carry out a simulation exercise to evaluate the inference properties of different research designs aiming at measuring the short-term effects of air pollution on health. We consider different types of quasi experiments and for each associate one or several identification strategies.","authors":[],"publishedDate":"2023-04-13T00:00:00.000-04:00"}
+{"title":"Running power simulations","description":"In this document, we carry out a simulation exercise to evaluate the inference properties of different research designs aiming at measuring the short-term effects of air pollution on health. We consider different types of quasi experiments and for each associate one or several identification strategies.","authors":[],"publishedDate":"2023-04-25T00:00:00.000+02:00"}
 </script>
 
 <!--/radix_placeholder_front_matter-->
@@ -2222,12 +2222,12 @@ Simulations
 <span class="down-arrow">&#x25BE;</span>
 </button>
 <div class="nav-dropdown-content">
+<a href="data_wrangling.html">Data wrangling</a>
+<a href="data_cleaning.html">Data cleaning</a>
+<hr/>
 <a href="notes_methodo.html">Overall approach</a>
 <a href="power_sim.html">Running the simulations</a>
 <a href="sim_results.html">Analysing simulations results</a>
-<hr/>
-<span class="nav-dropdown-header">Exploratory data analysis</span>
-<span class="nav-dropdown-header">Data wrangling</span>
 </div>
 </div>
 <a href="how_to_retro.html">Recommendations</a>
@@ -2325,14 +2325,14 @@ text-align: justify}
 <pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>draw_treated</span> <span class='op'>&lt;-</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>data</span>, <span class='va'>p_obs_treat</span> <span class='op'>=</span> <span class='fl'>0.5</span>, <span class='va'>quasi_exp</span> <span class='op'>=</span> <span class='st'>"random_days"</span><span class='op'>)</span> <span class='op'>{</span></span>
 <span>  </span>
 <span>  <span class='kw'>if</span> <span class='op'>(</span><span class='va'>quasi_exp</span> <span class='op'>==</span> <span class='st'>"random_days"</span><span class='op'>)</span> <span class='op'>{</span></span>
-<span>    <span class='va'>data</span><span class='op'>[[</span><span class='st'>"treated"</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>&lt;-</span> <span class='fu'>rbernoulli</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span><span class='op'>(</span><span class='va'>data</span><span class='op'>[[</span><span class='st'>"date"</span><span class='op'>]</span><span class='op'>]</span><span class='op'>)</span>, <span class='va'>p_obs_treat</span><span class='op'>)</span></span>
-<span>  <span class='op'>}</span> <span class='kw'>else</span> <span class='kw'>if</span> <span class='op'>(</span><span class='fu'>str_starts</span><span class='op'>(</span><span class='va'>quasi_exp</span>, <span class='st'>"alert"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>{</span></span>
-<span>    <span class='va'>pollutant</span> <span class='op'>&lt;-</span> <span class='fu'>str_extract</span><span class='op'>(</span><span class='va'>quasi_exp</span>, <span class='st'>"(?&lt;=_).+"</span><span class='op'>)</span></span>
+<span>    <span class='va'>data</span><span class='op'>[[</span><span class='st'>"treated"</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://purrr.tidyverse.org/reference/rbernoulli.html'>rbernoulli</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span><span class='op'>(</span><span class='va'>data</span><span class='op'>[[</span><span class='st'>"date"</span><span class='op'>]</span><span class='op'>]</span><span class='op'>)</span>, <span class='va'>p_obs_treat</span><span class='op'>)</span></span>
+<span>  <span class='op'>}</span> <span class='kw'>else</span> <span class='kw'>if</span> <span class='op'>(</span><span class='fu'><a href='https://stringr.tidyverse.org/reference/str_starts.html'>str_starts</a></span><span class='op'>(</span><span class='va'>quasi_exp</span>, <span class='st'>"alert"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>{</span></span>
+<span>    <span class='va'>pollutant</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://stringr.tidyverse.org/reference/str_extract.html'>str_extract</a></span><span class='op'>(</span><span class='va'>quasi_exp</span>, <span class='st'>"(?&lt;=_).+"</span><span class='op'>)</span></span>
 <span>    <span class='co'># threshold_pos &lt;- rbeta(1, 20, 7) </span></span>
 <span>    <span class='va'>threshold_pos</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/Uniform.html'>runif</a></span><span class='op'>(</span><span class='fl'>1</span>, <span class='fl'>0.2</span>, <span class='fl'>0.4</span><span class='op'>)</span> </span>
-<span>    <span class='va'>data</span> <span class='op'>&lt;-</span> <span class='va'>data</span> <span class='op'>%&gt;%</span></span>
-<span>      <span class='fu'>group_by</span><span class='op'>(</span><span class='va'>.data</span><span class='op'>$</span><span class='va'>city</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
-<span>      <span class='fu'>mutate</span><span class='op'>(</span></span>
+<span>    <span class='va'>data</span> <span class='op'>&lt;-</span> <span class='va'>data</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>      <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>.data</span><span class='op'>$</span><span class='va'>city</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>      <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span></span>
 <span>        threshold <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/quantile.html'>quantile</a></span><span class='op'>(</span><span class='va'>.data</span><span class='op'>[[</span><span class='va'>pollutant</span><span class='op'>]</span><span class='op'>]</span>, <span class='va'>threshold_pos</span>, names <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>,</span>
 <span>        bw_high <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/quantile.html'>quantile</a></span><span class='op'>(</span><span class='va'>.data</span><span class='op'>[[</span><span class='va'>pollutant</span><span class='op'>]</span><span class='op'>]</span>, <span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>min</a></span><span class='op'>(</span><span class='va'>threshold_pos</span> <span class='op'>+</span> <span class='va'>p_obs_treat</span>, <span class='fl'>1</span><span class='op'>)</span>, names <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>,</span>
 <span>        treated <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span></span>
@@ -2340,9 +2340,9 @@ text-align: justify}
 <span>          <span class='cn'>NA</span>, </span>
 <span>          <span class='op'>(</span><span class='va'>.data</span><span class='op'>[[</span><span class='va'>pollutant</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>&gt;=</span> <span class='va'>threshold</span><span class='op'>)</span></span>
 <span>        <span class='op'>)</span></span>
-<span>      <span class='op'>)</span> <span class='op'>%&gt;%</span></span>
-<span>      <span class='fu'>select</span><span class='op'>(</span><span class='op'>-</span><span class='va'>bw_high</span>, <span class='op'>-</span><span class='va'>threshold</span><span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>      <span class='fu'>ungroup</span><span class='op'>(</span><span class='op'>)</span></span>
+<span>      <span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>      <span class='fu'><a href='https://dplyr.tidyverse.org/reference/select.html'>select</a></span><span class='op'>(</span><span class='op'>-</span><span class='va'>bw_high</span>, <span class='op'>-</span><span class='va'>threshold</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>      <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>ungroup</a></span><span class='op'>(</span><span class='op'>)</span></span>
 <span>  <span class='op'>}</span> <span class='kw'>else</span> <span class='op'>{</span></span>
 <span>    <span class='va'>data</span><span class='op'>[[</span><span class='st'>"treated"</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>&lt;-</span> <span class='cn'>TRUE</span></span>
 <span>  <span class='op'>}</span></span>
@@ -2382,32 +2382,32 @@ text-align: justify}
 <span>  </span>
 <span>  <span class='kw'>if</span> <span class='op'>(</span><span class='va'>id_method</span> <span class='op'>==</span> <span class='st'>"RDD"</span><span class='op'>)</span> <span class='op'>{</span></span>
 <span>    </span>
-<span>    <span class='va'>data</span> <span class='op'>&lt;-</span> <span class='va'>data</span> <span class='op'>%&gt;%</span></span>
-<span>      <span class='fu'>group_by</span><span class='op'>(</span><span class='va'>.data</span><span class='op'>$</span><span class='va'>city</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
-<span>      <span class='fu'>mutate</span><span class='op'>(</span></span>
+<span>    <span class='va'>data</span> <span class='op'>&lt;-</span> <span class='va'>data</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>      <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>.data</span><span class='op'>$</span><span class='va'>city</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>      <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span></span>
 <span>        y1 <span class='op'>=</span> <span class='va'>.data</span><span class='op'>[[</span><span class='va'>dep_var</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>-</span></span>
 <span>          <span class='fu'><a href='https://rdrr.io/r/stats/Poisson.html'>rpois</a></span><span class='op'>(</span></span>
-<span>            <span class='fu'>n</span><span class='op'>(</span><span class='op'>)</span>,</span>
+<span>            <span class='fu'><a href='https://dplyr.tidyverse.org/reference/context.html'>n</a></span><span class='op'>(</span><span class='op'>)</span>,</span>
 <span>            <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>.data</span><span class='op'>[[</span><span class='va'>dep_var</span><span class='op'>]</span><span class='op'>]</span>, na.rm <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span> <span class='op'>*</span> <span class='va'>percent_effect_size</span> <span class='op'>/</span> <span class='fl'>100</span></span>
-<span>          <span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='fu'><a href='https://rdrr.io/r/base/warning.html'>suppressWarnings</a></span><span class='op'>(</span><span class='op'>)</span>, <span class='co'>#warnings when is.na(dep_var) eg rpois(1, NA)</span></span>
+<span>          <span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/warning.html'>suppressWarnings</a></span><span class='op'>(</span><span class='op'>)</span>, <span class='co'>#warnings when is.na(dep_var) eg rpois(1, NA)</span></span>
 <span>        y_fake <span class='op'>=</span> <span class='va'>.data</span><span class='op'>[[</span><span class='st'>"y1"</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>*</span> <span class='va'>.data</span><span class='op'>[[</span><span class='st'>"treated"</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>+</span> <span class='va'>.data</span><span class='op'>[[</span><span class='va'>dep_var</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>*</span> <span class='op'>(</span><span class='fl'>1</span> <span class='op'>-</span> <span class='va'>.data</span><span class='op'>[[</span><span class='st'>"treated"</span><span class='op'>]</span><span class='op'>]</span><span class='op'>)</span></span>
-<span>      <span class='op'>)</span> <span class='op'>%&gt;%</span></span>
-<span>      <span class='fu'>ungroup</span><span class='op'>(</span><span class='op'>)</span></span>
+<span>      <span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>      <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>ungroup</a></span><span class='op'>(</span><span class='op'>)</span></span>
 <span>    </span>
 <span>  <span class='op'>}</span> <span class='kw'>else</span> <span class='kw'>if</span> <span class='op'>(</span><span class='va'>id_method</span> <span class='op'>==</span> <span class='st'>"reduced_form"</span><span class='op'>)</span> <span class='op'>{</span></span>
 <span></span>
 <span>    <span class='co'>#Just a different sign</span></span>
-<span>    <span class='va'>data</span> <span class='op'>&lt;-</span> <span class='va'>data</span> <span class='op'>%&gt;%</span></span>
-<span>      <span class='fu'>group_by</span><span class='op'>(</span><span class='va'>.data</span><span class='op'>$</span><span class='va'>city</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
-<span>      <span class='fu'>mutate</span><span class='op'>(</span></span>
+<span>    <span class='va'>data</span> <span class='op'>&lt;-</span> <span class='va'>data</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>      <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>.data</span><span class='op'>$</span><span class='va'>city</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>      <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span></span>
 <span>        y1 <span class='op'>=</span> <span class='va'>.data</span><span class='op'>[[</span><span class='va'>dep_var</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>+</span></span>
 <span>          <span class='fu'><a href='https://rdrr.io/r/stats/Poisson.html'>rpois</a></span><span class='op'>(</span></span>
-<span>            <span class='fu'>n</span><span class='op'>(</span><span class='op'>)</span>,</span>
+<span>            <span class='fu'><a href='https://dplyr.tidyverse.org/reference/context.html'>n</a></span><span class='op'>(</span><span class='op'>)</span>,</span>
 <span>            <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>.data</span><span class='op'>[[</span><span class='va'>dep_var</span><span class='op'>]</span><span class='op'>]</span>, na.rm <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span> <span class='op'>*</span> <span class='va'>percent_effect_size</span> <span class='op'>/</span> <span class='fl'>100</span></span>
-<span>          <span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='fu'><a href='https://rdrr.io/r/base/warning.html'>suppressWarnings</a></span><span class='op'>(</span><span class='op'>)</span>, <span class='co'>#warnings when is.na(dep_var) eg rpois(1, NA)</span></span>
+<span>          <span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/warning.html'>suppressWarnings</a></span><span class='op'>(</span><span class='op'>)</span>, <span class='co'>#warnings when is.na(dep_var) eg rpois(1, NA)</span></span>
 <span>        y_fake <span class='op'>=</span> <span class='va'>.data</span><span class='op'>[[</span><span class='st'>"y1"</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>*</span> <span class='va'>.data</span><span class='op'>[[</span><span class='st'>"treated"</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>+</span> <span class='va'>.data</span><span class='op'>[[</span><span class='va'>dep_var</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>*</span> <span class='op'>(</span><span class='fl'>1</span> <span class='op'>-</span> <span class='va'>.data</span><span class='op'>[[</span><span class='st'>"treated"</span><span class='op'>]</span><span class='op'>]</span><span class='op'>)</span></span>
-<span>      <span class='op'>)</span> <span class='op'>%&gt;%</span></span>
-<span>      <span class='fu'>ungroup</span><span class='op'>(</span><span class='op'>)</span></span>
+<span>      <span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>      <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>ungroup</a></span><span class='op'>(</span><span class='op'>)</span></span>
 <span>    </span>
 <span>  <span class='op'>}</span> <span class='kw'>else</span> <span class='kw'>if</span> <span class='op'>(</span><span class='va'>id_method</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"OLS"</span>, <span class='st'>"IV"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>{</span></span>
 <span>    <span class='va'>pollutant</span> <span class='op'>&lt;-</span> <span class='fu'>find_pollutant</span><span class='op'>(</span><span class='va'>fml</span><span class='op'>)</span></span>
@@ -2419,10 +2419,10 @@ text-align: justify}
 <span>        <span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>rnorm</a></span><span class='op'>(</span><span class='va'>data</span><span class='op'>[[</span><span class='va'>pollutant</span><span class='op'>]</span><span class='op'>]</span>, <span class='fl'>0</span>, <span class='fl'>0.1</span><span class='op'>)</span></span>
 <span>      </span>
 <span>      <span class='co'>#need to withdraw the first stage from the formula and add the pollutant</span></span>
-<span>      <span class='va'>parts_formula</span> <span class='op'>&lt;-</span> <span class='fu'>str_split</span><span class='op'>(</span><span class='va'>formula</span>, <span class='st'>"\\|"</span><span class='op'>)</span><span class='op'>[[</span><span class='fl'>1</span><span class='op'>]</span><span class='op'>]</span></span>
-<span>      <span class='va'>formula_clean</span> <span class='op'>&lt;-</span> <span class='fu'>str_c</span><span class='op'>(</span></span>
+<span>      <span class='va'>parts_formula</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://stringr.tidyverse.org/reference/str_split.html'>str_split</a></span><span class='op'>(</span><span class='va'>formula</span>, <span class='st'>"\\|"</span><span class='op'>)</span><span class='op'>[[</span><span class='fl'>1</span><span class='op'>]</span><span class='op'>]</span></span>
+<span>      <span class='va'>formula_clean</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://stringr.tidyverse.org/reference/str_c.html'>str_c</a></span><span class='op'>(</span></span>
 <span>        <span class='va'>parts_formula</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>]</span>, </span>
-<span>        <span class='st'>"+"</span>, <span class='fu'>str_extract</span><span class='op'>(</span><span class='va'>parts_formula</span><span class='op'>[</span><span class='fl'>3</span><span class='op'>]</span>, <span class='st'>"\\b.+(?=~)"</span><span class='op'>)</span>,</span>
+<span>        <span class='st'>"+"</span>, <span class='fu'><a href='https://stringr.tidyverse.org/reference/str_extract.html'>str_extract</a></span><span class='op'>(</span><span class='va'>parts_formula</span><span class='op'>[</span><span class='fl'>3</span><span class='op'>]</span>, <span class='st'>"\\b.+(?=~)"</span><span class='op'>)</span>,</span>
 <span>        <span class='st'>"|"</span>, <span class='va'>parts_formula</span><span class='op'>[</span><span class='fl'>2</span><span class='op'>]</span></span>
 <span>      <span class='op'>)</span></span>
 <span>    <span class='op'>}</span> <span class='kw'>else</span> <span class='op'>{</span></span>
@@ -2451,12 +2451,12 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>estimate_model</span> <span class='op'>&lt;-</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>data</span>, <span class='va'>formula</span><span class='op'>)</span> <span class='op'>{</span></span>
 <span>  <span class='va'>fml</span> <span class='op'>&lt;-</span> <span class='fu'>Formula</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/pkg/Formula/man/Formula.html'>as.Formula</a></span><span class='op'>(</span><span class='va'>formula</span><span class='op'>)</span></span>
-<span>  <span class='va'>pasted_formula</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste</a></span><span class='op'>(</span><span class='fu'>str_c</span><span class='op'>(</span><span class='va'>fml</span><span class='op'>)</span><span class='op'>[[</span><span class='fl'>2</span><span class='op'>]</span><span class='op'>]</span>, <span class='fu'>str_c</span><span class='op'>(</span><span class='va'>fml</span><span class='op'>)</span><span class='op'>[[</span><span class='fl'>1</span><span class='op'>]</span><span class='op'>]</span>, <span class='fu'>str_c</span><span class='op'>(</span><span class='va'>fml</span><span class='op'>)</span><span class='op'>[[</span><span class='fl'>3</span><span class='op'>]</span><span class='op'>]</span><span class='op'>)</span></span>
+<span>  <span class='va'>pasted_formula</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste</a></span><span class='op'>(</span><span class='fu'><a href='https://stringr.tidyverse.org/reference/str_c.html'>str_c</a></span><span class='op'>(</span><span class='va'>fml</span><span class='op'>)</span><span class='op'>[[</span><span class='fl'>2</span><span class='op'>]</span><span class='op'>]</span>, <span class='fu'><a href='https://stringr.tidyverse.org/reference/str_c.html'>str_c</a></span><span class='op'>(</span><span class='va'>fml</span><span class='op'>)</span><span class='op'>[[</span><span class='fl'>1</span><span class='op'>]</span><span class='op'>]</span>, <span class='fu'><a href='https://stringr.tidyverse.org/reference/str_c.html'>str_c</a></span><span class='op'>(</span><span class='va'>fml</span><span class='op'>)</span><span class='op'>[[</span><span class='fl'>3</span><span class='op'>]</span><span class='op'>]</span><span class='op'>)</span></span>
 <span>  </span>
 <span>  <span class='co'>#the param of interest varies across identification methods</span></span>
 <span>  <span class='va'>param_of_interest</span> <span class='op'>&lt;-</span> </span>
-<span>    <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'>str_count</span><span class='op'>(</span><span class='va'>pasted_formula</span>, <span class='st'>"\\|"</span><span class='op'>)</span> <span class='op'>==</span> <span class='fl'>2</span>, <span class='co'>#if IV (ie 3 parts rhs in formula)</span></span>
-<span>           <span class='fu'>str_c</span><span class='op'>(</span><span class='st'>"fit"</span>, <span class='fu'>find_pollutant</span><span class='op'>(</span><span class='va'>fml</span><span class='op'>)</span>, sep <span class='op'>=</span> <span class='st'>"_"</span><span class='op'>)</span>, </span>
+<span>    <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'><a href='https://stringr.tidyverse.org/reference/str_count.html'>str_count</a></span><span class='op'>(</span><span class='va'>pasted_formula</span>, <span class='st'>"\\|"</span><span class='op'>)</span> <span class='op'>==</span> <span class='fl'>2</span>, <span class='co'>#if IV (ie 3 parts rhs in formula)</span></span>
+<span>           <span class='fu'><a href='https://stringr.tidyverse.org/reference/str_c.html'>str_c</a></span><span class='op'>(</span><span class='st'>"fit"</span>, <span class='fu'>find_pollutant</span><span class='op'>(</span><span class='va'>fml</span><span class='op'>)</span>, sep <span class='op'>=</span> <span class='st'>"_"</span><span class='op'>)</span>, </span>
 <span>           <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='st'>"treated"</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/allnames.html'>all.vars</a></span><span class='op'>(</span><span class='va'>fml</span><span class='op'>)</span>, <span class='st'>"treatedTRUE"</span>, <span class='fu'>find_pollutant</span><span class='op'>(</span><span class='va'>fml</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span></span>
 <span>  </span>
 <span>  <span class='co'>#run the estimation</span></span>
@@ -2464,14 +2464,14 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 <span>  </span>
 <span>  <span class='co'>#retrieve the useful info</span></span>
 <span>  <span class='va'>nobs</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span><span class='op'>(</span><span class='va'>est_results</span><span class='op'>$</span><span class='va'>residuals</span><span class='op'>)</span></span>
-<span>  <span class='va'>fstat</span> <span class='op'>&lt;-</span> <span class='fu'>fitstat</span><span class='op'>(</span><span class='va'>est_results</span>, type <span class='op'>=</span> <span class='st'>"ivf"</span><span class='op'>)</span><span class='op'>$</span><span class='va'>ivf1</span> <span class='op'>%&gt;%</span> <span class='fu'>as_vector</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='va'>.</span><span class='op'>[[</span><span class='fl'>1</span><span class='op'>]</span><span class='op'>]</span></span>
+<span>  <span class='va'>fstat</span> <span class='op'>&lt;-</span> <span class='fu'>fitstat</span><span class='op'>(</span><span class='va'>est_results</span>, type <span class='op'>=</span> <span class='st'>"ivf"</span><span class='op'>)</span><span class='op'>$</span><span class='va'>ivf1</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='fu'><a href='https://purrr.tidyverse.org/reference/as_vector.html'>as_vector</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='va'>.</span><span class='op'>[[</span><span class='fl'>1</span><span class='op'>]</span><span class='op'>]</span></span>
 <span>  </span>
-<span>  <span class='va'>est_results</span> <span class='op'>%&gt;%</span></span>
-<span>    <span class='fu'>broom</span><span class='fu'>::</span><span class='fu'><a href='https://generics.r-lib.org/reference/tidy.html'>tidy</a></span><span class='op'>(</span>conf.int <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
-<span>    <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>term</span> <span class='op'>==</span> <span class='va'>param_of_interest</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
-<span>    <span class='fu'>rename</span><span class='op'>(</span>p_value <span class='op'>=</span> <span class='va'>p.value</span>, se <span class='op'>=</span> <span class='va'>std.error</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
-<span>    <span class='fu'>select</span><span class='op'>(</span><span class='va'>estimate</span>, <span class='va'>p_value</span>, <span class='va'>se</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
-<span>    <span class='fu'>mutate</span><span class='op'>(</span></span>
+<span>  <span class='va'>est_results</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>    <span class='fu'>broom</span><span class='fu'>::</span><span class='fu'><a href='https://generics.r-lib.org/reference/tidy.html'>tidy</a></span><span class='op'>(</span>conf.int <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>    <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>term</span> <span class='op'>==</span> <span class='va'>param_of_interest</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>    <span class='fu'><a href='https://dplyr.tidyverse.org/reference/rename.html'>rename</a></span><span class='op'>(</span>p_value <span class='op'>=</span> <span class='va'>p.value</span>, se <span class='op'>=</span> <span class='va'>std.error</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>    <span class='fu'><a href='https://dplyr.tidyverse.org/reference/select.html'>select</a></span><span class='op'>(</span><span class='va'>estimate</span>, <span class='va'>p_value</span>, <span class='va'>se</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>    <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span></span>
 <span>      n_obs <span class='op'>=</span> <span class='va'>nobs</span>,</span>
 <span>      f_stat <span class='op'>=</span> <span class='va'>fstat</span></span>
 <span>    <span class='op'>)</span></span>
@@ -2513,18 +2513,18 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 <span>  <span class='va'>fml</span> <span class='op'>&lt;-</span> <span class='fu'>Formula</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/pkg/Formula/man/Formula.html'>as.Formula</a></span><span class='op'>(</span><span class='va'>formula</span><span class='op'>)</span></span>
 <span>  <span class='va'>dep_var</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/allnames.html'>all.vars</a></span><span class='op'>(</span><span class='va'>fml</span><span class='op'>)</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>]</span></span>
 <span></span>
-<span>  <span class='va'>sim_data</span> <span class='op'>&lt;-</span> <span class='va'>data</span> <span class='op'>%&gt;%</span></span>
-<span>    <span class='fu'>select_study_period</span><span class='op'>(</span><span class='va'>n_days</span>, <span class='va'>n_cities</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
-<span>    <span class='fu'>mutate</span><span class='op'>(</span>y0 <span class='op'>=</span> <span class='va'>.data</span><span class='op'>[[</span><span class='va'>dep_var</span><span class='op'>]</span><span class='op'>]</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
-<span>    <span class='fu'>draw_treated</span><span class='op'>(</span><span class='va'>p_obs_treat</span>, <span class='va'>quasi_exp</span><span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>    <span class='fu'>create_fake_output</span><span class='op'>(</span><span class='va'>percent_effect_size</span>, <span class='va'>id_method</span>, <span class='va'>iv_strength</span>, <span class='va'>formula</span><span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>    <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span><span class='op'>(</span><span class='va'>treated</span><span class='op'>)</span><span class='op'>)</span> <span class='co'>#not necessary bc dropped in lm()</span></span>
+<span>  <span class='va'>sim_data</span> <span class='op'>&lt;-</span> <span class='va'>data</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>    <span class='fu'>select_study_period</span><span class='op'>(</span><span class='va'>n_days</span>, <span class='va'>n_cities</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>    <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>y0 <span class='op'>=</span> <span class='va'>.data</span><span class='op'>[[</span><span class='va'>dep_var</span><span class='op'>]</span><span class='op'>]</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>    <span class='fu'>draw_treated</span><span class='op'>(</span><span class='va'>p_obs_treat</span>, <span class='va'>quasi_exp</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>    <span class='fu'>create_fake_output</span><span class='op'>(</span><span class='va'>percent_effect_size</span>, <span class='va'>id_method</span>, <span class='va'>iv_strength</span>, <span class='va'>formula</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>    <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='op'>!</span><span class='fu'><a href='https://rdrr.io/r/base/NA.html'>is.na</a></span><span class='op'>(</span><span class='va'>treated</span><span class='op'>)</span><span class='op'>)</span> <span class='co'>#not necessary bc dropped in lm()</span></span>
 <span>  </span>
-<span>  <span class='va'>updated_fml</span> <span class='op'>&lt;-</span> <span class='fu'>str_replace</span><span class='op'>(</span><span class='va'>formula</span>, <span class='va'>dep_var</span>, <span class='st'>"y_fake"</span><span class='op'>)</span></span>
+<span>  <span class='va'>updated_fml</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://stringr.tidyverse.org/reference/str_replace.html'>str_replace</a></span><span class='op'>(</span><span class='va'>formula</span>, <span class='va'>dep_var</span>, <span class='st'>"y_fake"</span><span class='op'>)</span></span>
 <span></span>
-<span>  <span class='va'>sim_output</span> <span class='op'>&lt;-</span> <span class='va'>sim_data</span> <span class='op'>%&gt;%</span></span>
-<span>    <span class='fu'>estimate_model</span><span class='op'>(</span>formula <span class='op'>=</span> <span class='va'>updated_fml</span><span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>    <span class='fu'>mutate</span><span class='op'>(</span></span>
+<span>  <span class='va'>sim_output</span> <span class='op'>&lt;-</span> <span class='va'>sim_data</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>    <span class='fu'>estimate_model</span><span class='op'>(</span>formula <span class='op'>=</span> <span class='va'>updated_fml</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>    <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span></span>
 <span>      true_effect <span class='op'>=</span> <span class='fu'>compute_true_effect</span><span class='op'>(</span></span>
 <span>        <span class='va'>sim_data</span>, </span>
 <span>        <span class='va'>id_method</span>, </span>
@@ -2545,7 +2545,7 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 <span>  <span class='kw'><a href='https://rdrr.io/r/base/function.html'>return</a></span><span class='op'>(</span><span class='va'>sim_output</span><span class='op'>)</span></span>
 <span><span class='op'>}</span></span>
 <span></span>
-<span><span class='va'>nmmaps_data</span> <span class='op'>%&gt;%</span></span>
+<span><span class='va'>nmmaps_data</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
 <span>  <span class='fu'>compute_simulation</span><span class='op'>(</span></span>
 <span>    data <span class='op'>=</span> <span class='va'>.</span>,</span>
 <span>    formula <span class='op'>=</span> <span class='st'>"death_total ~ treated + co + temperature + temperature_squared | city + month^year + weekday"</span>,</span>
@@ -2561,7 +2561,7 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 <pre><code># A tibble: 1 × 14
   estimate p_value    se n_obs f_stat true_ef…¹ n_days n_cit…² p_obs…³
      &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;int&gt; &lt;lgl&gt;      &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
-1   -0.326   0.146 0.224  7881 NA        -0.249   1000      10     0.5
+1   -0.329  0.0437 0.163  7261 NA        -0.174   1000      10     0.5
 # … with 5 more variables: percent_effect_size &lt;dbl&gt;,
 #   quasi_exp &lt;chr&gt;, id_method &lt;chr&gt;, iv_strength &lt;dbl&gt;,
 #   formula &lt;chr&gt;, and abbreviated variable names ¹​true_effect,
@@ -2575,7 +2575,7 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 <p>To build <code>sim_param_evol</code>, we first define a set of baseline values for our parameters and store them in a data frame, <code>sim_param_base</code>.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>sim_param_base</span> <span class='op'>&lt;-</span> <span class='fu'>tibble</span><span class='op'>(</span></span>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>sim_param_base</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://tibble.tidyverse.org/reference/tibble.html'>tibble</a></span><span class='op'>(</span></span>
 <span>  n_days <span class='op'>=</span> <span class='fl'>2500</span>,</span>
 <span>  n_cities <span class='op'>=</span> <span class='fl'>40</span>,</span>
 <span>  p_obs_treat <span class='op'>=</span> <span class='fl'>0.5</span>,</span>
@@ -2610,14 +2610,14 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span><span class='co'>#adds all values in vect_param</span></span>
 <span><span class='va'>add_values_param</span> <span class='op'>&lt;-</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>df</span>, <span class='va'>vect_param</span><span class='op'>)</span> <span class='op'>{</span></span>
-<span>  <span class='va'>param_name</span> <span class='op'>&lt;-</span> <span class='fu'>str_remove</span><span class='op'>(</span><span class='va'>vect_param</span>, <span class='st'>"vect_"</span><span class='op'>)</span></span>
+<span>  <span class='va'>param_name</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://stringr.tidyverse.org/reference/str_remove.html'>str_remove</a></span><span class='op'>(</span><span class='va'>vect_param</span>, <span class='st'>"vect_"</span><span class='op'>)</span></span>
 <span>  </span>
-<span>  <span class='va'>tib_param</span> <span class='op'>&lt;-</span> <span class='fu'>tibble</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/get.html'>get</a></span><span class='op'>(</span><span class='va'>vect_param</span><span class='op'>)</span><span class='op'>)</span></span>
+<span>  <span class='va'>tib_param</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://tibble.tidyverse.org/reference/tibble.html'>tibble</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/get.html'>get</a></span><span class='op'>(</span><span class='va'>vect_param</span><span class='op'>)</span><span class='op'>)</span></span>
 <span>  <span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>tib_param</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='va'>param_name</span></span>
 <span>  </span>
-<span>  <span class='va'>df</span> <span class='op'>%&gt;%</span> </span>
-<span>    <span class='fu'>full_join</span><span class='op'>(</span><span class='va'>tib_param</span>, by <span class='op'>=</span> <span class='va'>param_name</span><span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>    <span class='fu'>fill</span><span class='op'>(</span><span class='fu'>everything</span><span class='op'>(</span><span class='op'>)</span>, .direction <span class='op'>=</span> <span class='st'>"downup"</span><span class='op'>)</span></span>
+<span>  <span class='va'>df</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>    <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate-joins.html'>full_join</a></span><span class='op'>(</span><span class='va'>tib_param</span>, by <span class='op'>=</span> <span class='va'>param_name</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>    <span class='fu'><a href='https://tidyr.tidyverse.org/reference/fill.html'>fill</a></span><span class='op'>(</span><span class='fu'><a href='https://tidyselect.r-lib.org/reference/everything.html'>everything</a></span><span class='op'>(</span><span class='op'>)</span>, .direction <span class='op'>=</span> <span class='st'>"downup"</span><span class='op'>)</span></span>
 <span><span class='op'>}</span></span>
 <span></span>
 <span><span class='va'>vect_of_vect_param</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span></span>
@@ -2629,12 +2629,12 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 <span><span class='op'>)</span></span>
 <span></span>
 <span><span class='va'>sim_param_unique</span> <span class='op'>&lt;-</span> </span>
-<span>  <span class='fu'>map_dfr</span><span class='op'>(</span></span>
+<span>  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>map_dfr</a></span><span class='op'>(</span></span>
 <span>    <span class='va'>vect_of_vect_param</span>, </span>
 <span>    <span class='va'>add_values_param</span>, </span>
 <span>    df <span class='op'>=</span> <span class='va'>sim_param_base</span></span>
-<span>  <span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>  <span class='fu'>distinct</span><span class='op'>(</span><span class='op'>)</span> <span class='co'>#bc base parameters appear twice</span></span></code></pre>
+<span>  <span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/distinct.html'>distinct</a></span><span class='op'>(</span><span class='op'>)</span> <span class='co'>#bc base parameters appear twice</span></span></code></pre>
 </div>
 </div>
 <p>We want to compute our simulations for this set of parameters for every identification method so we replicate this set of parameters for each identification method (and add information about the associated quasi-experiment). Then, in order to identify the effect of interest, we need to consider different types of equations, depending on the identification method considered. For each set of parameters we want to run many iterations of the simulation so we replicate the dataset <code>n_iter</code> times. It will enable us to loop <code>compute_simulation</code> directly on <code>sim_param_evol</code>.</p>
@@ -2646,38 +2646,38 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 <span>                              <span class='va'>vect_id_methods</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"reduced_form"</span>, <span class='st'>"RDD"</span>, <span class='st'>"OLS"</span>, <span class='st'>"IV"</span><span class='op'>)</span>, </span>
 <span>                              <span class='va'>n_iter</span> <span class='op'>=</span> <span class='fl'>10</span><span class='op'>)</span> <span class='op'>{</span></span>
 <span>  </span>
-<span>  <span class='va'>sim_param_clean</span> <span class='op'>&lt;-</span> <span class='va'>df_sim_param</span> <span class='op'>%&gt;%</span></span>
-<span>    <span class='fu'>crossing</span><span class='op'>(</span><span class='va'>vect_id_methods</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
-<span>    <span class='fu'>rename</span><span class='op'>(</span>id_method <span class='op'>=</span> <span class='va'>vect_id_methods</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
-<span>    <span class='fu'>mutate</span><span class='op'>(</span></span>
-<span>      quasi_exp <span class='op'>=</span> <span class='fu'>case_when</span><span class='op'>(</span></span>
+<span>  <span class='va'>sim_param_clean</span> <span class='op'>&lt;-</span> <span class='va'>df_sim_param</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>    <span class='fu'><a href='https://tidyr.tidyverse.org/reference/expand.html'>crossing</a></span><span class='op'>(</span><span class='va'>vect_id_methods</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>    <span class='fu'><a href='https://dplyr.tidyverse.org/reference/rename.html'>rename</a></span><span class='op'>(</span>id_method <span class='op'>=</span> <span class='va'>vect_id_methods</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>    <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span></span>
+<span>      quasi_exp <span class='op'>=</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/case_when.html'>case_when</a></span><span class='op'>(</span></span>
 <span>        <span class='va'>id_method</span> <span class='op'>==</span> <span class='st'>"reduced_form"</span> <span class='op'>~</span> <span class='st'>"random_days"</span>,</span>
-<span>        <span class='fu'>str_starts</span><span class='op'>(</span><span class='va'>id_method</span>, <span class='st'>"RDD"</span><span class='op'>)</span> <span class='op'>~</span> <span class='st'>"alert_co"</span>,</span>
+<span>        <span class='fu'><a href='https://stringr.tidyverse.org/reference/str_starts.html'>str_starts</a></span><span class='op'>(</span><span class='va'>id_method</span>, <span class='st'>"RDD"</span><span class='op'>)</span> <span class='op'>~</span> <span class='st'>"alert_co"</span>,</span>
 <span>        <span class='va'>id_method</span> <span class='op'>==</span> <span class='st'>"OLS"</span> <span class='op'>~</span> <span class='st'>"none"</span>,</span>
 <span>        <span class='va'>id_method</span> <span class='op'>==</span> <span class='st'>"IV"</span> <span class='op'>~</span> <span class='st'>"random_days"</span>,</span>
 <span>      <span class='op'>)</span></span>
-<span>    <span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>    <span class='fu'>mutate</span><span class='op'>(</span></span>
-<span>      formula <span class='op'>=</span> <span class='fu'>case_when</span><span class='op'>(</span></span>
-<span>        <span class='va'>id_method</span> <span class='op'>==</span> <span class='st'>"OLS"</span> <span class='op'>~</span> <span class='fu'>str_replace_all</span><span class='op'>(</span><span class='va'>formula</span>, <span class='st'>"treated"</span>, <span class='st'>"co"</span><span class='op'>)</span>,</span>
+<span>    <span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>    <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span></span>
+<span>      formula <span class='op'>=</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/case_when.html'>case_when</a></span><span class='op'>(</span></span>
+<span>        <span class='va'>id_method</span> <span class='op'>==</span> <span class='st'>"OLS"</span> <span class='op'>~</span> <span class='fu'><a href='https://stringr.tidyverse.org/reference/str_replace.html'>str_replace_all</a></span><span class='op'>(</span><span class='va'>formula</span>, <span class='st'>"treated"</span>, <span class='st'>"co"</span><span class='op'>)</span>,</span>
 <span>        <span class='va'>id_method</span> <span class='op'>==</span> <span class='st'>"IV"</span> <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste</a></span><span class='op'>(</span></span>
-<span>          <span class='fu'>str_remove_all</span><span class='op'>(</span><span class='va'>formula</span>, <span class='st'>"(\\+\\s)?\\btreated\\b(\\s\\+)?"</span><span class='op'>)</span>,</span>
+<span>          <span class='fu'><a href='https://stringr.tidyverse.org/reference/str_remove.html'>str_remove_all</a></span><span class='op'>(</span><span class='va'>formula</span>, <span class='st'>"(\\+\\s)?\\btreated\\b(\\s\\+)?"</span><span class='op'>)</span>,</span>
 <span>          <span class='st'>"| co ~ treated"</span></span>
 <span>          <span class='op'>)</span>,</span>
 <span>        <span class='cn'>TRUE</span> <span class='op'>~</span> <span class='va'>formula</span></span>
 <span>      <span class='op'>)</span></span>
-<span>    <span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>    <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='op'>!</span><span class='fu'>str_detect</span><span class='op'>(</span><span class='va'>formula</span>, <span class='st'>"~\\s{0,2}\\|"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
+<span>    <span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>    <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='op'>!</span><span class='fu'><a href='https://stringr.tidyverse.org/reference/str_detect.html'>str_detect</a></span><span class='op'>(</span><span class='va'>formula</span>, <span class='st'>"~\\s{0,2}\\|"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
 <span>    <span class='co'>#adapting parameters</span></span>
-<span>    <span class='fu'>mutate</span><span class='op'>(</span></span>
+<span>    <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span></span>
 <span>      p_obs_treat <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>id_method</span> <span class='op'>==</span> <span class='st'>"RDD"</span>, <span class='va'>p_obs_treat</span><span class='op'>/</span><span class='fl'>5</span>, <span class='va'>p_obs_treat</span><span class='op'>)</span>,</span>
 <span>      p_obs_treat <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>id_method</span> <span class='op'>==</span> <span class='st'>"OLS"</span>, <span class='cn'>NA</span>, <span class='va'>p_obs_treat</span><span class='op'>)</span>,</span>
 <span>      iv_strength <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>id_method</span> <span class='op'>!=</span> <span class='st'>"IV"</span>, <span class='cn'>NA</span>, <span class='va'>iv_strength</span><span class='op'>)</span></span>
-<span>    <span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>    <span class='fu'>distinct</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>%&gt;%</span> <span class='co'>#to erase the duplicates due to iv_strength in non-iv id_methods</span></span>
-<span>    <span class='fu'>arrange</span><span class='op'>(</span><span class='va'>id_method</span>, <span class='va'>n_days</span><span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>    <span class='fu'>crossing</span><span class='op'>(</span>rep_id <span class='op'>=</span> <span class='fl'>1</span><span class='op'>:</span><span class='va'>n_iter</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
-<span>    <span class='fu'>select</span><span class='op'>(</span><span class='op'>-</span><span class='va'>rep_id</span><span class='op'>)</span> </span>
+<span>    <span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>    <span class='fu'><a href='https://dplyr.tidyverse.org/reference/distinct.html'>distinct</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'>#to erase the duplicates due to iv_strength in non-iv id_methods</span></span>
+<span>    <span class='fu'><a href='https://dplyr.tidyverse.org/reference/arrange.html'>arrange</a></span><span class='op'>(</span><span class='va'>id_method</span>, <span class='va'>n_days</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>    <span class='fu'><a href='https://tidyr.tidyverse.org/reference/expand.html'>crossing</a></span><span class='op'>(</span>rep_id <span class='op'>=</span> <span class='fl'>1</span><span class='op'>:</span><span class='va'>n_iter</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>    <span class='fu'><a href='https://dplyr.tidyverse.org/reference/select.html'>select</a></span><span class='op'>(</span><span class='op'>-</span><span class='va'>rep_id</span><span class='op'>)</span> </span>
 <span>  </span>
 <span>  <span class='kw'><a href='https://rdrr.io/r/base/function.html'>return</a></span><span class='op'>(</span><span class='va'>sim_param_clean</span><span class='op'>)</span></span>
 <span><span class='op'>}</span> </span>
@@ -2697,8 +2697,8 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 <span>  </span>
 <span>  <span class='fu'>tic</span><span class='op'>(</span><span class='op'>)</span></span>
 <span>  <span class='kw'>for</span> <span class='op'>(</span><span class='va'>i</span> <span class='kw'>in</span> <span class='fl'>1</span><span class='op'>:</span><span class='fu'><a href='https://rdrr.io/r/base/Round.html'>ceiling</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span><span class='op'>(</span><span class='va'>sim_param</span><span class='op'>)</span><span class='op'>/</span><span class='va'>save_every</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>{</span></span>
-<span>    <span class='va'>params_slice</span> <span class='op'>&lt;-</span> <span class='va'>sim_param</span> <span class='op'>%&gt;%</span> </span>
-<span>      <span class='fu'>slice</span><span class='op'>(</span><span class='op'>(</span><span class='fl'>1</span> <span class='op'>+</span> <span class='va'>save_every</span><span class='op'>*</span><span class='op'>(</span><span class='va'>i</span><span class='op'>-</span><span class='fl'>1</span><span class='op'>)</span><span class='op'>)</span><span class='op'>:</span><span class='op'>(</span><span class='va'>save_every</span><span class='op'>*</span><span class='va'>i</span><span class='op'>)</span><span class='op'>)</span></span>
+<span>    <span class='va'>params_slice</span> <span class='op'>&lt;-</span> <span class='va'>sim_param</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>      <span class='fu'><a href='https://dplyr.tidyverse.org/reference/slice.html'>slice</a></span><span class='op'>(</span><span class='op'>(</span><span class='fl'>1</span> <span class='op'>+</span> <span class='va'>save_every</span><span class='op'>*</span><span class='op'>(</span><span class='va'>i</span><span class='op'>-</span><span class='fl'>1</span><span class='op'>)</span><span class='op'>)</span><span class='op'>:</span><span class='op'>(</span><span class='va'>save_every</span><span class='op'>*</span><span class='va'>i</span><span class='op'>)</span><span class='op'>)</span></span>
 <span>    </span>
 <span>    <span class='fu'>with_progress</span><span class='op'>(</span><span class='op'>{</span></span>
 <span>      <span class='va'>p</span> <span class='op'>&lt;-</span> <span class='fu'>progressor</span><span class='op'>(</span>steps <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span><span class='op'>(</span><span class='va'>params_slice</span><span class='op'>)</span>, on_exit <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span></span>
@@ -2713,10 +2713,10 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 <span>    <span class='op'>}</span><span class='op'>)</span></span>
 <span>    </span>
 <span>    <span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste</a></span><span class='op'>(</span><span class='st'>"Iteration ="</span>, <span class='va'>i</span><span class='op'>*</span><span class='va'>save_every</span><span class='op'>)</span><span class='op'>)</span></span>
-<span>    <span class='va'>output</span> <span class='op'>&lt;-</span> <span class='va'>output</span> <span class='op'>%&gt;%</span> <span class='fu'><a href='https://rdrr.io/r/base/cbind.html'>rbind</a></span><span class='op'>(</span><span class='va'>intermediary_output</span><span class='op'>)</span></span>
+<span>    <span class='va'>output</span> <span class='op'>&lt;-</span> <span class='va'>output</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/cbind.html'>rbind</a></span><span class='op'>(</span><span class='va'>intermediary_output</span><span class='op'>)</span></span>
 <span>    <span class='fu'><a href='https://rdrr.io/r/base/readRDS.html'>saveRDS</a></span><span class='op'>(</span></span>
 <span>      <span class='va'>intermediary_output</span>, </span>
-<span>      <span class='fu'>here</span><span class='op'>(</span><span class='st'>"data"</span>, <span class='st'>"simulations"</span>, <span class='fu'>str_c</span><span class='op'>(</span><span class='va'>name_save</span>, <span class='st'>"_intermediary_"</span>, <span class='va'>i</span><span class='op'>*</span><span class='va'>save_every</span>,<span class='st'>".RDS"</span><span class='op'>)</span><span class='op'>)</span></span>
+<span>      <span class='fu'><a href='https://here.r-lib.org//reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"data"</span>, <span class='st'>"simulations"</span>, <span class='fu'><a href='https://stringr.tidyverse.org/reference/str_c.html'>str_c</a></span><span class='op'>(</span><span class='va'>name_save</span>, <span class='st'>"_intermediary_"</span>, <span class='va'>i</span><span class='op'>*</span><span class='va'>save_every</span>,<span class='st'>".RDS"</span><span class='op'>)</span><span class='op'>)</span></span>
 <span>    <span class='op'>)</span></span>
 <span>  <span class='op'>}</span></span>
 <span>  <span class='fu'><a href='https://rdrr.io/pkg/groundhog/man/toc.html'>toc</a></span><span class='op'>(</span><span class='op'>)</span></span>
@@ -2739,19 +2739,19 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>summarise_simulations</span> <span class='op'>&lt;-</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>data</span><span class='op'>)</span> <span class='op'>{</span></span>
 <span>  </span>
-<span>  <span class='va'>data</span> <span class='op'>%&gt;%</span> </span>
-<span>    <span class='fu'>mutate</span><span class='op'>(</span></span>
+<span>  <span class='va'>data</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>    <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span></span>
 <span>      CI_low <span class='op'>=</span> <span class='va'>estimate</span> <span class='op'>+</span> <span class='va'>se</span><span class='op'>*</span><span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>qnorm</a></span><span class='op'>(</span><span class='op'>(</span><span class='fl'>1</span><span class='op'>-</span><span class='fl'>0.95</span><span class='op'>)</span><span class='op'>/</span><span class='fl'>2</span><span class='op'>)</span>,</span>
 <span>      CI_high <span class='op'>=</span> <span class='va'>estimate</span> <span class='op'>-</span> <span class='va'>se</span><span class='op'>*</span><span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>qnorm</a></span><span class='op'>(</span><span class='op'>(</span><span class='fl'>1</span><span class='op'>-</span><span class='fl'>0.95</span><span class='op'>)</span><span class='op'>/</span><span class='fl'>2</span><span class='op'>)</span>,</span>
 <span>      length_CI <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>abs</a></span><span class='op'>(</span><span class='va'>CI_high</span> <span class='op'>-</span> <span class='va'>CI_low</span><span class='op'>)</span>,</span>
 <span>      covered <span class='op'>=</span> <span class='op'>(</span><span class='va'>true_effect</span> <span class='op'>&gt;</span> <span class='va'>CI_low</span> <span class='op'>&amp;</span> <span class='va'>true_effect</span> <span class='op'>&lt;</span> <span class='va'>CI_high</span><span class='op'>)</span>, </span>
 <span>      covered_signif <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>p_value</span> <span class='op'>&gt;</span> <span class='fl'>0.05</span>, <span class='cn'>NA</span>, <span class='va'>covered</span><span class='op'>)</span> <span class='co'>#to consider only significant estimates</span></span>
-<span>    <span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>    <span class='fu'>group_by</span><span class='op'>(</span><span class='va'>formula</span>, <span class='va'>quasi_exp</span>, <span class='va'>n_days</span>, <span class='va'>n_cities</span>, <span class='va'>p_obs_treat</span>, <span class='va'>percent_effect_size</span>, <span class='va'>id_method</span>, <span class='va'>iv_strength</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
-<span>    <span class='fu'>summarise</span><span class='op'>(</span></span>
+<span>    <span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>    <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>formula</span>, <span class='va'>quasi_exp</span>, <span class='va'>n_days</span>, <span class='va'>n_cities</span>, <span class='va'>p_obs_treat</span>, <span class='va'>percent_effect_size</span>, <span class='va'>id_method</span>, <span class='va'>iv_strength</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>    <span class='fu'><a href='https://dplyr.tidyverse.org/reference/summarise.html'>summarise</a></span><span class='op'>(</span></span>
 <span>      power <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>p_value</span> <span class='op'>&lt;=</span> <span class='fl'>0.05</span>, na.rm <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>*</span><span class='fl'>100</span>, </span>
 <span>      type_m <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>p_value</span> <span class='op'>&lt;=</span> <span class='fl'>0.05</span>, <span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>abs</a></span><span class='op'>(</span><span class='va'>estimate</span><span class='op'>/</span><span class='va'>true_effect</span><span class='op'>)</span>, <span class='cn'>NA</span><span class='op'>)</span>, na.rm <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>,</span>
-<span>      type_s <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>p_value</span> <span class='op'>&lt;=</span> <span class='fl'>0.05</span>, <span class='fu'><a href='https://rdrr.io/r/base/sign.html'>sign</a></span><span class='op'>(</span><span class='va'>estimate</span><span class='op'>)</span> <span class='op'>!=</span> <span class='fu'><a href='https://rdrr.io/r/base/sign.html'>sign</a></span><span class='op'>(</span><span class='va'>true_effect</span><span class='op'>)</span>, <span class='cn'>NA</span><span class='op'>)</span>, na.rm <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>/</span><span class='fu'>n</span><span class='op'>(</span><span class='op'>)</span><span class='op'>*</span><span class='fl'>100</span>,</span>
+<span>      type_s <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>p_value</span> <span class='op'>&lt;=</span> <span class='fl'>0.05</span>, <span class='fu'><a href='https://rdrr.io/r/base/sign.html'>sign</a></span><span class='op'>(</span><span class='va'>estimate</span><span class='op'>)</span> <span class='op'>!=</span> <span class='fu'><a href='https://rdrr.io/r/base/sign.html'>sign</a></span><span class='op'>(</span><span class='va'>true_effect</span><span class='op'>)</span>, <span class='cn'>NA</span><span class='op'>)</span>, na.rm <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>/</span><span class='fu'><a href='https://dplyr.tidyverse.org/reference/context.html'>n</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>*</span><span class='fl'>100</span>,</span>
 <span>      coverage_rate <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>covered_signif</span>, na.rm <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>*</span><span class='fl'>100</span>,</span>
 <span>      coverage_rate_all <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>covered</span>, na.rm <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>*</span><span class='fl'>100</span>,</span>
 <span>      <span class='co'># mse = mean((estimate - true_effect)^2, na.rm = TRUE),</span></span>
@@ -2760,10 +2760,10 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 <span>      mean_f_stat <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>f_stat</span>, na.rm <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>,</span>
 <span>      mean_signal_to_noise <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>estimate</span><span class='op'>/</span><span class='va'>length_CI</span>, na.rm <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>,</span>
 <span>      .groups  <span class='op'>=</span> <span class='st'>"drop"</span></span>
-<span>    <span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>    <span class='fu'>ungroup</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>    <span class='fu'>mutate</span><span class='op'>(</span></span>
-<span>      outcome <span class='op'>=</span> <span class='fu'>str_extract</span><span class='op'>(</span><span class='va'>formula</span>, <span class='st'>"^[^\\s~]+(?=\\s?~)"</span><span class='op'>)</span>,</span>
+<span>    <span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>    <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>ungroup</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>    <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span></span>
+<span>      outcome <span class='op'>=</span> <span class='fu'><a href='https://stringr.tidyverse.org/reference/str_extract.html'>str_extract</a></span><span class='op'>(</span><span class='va'>formula</span>, <span class='st'>"^[^\\s~]+(?=\\s?~)"</span><span class='op'>)</span>,</span>
 <span>      n_days <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/integer.html'>as.integer</a></span><span class='op'>(</span><span class='va'>n_days</span><span class='op'>)</span>,</span>
 <span>      n_cities <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/integer.html'>as.integer</a></span><span class='op'>(</span><span class='va'>n_cities</span><span class='op'>)</span></span>
 <span>    <span class='op'>)</span></span>
@@ -2773,8 +2773,8 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 <p>We then run this function.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>summary_evol_large</span> <span class='op'>&lt;-</span> <span class='fu'>summarise_simulations</span><span class='op'>(</span><span class='va'>sim_evol_large</span><span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>  <span class='fu'>mutate</span><span class='op'>(</span>outcome <span class='op'>=</span> <span class='fu'>fct_relevel</span><span class='op'>(</span><span class='va'>outcome</span>, <span class='st'>"copd_age_65_75"</span>, <span class='st'>"resp_total"</span>, <span class='st'>"death_total"</span><span class='op'>)</span><span class='op'>)</span></span>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>summary_evol_large</span> <span class='op'>&lt;-</span> <span class='fu'>summarise_simulations</span><span class='op'>(</span><span class='va'>sim_evol_large</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>outcome <span class='op'>=</span> <span class='fu'><a href='https://forcats.tidyverse.org/reference/fct_relevel.html'>fct_relevel</a></span><span class='op'>(</span><span class='va'>outcome</span>, <span class='st'>"copd_age_65_75"</span>, <span class='st'>"resp_total"</span>, <span class='st'>"death_total"</span><span class='op'>)</span><span class='op'>)</span></span>
 <span></span>
 <span><span class='co'># saveRDS(summary_evol_large, here("R", "Outputs", "summary_evol_large.RDS"))</span></span></code></pre>
 </div>
@@ -2783,7 +2783,7 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 <p>We then replicate this analysis for a smaller and more realistic baseline number of observations (10 cities and 1000 days).</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>sim_param_base_small</span> <span class='op'>&lt;-</span> <span class='fu'>tibble</span><span class='op'>(</span></span>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>sim_param_base_small</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://tibble.tidyverse.org/reference/tibble.html'>tibble</a></span><span class='op'>(</span></span>
 <span>  n_days <span class='op'>=</span> <span class='fl'>1000</span>,</span>
 <span>  n_cities <span class='op'>=</span> <span class='fl'>10</span>,</span>
 <span>  p_obs_treat <span class='op'>=</span> <span class='fl'>0.5</span>,</span>
@@ -2793,22 +2793,22 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 <span><span class='op'>)</span></span>
 <span></span>
 <span><span class='va'>sim_param_unique_small</span> <span class='op'>&lt;-</span> </span>
-<span>  <span class='fu'>map_dfr</span><span class='op'>(</span></span>
+<span>  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>map_dfr</a></span><span class='op'>(</span></span>
 <span>    <span class='va'>vect_of_vect_param</span>, </span>
 <span>    <span class='va'>add_values_param</span>, </span>
 <span>    df <span class='op'>=</span> <span class='va'>sim_param_base</span></span>
-<span>  <span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>  <span class='fu'>distinct</span><span class='op'>(</span><span class='op'>)</span> </span>
+<span>  <span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/distinct.html'>distinct</a></span><span class='op'>(</span><span class='op'>)</span> </span>
 <span></span>
-<span><span class='va'>sim_param_evol_small</span> <span class='op'>&lt;-</span> <span class='fu'>prepare_sim_param</span><span class='op'>(</span><span class='va'>sim_param_unique_small</span>, n_iter <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='op'>!</span><span class='op'>(</span><span class='va'>id_method</span> <span class='op'>==</span> <span class='st'>"RDD"</span> <span class='op'>&amp;</span> <span class='va'>p_obs_treat</span> <span class='op'>&lt;=</span> <span class='fl'>0.01</span><span class='op'>)</span><span class='op'>)</span> </span>
+<span><span class='va'>sim_param_evol_small</span> <span class='op'>&lt;-</span> <span class='fu'>prepare_sim_param</span><span class='op'>(</span><span class='va'>sim_param_unique_small</span>, n_iter <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='op'>!</span><span class='op'>(</span><span class='va'>id_method</span> <span class='op'>==</span> <span class='st'>"RDD"</span> <span class='op'>&amp;</span> <span class='va'>p_obs_treat</span> <span class='op'>&lt;=</span> <span class='fl'>0.01</span><span class='op'>)</span><span class='op'>)</span> </span>
 <span></span>
 <span><span class='va'>sim_evol_small</span> <span class='op'>&lt;-</span> <span class='fu'>run_all_sim</span><span class='op'>(</span><span class='va'>nmmaps_data</span>, <span class='va'>sim_param_evol_small</span>, save_every <span class='op'>=</span> <span class='fl'>10</span>, <span class='st'>"sim_evol_small"</span><span class='op'>)</span></span>
 <span></span>
 <span><span class='co'># saveRDS(sim_evol_small, here("R", "Outputs", "sim_evol_small.RDS"))</span></span>
 <span></span>
-<span><span class='va'>summary_evol_small</span> <span class='op'>&lt;-</span> <span class='fu'>summarise_simulations</span><span class='op'>(</span><span class='va'>sim_evol_small</span><span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>  <span class='fu'>mutate</span><span class='op'>(</span>outcome <span class='op'>=</span> <span class='fu'>fct_relevel</span><span class='op'>(</span><span class='va'>outcome</span>, <span class='st'>"copd_age_65_75"</span>, <span class='st'>"resp_total"</span>, <span class='st'>"death_total"</span><span class='op'>)</span><span class='op'>)</span></span>
+<span><span class='va'>summary_evol_small</span> <span class='op'>&lt;-</span> <span class='fu'>summarise_simulations</span><span class='op'>(</span><span class='va'>sim_evol_small</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>outcome <span class='op'>=</span> <span class='fu'><a href='https://forcats.tidyverse.org/reference/fct_relevel.html'>fct_relevel</a></span><span class='op'>(</span><span class='va'>outcome</span>, <span class='st'>"copd_age_65_75"</span>, <span class='st'>"resp_total"</span>, <span class='st'>"death_total"</span><span class='op'>)</span><span class='op'>)</span></span>
 <span></span>
 <span><span class='co'># saveRDS(summary_evol_small, here("R", "Outputs", "summary_evol_small.RDS"))</span></span></code></pre>
 </div>
@@ -2819,16 +2819,16 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>sim_param_decomp_nobs</span> <span class='op'>&lt;-</span> </span>
-<span>  <span class='fu'>tibble</span><span class='op'>(</span>n_cities <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span>, <span class='fl'>3</span>, <span class='fl'>5</span>, <span class='fl'>10</span>, <span class='fl'>15</span>, <span class='fl'>25</span>, <span class='fl'>34</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
-<span>  <span class='fu'>crossing</span><span class='op'>(</span>n_obs <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1000</span>, <span class='fl'>2000</span>, <span class='fl'>3000</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
-<span>  <span class='fu'>mutate</span><span class='op'>(</span>n_days <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Round.html'>round</a></span><span class='op'>(</span><span class='va'>n_obs</span><span class='op'>/</span><span class='va'>n_cities</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>  <span class='fu'>select</span><span class='op'>(</span><span class='op'>-</span><span class='va'>n_obs</span><span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>  <span class='fu'>full_join</span><span class='op'>(</span><span class='va'>sim_param_base</span>, by <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"n_cities"</span>, <span class='st'>"n_days"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>  <span class='fu'>fill</span><span class='op'>(</span><span class='fu'>everything</span><span class='op'>(</span><span class='op'>)</span>, .direction <span class='op'>=</span> <span class='st'>"updown"</span><span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>  <span class='fu'>anti_join</span><span class='op'>(</span><span class='co'>#because sim_param_base not in the exact set of param we want here</span></span>
+<span>  <span class='fu'><a href='https://tibble.tidyverse.org/reference/tibble.html'>tibble</a></span><span class='op'>(</span>n_cities <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span>, <span class='fl'>3</span>, <span class='fl'>5</span>, <span class='fl'>10</span>, <span class='fl'>15</span>, <span class='fl'>25</span>, <span class='fl'>34</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/expand.html'>crossing</a></span><span class='op'>(</span>n_obs <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1000</span>, <span class='fl'>2000</span>, <span class='fl'>3000</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>n_days <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Round.html'>round</a></span><span class='op'>(</span><span class='va'>n_obs</span><span class='op'>/</span><span class='va'>n_cities</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/select.html'>select</a></span><span class='op'>(</span><span class='op'>-</span><span class='va'>n_obs</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate-joins.html'>full_join</a></span><span class='op'>(</span><span class='va'>sim_param_base</span>, by <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"n_cities"</span>, <span class='st'>"n_days"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/fill.html'>fill</a></span><span class='op'>(</span><span class='fu'><a href='https://tidyselect.r-lib.org/reference/everything.html'>everything</a></span><span class='op'>(</span><span class='op'>)</span>, .direction <span class='op'>=</span> <span class='st'>"updown"</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter-joins.html'>anti_join</a></span><span class='op'>(</span><span class='co'>#because sim_param_base not in the exact set of param we want here</span></span>
 <span>    <span class='va'>sim_param_base</span>,</span>
 <span>    by <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"n_cities"</span>, <span class='st'>"n_days"</span>, <span class='st'>"p_obs_treat"</span>, <span class='st'>"percent_effect_size"</span>, <span class='st'>"iv_strength"</span>, <span class='st'>"formula"</span><span class='op'>)</span></span>
-<span>  <span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
+<span>  <span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
 <span>  <span class='fu'>prepare_sim_param</span><span class='op'>(</span>n_iter <span class='op'>=</span> <span class='fl'>1000</span><span class='op'>)</span> </span></code></pre>
 </div>
 </div>
@@ -2839,8 +2839,8 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 <span></span>
 <span><span class='co'># saveRDS(sim_decomp_nobs, here("R", "Outputs", "sim_decomp_nobs.RDS"))</span></span>
 <span></span>
-<span><span class='va'>summary_decomp_nobs</span> <span class='op'>&lt;-</span> <span class='fu'>summarise_simulations</span><span class='op'>(</span><span class='va'>sim_decomp_nobs</span><span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>    <span class='fu'>mutate</span><span class='op'>(</span>decomp_var <span class='op'>=</span> <span class='st'>"n_obs"</span><span class='op'>)</span></span>
+<span><span class='va'>summary_decomp_nobs</span> <span class='op'>&lt;-</span> <span class='fu'>summarise_simulations</span><span class='op'>(</span><span class='va'>sim_decomp_nobs</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>    <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>decomp_var <span class='op'>=</span> <span class='st'>"n_obs"</span><span class='op'>)</span></span>
 <span><span class='co'># saveRDS(summary_decomp_nobs, here("R", "Outputs", "summary_decomp_nobs.RDS"))</span></span></code></pre>
 </div>
 </div>
@@ -2850,22 +2850,22 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>sim_param_decomp_ptreat</span> <span class='op'>&lt;-</span> </span>
-<span>  <span class='fu'>tibble</span><span class='op'>(</span>p_obs_treat <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0.01</span>, <span class='fl'>0.025</span>, <span class='fl'>0.05</span>, <span class='fl'>0.1</span>, <span class='fl'>0.25</span>, <span class='fl'>0.5</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
-<span>  <span class='fu'>crossing</span><span class='op'>(</span>n_treat <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>500</span>, <span class='fl'>1000</span>, <span class='fl'>2000</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
-<span>  <span class='fu'>mutate</span><span class='op'>(</span></span>
+<span>  <span class='fu'><a href='https://tibble.tidyverse.org/reference/tibble.html'>tibble</a></span><span class='op'>(</span>p_obs_treat <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0.01</span>, <span class='fl'>0.025</span>, <span class='fl'>0.05</span>, <span class='fl'>0.1</span>, <span class='fl'>0.25</span>, <span class='fl'>0.5</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/expand.html'>crossing</a></span><span class='op'>(</span>n_treat <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>500</span>, <span class='fl'>1000</span>, <span class='fl'>2000</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span></span>
 <span>    n_obs <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Round.html'>round</a></span><span class='op'>(</span><span class='va'>n_treat</span><span class='op'>/</span><span class='va'>p_obs_treat</span><span class='op'>)</span>,</span>
 <span>    n_cities <span class='op'>=</span> <span class='fl'>50</span>, <span class='co'>#needs to be big enough</span></span>
 <span>    n_days <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Round.html'>round</a></span><span class='op'>(</span><span class='va'>n_obs</span><span class='op'>/</span><span class='va'>n_cities</span><span class='op'>)</span></span>
-<span>  <span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>  <span class='fu'>select</span><span class='op'>(</span><span class='op'>-</span><span class='va'>n_obs</span>, <span class='op'>-</span><span class='va'>n_treat</span><span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>  <span class='fu'>full_join</span><span class='op'>(</span><span class='va'>sim_param_base</span>, by <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"n_cities"</span>, <span class='st'>"n_days"</span>, <span class='st'>"p_obs_treat"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>  <span class='fu'>fill</span><span class='op'>(</span><span class='fu'>everything</span><span class='op'>(</span><span class='op'>)</span>, .direction <span class='op'>=</span> <span class='st'>"updown"</span><span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>  <span class='fu'>anti_join</span><span class='op'>(</span><span class='co'>#because sim_param_base not in the exact set of param we want here</span></span>
+<span>  <span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/select.html'>select</a></span><span class='op'>(</span><span class='op'>-</span><span class='va'>n_obs</span>, <span class='op'>-</span><span class='va'>n_treat</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate-joins.html'>full_join</a></span><span class='op'>(</span><span class='va'>sim_param_base</span>, by <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"n_cities"</span>, <span class='st'>"n_days"</span>, <span class='st'>"p_obs_treat"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/fill.html'>fill</a></span><span class='op'>(</span><span class='fu'><a href='https://tidyselect.r-lib.org/reference/everything.html'>everything</a></span><span class='op'>(</span><span class='op'>)</span>, .direction <span class='op'>=</span> <span class='st'>"updown"</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter-joins.html'>anti_join</a></span><span class='op'>(</span><span class='co'>#because sim_param_base not in the exact set of param we want here</span></span>
 <span>    <span class='va'>sim_param_base</span>,</span>
 <span>    by <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"n_cities"</span>, <span class='st'>"n_days"</span>, <span class='st'>"p_obs_treat"</span>, <span class='st'>"percent_effect_size"</span>, <span class='st'>"iv_strength"</span>, <span class='st'>"formula"</span><span class='op'>)</span></span>
-<span>  <span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>  <span class='fu'>prepare_sim_param</span><span class='op'>(</span>n_iter <span class='op'>=</span> <span class='fl'>1000</span><span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>id_method</span> <span class='op'>!=</span> <span class='st'>"OLS"</span><span class='op'>)</span></span></code></pre>
+<span>  <span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'>prepare_sim_param</span><span class='op'>(</span>n_iter <span class='op'>=</span> <span class='fl'>1000</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>id_method</span> <span class='op'>!=</span> <span class='st'>"OLS"</span><span class='op'>)</span></span></code></pre>
 </div>
 </div>
 <p>We then run the simulations.</p>
@@ -2876,11 +2876,11 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 <span><span class='co'># saveRDS(sim_decomp_ptreat, here("R", "Outputs", "sim_decomp_ptreat.RDS"))</span></span>
 <span></span>
 <span></span>
-<span><span class='va'>summary_decomp_ptreat</span> <span class='op'>&lt;-</span> <span class='fu'>summarise_simulations</span><span class='op'>(</span><span class='va'>sim_decomp_ptreat</span><span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>    <span class='fu'>mutate</span><span class='op'>(</span>decomp_var <span class='op'>=</span> <span class='st'>"n_treat"</span><span class='op'>)</span></span>
+<span><span class='va'>summary_decomp_ptreat</span> <span class='op'>&lt;-</span> <span class='fu'>summarise_simulations</span><span class='op'>(</span><span class='va'>sim_decomp_ptreat</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>    <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>decomp_var <span class='op'>=</span> <span class='st'>"n_treat"</span><span class='op'>)</span></span>
 <span><span class='co'># saveRDS(summary_decomp_ptreat, here("R", "Outputs", "summary_decomp_ptreat.RDS"))</span></span>
 <span></span>
-<span><span class='va'>summary_decomp</span> <span class='op'>&lt;-</span> <span class='va'>summary_decomp_nobs</span> <span class='op'>%&gt;%</span> </span>
+<span><span class='va'>summary_decomp</span> <span class='op'>&lt;-</span> <span class='va'>summary_decomp_nobs</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
 <span>    <span class='fu'><a href='https://rdrr.io/r/base/cbind.html'>rbind</a></span><span class='op'>(</span><span class='va'>summary_decomp_ptreat</span><span class='op'>)</span></span>
 <span></span>
 <span><span class='co'># saveRDS(summary_decomp, here("R", "Outputs", "summary_decomp.RDS"))</span></span></code></pre>
@@ -2891,7 +2891,7 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 <h4 id="rdd">RDD</h4>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>sim_param_base_usual_RDD</span> <span class='op'>&lt;-</span> <span class='fu'>tibble</span><span class='op'>(</span></span>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>sim_param_base_usual_RDD</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://tibble.tidyverse.org/reference/tibble.html'>tibble</a></span><span class='op'>(</span></span>
 <span>  n_days <span class='op'>=</span> <span class='fl'>3652</span>,</span>
 <span>  n_cities <span class='op'>=</span> <span class='fl'>1</span>,</span>
 <span>  p_obs_treat <span class='op'>=</span> <span class='fl'>0.012</span>, <span class='co'>#approximately 43/3652</span></span>
@@ -2907,28 +2907,28 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 <span><span class='va'>vect_formula</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"death_total ~ treated + temperature + temperature_squared | city + month^year + weekday"</span><span class='op'>)</span></span>
 <span></span>
 <span><span class='va'>sim_param_unique_usual_RDD</span> <span class='op'>&lt;-</span> </span>
-<span>  <span class='fu'>map_dfr</span><span class='op'>(</span></span>
+<span>  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>map_dfr</a></span><span class='op'>(</span></span>
 <span>    <span class='va'>vect_of_vect_param</span>, </span>
 <span>    <span class='va'>add_values_param</span>, </span>
 <span>    df <span class='op'>=</span> <span class='va'>sim_param_base_usual_RDD</span></span>
-<span>  <span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>  <span class='fu'>distinct</span><span class='op'>(</span><span class='op'>)</span> </span>
+<span>  <span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/distinct.html'>distinct</a></span><span class='op'>(</span><span class='op'>)</span> </span>
 <span></span>
-<span><span class='va'>sim_param_unique_usual_RDD</span> <span class='op'>&lt;-</span> <span class='va'>sim_param_unique_usual_RDD</span> <span class='op'>%&gt;%</span></span>
-<span>  <span class='fu'>crossing</span><span class='op'>(</span>bibi <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>4</span>, <span class='fl'>6</span>, <span class='fl'>8</span>, <span class='fl'>10</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
-<span>  <span class='fu'>select</span><span class='op'>(</span><span class='op'>-</span><span class='va'>percent_effect_size</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
-<span>  <span class='fu'>rename</span><span class='op'>(</span>percent_effect_size <span class='op'>=</span> <span class='va'>bibi</span><span class='op'>)</span></span>
+<span><span class='va'>sim_param_unique_usual_RDD</span> <span class='op'>&lt;-</span> <span class='va'>sim_param_unique_usual_RDD</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/expand.html'>crossing</a></span><span class='op'>(</span>bibi <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>4</span>, <span class='fl'>6</span>, <span class='fl'>8</span>, <span class='fl'>10</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/select.html'>select</a></span><span class='op'>(</span><span class='op'>-</span><span class='va'>percent_effect_size</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/rename.html'>rename</a></span><span class='op'>(</span>percent_effect_size <span class='op'>=</span> <span class='va'>bibi</span><span class='op'>)</span></span>
 <span></span>
 <span><span class='va'>sim_param_evol_usual_RDD</span> <span class='op'>&lt;-</span> </span>
-<span>  <span class='fu'>prepare_sim_param</span><span class='op'>(</span><span class='va'>sim_param_unique_usual_RDD</span>, n_iter <span class='op'>=</span> <span class='fl'>1000</span><span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>id_method</span> <span class='op'>==</span> <span class='st'>"RDD"</span><span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>  <span class='fu'>mutate</span><span class='op'>(</span>p_obs_treat <span class='op'>=</span> <span class='va'>p_obs_treat</span><span class='op'>*</span><span class='fl'>5</span><span class='op'>)</span> <span class='co'>#Because divide by 5 in prepare_sim_param</span></span></code></pre>
+<span>  <span class='fu'>prepare_sim_param</span><span class='op'>(</span><span class='va'>sim_param_unique_usual_RDD</span>, n_iter <span class='op'>=</span> <span class='fl'>1000</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>id_method</span> <span class='op'>==</span> <span class='st'>"RDD"</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>p_obs_treat <span class='op'>=</span> <span class='va'>p_obs_treat</span><span class='op'>*</span><span class='fl'>5</span><span class='op'>)</span> <span class='co'>#Because divide by 5 in prepare_sim_param</span></span></code></pre>
 </div>
 </div>
 <h4 id="reduced-form">Reduced form</h4>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>sim_param_base_usual_reduced</span> <span class='op'>&lt;-</span> <span class='fu'>tibble</span><span class='op'>(</span></span>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>sim_param_base_usual_reduced</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://tibble.tidyverse.org/reference/tibble.html'>tibble</a></span><span class='op'>(</span></span>
 <span>  n_days <span class='op'>=</span> <span class='fl'>2200</span>,</span>
 <span>  n_cities <span class='op'>=</span> <span class='fl'>5</span>,</span>
 <span>  p_obs_treat <span class='op'>=</span> <span class='fl'>0.005</span>, <span class='co'>#57/(2200*5)</span></span>
@@ -2946,29 +2946,29 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 <span><span class='op'>)</span></span>
 <span></span>
 <span><span class='va'>sim_param_unique_usual_reduced</span> <span class='op'>&lt;-</span> </span>
-<span>  <span class='fu'>map_dfr</span><span class='op'>(</span></span>
+<span>  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>map_dfr</a></span><span class='op'>(</span></span>
 <span>    <span class='va'>vect_of_vect_param</span>, </span>
 <span>    <span class='va'>add_values_param</span>, </span>
 <span>    df <span class='op'>=</span> <span class='va'>sim_param_base_usual_reduced</span></span>
-<span>  <span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>  <span class='fu'>distinct</span><span class='op'>(</span><span class='op'>)</span> </span>
+<span>  <span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/distinct.html'>distinct</a></span><span class='op'>(</span><span class='op'>)</span> </span>
 <span></span>
 <span></span>
-<span><span class='va'>sim_param_unique_usual_reduced</span> <span class='op'>&lt;-</span> <span class='va'>sim_param_unique_usual_reduced</span> <span class='op'>%&gt;%</span></span>
-<span>  <span class='fu'>crossing</span><span class='op'>(</span>bibi <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>4</span>, <span class='fl'>8</span>, <span class='fl'>17</span>, <span class='fl'>34</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
-<span>  <span class='fu'>select</span><span class='op'>(</span><span class='op'>-</span><span class='va'>percent_effect_size</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
-<span>  <span class='fu'>rename</span><span class='op'>(</span>percent_effect_size <span class='op'>=</span> <span class='va'>bibi</span><span class='op'>)</span></span>
+<span><span class='va'>sim_param_unique_usual_reduced</span> <span class='op'>&lt;-</span> <span class='va'>sim_param_unique_usual_reduced</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/expand.html'>crossing</a></span><span class='op'>(</span>bibi <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>4</span>, <span class='fl'>8</span>, <span class='fl'>17</span>, <span class='fl'>34</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/select.html'>select</a></span><span class='op'>(</span><span class='op'>-</span><span class='va'>percent_effect_size</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/rename.html'>rename</a></span><span class='op'>(</span>percent_effect_size <span class='op'>=</span> <span class='va'>bibi</span><span class='op'>)</span></span>
 <span></span>
 <span></span>
 <span><span class='va'>sim_param_evol_usual_reduced</span> <span class='op'>&lt;-</span> </span>
-<span>  <span class='fu'>prepare_sim_param</span><span class='op'>(</span><span class='va'>sim_param_unique_usual_reduced</span>, n_iter <span class='op'>=</span> <span class='fl'>1000</span><span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>id_method</span> <span class='op'>==</span> <span class='st'>"reduced_form"</span><span class='op'>)</span> </span></code></pre>
+<span>  <span class='fu'>prepare_sim_param</span><span class='op'>(</span><span class='va'>sim_param_unique_usual_reduced</span>, n_iter <span class='op'>=</span> <span class='fl'>1000</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>id_method</span> <span class='op'>==</span> <span class='st'>"reduced_form"</span><span class='op'>)</span> </span></code></pre>
 </div>
 </div>
 <h4 id="iv">IV</h4>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>sim_param_base_usual_IV</span> <span class='op'>&lt;-</span> <span class='fu'>tibble</span><span class='op'>(</span></span>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>sim_param_base_usual_IV</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://tibble.tidyverse.org/reference/tibble.html'>tibble</a></span><span class='op'>(</span></span>
 <span>  n_days <span class='op'>=</span> <span class='fl'>2500</span>,</span>
 <span>  n_cities <span class='op'>=</span> <span class='fl'>40</span>,</span>
 <span>  p_obs_treat <span class='op'>=</span> <span class='fl'>0.5</span>,</span>
@@ -2984,25 +2984,25 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 <span><span class='va'>vect_formula</span> <span class='op'>&lt;-</span> <span class='cn'>NA</span></span>
 <span></span>
 <span><span class='va'>sim_param_unique_usual_IV</span> <span class='op'>&lt;-</span> </span>
-<span>  <span class='fu'>map_dfr</span><span class='op'>(</span></span>
+<span>  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>map_dfr</a></span><span class='op'>(</span></span>
 <span>    <span class='va'>vect_of_vect_param</span>, </span>
 <span>    <span class='va'>add_values_param</span>, </span>
 <span>    df <span class='op'>=</span> <span class='va'>sim_param_base_usual_IV</span></span>
-<span>  <span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>  <span class='fu'>distinct</span><span class='op'>(</span><span class='op'>)</span> </span>
+<span>  <span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/distinct.html'>distinct</a></span><span class='op'>(</span><span class='op'>)</span> </span>
 <span></span>
 <span></span>
-<span><span class='va'>sim_param_unique_usual_IV</span> <span class='op'>&lt;-</span> <span class='va'>sim_param_unique_usual_IV</span> <span class='op'>%&gt;%</span></span>
-<span>  <span class='fu'>crossing</span><span class='op'>(</span>bibi <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span></span>
+<span><span class='va'>sim_param_unique_usual_IV</span> <span class='op'>&lt;-</span> <span class='va'>sim_param_unique_usual_IV</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/expand.html'>crossing</a></span><span class='op'>(</span>bibi <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span></span>
 <span>  <span class='st'>"death_total ~ treated + temperature + temperature_squared | city + month^year + weekday"</span>,</span>
 <span>  <span class='st'>"resp_total ~ treated + temperature + temperature_squared | city + month^year + weekday"</span>,</span>
-<span>  <span class='st'>"copd_age_65_75 ~ treated + temperature + temperature_squared | city + month^year + weekday"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
-<span>  <span class='fu'>select</span><span class='op'>(</span><span class='op'>-</span><span class='va'>formula</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
-<span>  <span class='fu'>rename</span><span class='op'>(</span>formula <span class='op'>=</span> <span class='va'>bibi</span><span class='op'>)</span></span>
+<span>  <span class='st'>"copd_age_65_75 ~ treated + temperature + temperature_squared | city + month^year + weekday"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/select.html'>select</a></span><span class='op'>(</span><span class='op'>-</span><span class='va'>formula</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/rename.html'>rename</a></span><span class='op'>(</span>formula <span class='op'>=</span> <span class='va'>bibi</span><span class='op'>)</span></span>
 <span></span>
 <span><span class='va'>sim_param_evol_usual_IV</span> <span class='op'>&lt;-</span> </span>
-<span>  <span class='fu'>prepare_sim_param</span><span class='op'>(</span><span class='va'>sim_param_unique_usual_IV</span>, n_iter <span class='op'>=</span> <span class='fl'>1000</span><span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>id_method</span> <span class='op'>==</span> <span class='st'>"IV"</span><span class='op'>)</span></span></code></pre>
+<span>  <span class='fu'>prepare_sim_param</span><span class='op'>(</span><span class='va'>sim_param_unique_usual_IV</span>, n_iter <span class='op'>=</span> <span class='fl'>1000</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>id_method</span> <span class='op'>==</span> <span class='st'>"IV"</span><span class='op'>)</span></span></code></pre>
 </div>
 </div>
 <h4 id="running-simulations">Running simulations</h4>
@@ -3016,12 +3016,12 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 <span></span>
 <span><span class='va'>sim_evol_usual</span> <span class='op'>&lt;-</span> <span class='fu'>run_all_sim</span><span class='op'>(</span><span class='va'>nmmaps_data</span>, <span class='va'>sim_param_evol_usual</span>, save_every <span class='op'>=</span> <span class='fl'>20000</span>, name_save <span class='op'>=</span> <span class='st'>"sim_iv"</span><span class='op'>)</span></span>
 <span></span>
-<span><span class='fu'><a href='https://rdrr.io/r/base/readRDS.html'>saveRDS</a></span><span class='op'>(</span><span class='va'>sim_evol_usual</span>, <span class='fu'>here</span><span class='op'>(</span><span class='st'>"data"</span>, <span class='st'>"simulations"</span>, <span class='st'>"sim_evol_usual_iv.RDS"</span><span class='op'>)</span><span class='op'>)</span></span>
+<span><span class='fu'><a href='https://rdrr.io/r/base/readRDS.html'>saveRDS</a></span><span class='op'>(</span><span class='va'>sim_evol_usual</span>, <span class='fu'><a href='https://here.r-lib.org//reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"data"</span>, <span class='st'>"simulations"</span>, <span class='st'>"sim_evol_usual_iv.RDS"</span><span class='op'>)</span><span class='op'>)</span></span>
 <span></span>
-<span><span class='va'>summary_evol_usual</span> <span class='op'>&lt;-</span> <span class='fu'>summarise_simulations</span><span class='op'>(</span><span class='va'>sim_evol_usual</span><span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
-<span>  <span class='fu'>mutate</span><span class='op'>(</span>outcome <span class='op'>=</span> <span class='fu'>fct_relevel</span><span class='op'>(</span><span class='va'>outcome</span>, <span class='st'>"copd_age_65_75"</span>, <span class='st'>"resp_total"</span>, <span class='st'>"death_total"</span><span class='op'>)</span><span class='op'>)</span></span>
+<span><span class='va'>summary_evol_usual</span> <span class='op'>&lt;-</span> <span class='fu'>summarise_simulations</span><span class='op'>(</span><span class='va'>sim_evol_usual</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>outcome <span class='op'>=</span> <span class='fu'><a href='https://forcats.tidyverse.org/reference/fct_relevel.html'>fct_relevel</a></span><span class='op'>(</span><span class='va'>outcome</span>, <span class='st'>"copd_age_65_75"</span>, <span class='st'>"resp_total"</span>, <span class='st'>"death_total"</span><span class='op'>)</span><span class='op'>)</span></span>
 <span></span>
-<span><span class='fu'><a href='https://rdrr.io/r/base/readRDS.html'>saveRDS</a></span><span class='op'>(</span><span class='va'>summary_evol_usual</span>, <span class='fu'>here</span><span class='op'>(</span><span class='st'>"R"</span>, <span class='st'>"Outputs"</span>, <span class='st'>"summary_evol_usual.RDS"</span><span class='op'>)</span><span class='op'>)</span></span></code></pre>
+<span><span class='fu'><a href='https://rdrr.io/r/base/readRDS.html'>saveRDS</a></span><span class='op'>(</span><span class='va'>summary_evol_usual</span>, <span class='fu'><a href='https://here.r-lib.org//reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"R"</span>, <span class='st'>"Outputs"</span>, <span class='st'>"summary_evol_usual.RDS"</span><span class='op'>)</span><span class='op'>)</span></span></code></pre>
 </div>
 </div>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>

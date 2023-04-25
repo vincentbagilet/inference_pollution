@@ -94,8 +94,8 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 
 
   <!--  https://schema.org/Article -->
-  <meta property="article:published" itemprop="datePublished" content="2023-04-13"/>
-  <meta property="article:created" itemprop="dateCreated" content="2023-04-13"/>
+  <meta property="article:published" itemprop="datePublished" content="2023-04-25"/>
+  <meta property="article:created" itemprop="dateCreated" content="2023-04-25"/>
 
   <!--  https://developers.facebook.com/docs/sharing/webmasters#markup -->
   <meta property="og:title" content="Small Effects, Air Pollution and Health: Power Simulations: Theory and Intuition"/>
@@ -113,7 +113,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <!--radix_placeholder_rmarkdown_metadata-->
 
   <script type="text/json" id="radix-rmarkdown-metadata">
-  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","date","output","editor_options"]}},"value":[{"type":"character","attributes":{},"value":["Power Simulations: Theory and Intuition"]},{"type":"character","attributes":{},"value":["In this document, we discuss the 'theory' behind our simulations and the overall implementation for these simulations."]},{"type":"character","attributes":{},"value":["2023-04-13"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["toc"]}},"value":[{"type":"logical","attributes":{},"value":[true]}]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["chunk_output_type"]}},"value":[{"type":"character","attributes":{},"value":["console"]}]}]}
+  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","date","output","editor_options"]}},"value":[{"type":"character","attributes":{},"value":["Power Simulations: Theory and Intuition"]},{"type":"character","attributes":{},"value":["In this document, we discuss the 'theory' behind our simulations and the overall implementation for these simulations."]},{"type":"character","attributes":{},"value":["2023-04-25"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["toc"]}},"value":[{"type":"logical","attributes":{},"value":[true]}]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["chunk_output_type"]}},"value":[{"type":"character","attributes":{},"value":["console"]}]}]}
   </script>
   <!--/radix_placeholder_rmarkdown_metadata-->
   <!--radix_placeholder_navigation_in_header-->
@@ -2187,7 +2187,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <!--radix_placeholder_front_matter-->
 
 <script id="distill-front-matter" type="text/json">
-{"title":"Power Simulations: Theory and Intuition","description":"In this document, we discuss the 'theory' behind our simulations and the overall implementation for these simulations.","authors":[],"publishedDate":"2023-04-13T00:00:00.000-04:00"}
+{"title":"Power Simulations: Theory and Intuition","description":"In this document, we discuss the 'theory' behind our simulations and the overall implementation for these simulations.","authors":[],"publishedDate":"2023-04-25T00:00:00.000+02:00"}
 </script>
 
 <!--/radix_placeholder_front_matter-->
@@ -2222,12 +2222,12 @@ Simulations
 <span class="down-arrow">&#x25BE;</span>
 </button>
 <div class="nav-dropdown-content">
+<a href="data_wrangling.html">Data wrangling</a>
+<a href="data_cleaning.html">Data cleaning</a>
+<hr/>
 <a href="notes_methodo.html">Overall approach</a>
 <a href="power_sim.html">Running the simulations</a>
 <a href="sim_results.html">Analysing simulations results</a>
-<hr/>
-<span class="nav-dropdown-header">Exploratory data analysis</span>
-<span class="nav-dropdown-header">Data wrangling</span>
 </div>
 </div>
 <a href="how_to_retro.html">Recommendations</a>
@@ -2256,6 +2256,11 @@ Simulations
 <h3>Contents</h3>
 <ul>
 <li><a href="#data" id="toc-data">Data</a></li>
+<li><a href="#simulation-structure" id="toc-simulation-structure">Simulation structure</a>
+<ul>
+<li><a href="#overall-setting" id="toc-overall-setting">Overall setting</a></li>
+<li><a href="#varying-parameters" id="toc-varying-parameters">Varying “parameters”</a></li>
+</ul></li>
 <li><a href="#background-on-selected-quasi-experiments" id="toc-background-on-selected-quasi-experiments">Background on selected quasi-experiments</a>
 <ul>
 <li><a href="#treatment-on-random-days" id="toc-treatment-on-random-days">Treatment on “random” days</a></li>
@@ -2269,11 +2274,6 @@ Simulations
 <li><a href="#instrumental-variable" id="toc-instrumental-variable">Instrumental variable</a></li>
 <li><a href="#linear-model" id="toc-linear-model">Linear model</a></li>
 </ul></li>
-<li><a href="#analysis" id="toc-analysis">Analysis</a>
-<ul>
-<li><a href="#overall-setting" id="toc-overall-setting">Overall setting</a></li>
-<li><a href="#varying-parameters" id="toc-varying-parameters">Varying “parameters”</a></li>
-</ul></li>
 </ul>
 </nav>
 </div>
@@ -2283,6 +2283,23 @@ text-align: justify}
 </style>
 <h2 id="data">Data</h2>
 <p>We use data from 68 cities in the US over the 1987-1997 period. This data is a subset of the US National Morbidity, Mortality, and Air Pollution Study (NMMAPS). The data set contains records of deaths, mean concentration data for carbon monoxide (CO), temperature data and calendar control variables (such as school holidays for instance). All variables are at the daily and city level. There is therefore a unique observation per date and per city in the data set.</p>
+<h2 id="simulation-structure">Simulation structure</h2>
+<h3 id="overall-setting">Overall setting</h3>
+<p>For simplicity, consider the daily number of death as the output variable of interest for now.</p>
+<p>We use a standardized approach to the simulations. The steps are as follows:</p>
+<!-- 1. We define the length of the study period, *ie* the number of observations, and a true effect size, $\beta_0$, representing the percentage change in the number of deaths in response to the treatment. -->
+<ol type="1">
+<li>We draw a study period randomly.</li>
+<li>We define the treated days, <em>ie</em> we define a treatment variable <span class="math inline">\(T_{ct}\)</span> equal to 1 if the city <span class="math inline">\(c\)</span> is treated at time <span class="math inline">\(t\)</span> and zero otherwise.</li>
+<li>We create a fake number of deaths, modifying the observed number of deaths and adding the treatment effect.</li>
+<li>We estimate our model with <span class="math inline">\(Y_{obs}\)</span> as a dependent variable and retrieve <span class="math inline">\(\hat{\beta}\)</span>.</li>
+<li>We run the steps 1 through 5 <span class="math inline">\(n_{iter}\)</span> times.</li>
+<li>We compute the type M, type S, power and other statistics of interest.</li>
+</ol>
+<!-- In the potential outcome framework, we have $Y_{ct}(0)$, the number of deaths if a city $c$ is not treated at time $t$ equal to $h_{ct}$ and $Y_{ct}(1)$, the number of deaths if this city is treated, equal to $(1 + \beta_0)h_{ct}$. We build our setting, so that we can "observe" both outcomes. The estimation is performed on the fake observed data $Y_{obs} = h^{fake}$ and we have -->
+<!-- $Y_{obs} = Y(0) × (1-T) + Y(1) × T$.  -->
+<h3 id="varying-parameters">Varying “parameters”</h3>
+<p>We can vary several parameters to evaluate the sensitivity of power, exaggeration and type S error to the value of these parameters: the identification method, the number of observations, the proportion of treated days, the true effect size and the model specification. In order to limit the number of simulations and for clarity, in our analysis, we only modify one parameter at the time, keeping others constant and equal to a baseline value.</p>
 <h2 id="background-on-selected-quasi-experiments">Background on selected quasi-experiments</h2>
 <p>We focus on quasi experiments for which treatment is binary and homogeneous, both in time and across individuals. Treatment is also not correlated with covariates (apart for air pollution alerts in which case treatment is of course correlated with the pollutant level).</p>
 <h3 id="treatment-on-random-days">Treatment on “random” days</h3>
@@ -2314,22 +2331,6 @@ and the second stage:</p>
 <p>Finally, we also consider simple linear models in order to measure the correlation between the health outcome of interest and air pollution, <code>test</code> controlling for potential confounders. The identification assumptions here are the usual OLS assumptions.</p>
 <p>We estimate a model of the form:</p>
 <p><span class="math display">\[Y_{ct} = \alpha + \beta Poll_{ct} + \epsilon_{ct}\]</span></p>
-<h2 id="analysis">Analysis</h2>
-<h3 id="overall-setting">Overall setting</h3>
-<p>To sum up the analysis, the aim is to measure the inference properties of different research designs aiming at measuring the short-term effects of air pollution on health. For simplicity, consider the daily number of death as the output variable of interest for now. We proceed as follows:</p>
-<!-- 1. We define the length of the study period, *ie* the number of observations, and a true effect size, $\beta_0$, representing the percentage change in the number of deaths in response to the treatment. -->
-<ol type="1">
-<li>We draw a study period randomly.</li>
-<li>We define the treated days, <em>ie</em> we define a treatment variable <span class="math inline">\(T_{ct}\)</span> equal to 1 if the city <span class="math inline">\(c\)</span> is treated at time <span class="math inline">\(t\)</span> and zero otherwise.</li>
-<li>We create a fake number of deaths, modifying the observed number of deaths and adding the treatment effect.</li>
-<li>We estimate our model with <span class="math inline">\(Y_{obs}\)</span> as a dependent variable and retrieve <span class="math inline">\(\hat{\beta}\)</span>.</li>
-<li>We run the steps 1 through 5 <span class="math inline">\(n_{iter}\)</span> times.</li>
-<li>We compute the type M, type S, power and other statistics of interest.</li>
-</ol>
-<!-- In the potential outcome framework, we have $Y_{ct}(0)$, the number of deaths if a city $c$ is not treated at time $t$ equal to $h_{ct}$ and $Y_{ct}(1)$, the number of deaths if this city is treated, equal to $(1 + \beta_0)h_{ct}$. We build our setting, so that we can "observe" both outcomes. The estimation is performed on the fake observed data $Y_{obs} = h^{fake}$ and we have -->
-<!-- $Y_{obs} = Y(0) × (1-T) + Y(1) × T$.  -->
-<h3 id="varying-parameters">Varying “parameters”</h3>
-<p>We can vary several parameters to evaluate the sensitivity of power, type M and type S to the value of these parameters: the identification method, the number of observations, the proportion of treated days, the true effect size and the model specification. In order to limit the number of simulations and for clarity, in our analysis, we only modify one parameter at the time, keeping others constant and equal to a baseline value.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
 <!--radix_placeholder_article_footer-->
 <!--/radix_placeholder_article_footer-->

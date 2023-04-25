@@ -31,6 +31,29 @@ opts_chunk$set(fig.path = "images/notes_metodo/",
 
 We use data from 68 cities in the US over the 1987-1997 period. This data is a subset of the US National Morbidity, Mortality, and Air Pollution Study (NMMAPS). The data set contains records of deaths, mean concentration data for carbon monoxide (CO), temperature data and calendar control variables (such as school holidays for instance). All variables are at the daily and city level. There is therefore a unique observation per date and per city in the data set.
 
+## Simulation structure
+
+### Overall setting
+
+For simplicity, consider the daily number of death as the output variable of interest for now. 
+
+We use a standardized approach to the simulations. The  steps are as follows:
+
+<!-- 1. We define the length of the study period, *ie* the number of observations, and a true effect size, $\beta_0$, representing the percentage change in the number of deaths in response to the treatment. -->
+1. We draw a study period randomly.
+1. We define the treated days, *ie* we define a treatment variable $T_{ct}$ equal to 1 if the city $c$ is treated at time $t$ and zero otherwise. 
+1. We create a fake number of deaths, modifying the observed number of deaths and adding the treatment effect.
+1. We estimate our model with $Y_{obs}$ as a dependent variable and retrieve $\hat{\beta}$.
+1. We run the steps 1 through 5 $n_{iter}$ times.
+1. We compute the type M, type S, power and other statistics of interest.
+
+<!-- In the potential outcome framework, we have $Y_{ct}(0)$, the number of deaths if a city $c$ is not treated at time $t$ equal to $h_{ct}$ and $Y_{ct}(1)$, the number of deaths if this city is treated, equal to $(1 + \beta_0)h_{ct}$. We build our setting, so that we can "observe" both outcomes. The estimation is performed on the fake observed data $Y_{obs} = h^{fake}$ and we have -->
+<!-- $Y_{obs} = Y(0) × (1-T) + Y(1) × T$.  -->
+
+### Varying "parameters"
+
+We can vary several parameters to evaluate the sensitivity of power, exaggeration and type S error to the value of these parameters: the identification method, the number of observations, the proportion of treated days, the true effect size and the model specification. In order to limit the number of simulations and for clarity, in our analysis, we only modify one parameter at the time, keeping others constant and equal to a baseline value. 
+
 ## Background on selected quasi-experiments
 
 We focus on quasi experiments for which treatment is binary and homogeneous, both in time and across individuals. Treatment is also not correlated with covariates (apart for air pollution alerts in which case treatment is of course correlated with the pollutant level).
@@ -91,24 +114,5 @@ We estimate a model of the form:
 
 $$Y_{ct} = \alpha + \beta Poll_{ct} + \epsilon_{ct}$$
 
-## Analysis
 
-### Overall setting
-
-To sum up the analysis, the aim is to measure the inference properties of different research designs aiming at measuring the short-term effects of air pollution on health. For simplicity, consider the daily number of death as the output variable of interest for now. We proceed as follows:
-
-<!-- 1. We define the length of the study period, *ie* the number of observations, and a true effect size, $\beta_0$, representing the percentage change in the number of deaths in response to the treatment. -->
-1. We draw a study period randomly.
-1. We define the treated days, *ie* we define a treatment variable $T_{ct}$ equal to 1 if the city $c$ is treated at time $t$ and zero otherwise. 
-1. We create a fake number of deaths, modifying the observed number of deaths and adding the treatment effect.
-1. We estimate our model with $Y_{obs}$ as a dependent variable and retrieve $\hat{\beta}$.
-1. We run the steps 1 through 5 $n_{iter}$ times.
-1. We compute the type M, type S, power and other statistics of interest.
-
-<!-- In the potential outcome framework, we have $Y_{ct}(0)$, the number of deaths if a city $c$ is not treated at time $t$ equal to $h_{ct}$ and $Y_{ct}(1)$, the number of deaths if this city is treated, equal to $(1 + \beta_0)h_{ct}$. We build our setting, so that we can "observe" both outcomes. The estimation is performed on the fake observed data $Y_{obs} = h^{fake}$ and we have -->
-<!-- $Y_{obs} = Y(0) × (1-T) + Y(1) × T$.  -->
-
-### Varying "parameters"
-
-We can vary several parameters to evaluate the sensitivity of power, type M and type S to the value of these parameters: the identification method, the number of observations, the proportion of treated days, the true effect size and the model specification. In order to limit the number of simulations and for clarity, in our analysis, we only modify one parameter at the time, keeping others constant and equal to a baseline value. 
 

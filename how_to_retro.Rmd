@@ -45,7 +45,6 @@ packages <- c(
   "tidyverse", 
   "knitr",
   "retrodesign", 
-  "Cairo",
   "vincentbagilet/mediocrethemes"
 )
 groundhog.library(packages, "2022-11-28")

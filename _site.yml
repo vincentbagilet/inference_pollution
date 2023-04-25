@@ -27,15 +27,17 @@ navbar:
           href: causal_lit_overview.html
     - text: "Simulations"
       menu:
+        - text: "Data wrangling"
+          href: data_wrangling.html
+        - text: "Data cleaning"
+          href: data_cleaning.html
+        - text: "---"
         - text: "Overall approach"
           href: notes_methodo.html
         - text: "Running the simulations"
           href: power_sim.html
         - text: "Analysing simulations results"
           href: sim_results.html
-        - text: "---"
-        - text: "Exploratory data analysis"
-        - text: "Data wrangling"
     - text: "Recommendations"
       href: how_to_retro.html
   source_url: https://github.com/vincentbagilet/inference_pollution

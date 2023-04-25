@@ -1,0 +1,162 @@
+---
+title: "Data Cleaning for Power Simulations"
+description: |
+  In this document, we select NMMAPS cities with the least proportion of missing records to use them in our power simulations.
+author:
+  - name: Vincent Bagilet 
+    url: https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet
+    affiliation: Columbia University
+    affiliation_url: https://www.columbia.edu/
+date: "May 11, 2021"
+output: distill::distill_article
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+```{r setup_cleaning, include=FALSE, results='hide', warning=FALSE}
+library(knitr)
+opts_chunk$set(fig.path = "images/data_cleaning/",
+               cache.path = "cache/",
+               cache = FALSE,
+               echo = TRUE, #set to false to hide code
+               message = FALSE,
+               warning = FALSE,
+               out.width = "85%",
+               dpi = 200,
+               fig.align = "center")  
+```  
+
+```{r package_cleaning, echo=TRUE, message=FALSE, warning=FALSE, code_folding='Show code to load packages'}
+library(rmarkdown) 
+library(knitr) 
+library(here) 
+library(tidyverse)
+library(missRanger) 
+library(mediocrethemes) #own ggplot theme
+
+set_mediocre_all(pal = "leo")
+```
+
+# Selecting Cities with the Least Proportion of Missing Observations
+
+First, we load the data. We then notice in the exploratory data analysis that average temperature readings were missing for all cities after 1998. We therefore select observations from 1987 to 1997:
+
+```{r dates_cleaning, echo=TRUE, message = FALSE, warning = FALSE}
+nmmaps_to_clean <- readRDS(here::here("data", "clean_data", "nmmaps_data.rds"))
+
+nmmaps_filtered <- nmmaps_to_clean %>%
+  filter(date <= "1997-12-31")
+```
+
+We select cities with less than 5% of missing temperature readings:
+
+```{r temperature_cleaning, message = FALSE, warning = FALSE}
+cities_to_keep <- nmmaps_filtered %>%
+  group_by(city) %>%
+  summarise(proportion_missing = sum(is.na(temperature))/n()*100) %>%
+  filter(proportion_missing<=5) %>%
+  pull(city)
+
+nmmaps_filtered <- nmmaps_filtered %>%
+  filter(city %in% cities_to_keep)
+```
+
+We will only use the carbon monoxide in our power simulations as it is the pollutant with the smallest proportion of missing readings. We keep cities with less than 5% of missing CO readings:
+
+```{r co_cleaning, message = FALSE, warning = FALSE}
+cities_to_keep <- nmmaps_to_clean %>%
+  group_by(city) %>%
+  summarise(proportion_missing = sum(is.na(co))/n()*100) %>%
+  filter(proportion_missing<=5) %>%
+  pull(city)
+
+nmmaps_to_clean <- nmmaps_to_clean %>%
+  filter(city %in% cities_to_keep)
+```
+
+We have `r length(unique(nmmaps_to_clean$city))` cities remaining. We plot the proportion of missing values for CO by city:
+
+```{r missing_prop_cleaning, message = FALSE, warning = FALSE, fig.width=8, fig.height=20, layout="l-body-outset", code_folding=TRUE}
+nmmaps_to_clean %>%
+  group_by(city) %>%
+  summarise(proportion_missing = sum(is.na(co))/n()*100) %>%
+  arrange(proportion_missing) %>%
+  mutate(city = factor(city, levels = city)) %>%
+  ggplot(., aes(x = proportion_missing, y = city)) +
+  geom_vline(xintercept = sum(is.na(nmmaps_to_clean$co))/nrow(nmmaps_to_clean)*100) +
+  geom_point(size = 3) +
+  xlab("Proportion of Missing Values (%)") + 
+  ylab(NULL) 
+```
+
+We also plot the time series of missing values for CO by city:
+
+```{r missing_city_cleaning, message = FALSE, warning = FALSE, fig.width=8, fig.height=20, layout="l-body-outset", code_folding=TRUE}
+nmmaps_to_clean %>%
+  mutate(missing_co = ifelse(is.na(co), "Missing", "Not Missing")) %>%
+  ggplot(., aes(x = date, y = city, fill = fct_rev(missing_co))) +
+  geom_tile() +
+  scale_x_date(breaks = scales::pretty_breaks(n = 6)) +
+  labs(
+    x = "Date",
+    y = NULL,
+    fill = NULL
+  ) + 
+  theme(panel.grid.major.y = element_blank(),
+        legend.justification = "left",
+        axis.text.y = element_text(margin = margin(r = -0.5, unit = "cm")))
+```
+
+The overall distribution of CO in $\mu g/m^{3}$ is as follows:
+
+```{r distrib_co_cleaning, warning=FALSE, code_folding=TRUE}
+nmmaps_to_clean %>%
+  summarise(Mean = mean(co, na.rm = TRUE),
+            "Standard Deviation" = sd(co, na.rm = TRUE),
+            Minimum = min(co, na.rm = TRUE),
+            Maximum = max(co, na.rm = TRUE)) %>%
+  kable(.)
+````
+
+We impute missing observations for CO concentrations and the average temperature using the `missRanger` package:
+
+```{r imputation_cleaning, echo=FALSE, warning=FALSE, eval=FALSE}
+nmmaps_imputed <- missRanger::missRanger(
+  nmmaps_to_clean,
+  # variables to impute
+  co +
+  temperature ~
+  # variables used for the imputation
+  .,
+  pmm.k = 10,
+  num.trees = 100
+)
+
+saveRDS(nmmaps_imputed, here::here("data", "clean_data", "nmmaps_imputed.rds"))
+````
+
+We scale ("standardize") the CO concentrations:
+
+```{r scale_cleaning, echo=TRUE, warning=FALSE, eval=FALSE}
+nmmaps_data_simulations <- nmmaps_imputed %>%
+  mutate(co = scale(co) %>% as.vector)
+````
+
+We finally keep relevant variables and save the data:
+
+```{r save_cleaning, echo=TRUE, message = FALSE, warning = FALSE, eval=FALSE}
+nmmaps_data_simulations %>%
+  select(city:temperature, co:resp_total) %>%
+  mutate_at(vars(city, state, year), ~ as.factor(.)) %>%
+  saveRDS(., here::here("data", "clean_data", "nmmaps_data_simulations.rds"))
+```
+
+```{r load_final_cleaning, echo=FALSE}
+nmmaps_data_simulations <- 
+  readRDS(here::here("data", "clean_data", "nmmaps_data_simulations.rds"))
+```
+
+We have `r nrow(nmmaps_data_simulations)` observations, with `r nrow(nmmaps_data_simulations)/length(unique(nmmaps_data_simulations$city))` daily observations by city. 
