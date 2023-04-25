@@ -79,7 +79,7 @@ nmmaps_to_clean <- nmmaps_to_clean %>%
 
 We have `r length(unique(nmmaps_to_clean$city))` cities remaining. We plot the proportion of missing values for CO by city:
 
-```{r missing_prop_cleaning, message = FALSE, warning = FALSE, fig.width=8, fig.height=20, layout="l-body-outset", code_folding=TRUE}
+```{r missing_prop_cleaning, message = FALSE, warning = FALSE, fig.asp=2, code_folding=TRUE}
 nmmaps_to_clean %>%
   group_by(city) %>%
   summarise(proportion_missing = sum(is.na(co))/n()*100) %>%
@@ -94,7 +94,7 @@ nmmaps_to_clean %>%
 
 We also plot the time series of missing values for CO by city:
 
-```{r missing_city_cleaning, message = FALSE, warning = FALSE, fig.width=8, fig.height=20, layout="l-body-outset", code_folding=TRUE}
+```{r missing_city_cleaning, message = FALSE, warning = FALSE, fig.asp=2, code_folding=TRUE}
 nmmaps_to_clean %>%
   mutate(missing_co = ifelse(is.na(co), "Missing", "Not Missing")) %>%
   ggplot(., aes(x = date, y = city, fill = fct_rev(missing_co))) +
