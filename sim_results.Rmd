@@ -33,21 +33,21 @@ knitr::opts_chunk$set(
 
 We load the required packages and the data:
 
-```{r set_up, echo = TRUE}
+```{r loading_packages, code_folding="Show the packages used", results='hide'}
 library("groundhog")
 packages <- c(
   "here",
   "tidyverse", 
   "knitr",
   "patchwork", 
-  "vincentbagilet/mediocrethemes"
+  "mediocrethemes"
+  # "vincentbagilet/mediocrethemes"
 )
-groundhog.library(packages, "2022-11-28")
 
-set_mediocre_all(
-  base_size = if (.Platform$OS.type == "windows") 22 else 12, 
-  pal = "leo"
-)
+# groundhog.library(packages, "2022-11-28")
+lapply(packages, library, character.only = TRUE)
+
+set_mediocre_all(pal = "leo")
 ```
 
 
@@ -227,10 +227,9 @@ graph_iv <- summary_evol_all %>%
   geom_point(size = 2.8) +
   scale_y_continuous(breaks = scales::pretty_breaks(n = 6)) +
   facet_wrap( ~ metrics_name, scale = "free_y") +
-  labs(x = "Strength of the IV (Standardized Effect Size)",
+  labs(x = "IV First-Stage Effect Size",
        y = NULL,
-       color = "Sample Size:")  +
-  theme(legend.justification = "left")
+       color = "Sample Size:")  
 
 # print the graph
 graph_iv

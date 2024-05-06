@@ -88,32 +88,33 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 
 
   <!--radix_placeholder_meta_tags-->
-  <title>Small Effects, Air Pollution and Health: Automated literature review: getting abstracts</title>
+  <title>Estimating Small Effects: Automated literature review: getting abstracts</title>
 
   <meta property="description" itemprop="description" content="In the present document, we retrieve abstracts for our automated review of the literature on short term health effects of air pollution, focusing mainly on the epidemiology literature."/>
 
+  <link rel="icon" type="image/vnd.microsoft.icon" href="images/site/favicon.ico"/>
 
   <!--  https://schema.org/Article -->
-  <meta property="article:published" itemprop="datePublished" content="2023-04-25"/>
-  <meta property="article:created" itemprop="dateCreated" content="2023-04-25"/>
+  <meta property="article:published" itemprop="datePublished" content="2024-05-06"/>
+  <meta property="article:created" itemprop="dateCreated" content="2024-05-06"/>
 
   <!--  https://developers.facebook.com/docs/sharing/webmasters#markup -->
-  <meta property="og:title" content="Small Effects, Air Pollution and Health: Automated literature review: getting abstracts"/>
+  <meta property="og:title" content="Estimating Small Effects: Automated literature review: getting abstracts"/>
   <meta property="og:type" content="article"/>
   <meta property="og:description" content="In the present document, we retrieve abstracts for our automated review of the literature on short term health effects of air pollution, focusing mainly on the epidemiology literature."/>
   <meta property="og:locale" content="en_US"/>
-  <meta property="og:site_name" content="Small Effects, Air Pollution and Health"/>
+  <meta property="og:site_name" content="Estimating Small Effects"/>
 
   <!--  https://dev.twitter.com/cards/types/summary -->
   <meta property="twitter:card" content="summary"/>
-  <meta property="twitter:title" content="Small Effects, Air Pollution and Health: Automated literature review: getting abstracts"/>
+  <meta property="twitter:title" content="Estimating Small Effects: Automated literature review: getting abstracts"/>
   <meta property="twitter:description" content="In the present document, we retrieve abstracts for our automated review of the literature on short term health effects of air pollution, focusing mainly on the epidemiology literature."/>
 
   <!--/radix_placeholder_meta_tags-->
   <!--radix_placeholder_rmarkdown_metadata-->
 
   <script type="text/json" id="radix-rmarkdown-metadata">
-  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","date","output","editor_options"]}},"value":[{"type":"character","attributes":{},"value":["Automated literature review: getting abstracts"]},{"type":"character","attributes":{},"value":["In the present document, we retrieve abstracts for our automated review of the literature on short term health effects of air pollution, focusing mainly on the epidemiology literature."]},{"type":"character","attributes":{},"value":["2023-04-25"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["toc"]}},"value":[{"type":"logical","attributes":{},"value":[true]}]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["chunk_output_type"]}},"value":[{"type":"character","attributes":{},"value":["console"]}]}]}
+  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","date","output","editor_options"]}},"value":[{"type":"character","attributes":{},"value":["Automated literature review: getting abstracts"]},{"type":"character","attributes":{},"value":["In the present document, we retrieve abstracts for our automated review of the literature on short term health effects of air pollution, focusing mainly on the epidemiology literature."]},{"type":"character","attributes":{},"value":["2024-05-06"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["toc"]}},"value":[{"type":"logical","attributes":{},"value":[true]}]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["chunk_output_type"]}},"value":[{"type":"character","attributes":{},"value":["console"]}]}]}
   </script>
   <!--/radix_placeholder_rmarkdown_metadata-->
   <!--radix_placeholder_navigation_in_header-->
@@ -461,8 +462,8 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   </style>
 
   <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
-  <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet"/>
-  <link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet"/>
+  <link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet"/>
+  <link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet"/>
   <script src="site_libs/headroom-0.9.4/headroom.min.js"></script>
   <!--/radix_placeholder_navigation_in_header-->
   <!--radix_placeholder_distill-->
@@ -573,9 +574,21 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
     display: none !important;
   }
 
+  hr.section-separator {
+    border: none;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    margin: 0px;
+  }
+
+
+  d-byline {
+    border-top: none;
+  }
+
   d-article {
     padding-top: 2.5rem;
     padding-bottom: 30px;
+    border-top: none;
   }
 
   d-appendix {
@@ -670,6 +683,11 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   d-article div.sourceCode pre {
     padding-left: 18px;
     font-size: 14px;
+  }
+
+  /* tweak for Pandoc numbered line within distill */
+  d-article pre.numberSource code > span {
+      left: -2em;
   }
 
   d-article pre {
@@ -1431,6 +1449,12 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
     // create d-title
     $('.d-title').changeElementType('d-title');
 
+    // separator
+    var separator = '<hr class="section-separator" style="clear: both"/>';
+    // prepend separator above appendix
+    $('.d-byline').before(separator);
+    $('.d-article').before(separator);
+
     // create d-byline
     var byline = $('<d-byline></d-byline>');
     $('.d-byline').replaceWith(byline);
@@ -1508,8 +1532,9 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
     $('.distill-force-highlighting-css').parent().remove();
 
     // remove empty line numbers inserted by pandoc when using a
-    // custom syntax highlighting theme
-    $('code.sourceCode a:empty').remove();
+    // custom syntax highlighting theme, except when numbering line
+    // in code chunk
+    $('pre:not(.numberLines) code.sourceCode a:empty').remove();
 
     // load distill framework
     load_distill_framework();
@@ -1535,12 +1560,13 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
       // add orcid ids
       $('.authors-affiliations').find('.author').each(function(i, el) {
         var orcid_id = front_matter.authors[i].orcidID;
+        var author_name = front_matter.authors[i].author
         if (orcid_id) {
           var a = $('<a></a>');
           a.attr('href', 'https://orcid.org/' + orcid_id);
           var img = $('<img></img>');
           img.addClass('orcid-id');
-          img.attr('alt', 'ORCID ID');
+          img.attr('alt', author_name ? 'ORCID ID for ' + author_name : 'ORCID ID');
           img.attr('src','data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo1N0NEMjA4MDI1MjA2ODExOTk0QzkzNTEzRjZEQTg1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozM0NDOEJGNEZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozM0NDOEJGM0ZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZDN0YxMTc0MDcyMDY4MTE5NUZFRDc5MUM2MUUwNEREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU3Q0QyMDgwMjUyMDY4MTE5OTRDOTM1MTNGNkRBODU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+84NovQAAAR1JREFUeNpiZEADy85ZJgCpeCB2QJM6AMQLo4yOL0AWZETSqACk1gOxAQN+cAGIA4EGPQBxmJA0nwdpjjQ8xqArmczw5tMHXAaALDgP1QMxAGqzAAPxQACqh4ER6uf5MBlkm0X4EGayMfMw/Pr7Bd2gRBZogMFBrv01hisv5jLsv9nLAPIOMnjy8RDDyYctyAbFM2EJbRQw+aAWw/LzVgx7b+cwCHKqMhjJFCBLOzAR6+lXX84xnHjYyqAo5IUizkRCwIENQQckGSDGY4TVgAPEaraQr2a4/24bSuoExcJCfAEJihXkWDj3ZAKy9EJGaEo8T0QSxkjSwORsCAuDQCD+QILmD1A9kECEZgxDaEZhICIzGcIyEyOl2RkgwAAhkmC+eAm0TAAAAABJRU5ErkJggg==');
           a.append(img);
           $(this).append(a);
@@ -2167,10 +2193,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
     color: var(--hover-color, white);
   }</style>
   <!--/radix_placeholder_distill-->
-  <script src="site_libs/header-attrs-2.18/header-attrs.js"></script>
-  <script src="site_libs/htmlwidgets-1.5.4/htmlwidgets.js"></script>
-  <link href="site_libs/str_view-0.1.0/str_view.css" rel="stylesheet" />
-  <script src="site_libs/str_view-binding-1.4.1/str_view.js"></script>
+  <script src="site_libs/header-attrs-2.26/header-attrs.js"></script>
   <script src="site_libs/popper-2.6.0/popper.min.js"></script>
   <link href="site_libs/tippy-6.2.7/tippy.css" rel="stylesheet" />
   <link href="site_libs/tippy-6.2.7/tippy-light-border.css" rel="stylesheet" />
@@ -2190,7 +2213,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <!--radix_placeholder_front_matter-->
 
 <script id="distill-front-matter" type="text/json">
-{"title":"Automated literature review: getting abstracts","description":"In the present document, we retrieve abstracts for our automated review of the literature on short term health effects of air pollution, focusing mainly on the epidemiology literature.","authors":[],"publishedDate":"2023-04-25T00:00:00.000+02:00"}
+{"title":"Automated literature review: getting abstracts","description":"In the present document, we retrieve abstracts for our automated review of the literature on short term health effects of air pollution, focusing mainly on the epidemiology literature.","authors":[],"publishedDate":"2024-05-06T00:00:00.000+02:00"}
 </script>
 
 <!--/radix_placeholder_front_matter-->
@@ -2198,7 +2221,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <header class="header header--fixed" role="banner">
 <nav class="distill-site-nav distill-site-header">
 <div class="nav-left">
-<a href="index.html" class="title">Small Effects, Air Pollution and Health</a>
+<a href="index.html" class="title">Estimating Small Effects</a>
 </div>
 <div class="nav-right">
 <a href="inference_pollution_paper.pdf">Paper</a>
@@ -2233,7 +2256,7 @@ Simulations
 <a href="sim_results.html">Analysing simulations results</a>
 </div>
 </div>
-<a href="how_to_retro.html">Recommendations</a>
+<a href="how_to_retro.html">Reporting</a>
 <a href="https://github.com/vincentbagilet/inference_pollution" aria-label="Link to source">
 <i class="fab fa-github" aria-hidden="true"></i>
 </a>
@@ -2247,6 +2270,7 @@ Simulations
 
 <div class="d-title">
 <h1>Automated literature review: getting abstracts</h1>
+
 <!--radix_placeholder_categories-->
 <!--/radix_placeholder_categories-->
 <p>In the present document, we retrieve abstracts for our automated review of the literature on short term health effects of air pollution, focusing mainly on the epidemiology literature.</p>
@@ -2285,6 +2309,30 @@ Simulations
 body {
 text-align: justify}
 </style>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show the packages used
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='st'><a href='https://groundhogr.com/'>"groundhog"</a></span><span class='op'>)</span></span>
+<span><span class='va'>packages</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span></span>
+<span>  <span class='st'>"tidyverse"</span>, </span>
+<span>  <span class='st'>"tidytext"</span>, </span>
+<span>  <span class='st'>"wordcloud"</span>,</span>
+<span>  <span class='st'>"retrodesign"</span>, </span>
+<span>  <span class='st'>"lubridate"</span>,</span>
+<span>  <span class='co'># "fulltext", #does not run with the last R version</span></span>
+<span>  <span class='st'>"DT"</span></span>
+<span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># groundhog.library(packages, "2022-11-28")</span></span>
+<span><span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='va'>packages</span>, <span class='va'>library</span>, character.only <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='fu'><a href='https://rdrr.io/r/base/Random.html'>set.seed</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>)</span></span></code></pre>
+</div>
+</details>
+</div>
 <h2 id="overall-approach">Overall approach</h2>
 <p>We take advantage of a somehow standardized reporting mechanism to retrieve point estimates and confidence intervals from the abstracts using REGular EXPressions (regex).</p>
 <p>The algorithm we wrote is not perfect: it probably does not detect all estimates and may pick up some incorrect point estimates and/or standard error. However, based on quick non-automated checks we ran, these potential issues seem very limited. Retrieving all this information via careful reading of the abstracts would have been extremely cumbersome. This automated analysis is an important time saver. Importantly, the analysis carried out for this literature could be easily replicated for another literature, based on the code used and described in this document.</p>
@@ -2398,7 +2446,7 @@ Pubmed articles are accessed via Entrez. An API key enables to increase the numb
 <span>        <span class='fu'>ft_abstract</span><span class='op'>(</span>from <span class='op'>=</span> <span class='st'>"semanticscholar"</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
 <span>        <span class='va'>.</span><span class='op'>$</span><span class='va'>semanticscholar</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
 <span>        <span class='fu'><a href='https://tibble.tidyverse.org/reference/as_tibble.html'>as_tibble</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
-<span>        <span class='fu'><a href='https://tidyr.tidyverse.org/reference/nest.html'>unnest</a></span><span class='op'>(</span>cols <span class='op'>=</span> <span class='fu'><a href='https://tidyselect.r-lib.org/reference/everything.html'>everything</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>        <span class='fu'><a href='https://tidyr.tidyverse.org/reference/unnest.html'>unnest</a></span><span class='op'>(</span>cols <span class='op'>=</span> <span class='fu'><a href='https://tidyselect.r-lib.org/reference/everything.html'>everything</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
 <span>        <span class='fu'><a href='https://tidyr.tidyverse.org/reference/pivot_longer.html'>pivot_longer</a></span><span class='op'>(</span><span class='fu'><a href='https://tidyselect.r-lib.org/reference/everything.html'>everything</a></span><span class='op'>(</span><span class='op'>)</span>, names_to <span class='op'>=</span> <span class='st'>"doi"</span>, values_to <span class='op'>=</span> <span class='st'>"abstract"</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
 <span>        <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>doi</span> <span class='op'>!=</span> <span class='va'>abstract</span><span class='op'>)</span>,</span>
 <span>      error <span class='op'>=</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>e</span><span class='op'>)</span> <span class='va'>e</span></span>
@@ -2511,8 +2559,11 @@ For now, if we do not detect the same number of effects and confidence interval 
 <span>  <span class='op'>)</span></span>
 <span><span class='op'>)</span></span></code></pre>
 </div>
-<div id="htmlwidget-d378166bdc9ae114e5c2" style="width:960px;height:100%;" class="str_view html-widget"></div>
-<script type="application/json" data-for="htmlwidget-d378166bdc9ae114e5c2">{"x":{"html":"<ul>\n  <li>Results The excess risk for non-accidental mortality was <span class='match'>1.3<\/span>% [95% confidence interval (CI), <span class='match'>0.8–1.7<\/span>] per 10 μg/m3 of PM10, with higher excess risks for cardiovascular and above age 65 mortality of <span class='match'>1.9<\/span>% (95% CI, <span class='match'>0.8–3.0<\/span>) and <span class='match'>1.5<\/span>% (95% CI, <span class='match'>0.9–2.1<\/span>), respectively.<\/li>\n  <li>After adjustment, top (hazard ratio [HR], <span class='match'>1.48<\/span>; 95% confidence interval [CI], <span class='match'>1.08-2.04<\/span>; P=.016) and bottom (HR, <span class='match'>1.54<\/span>; 95% CI, <span class='match'>1.08-2.18<\/span>; P=.017) quartiles of BE were associated with increased risk of readmission or death.<\/li>\n  <li>On admission days with SO2 levels above the median, mortality was higher (OR <span class='match'>1.13<\/span>; 95% CI <span class='match'>1.10, 1.16<\/span>) at <span class='match'>12.2<\/span>% (95% CI <span class='match'>11.4, 13<\/span>) compared with <span class='match'>10.7<\/span>% (95% CI <span class='match'>10.3, 11.1<\/span>) on days when SO2 levels were below the median.<\/li>\n  <li>Using these methods, we estimated <span class='match'>362000<\/span> (95% confidence interval, <span class='match'>173000–551000<\/span>) annual global premature cardiopulmonary deaths attributable to ozone, approximately 50% of the 700000 premature deaths we calculated in our original study (Anenberg et al.<\/li>\n  <li>During the period of high PM10 concentration (>89.82 μg/m3), NO2 demonstrated its strongest effect for total non-accidental mortality (ERR%: <span class='match'>0.92<\/span>, 95% CI: <span class='match'>0.42–1.42<\/span>) and cardiovascular disease mortality (ERR%: <span class='match'>1.20<\/span>, 95% CI: <span class='match'>0.38–2.03<\/span>).<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
+<pre><code>[1] │ Results The excess risk for non-accidental mortality was &lt;1.3&gt;% [95% confidence interval (CI), &lt;0.8–1.7&gt;] per 10 μg/m3 of PM10, with higher excess risks for cardiovascular and above age 65 mortality of &lt;1.9&gt;% (95% CI, &lt;0.8–3.0&gt;) and &lt;1.5&gt;% (95% CI, &lt;0.9–2.1&gt;), respectively.
+[2] │ After adjustment, top (hazard ratio [HR], &lt;1.48&gt;; 95% confidence interval [CI], &lt;1.08-2.04&gt;; P=.016) and bottom (HR, &lt;1.54&gt;; 95% CI, &lt;1.08-2.18&gt;; P=.017) quartiles of BE were associated with increased risk of readmission or death.
+[3] │ On admission days with SO2 levels above the median, mortality was higher (OR &lt;1.13&gt;; 95% CI &lt;1.10, 1.16&gt;) at &lt;12.2&gt;% (95% CI &lt;11.4, 13&gt;) compared with &lt;10.7&gt;% (95% CI &lt;10.3, 11.1&gt;) on days when SO2 levels were below the median.
+[4] │ Using these methods, we estimated &lt;362000&gt; (95% confidence interval, &lt;173000–551000&gt;) annual global premature cardiopulmonary deaths attributable to ozone, approximately 50% of the 700000 premature deaths we calculated in our original study (Anenberg et al.
+[5] │ During the period of high PM10 concentration (&gt;89.82 μg/m3), NO2 demonstrated its strongest effect for total non-accidental mortality (ERR%: &lt;0.92&gt;, 95% CI: &lt;0.42–1.42&gt;) and cardiovascular disease mortality (ERR%: &lt;1.20&gt;, 95% CI: &lt;0.38–2.03&gt;).</code></pre>
 </div>
 <p>Once the effects and CI are identified, some wrangling is necessary in order to get the data into a usable format. We also choose to <strong>drop effects which do not fall into the CI</strong> (62 estimates) in order to get rid off most of the poorly detected effects-CIs.</p>
 <div class="layout-chunk" data-layout="l-body">
@@ -2520,7 +2571,7 @@ For now, if we do not detect the same number of effects and confidence interval 
 <pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>estimates_to_clean</span> <span class='op'>&lt;-</span> <span class='va'>detected_effects</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
 <span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/lengths.html'>lengths</a></span><span class='op'>(</span><span class='va'>effect</span><span class='op'>)</span> <span class='op'>==</span> <span class='fu'><a href='https://rdrr.io/r/base/lengths.html'>lengths</a></span><span class='op'>(</span><span class='va'>CI</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'>#if number of effects != nb of CI for a sentence,</span></span>
 <span>  <span class='co'>#can't attribute effects to CI so, drop sentence</span></span>
-<span>  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/nest.html'>unnest</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>effect</span>, <span class='va'>CI</span><span class='op'>)</span>, keep_empty <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/unnest.html'>unnest</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>effect</span>, <span class='va'>CI</span><span class='op'>)</span>, keep_empty <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
 <span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>CI <span class='op'>=</span> <span class='fu'><a href='https://stringr.tidyverse.org/reference/str_remove.html'>str_remove_all</a></span><span class='op'>(</span><span class='va'>CI</span>, <span class='st'>"\\s"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
 <span>  <span class='co'># separate(CI, into = c("low_CI", "up_CI"), "([\\s,]+)|(?&lt;!^)[-–]") %&gt;% </span></span>
 <span>  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/separate.html'>separate</a></span><span class='op'>(</span><span class='va'>CI</span>, into <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"low_CI"</span>, <span class='st'>"up_CI"</span><span class='op'>)</span>, <span class='st'>"(?&lt;!^)[–:;,%\\-to\\‐]{1,5}"</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
@@ -2606,7 +2657,7 @@ We filtered at this stage to minimize the number of abstracts to read.</p>
 <span>      <span class='op'>)</span></span>
 <span>    <span class='op'>)</span></span>
 <span>  <span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
-<span>  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/nest.html'>unnest</a></span><span class='op'>(</span><span class='va'>dates_obs</span>, keep_empty <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/unnest.html'>unnest</a></span><span class='op'>(</span><span class='va'>dates_obs</span>, keep_empty <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
 <span>  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/separate.html'>separate</a></span><span class='op'>(</span></span>
 <span>    <span class='va'>dates_obs</span>, </span>
 <span>    into <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"begin_obs"</span>, <span class='st'>"end_obs"</span><span class='op'>)</span>, </span>
@@ -2680,7 +2731,7 @@ We filtered at this stage to minimize the number of abstracts to read.</p>
 <span>    abstract_ascii <span class='op'>=</span> <span class='fu'>stringi</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/pkg/stringi/man/stri_trans_general.html'>stri_trans_general</a></span><span class='op'>(</span><span class='va'>abstract</span>,<span class='st'>"Latin-ASCII"</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='fu'><a href='https://stringr.tidyverse.org/reference/case.html'>str_to_lower</a></span><span class='op'>(</span><span class='op'>)</span>,</span>
 <span>    abstract_ascii <span class='op'>=</span> <span class='fu'><a href='https://stringr.tidyverse.org/reference/str_remove.html'>str_remove_all</a></span><span class='op'>(</span><span class='va'>abstract_ascii</span>, <span class='st'>"-"</span><span class='op'>)</span></span>
 <span>  <span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
-<span>  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/nest.html'>unnest</a></span><span class='op'>(</span><span class='va'>n_many_cities</span>, keep_empty <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/unnest.html'>unnest</a></span><span class='op'>(</span><span class='va'>n_many_cities</span>, keep_empty <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
 <span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>n_many_cities <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/numeric.html'>as.numeric</a></span><span class='op'>(</span><span class='va'>n_many_cities</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
 <span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>doi</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
 <span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>n_many_cities <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>max</a></span><span class='op'>(</span><span class='va'>n_many_cities</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
@@ -2737,7 +2788,7 @@ We filtered at this stage to minimize the number of abstracts to read.</p>
 <span>            <span class='st'>"\\bCO\\b|\\bBC\\b|\\b(A|a)ir\\s(Q|q)uality\\s(I|i)ndex\\b)"</span><span class='op'>)</span></span>
 <span>    <span class='op'>)</span></span>
 <span>  <span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
-<span>  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/nest.html'>unnest</a></span><span class='op'>(</span><span class='va'>pollutant</span>, keep_empty <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/unnest.html'>unnest</a></span><span class='op'>(</span><span class='va'>pollutant</span>, keep_empty <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
 <span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>doi</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
 <span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span></span>
 <span>    pollutant <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/chartr.html'>tolower</a></span><span class='op'>(</span><span class='va'>pollutant</span><span class='op'>)</span>, </span>
@@ -2772,7 +2823,7 @@ We filtered at this stage to minimize the number of abstracts to read.</p>
 <span>      <span class='st'>"(\\b(M|m)ortality\\b|\\b(D|d)eath(s)?\\b|\\b(H|h)ospitalization|\\b(E|e)mergenc)"</span></span>
 <span>    <span class='op'>)</span></span>
 <span>  <span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
-<span>  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/nest.html'>unnest</a></span><span class='op'>(</span><span class='va'>outcome</span>, keep_empty <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/unnest.html'>unnest</a></span><span class='op'>(</span><span class='va'>outcome</span>, keep_empty <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
 <span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>doi</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
 <span>   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span></span>
 <span>    outcome <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/chartr.html'>tolower</a></span><span class='op'>(</span><span class='va'>outcome</span><span class='op'>)</span>,</span>
@@ -2797,7 +2848,7 @@ We filtered at this stage to minimize the number of abstracts to read.</p>
 <span>      <span class='st'>"(\\b(I|i)nfant|\\b(E|e)lder)"</span></span>
 <span>    <span class='op'>)</span></span>
 <span>  <span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
-<span>  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/nest.html'>unnest</a></span><span class='op'>(</span><span class='va'>subpop</span>, keep_empty <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/unnest.html'>unnest</a></span><span class='op'>(</span><span class='va'>subpop</span>, keep_empty <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
 <span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>doi</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
 <span>   <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span></span>
 <span>    subpop <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/chartr.html'>tolower</a></span><span class='op'>(</span><span class='va'>subpop</span><span class='op'>)</span>,</span>
@@ -2887,7 +2938,7 @@ We filtered at this stage to minimize the number of abstracts to read.</p>
 <span><span class='co'># saveRDS(abstracts_and_metadata, "data/literature_review_epi/outputs/abstracts_and_metadata.RDS")</span></span></code></pre>
 </div>
 </div>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
 <section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
 <hr />
 <ol>

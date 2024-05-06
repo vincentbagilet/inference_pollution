@@ -39,83 +39,55 @@ For each study of these two datasets, we also compute their statistical power, t
 
 # Loading Packages and Data
 
-We load the following packages and our custom **ggplot2** theme for graphs:
-
-```{r packages}
+```{r loading_packages, code_folding="Show the packages used", results='hide'}
 library("groundhog")
 packages <- c(
   "here",
   "tidyverse", 
   "knitr",
-  "retrodesign", 
-  "Cairo",
-  "vincentbagilet/mediocrethemes"
+  "retrodesign",
+  "janitor",
+  "mediocrethemes"
+  # "vincentbagilet/mediocrethemes"
 )
-groundhog.library(packages, "2022-11-28")
 
-set_mediocre_all(
-  base_size = if (.Platform$OS.type == "windows") 22 else 12, 
-  pal = "leo"
-)
+# groundhog.library(packages, "2022-11-28")
+lapply(packages, library, character.only = TRUE)
+
+set_mediocre_all(pal = "leo")
 ```
 
 We open the two meta-analysis datasets and clean them.
 
-```{r}
-# load and clean orellano 2020 data
+```{r clean_data, code_folding=TRUE}
 data_orellano_2020 <-
-  read.csv(here::here(
+  read_csv(here::here(
     "data",
     "meta_analyses_epi",
     "meta_analysis_orellano_2020.csv"
-  )) %>%
+  )) |> 
+  janitor::clean_names() |> 
   # remove studies using the one hour maximum concentration of no2
-  mutate(Time.period = ifelse(is.na(Time.period), "unknown", Time.period)) %>%
-  filter(Time.period != "1 hr") %>%
-  # select relevant variables
+  mutate(time_period = ifelse(is.na(time_period), "unknown", time_period)) |> 
+  filter(time_period != "1 hr") |> 
   select(
-    Article,
-    Continent,
-    Age.group,
-    Sex,
-    Pollutant,
-    Unit.of.Measurement,
-    Time.period,
-    Cause.of.Death,
-    "Single.pollutant...effect.estimate",
-    "Single.pollutant...lower.interval.limit..95..CI.",
-    "Single.pollutant...higher.interval.limit..95..CI."
-  ) %>%
-  # rename the variables
-  rename(
-    article = Article,
-    continent = Continent,
-    age_group = Age.group,
-    sex = Sex,
-    pollutant = Pollutant,
-    unit_measurement = Unit.of.Measurement,
-    time_period = Time.period,
-    cause_death = Cause.of.Death,
-    point_estimate = "Single.pollutant...effect.estimate",
-    lower_bound_ci = "Single.pollutant...lower.interval.limit..95..CI.",
-    upper_bound_ci = "Single.pollutant...higher.interval.limit..95..CI."
-  ) %>%
-  # add year of publication
+    article, 
+    continent, 
+    age_group, 
+    sex, 
+    pollutant, 
+    unit_measurement = unit_of_measurement,
+    time_period,
+    cause_death = cause_of_death,
+    point_estimate = "single_pollutant_effect_estimate",
+    lower_bound_ci = "single_pollutant_lower_interval_limit_95_percent_ci",
+    upper_bound_ci = "single_pollutant_higher_interval_limit_95_percent_ci"
+  ) |> 
   mutate(year = str_extract(article, "[[:digit:]]+") %>% as.numeric(.))
 
-# load and shah 2015 data
 data_shah_2015 <-
   readxl::read_excel(here::here("data", "meta_analyses_epi", "meta_analysis_shah_2015.xlsx")) %>%
-  mutate(
-    air_pollutant = case_when(
-      air_pollutant == "pm2.5" ~ "PM2.5",
-      air_pollutant == "pm10" ~ "PM10",
-      air_pollutant == "no2" ~ "NO2",
-      air_pollutant == "so2" ~ "SO2",
-      air_pollutant == "co" ~ "CO",
-      air_pollutant == "o3" ~  "O3"
-    )
-  )
+  mutate(air_pollutant = str_to_upper(air_pollutant))
 ```
 
 
@@ -142,7 +114,7 @@ data_orellano_2020 <- data_orellano_2020 %>%
 
 We plot below the relationship between estimated relative risks for all-cause mortality and precision for each air pollutant (N=`r nrow(data_orellano_2020 %>% filter(cause_death == "All-cause"))`  estimates):
 
-```{r, fig.width = 8, fig.height = 3}
+```{r, fig.asp=0.6}
 data_orellano_2020 %>%
   filter(cause_death == "All-cause") %>%
   ggplot(., aes(x = precision, y = point_estimate)) +
@@ -155,7 +127,7 @@ data_orellano_2020 %>%
 
 We draw the same initial graph but for respiratory mortality (N=`r nrow(data_orellano_2020 %>% filter(cause_death == "Respiratory"))` estimates):
 
-```{r, fig.width = 8, fig.height = 3}
+```{r, fig.asp=0.6}
 data_orellano_2020 %>%
   filter(cause_death == "Respiratory") %>%
   ggplot(., aes(x = precision, y = point_estimate)) +
@@ -168,7 +140,7 @@ data_orellano_2020 %>%
 
 We draw the same previous graph but now for cardiovascular mortality (N=`r nrow(data_orellano_2020 %>% filter(cause_death == "Cardiovascular"))` estimates):
 
-```{r, fig.width = 8, fig.height = 3}
+```{r, fig.asp=0.6}
 data_orellano_2020 %>%
   filter(cause_death == "Cardiovascular") %>%
   ggplot(., aes(x = precision, y = point_estimate)) +
@@ -184,7 +156,7 @@ data_orellano_2020 %>%
 
 We plot below the mean width of 95% confidence intervals over time for estimated relative risks of all-cause mortality:
 
-```{r, fig.width = 8, fig.height = 3}
+```{r, fig.asp=0.5}
 data_orellano_2020 %>%
   filter(cause_death == "All-cause") %>%
   group_by(pollutant, year) %>%
@@ -192,7 +164,7 @@ data_orellano_2020 %>%
   ggplot(., aes(x = year, y = mean_ci_width)) +
   geom_line(linetype = "dashed") +
   geom_point() +
-  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 3)) +
   facet_wrap(~ pollutant, ncol = 4) +
   labs(x = "Year", y = "Average Width of 95%\nConfidence Intervals", title = "Evolution of the Width of Confidence Intevals Over Time")
 ```
@@ -262,31 +234,21 @@ data_retrodesign_orellano_2020 <- data_orellano_2020 %>%
   )
 
 # compute power, type m and s errors
-data_retrodesign_orellano_2020 <- data_retrodesign_orellano_2020 %>%
+data_retrodesign_orellano_2020 <- data_retrodesign_orellano_2020 |> 
   mutate(
-    hypothetical_power = map2(
-      true_effect_size,
-      standard_error,
-      ~ retro_design(.x, .y)$power * 100
-    ),
-    type_s = map2(
-      true_effect_size,
-      standard_error,
-      ~ retro_design(.x, .y)$typeS * 100
-    ),
-    type_m = map2(true_effect_size,
-                  standard_error,
-                  ~ retro_design(.x, .y)$typeM)
-  ) %>%
-  unnest(cols = c(hypothetical_power, type_s, type_m))
-
+    retro = map2(true_effect_size, standard_error, 
+                 \(x, y) retro_design_closed_form(x, y))
+    #retro_design returns a list with power, type_s, type_m
+  ) |> 
+  unnest_wider(retro) |> 
+  mutate(power = power * 100, type_s = type_s * 100)
 
 # display median of metrics by air pollutant
 data_retrodesign_orellano_2020 %>%
   group_by(pollutant, cause_death) %>%
   summarise(
     "Number of Studies" = n(),
-    "Statistical Power (%)" = median(hypothetical_power) %>% round(., 0),
+    "Statistical Power (%)" = median(power) %>% round(., 0),
     "Type M Error" = median(type_m) %>% round(., 0),
     "Type S Error (%)" = median(type_s) %>% round(., 0)
   ) %>%
@@ -315,25 +277,25 @@ data_shah_2015 <- data_shah_2015 %>%
 
 We plot below the relationship between estimated relative risks and precision for each air pollutant:
 
-```{r, fig.width = 10, fig.height = 6}
+```{r, fig.asp=0.8}
 data_shah_2015 %>%
   ggplot(., aes(x = precision, y = estimate)) +
   geom_hline(yintercept = 1, colour = "black", size = 0.25, linetype = "solid") +
   geom_point(alpha = 0.8) +
-  scale_x_log10() +
+  scale_x_log10(n.breaks = 5) +
   facet_wrap(~ air_pollutant, ncol = 3) +
   labs(x = "Precision (Inverse of the Standard Error)", y = "Estimated Relative Risk", title = "Relative Risks vs. Precision")
 ```
 
 We plot the same figure but for estimated relative risks below 2:
 
-```{r, fig.width = 10, fig.height = 5}
+```{r, fig.asp=0.8}
 data_shah_2015 %>%
   filter(estimate < 2) %>%
   ggplot(., aes(x = precision, y = estimate)) +
   geom_hline(yintercept = 1, colour = "black", size = 0.25, linetype = "solid") +
   geom_point(alpha = 0.8) +
-  scale_x_log10() +
+  scale_x_log10(n.breaks = 5) +
   facet_wrap(~ air_pollutant, ncol = 3) +
   labs(x = "Precision (Inverse of the Standard Error)", y = "Estimated Relative Risk", title = "Relative Risks vs. Precision")
 ```
@@ -342,14 +304,14 @@ data_shah_2015 %>%
 
 We plot below the mean width of 95% confidence intervals over time for estimated relative risks:
 
-```{r, fig.width = 10, fig.height = 5}
+```{r, fig.asp=0.8}
 data_shah_2015 %>%
   group_by(air_pollutant, year) %>%
   summarise(mean_ci_width = mean(ci_width)) %>%
   ggplot(., aes(x = year, y = mean_ci_width)) +
   geom_line(linetype = "dashed") +
   geom_point() +
-  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 2)) +
   facet_wrap( ~ air_pollutant, scales = "free_y", ncol = 3) +
   labs(x = "Year", y = "Average Width of 95%\nConfidence Intervals", title = "Evolution of the Width of Confidence Intevals Over Time")
 ```
@@ -400,30 +362,20 @@ data_shah_2015 <- data_shah_2015 %>%
   )
 
 # compute power, type m and s errors
-data_shah_2015 <- data_shah_2015 %>%
+data_shah_2015 <- data_shah_2015 |> 
   mutate(
-    hypothetical_power = map2(
-      true_effect_size,
-      standard_error,
-      ~ retro_design(.x, .y)$power * 100
-    ),
-    type_s = map2(
-      true_effect_size,
-      standard_error,
-      ~ retro_design(.x, .y)$typeS * 100
-    ),
-    type_m = map2(true_effect_size,
-                  standard_error,
-                  ~ retro_design(.x, .y)$typeM)
-  ) %>%
-  unnest(cols = c(hypothetical_power, type_s, type_m))
-
+    retro = map2(true_effect_size, standard_error, 
+                 \(x, y) retro_design_closed_form(x, y))
+    #retro_design returns a list with power, type_s, type_m
+  ) |> 
+  unnest_wider(retro) |> 
+  mutate(power = power * 100, type_s = type_s * 100)
 
 # display median of metrics by air pollutant
 data_shah_2015 %>%
   group_by(air_pollutant) %>%
   summarise(
-    "Statistical Power (%)" = mean(hypothetical_power) %>% round(., 0),
+    "Statistical Power (%)" = mean(power) %>% round(., 0),
     "Type M Error" = mean(type_m) %>% round(., 0),
     "Type S Error (%)" = mean(type_s) %>% round(., 0)
   ) %>%
@@ -433,7 +385,7 @@ data_shah_2015 %>%
 
 We display below the distribution of the exaggeration ratio by air pollutant:
 
-```{r, fig.width = 10, fig.height = 5}
+```{r, fig.asp=0.8}
 # store median type m errors
 median_type_m <- data_shah_2015 %>%
   group_by(air_pollutant) %>%
@@ -452,7 +404,7 @@ graph_shah_2015 <- data_shah_2015 %>%
     colour = "#f07167"
   ) +
   facet_wrap(~ air_pollutant) +
-  scale_x_continuous(breaks = scales::pretty_breaks(n = 10), limits = c(1, 12)) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 5), limits = c(1, 12)) +
   labs(x = "Exaggeration Factor", y = NULL, title = NULL) +
   theme(
     axis.ticks.y = element_blank(),

@@ -1,6 +1,7 @@
 name: "."
-title: "Small Effects, Air Pollution and Health"
+title: "Estimating Small Effects"
 theme: air_pollution_website.css
+favicon: images/site/favicon.ico
 output_dir: "docs"
 exclude: ["Documents", "R"]
 navbar:
@@ -38,7 +39,7 @@ navbar:
           href: power_sim.html
         - text: "Analysing simulations results"
           href: sim_results.html
-    - text: "Recommendations"
+    - text: "Reporting"
       href: how_to_retro.html
   source_url: https://github.com/vincentbagilet/inference_pollution
   search: false

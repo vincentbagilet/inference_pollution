@@ -27,7 +27,7 @@ opts_chunk$set(fig.path = "images/std_lit_getting_abstracts/",
                fig.align = "center")  
 ```  
 
-```{r packages, include=FALSE}
+```{r loading_packages, code_folding="Show the packages used", results='hide'}
 library("groundhog")
 packages <- c(
   "tidyverse", 
@@ -38,7 +38,9 @@ packages <- c(
   # "fulltext", #does not run with the last R version
   "DT"
 )
-groundhog.library(packages, "2022-11-28")
+
+# groundhog.library(packages, "2022-11-28")
+lapply(packages, library, character.only = TRUE)
 
 set.seed(1)
 ```

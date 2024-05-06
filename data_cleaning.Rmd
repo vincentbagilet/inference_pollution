@@ -2,11 +2,6 @@
 title: "Data Cleaning for Power Simulations"
 description: |
   In this document, we select NMMAPS cities with the least proportion of missing records to use them in our power simulations.
-author:
-  - name: Vincent Bagilet 
-    url: https://www.sipa.columbia.edu/experience-sipa/sipa-profiles/vincent-bagilet
-    affiliation: Columbia University
-    affiliation_url: https://www.columbia.edu/
 date: "May 11, 2021"
 output: distill::distill_article
 ---

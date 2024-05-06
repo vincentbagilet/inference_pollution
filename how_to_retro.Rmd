@@ -34,20 +34,19 @@ Given a range of hypothetical effect sizes and the standard error displayed in t
 
 **Important note:** when we give an estimate, we add its associated standard error using the $\pm$ symbol.
 
-# Required Packages
-
-We load the required packages:
-
-```{r loading_packages, echo=TRUE}
+```{r loading_packages, code_folding="Show the packages used", results='hide'}
 library("groundhog")
 packages <- c(
   "here",
   "tidyverse", 
   "knitr",
   "retrodesign", 
-  "vincentbagilet/mediocrethemes"
+  "mediocrethemes"
+  # "vincentbagilet/mediocrethemes"
 )
-groundhog.library(packages, "2022-11-28")
+
+# groundhog.library(packages, "2022-11-28")
+lapply(packages, library, character.only = TRUE) 
 
 set_mediocre_all(pal = "leo") 
 ```
@@ -76,10 +75,9 @@ We compute the statistical power, Type M and S errors for alternative and smalle
 ```{r run_retro_power_analysis, echo = TRUE}
 # compute the power, type m and s errors for a range of effect sizes
 data_deryugina_2019_iv <-
-  retro_design(as.list(seq(0.01, 0.7, by = 0.001)), 0.061) %>%
+  retro_design_closed_form(as.list(seq(0.01, 0.7, by = 0.001)), 0.061) %>%
   unnest() %>%
-  mutate(power = power * 100,
-         type_s = type_s * 100) %>%
+  mutate(power = power * 100, type_s = type_s * 100) %>%
   rename(
     "Statistical Power (%)" = power,
     "Type-S Error (%)" = type_s,
@@ -179,5 +177,5 @@ graph_curves
 #   )
 ```
 
-Suppose that the true effect of the increase in PM$_{2.5}$ was 0.095 additional deaths per million elderly individuals - the estimate found with a naive multivariate model. The statistical power would be `r round(retro_design(0.095, 0.061)$power*100, 0)`% and the overestimation factor would be equal to `r round(retro_design(0.095, 0.061)$typeM, 1)`. The type M error would be worrying for the instrumental variable strategy if the true effect size is the estimate obtained with the standard multivariate model. However, if the true effect size was equal to the lower bound of the 95% confidence interval of the 2SLS estimate, the `r round(retro_design(0.57044, 0.061)$typeM, 1)` would be equal to 1: the study would not suffer from a type M error.
+Suppose that the true effect of the increase in PM$_{2.5}$ was 0.095 additional deaths per million elderly individuals - the estimate found with a naive multivariate model. The statistical power would be `r round(retro_design_closed_form(0.095, 0.061)$power*100, 0)`% and the overestimation factor would be equal to `r round(retro_design_closed_form(0.095, 0.061)$type_m, 1)`. The type M error would be worrying for the instrumental variable strategy if the true effect size is the estimate obtained with the standard multivariate model. However, if the true effect size was equal to the lower bound of the 95% confidence interval of the 2SLS estimate, the `r round(retro_design_closed_form(0.57044, 0.061)$type_m, 1)` would be equal to 1: the study would not suffer from a type M error.
 

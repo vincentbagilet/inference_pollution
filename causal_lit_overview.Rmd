@@ -30,7 +30,6 @@ knitr::opts_chunk$set(
 
 In this document, we carry out a retrospective power analysis of the causal inference literature on the acute health effects of air pollution. 
 
-
 We used an extensive search strategy on [Google Scholar](https://scholar.google.com/), [PubMed](https://pubmed.ncbi.nlm.nih.gov/), and [IDEAS](https://ideas.repec.org/) to retrieve studies that (i) focus on the short-health effects of air pollution on mortality and morbidity outcomes, and (ii) rely on a causal inference method. We exclude the very recent literature on the effects of air pollution on COVID-19 health outcomes. We found a corpus of 36 relevant articles. For each study, we retrieved the method used by the authors, which health outcome and air pollutant they consider, the point estimate and the standard error of results. We coded all main results but also those on heterogeneous effects by age categories and control outcomes ("placebo tests").
 
 Our document is organized as follows:
@@ -39,24 +38,22 @@ Our document is organized as follows:
 
 * In the second section, we provide two pieces of evidence for publication bias in the literature.
 
-* In the third section, we compute the statistical power, the type M error and the probability to make a type S error for each paper using different guesses of true effect sizes. For this task, we rely on the very convenient [retrodesign](https://cran.r-project.org/web/packages/retrodesign/vignettes/Intro_To_retrodesign.html) package.
+* In the third section, we compute the statistical power, the exaggeration and the probability to make a type S error for each paper using different guesses of true effect sizes. For this task, we rely on the very convenient [retrodesign](https://cran.r-project.org/web/packages/retrodesign/vignettes/Intro_To_retrodesign.html) package.
 
 # Set-Up
 
 ### Packages and Data
 
-We load the packages:
-
-```{r load_packages, include=FALSE, echo=TRUE}
+```{r loading_packages, code_folding="Show the packages used", results='hide'}
 library("groundhog")
 packages <- c(
   "here",
   "tidyverse", 
   "knitr",
-  "retrodesign", 
-  "Cairo",
+  "retrodesign",
   "kableExtra",
   "patchwork",
+  "DT",
   "mediocrethemes"
   # "vincentbagilet/mediocrethemes"
 )
@@ -124,6 +121,21 @@ data_literature %>%
 * `source_results`: where we retrieve in the paper the figures on the estimates and standard errors.
 * `remarks`: remarks on whether we have to do some computations on our own to retrieve the relevant information. For instance, we had to infer for very few papers the mean and standard deviation of a pollutant or an health outcome with statistics such as the median and the quartiles. We use the formula found [here](https://stats.stackexchange.com/questions/256456/how-to-calculate-mean-and-standard-deviation-from-median-and-quartiles).
 * `open_data`: whether the data are available to reproduce the findings of the study. Only `r round(sum(data_literature$open_data==1)/nrow(data_literature)*100, 0)`% of results are directly reproducible.
+
+The data set is as follows:
+
+```{r datatable_all_estimates, code_folding=TRUE, layout="l-body-outset"}
+data_literature |> 
+  DT::datatable(
+    filter = 'top', 
+    options = list(
+      pageLength = 5,
+      scrollY = TRUE,
+      scrollX = TRUE,
+      autoWidth = TRUE
+    )
+  )
+```
 
 ### Computing Standardized Effect Sizes
 
@@ -210,6 +222,12 @@ data_literature <-
     standardized_standard_error,
     first_stage_statistic:open_data
   )
+
+saveRDS(data_literature, here::here(
+    "data",
+    "literature_review_causal_inference",
+    "data_literature_review_std.rds"
+  ))
 ```
 
 We are able to standardize the effects of `r round(sum(!is.na(data_literature$standardized_estimate))/nrow(data_literature)*100, 0)`% of all estimates. We display below summary statistics on the distribution of the standardized effect sizes of causal inference methods:
@@ -238,12 +256,14 @@ We plot below the ratio of 2SLS estimates over OLS estimates:
 ```{r graph_ratio_ols_iv, fig.asp=0.5}
 # compute ratio 2sls/ols
 data_ratio_ols_iv <- data_literature %>%
-    select(paper_label, empirical_strategy, outcome, independent_variable, estimate) %>%
+    select(paper_label, empirical_strategy, outcome, independent_variable, estimate, standard_error) %>%
     filter(empirical_strategy %in% c("conventional time series", "instrumental variable")) %>%
     arrange(paper_label, outcome, independent_variable) %>%
     group_by(paper_label, outcome, independent_variable) %>%
-    summarise(ratio = estimate[2]/estimate[1]) %>%
-    drop_na(ratio)
+    summarise(
+      ratio = estimate[2]/estimate[1],
+      ratio_se = standard_error[2]/standard_error[1]) %>%
+    drop_na(ratio, ratio_se)
 
 # plot the distribution
 graph_ratio_ols_iv <- data_ratio_ols_iv %>% 
@@ -277,7 +297,7 @@ graph_ratio_ols_iv <- data_ratio_ols_iv %>%
 graph_ratio_ols_iv
 ```
 
-For half of the studies reporting both an OLS estimate and an IV estimate, the ratio is superior to `r round(median(data_ratio_ols_iv$ratio), 1)`.
+For half of the studies reporting both an IV estimate and an OLS estimate, the ratio of these respective estimates is larger than `r round(median(data_ratio_ols_iv$ratio), 1)`. The median ratio of the ratio of the standard errors is `r round(median(data_ratio_ols_iv$ratio_se), 1)`.
 
 # Evidence of Publication Bias
 
@@ -374,7 +394,6 @@ ggsave(
   # device = cairo_pdf
 )
 ```
-
 
 ### Estimated Effect Sizes versus Precision
 
@@ -515,9 +534,9 @@ ggsave(
 )
 ```
 
-# Computing Statistical Power, Type M and S Errors
+# Computing Statistical Power, Exaggeration and Type S Errors
 
-In this section, we compute the statistical power, the exaggeration factor (Type M error) and the probability to make a type S error for each study. We rely on the [retrodesign](https://cran.r-project.org/web/packages/retrodesign/vignettes/Intro_To_retrodesign.html) package.
+In this section, we compute the statistical power, the exaggeration ratio and the probability to make a type S error for each study. We rely on the [retrodesign](https://cran.r-project.org/web/packages/retrodesign/vignettes/Intro_To_retrodesign.html) package.
 
 To compute the three metrics, we need to make an assumption about the true effect size of each study:
 
@@ -526,10 +545,10 @@ To compute the three metrics, we need to make an assumption about the true effec
 
 ### Overview
 
-We define the true effect sizes as a decreasing fraction of the estimates. We want to see how the overall distribution of the three metrics evolve with as we decrease the hypothesized true effect size.
+We define the true effect sizes as a decreasing fraction of the estimates. We want to see how the overall distributions of the three metrics evolve with as we decrease the hypothesized true effect size.
 
 ```{r data_for_retrodesign, echo = TRUE}
-# test type-m and type-s errors
+# test exaggeration and type s errors
 data_retrodesign <- data_literature %>%
   # drop control outcomes
   filter(control_outcome == 0) %>%
@@ -545,31 +564,20 @@ data_retrodesign <- data_literature %>%
   filter(abs(estimate / standard_error) >= 1.96)
 ```
 
-For each study, we compute the statistical power, the exaggeration factor and the probability to make a type S error by defining their true effect sizes as decreasing fraction of the estimates. 
+For each study, we compute the statistical power, the exaggeration ratio and the probability to make a type S error by defining their true effect sizes as decreasing fraction of the estimates. 
 
 ```{r run_retrodesign, echo = TRUE}
 # run retrospective power analysis for decreasing effect sizes
-data_retrodesign_fraction <- data_retrodesign %>%
-  crossing(percentage = seq(from = 30, to = 100) / 100) %>%
-  mutate(hypothetical_effect_size = percentage * estimate) %>%
+data_retrodesign_fraction <- data_retrodesign |> 
+  crossing(percentage = seq(from = 30, to = 100) / 100) |> 
+  mutate(hypothetical_effect_size = percentage * estimate) |> 
   mutate(
-    power = map2(
-      hypothetical_effect_size,
-      standard_error,
-      ~ retro_design(.x, .y)$power * 100
-    ),
-    type_s = map2(
-      hypothetical_effect_size,
-      standard_error,
-      ~ retro_design(.x, .y)$typeS * 100
-    ),
-    type_m = map2(
-      hypothetical_effect_size,
-      standard_error,
-      ~ retro_design(.x, .y)$typeM
-    )
-  ) %>%
-  unnest(cols = c(power, type_s, type_m)) %>%
+    retro = map2(hypothetical_effect_size, standard_error, 
+                 \(x, y) retro_design_closed_form(x, y))
+    #retro_design returns a list with power, type_s, type_m
+  ) |> 
+  unnest_wider(retro) |> 
+  mutate(power = power * 100) |> 
   pivot_longer(
     cols = c(power, type_m, type_s),
     names_to = "metric",
@@ -602,7 +610,8 @@ graph_retrodesign_causal_inf <- data_retrodesign_fraction %>%
   )) +
   geom_line(colour = "#adb5bd", alpha = 0.2) +
   geom_line(
-    data = data_retrodesign_fraction_mean %>% filter(metric != "Type S Error (%)"),
+    data = data_retrodesign_fraction_mean %>% 
+      filter(metric != "Type S Error (%)"),
     aes(
       x = percentage * 100,
       y = median_value,
@@ -712,31 +721,30 @@ data_ols <- data_literature %>%
          empirical_strategy,
          outcome,
          independent_variable,
-         estimate) %>%
+         estimate,
+         standard_error) %>%
   filter(empirical_strategy == "conventional time series") %>%
   select(-empirical_strategy) %>%
-  rename(estimate_ols = estimate)
+  rename(estimate_ols = estimate, standard_error_ols = standard_error)
 
 # merge the two datasets
-data_retro_iv <-
+data_iv_ols <-
   left_join(data_iv,
             data_ols,
             by = c("paper_label", "outcome", "independent_variable")) %>%
   drop_na(estimate_ols)
 
-# compute power, type m and s errors
-data_retro_iv <- data_retro_iv %>%
+# compute power, exaggeration and s errors
+data_retro_iv <- data_iv_ols |> 
   mutate(
-    power = map2(estimate_ols,
-                 standard_error,
-                 ~ retro_design(.x, .y)$power * 100),
-    type_m = map2(estimate_ols,
-                  standard_error,
-                  ~ retro_design(.x, .y)$typeM)
-  ) %>%
-  unnest(cols = c(power, type_m)) %>%
+    retro = map2(estimate_ols, standard_error, 
+                 \(x, y) retro_design_closed_form(x, y))
+    #retro_design returns a list with power, type_s, type_m
+  ) |> 
+  unnest_wider(retro) |> 
+  mutate(power = power * 100, type_s = type_s * 100) |> 
   mutate_at(vars(power, type_m), ~ round(., 1)) %>%
-  select(-estimate,-standard_error,-estimate_ols) %>%
+  select(-estimate, -standard_error, -estimate_ols) %>%
   pivot_longer(
     cols = c("power", "type_m"),
     names_to = "metric",
@@ -747,6 +755,11 @@ data_retro_iv <- data_retro_iv %>%
     "Statistical Power (%)",
     "Exaggeration Ratio"
   ))
+
+prop_adequate <- data_retro_iv |> 
+  filter(str_starts(metric, "Stat")) |> 
+  count(prop_adequate = sum(value > 80)/n()) |> 
+  pull(prop_adequate)
 
 # compute summary stats
 summary_retro_iv <- data_retro_iv %>%
@@ -782,8 +795,8 @@ graph_retro_iv_power <- data_retro_iv %>%
     panel.grid.major.y = element_blank()
   )
 
-# graph type m error
-graph_retro_iv_type_m <- data_retro_iv %>%
+# graph exaggeration error
+graph_retro_iv_exagg <- data_retro_iv %>%
   filter(metric == "Exaggeration Ratio") %>%
   filter(value < 42) %>%
   ggplot() +
@@ -805,7 +818,7 @@ graph_retro_iv_type_m <- data_retro_iv %>%
   )
 
 # display the graph
-graph_retro_iv <- graph_retro_iv_power / graph_retro_iv_type_m
+graph_retro_iv <- graph_retro_iv_power / graph_retro_iv_exagg
 graph_retro_iv
 
 # save graph
@@ -825,9 +838,7 @@ ggsave(
 )
 ```
 
-The median statistical power is `r summary_retro_iv$median[1]`% and the median type M error is `r summary_retro_iv$median[2]`.
-
-
+The median statistical power is `r summary_retro_iv$median[2]`% and the median exaggeration ratio is `r summary_retro_iv$median[1]`. `r round(prop_adequate*100, 2)`% of IV designs have adequate power (*i.e.* greater than 80%).
 
 
 

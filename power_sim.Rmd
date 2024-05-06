@@ -29,7 +29,7 @@ opts_chunk$set(fig.path = "images/power_sim/",
 
 This document focuses on actually running the simulations. The overall approach to the simulations is described [here](notes_methodo.html) and the results are analyzed and discussed [here](sim_results.html).
 
-```{r message=FALSE, warning=FALSE, include=FALSE}
+```{r loading_packages, code_folding="Show the packages used", results='hide'}
 library("groundhog")
 packages <- c(
   "here",
@@ -45,11 +45,15 @@ packages <- c(
   "furrr",
   "progress",
   "progressr",
-  "vincentbagilet/mediocrethemes"
+  "mediocrethemes"
+  # "vincentbagilet/mediocrethemes"
 )
-groundhog.library(packages, "2022-11-28")
+
+# groundhog.library(packages, "2022-11-28")
+lapply(packages, library, character.only = TRUE)
 
 set_mediocre_all(pal = "leo") 
+
 # Settings for progress bar
 handlers(list(
   handler_progress(
@@ -284,7 +288,7 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 ```{r}
 estimate_model <- function(data, formula) {
   fml <- Formula::as.Formula(formula)
-  pasted_formula <- paste(str_c(fml)[[2]], str_c(fml)[[1]], str_c(fml)[[3]])
+  pasted_formula <- paste(paste(fml)[[2]], paste(fml)[[1]], paste(fml)[[3]])
   
   #the param of interest varies across identification methods
   param_of_interest <- 
@@ -391,7 +395,7 @@ nmmaps_data %>%
     percent_effect_size = 1,
     p_obs_treat = 0.5
   )
-````
+```
 
 We will then loop this function to get a large number of replications of each simulation for a given set of parameters. We will also vary the values of the different parameter.
 

@@ -32,11 +32,7 @@ Researchers working in the null hypothesis significance testing framework (NHST)
 
 In this document, we simulate a fictional randomized experiment on the impact of fine particulate matters PM$_{2.5}$ on daily mortality to help researchers build their intuition on the consequences of low statistical power.
 
-# Loading Packages
-
-We first load the packages and our custom ggplot2 themes:
-
-```{r intuition_packages}
+```{r loading_packages, code_folding="Show the packages used", results='hide'}
 library("groundhog")
 packages <- c(
   "here",
@@ -46,9 +42,12 @@ packages <- c(
   "patchwork", 
   "knitr",
   "DT",
-  "vincentbagilet/mediocrethemes"
+  "mediocrethemes"
+  # "vincentbagilet/mediocrethemes"
 )
-groundhog.library(packages, "2022-11-28")
+
+# groundhog.library(packages, "2022-11-28")
+lapply(packages, library, character.only = TRUE)
 
 set_mediocre_all(pal = "leo") 
 ```

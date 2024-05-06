@@ -1,12 +1,13 @@
 ---
-title: "Accurately Estimating Relatively Small Effects: Air Pollution and Health"
-image: "images/illustration_car.png"
+title: "Accurate Estimation of Small Effects: Illustration Through Air Pollution and Health"
+image: "images/site/illustration_car.png"
+favicon: images/site/favicon.ico
 angle: 130
 site: distill::distill_website
 links:
   # - label: '`r fontawesome::fa("github")` GitHub'
   #   url: "https://github.com/vincentbagilet/inference_pollution"
-  - label: 'Vincent Bagilet'
+  - label: '`r fontawesome::fa("user")` Vincent Bagilet'
     url: "https://vincentbagilet.github.io/"
 output:
   postcards::trestles
@@ -14,10 +15,6 @@ output:
  
 Hi and welcome!
 
-This is the website for the paper [Accurately Estimating Relatively Small Effects: Air Pollution and Health](inference_pollution_paper.pdf). It gathers the paper, all the code and some additional material.
+This is the website for the paper [Accurate Estimation of Small Effects: Illustration Through Air Pollution and Health](inference_pollution_paper.pdf). It gathers the paper, all the code and some additional material.
 
 In this paper, I assess the ability of various research designs in measuring small effects, that of air pollution on health in the short-term. 
-
-A previous version of this project was co-authored with Léo Zabrocki-Hallak who extensively contributed to this project
-
-

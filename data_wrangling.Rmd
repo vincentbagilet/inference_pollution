@@ -2,11 +2,6 @@
 title: "Data Wrangling"
 description: |
   In this document, we retreive and wrangle the NMMAPS City Data.
-author:
-  - name: Vincent Bagilet 
-    url: https://www.vincentbagilet.github.io/
-    affiliation: Columbia University
-    affiliation_url: https://www.columbia.edu/
 date: "May 11, 2021"
 output: distill::distill_article
 ---

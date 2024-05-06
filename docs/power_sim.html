@@ -88,32 +88,33 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 
 
   <!--radix_placeholder_meta_tags-->
-  <title>Small Effects, Air Pollution and Health: Running power simulations</title>
+  <title>Estimating Small Effects: Running power simulations</title>
 
   <meta property="description" itemprop="description" content="In this document, we carry out a simulation exercise to evaluate the inference properties of different research designs aiming at measuring the short-term effects of air pollution on health. We consider different types of quasi experiments and for each associate one or several identification strategies."/>
 
+  <link rel="icon" type="image/vnd.microsoft.icon" href="images/site/favicon.ico"/>
 
   <!--  https://schema.org/Article -->
-  <meta property="article:published" itemprop="datePublished" content="2023-04-25"/>
-  <meta property="article:created" itemprop="dateCreated" content="2023-04-25"/>
+  <meta property="article:published" itemprop="datePublished" content="2024-05-06"/>
+  <meta property="article:created" itemprop="dateCreated" content="2024-05-06"/>
 
   <!--  https://developers.facebook.com/docs/sharing/webmasters#markup -->
-  <meta property="og:title" content="Small Effects, Air Pollution and Health: Running power simulations"/>
+  <meta property="og:title" content="Estimating Small Effects: Running power simulations"/>
   <meta property="og:type" content="article"/>
   <meta property="og:description" content="In this document, we carry out a simulation exercise to evaluate the inference properties of different research designs aiming at measuring the short-term effects of air pollution on health. We consider different types of quasi experiments and for each associate one or several identification strategies."/>
   <meta property="og:locale" content="en_US"/>
-  <meta property="og:site_name" content="Small Effects, Air Pollution and Health"/>
+  <meta property="og:site_name" content="Estimating Small Effects"/>
 
   <!--  https://dev.twitter.com/cards/types/summary -->
   <meta property="twitter:card" content="summary"/>
-  <meta property="twitter:title" content="Small Effects, Air Pollution and Health: Running power simulations"/>
+  <meta property="twitter:title" content="Estimating Small Effects: Running power simulations"/>
   <meta property="twitter:description" content="In this document, we carry out a simulation exercise to evaluate the inference properties of different research designs aiming at measuring the short-term effects of air pollution on health. We consider different types of quasi experiments and for each associate one or several identification strategies."/>
 
   <!--/radix_placeholder_meta_tags-->
   <!--radix_placeholder_rmarkdown_metadata-->
 
   <script type="text/json" id="radix-rmarkdown-metadata">
-  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","date","output","editor_options"]}},"value":[{"type":"character","attributes":{},"value":["Running power simulations"]},{"type":"character","attributes":{},"value":["In this document, we carry out a simulation exercise to evaluate the inference properties of different research designs aiming at measuring the short-term effects of air pollution on health. We consider different types of quasi experiments and for each associate one or several identification strategies."]},{"type":"character","attributes":{},"value":["2023-04-25"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["toc"]}},"value":[{"type":"logical","attributes":{},"value":[true]}]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["chunk_output_type"]}},"value":[{"type":"character","attributes":{},"value":["console"]}]}]}
+  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","date","output","editor_options"]}},"value":[{"type":"character","attributes":{},"value":["Running power simulations"]},{"type":"character","attributes":{},"value":["In this document, we carry out a simulation exercise to evaluate the inference properties of different research designs aiming at measuring the short-term effects of air pollution on health. We consider different types of quasi experiments and for each associate one or several identification strategies."]},{"type":"character","attributes":{},"value":["2024-05-06"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["toc"]}},"value":[{"type":"logical","attributes":{},"value":[true]}]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["chunk_output_type"]}},"value":[{"type":"character","attributes":{},"value":["console"]}]}]}
   </script>
   <!--/radix_placeholder_rmarkdown_metadata-->
   <!--radix_placeholder_navigation_in_header-->
@@ -461,8 +462,8 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   </style>
 
   <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
-  <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet"/>
-  <link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet"/>
+  <link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet"/>
+  <link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet"/>
   <script src="site_libs/headroom-0.9.4/headroom.min.js"></script>
   <!--/radix_placeholder_navigation_in_header-->
   <!--radix_placeholder_distill-->
@@ -573,9 +574,21 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
     display: none !important;
   }
 
+  hr.section-separator {
+    border: none;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    margin: 0px;
+  }
+
+
+  d-byline {
+    border-top: none;
+  }
+
   d-article {
     padding-top: 2.5rem;
     padding-bottom: 30px;
+    border-top: none;
   }
 
   d-appendix {
@@ -670,6 +683,11 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   d-article div.sourceCode pre {
     padding-left: 18px;
     font-size: 14px;
+  }
+
+  /* tweak for Pandoc numbered line within distill */
+  d-article pre.numberSource code > span {
+      left: -2em;
   }
 
   d-article pre {
@@ -1431,6 +1449,12 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
     // create d-title
     $('.d-title').changeElementType('d-title');
 
+    // separator
+    var separator = '<hr class="section-separator" style="clear: both"/>';
+    // prepend separator above appendix
+    $('.d-byline').before(separator);
+    $('.d-article').before(separator);
+
     // create d-byline
     var byline = $('<d-byline></d-byline>');
     $('.d-byline').replaceWith(byline);
@@ -1508,8 +1532,9 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
     $('.distill-force-highlighting-css').parent().remove();
 
     // remove empty line numbers inserted by pandoc when using a
-    // custom syntax highlighting theme
-    $('code.sourceCode a:empty').remove();
+    // custom syntax highlighting theme, except when numbering line
+    // in code chunk
+    $('pre:not(.numberLines) code.sourceCode a:empty').remove();
 
     // load distill framework
     load_distill_framework();
@@ -1535,12 +1560,13 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
       // add orcid ids
       $('.authors-affiliations').find('.author').each(function(i, el) {
         var orcid_id = front_matter.authors[i].orcidID;
+        var author_name = front_matter.authors[i].author
         if (orcid_id) {
           var a = $('<a></a>');
           a.attr('href', 'https://orcid.org/' + orcid_id);
           var img = $('<img></img>');
           img.addClass('orcid-id');
-          img.attr('alt', 'ORCID ID');
+          img.attr('alt', author_name ? 'ORCID ID for ' + author_name : 'ORCID ID');
           img.attr('src','data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo1N0NEMjA4MDI1MjA2ODExOTk0QzkzNTEzRjZEQTg1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozM0NDOEJGNEZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozM0NDOEJGM0ZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZDN0YxMTc0MDcyMDY4MTE5NUZFRDc5MUM2MUUwNEREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU3Q0QyMDgwMjUyMDY4MTE5OTRDOTM1MTNGNkRBODU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+84NovQAAAR1JREFUeNpiZEADy85ZJgCpeCB2QJM6AMQLo4yOL0AWZETSqACk1gOxAQN+cAGIA4EGPQBxmJA0nwdpjjQ8xqArmczw5tMHXAaALDgP1QMxAGqzAAPxQACqh4ER6uf5MBlkm0X4EGayMfMw/Pr7Bd2gRBZogMFBrv01hisv5jLsv9nLAPIOMnjy8RDDyYctyAbFM2EJbRQw+aAWw/LzVgx7b+cwCHKqMhjJFCBLOzAR6+lXX84xnHjYyqAo5IUizkRCwIENQQckGSDGY4TVgAPEaraQr2a4/24bSuoExcJCfAEJihXkWDj3ZAKy9EJGaEo8T0QSxkjSwORsCAuDQCD+QILmD1A9kECEZgxDaEZhICIzGcIyEyOl2RkgwAAhkmC+eAm0TAAAAABJRU5ErkJggg==');
           a.append(img);
           $(this).append(a);
@@ -2167,7 +2193,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
     color: var(--hover-color, white);
   }</style>
   <!--/radix_placeholder_distill-->
-  <script src="site_libs/header-attrs-2.18/header-attrs.js"></script>
+  <script src="site_libs/header-attrs-2.26/header-attrs.js"></script>
   <script src="site_libs/popper-2.6.0/popper.min.js"></script>
   <link href="site_libs/tippy-6.2.7/tippy.css" rel="stylesheet" />
   <link href="site_libs/tippy-6.2.7/tippy-light-border.css" rel="stylesheet" />
@@ -2187,7 +2213,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <!--radix_placeholder_front_matter-->
 
 <script id="distill-front-matter" type="text/json">
-{"title":"Running power simulations","description":"In this document, we carry out a simulation exercise to evaluate the inference properties of different research designs aiming at measuring the short-term effects of air pollution on health. We consider different types of quasi experiments and for each associate one or several identification strategies.","authors":[],"publishedDate":"2023-04-25T00:00:00.000+02:00"}
+{"title":"Running power simulations","description":"In this document, we carry out a simulation exercise to evaluate the inference properties of different research designs aiming at measuring the short-term effects of air pollution on health. We consider different types of quasi experiments and for each associate one or several identification strategies.","authors":[],"publishedDate":"2024-05-06T00:00:00.000+02:00"}
 </script>
 
 <!--/radix_placeholder_front_matter-->
@@ -2195,7 +2221,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <header class="header header--fixed" role="banner">
 <nav class="distill-site-nav distill-site-header">
 <div class="nav-left">
-<a href="index.html" class="title">Small Effects, Air Pollution and Health</a>
+<a href="index.html" class="title">Estimating Small Effects</a>
 </div>
 <div class="nav-right">
 <a href="inference_pollution_paper.pdf">Paper</a>
@@ -2230,7 +2256,7 @@ Simulations
 <a href="sim_results.html">Analysing simulations results</a>
 </div>
 </div>
-<a href="how_to_retro.html">Recommendations</a>
+<a href="how_to_retro.html">Reporting</a>
 <a href="https://github.com/vincentbagilet/inference_pollution" aria-label="Link to source">
 <i class="fab fa-github" aria-hidden="true"></i>
 </a>
@@ -2244,6 +2270,7 @@ Simulations
 
 <div class="d-title">
 <h1>Running power simulations</h1>
+
 <!--radix_placeholder_categories-->
 <!--/radix_placeholder_categories-->
 <p>In this document, we carry out a simulation exercise to evaluate the inference properties of different research designs aiming at measuring the short-term effects of air pollution on health. We consider different types of quasi experiments and for each associate one or several identification strategies.</p>
@@ -2280,6 +2307,50 @@ body {
 text-align: justify}
 </style>
 <p>This document focuses on actually running the simulations. The overall approach to the simulations is described <a href="notes_methodo.html">here</a> and the results are analyzed and discussed <a href="sim_results.html">here</a>.</p>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show the packages used
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='st'><a href='https://groundhogr.com/'>"groundhog"</a></span><span class='op'>)</span></span>
+<span><span class='va'>packages</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span></span>
+<span>  <span class='st'>"here"</span>,</span>
+<span>  <span class='st'>"tidyverse"</span>, </span>
+<span>  <span class='st'>"knitr"</span>, </span>
+<span>  <span class='st'>"broom"</span>,</span>
+<span>  <span class='st'>"lubridate"</span>, </span>
+<span>  <span class='st'>"tictoc"</span>,</span>
+<span>  <span class='st'>"rlang"</span>,</span>
+<span>  <span class='st'>"readr"</span>,</span>
+<span>  <span class='st'>"fixest"</span>,</span>
+<span>  <span class='st'>"Formula"</span>,</span>
+<span>  <span class='st'>"furrr"</span>,</span>
+<span>  <span class='st'>"progress"</span>,</span>
+<span>  <span class='st'>"progressr"</span>,</span>
+<span>  <span class='st'>"mediocrethemes"</span></span>
+<span>  <span class='co'># "vincentbagilet/mediocrethemes"</span></span>
+<span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># groundhog.library(packages, "2022-11-28")</span></span>
+<span><span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='va'>packages</span>, <span class='va'>library</span>, character.only <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='fu'><a href='https://vincentbagilet.github.io/mediocrethemes/reference/set_mediocre_all.html'>set_mediocre_all</a></span><span class='op'>(</span>pal <span class='op'>=</span> <span class='st'>"leo"</span><span class='op'>)</span> </span>
+<span></span>
+<span><span class='co'># Settings for progress bar</span></span>
+<span><span class='fu'>handlers</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span></span>
+<span>  <span class='fu'>handler_progress</span><span class='op'>(</span></span>
+<span>    format   <span class='op'>=</span> <span class='st'>":spin :current/:total (:message) [:bar] :percent in :elapsed ETA: :eta"</span></span>
+<span>  <span class='op'>)</span></span>
+<span><span class='op'>)</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='va'>nmmaps_data</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/readRDS.html'>readRDS</a></span><span class='op'>(</span></span>
+<span>    <span class='fu'>here</span><span class='fu'>::</span><span class='fu'><a href='https://here.r-lib.org//reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"data"</span>, <span class='st'>"simulations"</span>, <span class='st'>"nmmaps_data_simulations.rds"</span><span class='op'>)</span></span>
+<span>  <span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>temperature_squared <span class='op'>=</span> <span class='va'>temperature</span><span class='op'>^</span><span class='fl'>2</span><span class='op'>)</span></span></code></pre>
+</div>
+</details>
+</div>
 <h2 id="function-definitions">Function definitions</h2>
 <h3 id="selecting-the-study-period">Selecting the study period</h3>
 <p>First, we create a function to randomly select a study period of a given length. This function also randomly selects a given number of cities to consider. For simplicity, we choose to have the same temporal study period for each city. This also seems realistic; a study focusing on several cities would probably consider a unique study period.</p>
@@ -2451,7 +2522,7 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>estimate_model</span> <span class='op'>&lt;-</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>data</span>, <span class='va'>formula</span><span class='op'>)</span> <span class='op'>{</span></span>
 <span>  <span class='va'>fml</span> <span class='op'>&lt;-</span> <span class='fu'>Formula</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/pkg/Formula/man/Formula.html'>as.Formula</a></span><span class='op'>(</span><span class='va'>formula</span><span class='op'>)</span></span>
-<span>  <span class='va'>pasted_formula</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste</a></span><span class='op'>(</span><span class='fu'><a href='https://stringr.tidyverse.org/reference/str_c.html'>str_c</a></span><span class='op'>(</span><span class='va'>fml</span><span class='op'>)</span><span class='op'>[[</span><span class='fl'>2</span><span class='op'>]</span><span class='op'>]</span>, <span class='fu'><a href='https://stringr.tidyverse.org/reference/str_c.html'>str_c</a></span><span class='op'>(</span><span class='va'>fml</span><span class='op'>)</span><span class='op'>[[</span><span class='fl'>1</span><span class='op'>]</span><span class='op'>]</span>, <span class='fu'><a href='https://stringr.tidyverse.org/reference/str_c.html'>str_c</a></span><span class='op'>(</span><span class='va'>fml</span><span class='op'>)</span><span class='op'>[[</span><span class='fl'>3</span><span class='op'>]</span><span class='op'>]</span><span class='op'>)</span></span>
+<span>  <span class='va'>pasted_formula</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste</a></span><span class='op'>(</span><span class='va'>fml</span><span class='op'>)</span><span class='op'>[[</span><span class='fl'>2</span><span class='op'>]</span><span class='op'>]</span>, <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste</a></span><span class='op'>(</span><span class='va'>fml</span><span class='op'>)</span><span class='op'>[[</span><span class='fl'>1</span><span class='op'>]</span><span class='op'>]</span>, <span class='fu'><a href='https://rdrr.io/r/base/paste.html'>paste</a></span><span class='op'>(</span><span class='va'>fml</span><span class='op'>)</span><span class='op'>[[</span><span class='fl'>3</span><span class='op'>]</span><span class='op'>]</span><span class='op'>)</span></span>
 <span>  </span>
 <span>  <span class='co'>#the param of interest varies across identification methods</span></span>
 <span>  <span class='va'>param_of_interest</span> <span class='op'>&lt;-</span> </span>
@@ -2559,13 +2630,12 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 <span>  <span class='op'>)</span></span></code></pre>
 </div>
 <pre><code># A tibble: 1 × 14
-  estimate p_value    se n_obs f_stat true_ef…¹ n_days n_cit…² p_obs…³
-     &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;int&gt; &lt;lgl&gt;      &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
-1   -0.329  0.0437 0.163  7261 NA        -0.174   1000      10     0.5
-# … with 5 more variables: percent_effect_size &lt;dbl&gt;,
+  estimate p_value    se n_obs f_stat true_effect n_days n_cities
+     &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;int&gt; &lt;lgl&gt;        &lt;dbl&gt;  &lt;dbl&gt;    &lt;dbl&gt;
+1   -0.329  0.0437 0.163  7261 NA          -0.174   1000       10
+# ℹ 6 more variables: p_obs_treat &lt;dbl&gt;, percent_effect_size &lt;dbl&gt;,
 #   quasi_exp &lt;chr&gt;, id_method &lt;chr&gt;, iv_strength &lt;dbl&gt;,
-#   formula &lt;chr&gt;, and abbreviated variable names ¹​true_effect,
-#   ²​n_cities, ³​p_obs_treat</code></pre>
+#   formula &lt;chr&gt;</code></pre>
 </div>
 <p>We will then loop this function to get a large number of replications of each simulation for a given set of parameters. We will also vary the values of the different parameter.</p>
 <h2 id="running-the-simulations">Running the simulations</h2>
@@ -2629,7 +2699,7 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 <span><span class='op'>)</span></span>
 <span></span>
 <span><span class='va'>sim_param_unique</span> <span class='op'>&lt;-</span> </span>
-<span>  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>map_dfr</a></span><span class='op'>(</span></span>
+<span>  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map_dfr.html'>map_dfr</a></span><span class='op'>(</span></span>
 <span>    <span class='va'>vect_of_vect_param</span>, </span>
 <span>    <span class='va'>add_values_param</span>, </span>
 <span>    df <span class='op'>=</span> <span class='va'>sim_param_base</span></span>
@@ -2793,7 +2863,7 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 <span><span class='op'>)</span></span>
 <span></span>
 <span><span class='va'>sim_param_unique_small</span> <span class='op'>&lt;-</span> </span>
-<span>  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>map_dfr</a></span><span class='op'>(</span></span>
+<span>  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map_dfr.html'>map_dfr</a></span><span class='op'>(</span></span>
 <span>    <span class='va'>vect_of_vect_param</span>, </span>
 <span>    <span class='va'>add_values_param</span>, </span>
 <span>    df <span class='op'>=</span> <span class='va'>sim_param_base</span></span>
@@ -2907,7 +2977,7 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 <span><span class='va'>vect_formula</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"death_total ~ treated + temperature + temperature_squared | city + month^year + weekday"</span><span class='op'>)</span></span>
 <span></span>
 <span><span class='va'>sim_param_unique_usual_RDD</span> <span class='op'>&lt;-</span> </span>
-<span>  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>map_dfr</a></span><span class='op'>(</span></span>
+<span>  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map_dfr.html'>map_dfr</a></span><span class='op'>(</span></span>
 <span>    <span class='va'>vect_of_vect_param</span>, </span>
 <span>    <span class='va'>add_values_param</span>, </span>
 <span>    df <span class='op'>=</span> <span class='va'>sim_param_base_usual_RDD</span></span>
@@ -2946,7 +3016,7 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 <span><span class='op'>)</span></span>
 <span></span>
 <span><span class='va'>sim_param_unique_usual_reduced</span> <span class='op'>&lt;-</span> </span>
-<span>  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>map_dfr</a></span><span class='op'>(</span></span>
+<span>  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map_dfr.html'>map_dfr</a></span><span class='op'>(</span></span>
 <span>    <span class='va'>vect_of_vect_param</span>, </span>
 <span>    <span class='va'>add_values_param</span>, </span>
 <span>    df <span class='op'>=</span> <span class='va'>sim_param_base_usual_reduced</span></span>
@@ -2984,7 +3054,7 @@ The model should be specified in a three part formula as follows: y ~ x | fixed 
 <span><span class='va'>vect_formula</span> <span class='op'>&lt;-</span> <span class='cn'>NA</span></span>
 <span></span>
 <span><span class='va'>sim_param_unique_usual_IV</span> <span class='op'>&lt;-</span> </span>
-<span>  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map.html'>map_dfr</a></span><span class='op'>(</span></span>
+<span>  <span class='fu'><a href='https://purrr.tidyverse.org/reference/map_dfr.html'>map_dfr</a></span><span class='op'>(</span></span>
 <span>    <span class='va'>vect_of_vect_param</span>, </span>
 <span>    <span class='va'>add_values_param</span>, </span>
 <span>    df <span class='op'>=</span> <span class='va'>sim_param_base_usual_IV</span></span>
