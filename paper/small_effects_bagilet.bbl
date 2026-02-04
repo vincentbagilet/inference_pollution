@@ -1,0 +1,627 @@
+
+
+% Bibstyle aea.bst version 2009.05.20
+
+\begin{thebibliography}{xx}
+
+\harvarditem[Abadie]{Alberto Abadie}{2020}{abadie_statistical_2020}
+{\bf Abadie, Alberto.} 2020. ``Statistical {{Nonsignificance}} in {{Empirical
+  Economics}}.'' {\em American Economic Review: Insights}, 2(2):~193--208.
+
+\harvarditem[Adhvaryu, Kala \harvardand\ Nyshadham]{Achyuta Adhvaryu, Namrata
+  Kala \harvardand\ Anant Nyshadham}{2022}{adhvaryu2022management}
+{\bf Adhvaryu, Achyuta, Namrata Kala, and Anant Nyshadham.} 2022. ``Management
+  and Shocks to Worker Productivity.'' {\em Journal of Political Economy},
+  130(1):~1--47.
+
+\harvarditem[Alto{\`e} et~al.]{Gianmarco Alto{\`e}, Giulia Bertoldo, Claudio
+  Zandonella~Callegher, Enrico Toffalini, Antonio Calcagn{\`i}, Livio Finos
+  \harvardand\ Massimiliano Pastore}{2020}{altoe_enhancing_2020}
+{\bf Alto{\`e}, Gianmarco, Giulia Bertoldo, Claudio Zandonella~Callegher,
+  Enrico Toffalini, Antonio Calcagn{\`i}, Livio Finos, and Massimiliano
+  Pastore.} 2020. ``Enhancing {{Statistical Inference}} in {{Psychological
+  Research}} via {{Prospective}} and {{Retrospective Design Analysis}}.'' {\em
+  Frontiers in Psychology}, 10:~2893.
+
+\harvarditem[Amrhein, Trafimow \harvardand\ Greenland]{Valentin Amrhein, David
+  Trafimow \harvardand\ Sander Greenland}{2019}{amrhein_inferential_2019}
+{\bf Amrhein, Valentin, David Trafimow, and Sander Greenland.} 2019.
+  ``Inferential {{Statistics}} as {{Descriptive Statistics}}: {{There Is No
+  Replication Crisis}} If {{We Don}}'t {{Expect Replication}}.'' {\em The
+  American Statistician}, 73(sup1):~262--270.
+
+\harvarditem[Anderson, Hyun \harvardand\ Lee]{Michael~L Anderson, Minwoo Hyun
+  \harvardand\ Jaecheol Lee}{2022}{anderson2022bounds}
+{\bf Anderson, Michael~L, Minwoo Hyun, and Jaecheol Lee.} 2022. ``Bounds,
+  Benefits, and Bad Air: {{Welfare}} Impacts of Pollution Alerts.'' National
+  Bureau of Economic Research.
+
+\harvarditem[Andrews \harvardand\ Kasy]{Isaiah Andrews \harvardand\ Maximilian
+  Kasy}{2019}{andrews_identification_2019}
+{\bf Andrews, Isaiah, and Maximilian Kasy.} 2019. ``Identification of and
+  {{Correction}} for {{Publication Bias}}.'' {\em American Economic Review},
+  109(8):~2766--2794.
+
+\harvarditem[Angrist \harvardand\ Imbens]{Joshua~D. Angrist \harvardand\
+  Guido~W. Imbens}{1995}{angrist_two-stage_1995}
+{\bf Angrist, Joshua~D., and Guido~W. Imbens.} 1995. ``Two-{{Stage Least
+  Squares Estimation}} of {{Average Causal Effects}} in {{Models}} with
+  {{Variable Treatment Intensity}}.'' {\em Journal of the American Statistical
+  Association}, 90(430):~431--442.
+
+\harvarditem[Arceo, Hanna \harvardand\ Oliva]{Eva Arceo, Rema Hanna
+  \harvardand\ Paulina Oliva}{2016}{arceo_does_2016}
+{\bf Arceo, Eva, Rema Hanna, and Paulina Oliva.} 2016. ``Does the {{Effect}} of
+  {{Pollution}} on {{Infant Mortality Differ Between Developing}} and
+  {{Developed Countries}}? {{Evidence}} from {{Mexico City}}.'' {\em The
+  Economic Journal}, 126(591):~257--280.
+
+\harvarditem[{Arel-Bundock} et~al.]{Vincent {Arel-Bundock}, Ryan~C. Briggs,
+  Hristos Doucouliagos, Marco~M. Avi{\~n}a \harvardand\ T.~D.
+  Stanley}{2024}{arel-bundock_quantitative_2024}
+{\bf {Arel-Bundock}, Vincent, Ryan~C. Briggs, Hristos Doucouliagos, Marco~M.
+  Avi{\~n}a, and T.~D. Stanley.} 2024. ``Quantitative {{Political Science
+  Research Is Greatly Underpowered}}.'' {\em The Journal of Politics},
+  88(1):~36--46.
+
+\harvarditem[Baccini et~al.]{Michela Baccini, Alessandra Mattei, Fabrizia
+  Mealli, Pier~Alberto Bertazzi \harvardand\ Michele
+  Carugno}{2017}{baccini_assessing_2017}
+{\bf Baccini, Michela, Alessandra Mattei, Fabrizia Mealli, Pier~Alberto
+  Bertazzi, and Michele Carugno.} 2017. ``Assessing the Short Term Impact of
+  Air Pollution on Mortality: A Matching Approach.'' {\em Environmental
+  Health}, 16(1):~7.
+
+\harvarditem[Bagilet]{Vincent Bagilet}{2023}{bagilet_causal_2023}
+{\bf Bagilet, Vincent.} 2023. ``Causal {{Exaggeration}}: {{Unconfounded}} but
+  {{Inflated Causal Estimates}}.''
+
+\harvarditem[Bagilet]{Vincent Bagilet}{2026}{bagilet_causal_2026}
+{\bf Bagilet, Vincent.} 2026. ``Causal {{Exaggeration}}: {{Unconfounded}} but
+  {{Inflated Causal Estimates}}.''
+
+\harvarditem[Barwick et~al.]{Panle~Jia Barwick, Shanjun Li, Deyu Rao
+  \harvardand\ Nahim~Bin Zahur}{2018}{barwick_morbidity_2018}
+{\bf Barwick, Panle~Jia, Shanjun Li, Deyu Rao, and Nahim~Bin Zahur.} 2018.
+  ``The {{Morbidity Cost}} of {{Air Pollution}}: {{Evidence}} from {{Consumer
+  Spending}} in {{China}}.'' National Bureau of Economic Research w24688,
+  Cambridge, MA.
+
+\harvarditem[Bauernschuster, Hener \harvardand\ Rainer]{Stefan Bauernschuster,
+  Timo Hener \harvardand\ Helmut Rainer}{2017}{bauernschuster_when_2017}
+{\bf Bauernschuster, Stefan, Timo Hener, and Helmut Rainer.} 2017. ``When
+  {{Labor Disputes Bring Cities}} to a {{Standstill}}: {{The Impact}} of
+  {{Public Transit Strikes}} on {{Traffic}}, {{Accidents}}, {{Air Pollution}},
+  and {{Health}}.'' {\em American Economic Journal: Economic Policy},
+  9(1):~1--37.
+
+\harvarditem[Bell, Samet \harvardand\ Dominici]{Michelle~L. Bell, Jonathan~M.
+  Samet \harvardand\ Francesca Dominici}{2004}{bell_time-series_2004}
+{\bf Bell, Michelle~L., Jonathan~M. Samet, and Francesca Dominici.} 2004.
+  ``Time-{{Series Studies}} of {{Particulate Matter}}.'' {\em Annual Review of
+  Public Health}, 25(1):~247--280.
+
+\harvarditem[Bind]{Marie-Ab{\`e}le Bind}{2019}{bind_causal_2019}
+{\bf Bind, Marie-Ab{\`e}le.} 2019. ``Causal {{Modeling}} in {{Environmental
+  Health}}.'' {\em Annual Review of Public Health}, 40(1):~23--43.
+
+\harvarditem[Black et~al.]{Bernard Black, Alex Hollingsworth, Let{\'i}cia Nunes
+  \harvardand\ Kosali Simon}{2022}{black_simulated_2022}
+{\bf Black, Bernard, Alex Hollingsworth, Let{\'i}cia Nunes, and Kosali Simon.}
+  2022. ``Simulated Power Analyses for Observational Studies: {{An}}
+  Application to the {{Affordable Care Act Medicaid}} Expansion.'' {\em Journal
+  of Public Economics}, 213:~104713.
+
+\harvarditem[Brodeur, Mikola \harvardand\ Cook]{Abel Brodeur, Derek Mikola
+  \harvardand\ Nikolai Cook}{2024}{brodeur_mass_2024}
+{\bf Brodeur, Abel, Derek Mikola, and Nikolai Cook.} 2024. ``Mass
+  {{Reproducibility}} and {{Replicability}}: {{A New Hope}}.''
+
+\harvarditem[Brodeur et~al.]{Abel Brodeur, Mathias L{\'e}, Marc Sangnier
+  \harvardand\ Yanos Zylberberg}{2016}{brodeur_star_2016}
+{\bf Brodeur, Abel, Mathias L{\'e}, Marc Sangnier, and Yanos Zylberberg.} 2016.
+  ``Star {{Wars}}: {{The Empirics Strike Back}}.'' {\em American Economic
+  Journal: Applied Economics}, 8(1):~1--32.
+
+\harvarditem[Brodeur, Cook \harvardand\ Heyes]{Abel Brodeur, Nikolai Cook
+  \harvardand\ Anthony Heyes}{2020}{brodeur_methods_2020}
+{\bf Brodeur, Abel, Nikolai Cook, and Anthony Heyes.} 2020. ``Methods
+  {{Matter}}: P-{{Hacking}} and {{Publication Bias}} in {{Causal Analysis}} in
+  {{Economics}}.'' {\em American Economic Review}, 110(11):~3634--3660.
+
+\harvarditem[Button et~al.]{Katherine~S. Button, John P.~A. Ioannidis, Claire
+  Mokrysz, Brian~A. Nosek, Jonathan Flint, Emma S.~J. Robinson \harvardand\
+  Marcus~R. Munaf{\`o}}{2013}{button_power_2013}
+{\bf Button, Katherine~S., John P.~A. Ioannidis, Claire Mokrysz, Brian~A.
+  Nosek, Jonathan Flint, Emma S.~J. Robinson, and Marcus~R. Munaf{\`o}.} 2013.
+  ``Power Failure: {{Why}} Small Sample Size Undermines the Reliability of
+  Neuroscience.'' {\em Nature Reviews Neuroscience}, 14(5):~365--376.
+
+\harvarditem[Camerer et~al.]{Colin~F. Camerer, Anna Dreber, Eskil Forsell,
+  Teck-Hua Ho, J{\"u}rgen Huber, Magnus Johannesson, Michael Kirchler, Johan
+  Almenberg, Adam Altmejd, Taizan Chan, Emma Heikensten, Felix Holzmeister,
+  Taisuke Imai, Siri Isaksson, Gideon Nave, Thomas Pfeiffer, Michael Razen
+  \harvardand\ Hang Wu}{2016}{camerer_evaluating_2016}
+{\bf Camerer, Colin~F., Anna Dreber, Eskil Forsell, Teck-Hua Ho, J{\"u}rgen
+  Huber, Magnus Johannesson, Michael Kirchler, Johan Almenberg, Adam Altmejd,
+  Taizan Chan, Emma Heikensten, Felix Holzmeister, Taisuke Imai, Siri Isaksson,
+  Gideon Nave, Thomas Pfeiffer, Michael Razen, and Hang Wu.} 2016. ``Evaluating
+  Replicability of Laboratory Experiments in Economics.'' {\em Science},
+  351(6280):~1433--1436.
+
+\harvarditem[Chen et~al.]{Hong Chen, Qiongsi Li, Jay~S Kaufman, Jun Wang, Ray
+  Copes, Yushan Su \harvardand\ Tarik Benmarhnia}{2018}{chen_effect_2018}
+{\bf Chen, Hong, Qiongsi Li, Jay~S Kaufman, Jun Wang, Ray Copes, Yushan Su, and
+  Tarik Benmarhnia.} 2018. ``Effect of Air Quality Alerts on Human Health: A
+  Regression Discontinuity Analysis in {{Toronto}}, {{Canada}}.'' {\em The
+  Lancet Planetary Health}, 2(1):~e19--e26.
+
+\harvarditem[Chen, Guo \harvardand\ Huang]{Siyu Chen, Chongshan Guo
+  \harvardand\ Xinfei Huang}{2018}{chen_air_2018}
+{\bf Chen, Siyu, Chongshan Guo, and Xinfei Huang.} 2018. ``Air {{Pollution}},
+  {{Student Health}}, and {{School Absences}}: {{Evidence}} from {{China}}.''
+  {\em Journal of Environmental Economics and Management}, 92:~465--497.
+
+\harvarditem[Cheung, He \harvardand\ Pan]{Chun~Wai Cheung, Guojun He
+  \harvardand\ Yuhang Pan}{2020}{cheung_mitigating_2020}
+{\bf Cheung, Chun~Wai, Guojun He, and Yuhang Pan.} 2020. ``Mitigating the Air
+  Pollution Effect? {{The}} Remarkable Decline in the Pollution-Mortality
+  Relationship in {{Hong Kong}}.'' {\em Journal of Environmental Economics and
+  Management}, 101:~102316.
+
+\harvarditem[Christensen \harvardand\ Miguel]{Garret Christensen \harvardand\
+  Edward Miguel}{2018}{christensen_transparency_2018}
+{\bf Christensen, Garret, and Edward Miguel.} 2018. ``Transparency,
+  {{Reproducibility}}, and the {{Credibility}} of {{Economics Research}}.''
+  {\em Journal of Economic Literature}, 56(3):~920--980.
+
+\harvarditem[Deryugina et~al.]{Tatyana Deryugina, Garth Heutel, Nolan~H.
+  Miller, David Molitor \harvardand\ Julian
+  Reif}{2019}{deryugina_mortality_2019}
+{\bf Deryugina, Tatyana, Garth Heutel, Nolan~H. Miller, David Molitor, and
+  Julian Reif.} 2019. ``The {{Mortality}} and {{Medical Costs}} of {{Air
+  Pollution}}: {{Evidence}} from {{Changes}} in {{Wind Direction}}.'' {\em
+  American Economic Review}, 109(12):~4178--4219.
+
+\harvarditem[Di et~al.]{Qian Di, Lingzhen Dai, Yun Wang, Antonella Zanobetti,
+  Christine Choirat, Joel~D. Schwartz \harvardand\ Francesca
+  Dominici}{2017}{di_association_2017}
+{\bf Di, Qian, Lingzhen Dai, Yun Wang, Antonella Zanobetti, Christine Choirat,
+  Joel~D. Schwartz, and Francesca Dominici.} 2017. ``Association of
+  {{Short-term Exposure}} to {{Air Pollution With Mortality}} in {{Older
+  Adults}}.'' {\em JAMA}, 318(24):~2446.
+
+\harvarditem[Dominici \harvardand\ Zigler]{Francesca Dominici \harvardand\
+  Corwin Zigler}{2017}{dominici_best_2017}
+{\bf Dominici, Francesca, and Corwin Zigler.} 2017. ``Best {{Practices}} for
+  {{Gauging Evidence}} of {{Causality}} in {{Air Pollution Epidemiology}}.''
+  {\em American Journal of Epidemiology}, 186(12):~1303--1309.
+
+\harvarditem[Ebenstein, Frank \harvardand\ Reingewertz]{Avraham Ebenstein, Eyal
+  Frank \harvardand\ Yaniv Reingewertz}{2015}{ebenstein_particulate_2015}
+{\bf Ebenstein, Avraham, Eyal Frank, and Yaniv Reingewertz.} 2015.
+  ``Particulate {{Matter Concentrations}}, {{Sandstorms}} and {{Respiratory
+  Hospital Admissions}} in {{Israel}}.'' 17:~6.
+
+\harvarditem[Ebenstein, Lavy \harvardand\ Roth]{Avraham Ebenstein, Victor Lavy
+  \harvardand\ Sefi Roth}{2016}{ebenstein_long-run_2016}
+{\bf Ebenstein, Avraham, Victor Lavy, and Sefi Roth.} 2016. ``The {{Long-Run
+  Economic Consequences}} of {{High-Stakes Examinations}}: {{Evidence}} from
+  {{Transitory Variation}} in {{Pollution}}.'' {\em American Economic Journal:
+  Applied Economics}, 8(4):~36--65.
+
+\harvarditem[Fan \harvardand\ Wang]{Maoyong Fan \harvardand\ Yi
+  Wang}{2020}{fan_impact_2020}
+{\bf Fan, Maoyong, and Yi Wang.} 2020. ``The Impact of {{PM2}}.5 on Mortality
+  in Older Adults: Evidence from Retirement of Coal-Fired Power Plants in the
+  {{United States}}.'' {\em Environmental Health}, 19(1):~28.
+
+\harvarditem[Fan, He \harvardand\ Zhou]{Maoyong Fan, Guojun He \harvardand\
+  Maigeng Zhou}{2020}{fan_winter_2020}
+{\bf Fan, Maoyong, Guojun He, and Maigeng Zhou.} 2020. ``The Winter Choke:
+  {{Coal-Fired}} Heating, Air Pollution, and Mortality in {{China}}.'' {\em
+  Journal of Health Economics}, 71:~102316.
+
+\harvarditem[Ferraro \harvardand\ Shukla]{Paul~J. Ferraro \harvardand\ Pallavi
+  Shukla}{2020}{ferraro_feature_2020}
+{\bf Ferraro, Paul~J., and Pallavi Shukla.} 2020. ``Feature---{{Is}} a
+  {{Replicability Crisis}} on the {{Horizon}} for {{Environmental}} and
+  {{Resource Economics}}?'' {\em Review of Environmental Economics and Policy},
+  14(2):~339--351.
+
+\harvarditem[Forastiere, Carugno \harvardand\ Baccini]{Laura Forastiere,
+  Michele Carugno \harvardand\ Michela
+  Baccini}{2020}{forastiere_assessing_2020}
+{\bf Forastiere, Laura, Michele Carugno, and Michela Baccini.} 2020.
+  ``Assessing Short-Term Impact of {{PM10}} on Mortality Using a Semiparametric
+  Generalized Propensity Score Approach.'' {\em Environmental Health},
+  19(1):~46.
+
+\harvarditem[Gelman \harvardand\ Tuerlinckx]{Andrew Gelman \harvardand\ Francis
+  Tuerlinckx}{2000}{gelman_type_2000}
+{\bf Gelman, Andrew, and Francis Tuerlinckx.} 2000. ``Type {{S}} Error Rates
+  for Classical and {{Bayesian}} Single and Multiple Comparison Procedures.''
+  {\em Computational Statistics}, 15(3):~373--390.
+
+\harvarditem[Gelman \harvardand\ Carlin]{Andrew Gelman \harvardand\ John
+  Carlin}{2014}{gelman_beyond_2014}
+{\bf Gelman, Andrew, and John Carlin.} 2014. ``Beyond {{Power Calculations}}:
+  {{Assessing Type S}} ({{Sign}}) and {{Type M}} ({{Magnitude}}) {{Errors}}.''
+  {\em Perspectives on Psychological Science}, 9(6):~641--651.
+
+\harvarditem[Giaccherini, Kopinska \harvardand\ Palma]{Matilde Giaccherini,
+  Joanna Kopinska \harvardand\ Alessandro Palma}{2021}{giaccherini_when_2021}
+{\bf Giaccherini, Matilde, Joanna Kopinska, and Alessandro Palma.} 2021. ``When
+  Particulate Matter Strikes Cities: {{Social}} Disparities and Health Costs of
+  Air Pollution.'' {\em Journal of Health Economics}, 78:~102478.
+
+\harvarditem[Godzinski \harvardand\ Suarez~Castillo]{Alexandre Godzinski
+  \harvardand\ Milena Suarez~Castillo}{2021}{godzinski_disentangling_2021}
+{\bf Godzinski, Alexandre, and Milena Suarez~Castillo.} 2021. ``Disentangling
+  the Effects of Air Pollutants with Many Instruments.'' {\em Journal of
+  Environmental Economics and Management}, 109:~102489.
+
+\harvarditem[Godzinski, Castillo et~al.]{Alexandre Godzinski, M~Suarez Castillo
+  et~al.}{2019}{godzinski2019short}
+{\bf Godzinski, Alexandre, M~Suarez Castillo, et~al.} 2019. ``Short-Term Health
+  Effects of Public Transport Disruptions: Air Pollution and Viral Spread
+  Channels.'' Institut National de la Statistique et des Etudes Economiques.
+
+\harvarditem[Griffin et~al.]{Beth~Ann Griffin, Megan~S. Schuler, Elizabeth~A.
+  Stuart, Stephen Patrick, Elizabeth McNeer, Rosanna Smart, David Powell,
+  Bradley~D. Stein, Terry Schell \harvardand\ Rosalie~L.
+  Pacula}{2021}{griffin_moving_2021}
+{\bf Griffin, Beth~Ann, Megan~S. Schuler, Elizabeth~A. Stuart, Stephen Patrick,
+  Elizabeth McNeer, Rosanna Smart, David Powell, Bradley~D. Stein, Terry
+  Schell, and Rosalie~L. Pacula.} 2021. ``Moving beyond the Classic
+  Difference-in-Differences Model: {{A}} Simulation Study Comparing Statistical
+  Methods for Estimating Effectiveness of State-Level Policies.'' {\em
+  arXiv:2003.12008 [stat]}.
+
+\harvarditem[Guidetti, Pereda \harvardand\ Severnini]{Bruna Guidetti, Paula
+  Pereda \harvardand\ Edson Severnini}{2021}{guidetti_placebo_2021}
+{\bf Guidetti, Bruna, Paula Pereda, and Edson Severnini.} 2021. ````{{Placebo
+  Tests}}'' for the {{Impacts}} of {{Air Pollution}} on {{Health}}: {{The
+  Challenge}} of {{Limited Health Care Infrastructure}}.'' {\em AEA Papers and
+  Proceedings}, 111:~371--375.
+
+\harvarditem[Halliday, Lynham \harvardand\ {de Paula}]{Timothy~J Halliday, John
+  Lynham \harvardand\ {\'A}ureo {de Paula}}{2019}{halliday_vog_2019}
+{\bf Halliday, Timothy~J, John Lynham, and {\'A}ureo {de Paula}.} 2019. ``Vog:
+  {{Using Volcanic Eruptions}} to {{Estimate}} the {{Health Costs}} of
+  {{Particulates}}.'' {\em The Economic Journal}, 129(620):~1782--1816.
+
+\harvarditem[Hanlon]{W~Walker Hanlon}{2018}{hanlon2018london}
+{\bf Hanlon, W~Walker.} 2018. ``London Fog: A Century of Pollution and
+  Mortality, 1866-1965.'' {\em The Review of Economics and Statistics}, 1--49.
+
+\harvarditem[He, Fan \harvardand\ Zhou]{Guojun He, Maoyong Fan \harvardand\
+  Maigeng Zhou}{2016}{he_effect_2016}
+{\bf He, Guojun, Maoyong Fan, and Maigeng Zhou.} 2016. ``The Effect of Air
+  Pollution on Mortality in {{China}}: {{Evidence}} from the 2008 {{Beijing
+  Olympic Games}}.'' {\em Journal of Environmental Economics and Management},
+  79:~18--39.
+
+\harvarditem[He, Liu \harvardand\ Zhou]{Guojun He, Tong Liu \harvardand\
+  Maigeng Zhou}{2020}{he_straw_2020}
+{\bf He, Guojun, Tong Liu, and Maigeng Zhou.} 2020. ``Straw Burning, {{PM2}}.5,
+  and Death: {{Evidence}} from {{China}}.'' {\em Journal of Development
+  Economics}, 145:~102468.
+
+\harvarditem[Hern{\'a}n]{Miguel~A. Hern{\'a}n}{2022}{hernan_causal_2022}
+{\bf Hern{\'a}n, Miguel~A.} 2022. ``Causal Analyses of Existing Databases: No
+  Power Calculations Required.'' {\em Journal of Clinical Epidemiology},
+  144:~203--205.
+
+\harvarditem[Herrnstadt et~al.]{Evan Herrnstadt, Anthony Heyes, Erich
+  Muehlegger \harvardand\ Soodeh Saberian}{2021}{herrnstadt_air_2021}
+{\bf Herrnstadt, Evan, Anthony Heyes, Erich Muehlegger, and Soodeh Saberian.}
+  2021. ``Air {{Pollution}} and {{Criminal Activity}}: {{Microgeographic
+  Evidence}} from {{Chicago}}.'' {\em American Economic Journal: Applied
+  Economics}, 13(4):~70--100.
+
+\harvarditem[Ioannidis]{John P.~A. Ioannidis}{2008}{ioannidis_why_2008}
+{\bf Ioannidis, John P.~A.} 2008. ``Why {{Most Discovered True Associations Are
+  Inflated}}.'' {\em Epidemiology}, 19(5):~640--648.
+
+\harvarditem[Ioannidis, Stanley \harvardand\ Doucouliagos]{John P.~A.
+  Ioannidis, T.~D. Stanley \harvardand\ Hristos
+  Doucouliagos}{2017}{ioannidis_power_2017}
+{\bf Ioannidis, John P.~A., T.~D. Stanley, and Hristos Doucouliagos.} 2017.
+  ``The {{Power}} of {{Bias}} in {{Economics Research}}.'' {\em The Economic
+  Journal}, 127(605):~F236--F265.
+
+\harvarditem[Jans, Johansson \harvardand\ Nilsson]{Jenny Jans, Per Johansson
+  \harvardand\ J.~Peter Nilsson}{2018}{jans_economic_2018}
+{\bf Jans, Jenny, Per Johansson, and J.~Peter Nilsson.} 2018. ``Economic
+  Status, Air Quality, and Child Health: {{Evidence}} from Inversion
+  Episodes.'' {\em Journal of Health Economics}, 61:~220--232.
+
+\harvarditem[Jia \harvardand\ Ku]{Ruixue Jia \harvardand\ Hyejin
+  Ku}{2019}{jia_is_2019}
+{\bf Jia, Ruixue, and Hyejin Ku.} 2019. ``Is {{China}}'s {{Pollution}} the
+  {{Culprit}} for the {{Choking}} of {{South Korea}}? {{Evidence}} from the
+  {{Asian Dust}}.'' {\em The Economic Journal}, 129(624):~3154--3188.
+
+\harvarditem[Kim]{Moon~Joon Kim}{2021}{kim_air_2021}
+{\bf Kim, Moon~Joon.} 2021. ``Air {{Pollution}}, {{Health}}, and {{Avoidance
+  Behavior}}: {{Evidence}} from {{South Korea}}.'' {\em Environmental and
+  Resource Economics}, 79(1):~63--91.
+
+\harvarditem[Knittel, Miller \harvardand\ Sanders]{Christopher~R. Knittel,
+  Douglas~L. Miller \harvardand\ Nicholas~J.
+  Sanders}{2016}{knittel_caution_2016}
+{\bf Knittel, Christopher~R., Douglas~L. Miller, and Nicholas~J. Sanders.}
+  2016. ``Caution, {{Drivers}}! {{Children Present}}: {{Traffic}},
+  {{Pollution}}, and {{Infant Health}}.'' {\em Review of Economics and
+  Statistics}, 98(2):~350--366.
+
+\harvarditem[Le~Tertre et~al.]{A. Le~Tertre, S. Medina, E. Samoli, B. Forsberg,
+  P. Michelozzi, A. Boumghar, J.~M. Vonk, A. Bellini, R. Atkinson, J.~G. Ayres,
+  J. Sunyer, J. Schwartz \harvardand\ K.
+  Katsouyanni}{2002}{letertre_shortterm_2002}
+{\bf Le~Tertre, A., S. Medina, E. Samoli, B. Forsberg, P. Michelozzi, A.
+  Boumghar, J.~M. Vonk, A. Bellini, R. Atkinson, J.~G. Ayres, J. Sunyer, J.
+  Schwartz, and K. Katsouyanni.} 2002. ``Short-Term Effects of Particulate Air
+  Pollution on Cardiovascular Diseases in Eight {{European}} Cities.'' {\em
+  Journal of Epidemiology and Community Health}, 56(10):~773--779.
+
+\harvarditem[Lipsey \harvardand\ Wilson]{Mark~W Lipsey \harvardand\ David~B
+  Wilson}{2001}{lipsey2001practical}
+{\bf Lipsey, Mark~W, and David~B Wilson.} 2001. {\em Practical Meta-Analysis.}
+  SAGE publications, Inc.
+
+\harvarditem[Liu et~al.]{Cong Liu, Renjie Chen, Francesco Sera, Ana~M.
+  {Vicedo-Cabrera}, Yuming Guo, Shilu Tong, Micheline~S.Z.S. Coelho, Paulo~H.N.
+  Saldiva, Eric Lavigne, Patricia Matus, Nicolas Valdes~Ortega, Samuel
+  Osorio~Garcia, Mathilde Pascal, Massimo Stafoggia, Matteo Scortichini,
+  Masahiro Hashizume, Yasushi Honda, Magali {Hurtado-D{\'i}az}, Julio Cruz,
+  Baltazar Nunes, Jo{\~a}o~P. Teixeira, Ho Kim, Aurelio Tobias, Carmen
+  {\'I}{\~n}iguez, Bertil Forsberg, Christofer {\AA}str{\"o}m, Martina~S.
+  Ragettli, Yue-Leon Guo, Bing-Yu Chen, Michelle~L. Bell, Caradee~Y. Wright,
+  Noah Scovronick, Rebecca~M. Garland, Ai Milojevic, Jan Kysel{\'y}, Ale{\v s}
+  Urban, Hans Orru, Ene Indermitte, Jouni~J.K. Jaakkola, Niilo~R.I. Ryti, Klea
+  Katsouyanni, Antonis Analitis, Antonella Zanobetti, Joel Schwartz, Jianmin
+  Chen, Tangchun Wu, Aaron Cohen, Antonio Gasparrini \harvardand\ Haidong
+  Kan}{2019}{liu_ambient_2019}
+{\bf Liu, Cong, Renjie Chen, Francesco Sera, Ana~M. {Vicedo-Cabrera}, Yuming
+  Guo, Shilu Tong, Micheline~S.Z.S. Coelho, Paulo~H.N. Saldiva, Eric Lavigne,
+  Patricia Matus, Nicolas Valdes~Ortega, Samuel Osorio~Garcia, Mathilde Pascal,
+  Massimo Stafoggia, Matteo Scortichini, Masahiro Hashizume, Yasushi Honda,
+  Magali {Hurtado-D{\'i}az}, Julio Cruz, Baltazar Nunes, Jo{\~a}o~P. Teixeira,
+  Ho Kim, Aurelio Tobias, Carmen {\'I}{\~n}iguez, Bertil Forsberg, Christofer
+  {\AA}str{\"o}m, Martina~S. Ragettli, Yue-Leon Guo, Bing-Yu Chen, Michelle~L.
+  Bell, Caradee~Y. Wright, Noah Scovronick, Rebecca~M. Garland, Ai Milojevic,
+  Jan Kysel{\'y}, Ale{\v s} Urban, Hans Orru, Ene Indermitte, Jouni~J.K.
+  Jaakkola, Niilo~R.I. Ryti, Klea Katsouyanni, Antonis Analitis, Antonella
+  Zanobetti, Joel Schwartz, Jianmin Chen, Tangchun Wu, Aaron Cohen, Antonio
+  Gasparrini, and Haidong Kan.} 2019. ``Ambient {{Particulate Air Pollution}}
+  and {{Daily Mortality}} in 652 {{Cities}}.'' {\em New England Journal of
+  Medicine}, 381(8):~705--715.
+
+\harvarditem[Liu \harvardand\ Ao]{Ya-Ming Liu \harvardand\ Chon-Kit
+  Ao}{2021}{liu_effect_2021}
+{\bf Liu, Ya-Ming, and Chon-Kit Ao.} 2021. ``Effect of Air Pollution on Health
+  Care Expenditure: {{Evidence}} from Respiratory Diseases.'' {\em Health
+  Economics}, 30(4):~858--875.
+
+\harvarditem[Lu, Qiu \harvardand\ Deng]{Jiannan Lu, Yixuan Qiu \harvardand\
+  Alex Deng}{2019}{lu_note_2019}
+{\bf Lu, Jiannan, Yixuan Qiu, and Alex Deng.} 2019. ``A Note on {{Type
+  S}}/{{M}} Errors in Hypothesis Testing.'' {\em British Journal of
+  Mathematical and Statistical Psychology}, 72(1):~1--17.
+
+\harvarditem[Mayer]{Michael Mayer}{2019}{mayer_missranger_2019}
+{\bf Mayer, Michael.} 2019. ``{{missRanger}}: {{Fast Imputation}} of {{Missing
+  Values}}.'' {\em Comprehensive R Archive Network (CRAN)}.
+
+\harvarditem[McShane et~al.]{Blakeley~B. McShane, David Gal, Andrew Gelman,
+  Christian Robert \harvardand\ Jennifer~L.
+  Tackett}{2019}{mcshane_abandon_2019}
+{\bf McShane, Blakeley~B., David Gal, Andrew Gelman, Christian Robert, and
+  Jennifer~L. Tackett.} 2019. ``Abandon {{Statistical Significance}}.'' {\em
+  The American Statistician}, 73(sup1):~235--245.
+
+\harvarditem[Moretti \harvardand\ Neidell]{Enrico Moretti \harvardand\ Matthew
+  Neidell}{2011}{moretti_pollution_2011}
+{\bf Moretti, Enrico, and Matthew Neidell.} 2011. ``Pollution, {{Health}}, and
+  {{Avoidance Behavior}}: {{Evidence}} from the {{Ports}} of {{Los Angeles}}.''
+  {\em Journal of Human Resources}, 46(1):~154--175.
+
+\harvarditem[Mullins \harvardand\ Bharadwaj]{Jamie Mullins \harvardand\
+  Prashant Bharadwaj}{2015}{mullins_effects_2015}
+{\bf Mullins, Jamie, and Prashant Bharadwaj.} 2015. ``Effects of
+  {{Short}}-{{Term Measures}} to {{Curb Air Pollution}}: {{Evidence}} from
+  {{Santiago}}, {{Chile}}.'' {\em American Journal of Agricultural Economics},
+  97(4):~1107--1134.
+
+\harvarditem[{Open Science Collaboration}]{{Open Science
+  Collaboration}}{2015}{open_science_collaboration_estimating_2015}
+{\bf {Open Science Collaboration}.} 2015. ``Estimating the Reproducibility of
+  Psychological Science.'' {\em Science (New York, N.Y.)}, 349(6251):~aac4716.
+
+\harvarditem[Peng \harvardand\ Dominici]{Roger~D Peng \harvardand\ Francesca
+  Dominici}{2008}{peng2008statistical}
+{\bf Peng, Roger~D, and Francesca Dominici.} 2008. ``Statistical Methods for
+  Environmental Epidemiology with {{R}}.'' {\em R: a case study in air
+  pollution and health}.
+
+\harvarditem[Peng, Dominici \harvardand\ Louis]{Roger~D Peng, Francesca
+  Dominici \harvardand\ Thomas~A Louis}{2006}{peng2006model}
+{\bf Peng, Roger~D, Francesca Dominici, and Thomas~A Louis.} 2006. ``Model
+  Choice in Time Series Studies of Air Pollution and Mortality.'' {\em Journal
+  of the Royal Statistical Society: Series A (Statistics in Society)},
+  169(2):~179--203.
+
+\harvarditem[Romer]{David Romer}{2020}{romer2020praise}
+{\bf Romer, David.} 2020. ``In Praise of Confidence Intervals.'' Vol. 110,
+  55--60.
+
+\harvarditem[Rosenthal]{Robert Rosenthal}{1979}{rosenthal_file_1979}
+{\bf Rosenthal, Robert.} 1979. ``The File Drawer Problem and Tolerance for Null
+  Results.'' {\em Psychological Bulletin}, 86(3):~638--641.
+
+\harvarditem[Rubin]{Donald~B. Rubin}{1974}{rubin_estimating_1974}
+{\bf Rubin, Donald~B.} 1974. ``Estimating Causal Effects of Treatments in
+  Randomized and Nonrandomized Studies.'' {\em Journal of Educational
+  Psychology}, 66(5):~688--701.
+
+\harvarditem[Sacks et~al.]{Jason~D. Sacks, Jennifer~M. Lloyd, Yun Zhu, Jim
+  Anderton, Carey~J. Jang, Bryan Hubbell \harvardand\ Neal
+  Fann}{2018}{sacks_environmental_2018}
+{\bf Sacks, Jason~D., Jennifer~M. Lloyd, Yun Zhu, Jim Anderton, Carey~J. Jang,
+  Bryan Hubbell, and Neal Fann.} 2018. ``The {{Environmental Benefits Mapping}}
+  and {{Analysis Program}}~--~{{Community Edition}} ({{BenMAP}}--{{CE}}): {{A}}
+  Tool to Estimate the Health and Economic Benefits of Reducing Air
+  Pollution.'' {\em Environmental Modelling \& Software}, 104:~118--129.
+
+\harvarditem[Samet et~al.]{J.~M. Samet, F. Dominici, S.~L. Zeger, J. Schwartz
+  \harvardand\ D.~W. Dockery}{2000}{samet_national_2000}
+{\bf Samet, J.~M., F. Dominici, S.~L. Zeger, J. Schwartz, and D.~W. Dockery.}
+  2000. ``The {{National Morbidity}}, {{Mortality}}, and {{Air Pollution
+  Study}}. {{Part I}}: {{Methods}} and Methodologic Issues.'' {\em Research
+  Report (Health Effects Institute)}, , (94 Pt 1):~5--14; discussion 75--84.
+
+\harvarditem[Schell, Griffin \harvardand\ Morral]{Terry~L. Schell, Beth~Ann
+  Griffin \harvardand\ Andrew~R. Morral}{2018}{schell_evaluating_2018}
+{\bf Schell, Terry~L., Beth~Ann Griffin, and Andrew~R. Morral.} 2018.
+  ``Evaluating {{Methods}} to {{Estimate}} the {{Effect}} of {{State Laws}} on
+  {{Firearm Deaths}}: {{A Simulation Study}}.'' RAND Corporation.
+
+\harvarditem[Schlenker \harvardand\ Walker]{Wolfram Schlenker \harvardand\
+  W.~Reed Walker}{2016}{schlenker_airports_2016}
+{\bf Schlenker, Wolfram, and W.~Reed Walker.} 2016. ``Airports, {{Air
+  Pollution}}, and {{Contemporaneous Health}}.'' {\em The Review of Economic
+  Studies}, 83(2):~768--809.
+
+\harvarditem[Schwartz]{J. Schwartz}{1994}{schwartz_what_1994}
+{\bf Schwartz, J.} 1994. ``What {{Are People Dying}} of on {{High Air Pollution
+  Days}}?'' {\em Environmental Research}, 64(1):~26--35.
+
+\harvarditem[Schwartz et~al.]{Joel Schwartz, Elena Austin, Marie-Abele Bind,
+  Antonella Zanobetti \harvardand\ Petros
+  Koutrakis}{2015}{schwartz_estimating_2015}
+{\bf Schwartz, Joel, Elena Austin, Marie-Abele Bind, Antonella Zanobetti, and
+  Petros Koutrakis.} 2015. ``Estimating {{Causal Associations}} of {{Fine
+  Particles With Daily Deaths}} in {{Boston}}: {{Table}} 1.'' {\em American
+  Journal of Epidemiology}, 182(7):~644--650.
+
+\harvarditem[Schwartz, Fong \harvardand\ Zanobetti]{Joel Schwartz, Kelvin Fong
+  \harvardand\ Antonella Zanobetti}{2018}{schwartz_national_2018}
+{\bf Schwartz, Joel, Kelvin Fong, and Antonella Zanobetti.} 2018. ``A
+  {{National Multicity Analysis}} of the {{Causal Effect}} of {{Local
+  Pollution}}, {{NO2}}, and {{PM2}}.5 on {{Mortality}}.'' {\em Environmental
+  Health Perspectives}, 126(8):~087004.
+
+\harvarditem[Schwartz, Bind \harvardand\ Koutrakis]{Joel Schwartz, Marie-Abele
+  Bind \harvardand\ Petros Koutrakis}{2017}{schwartz_estimating_2017}
+{\bf Schwartz, Joel, Marie-Abele Bind, and Petros Koutrakis.} 2017.
+  ``Estimating {{Causal Effects}} of {{Local Air Pollution}} on {{Daily
+  Deaths}}: {{Effect}} of {{Low Levels}}.'' {\em Environmental Health
+  Perspectives}, 125(1):~23--29.
+
+\harvarditem[Shah et~al.]{Anoop S.~V. Shah, Kuan~Ken Lee, David~A. McAllister,
+  Amanda Hunter, Harish Nair, William Whiteley, Jeremy~P. Langrish, David~E.
+  Newby \harvardand\ Nicholas~L. Mills}{2015}{shah_short_2015}
+{\bf Shah, Anoop S.~V., Kuan~Ken Lee, David~A. McAllister, Amanda Hunter,
+  Harish Nair, William Whiteley, Jeremy~P. Langrish, David~E. Newby, and
+  Nicholas~L. Mills.} 2015. ``Short Term Exposure to Air Pollution and Stroke:
+  Systematic Review and Meta-Analysis.'' {\em BMJ}, 350:~h1295.
+
+\harvarditem[Sheldon \harvardand\ Sankaran]{Tamara~L. Sheldon \harvardand\
+  Chandini Sankaran}{2017}{sheldon_impact_2017}
+{\bf Sheldon, Tamara~L., and Chandini Sankaran.} 2017. ``The {{Impact}} of
+  {{Indonesian Forest Fires}} on {{Singaporean Pollution}} and {{Health}}.''
+  {\em American Economic Review}, 107(5):~526--529.
+
+\harvarditem[Simeonova et~al.]{Emilia Simeonova, Janet Currie, Peter Nilsson
+  \harvardand\ Reed Walker}{2021}{simeonova_congestion_2021}
+{\bf Simeonova, Emilia, Janet Currie, Peter Nilsson, and Reed Walker.} 2021.
+  ``Congestion {{Pricing}}, {{Air Pollution}}, and {{Children}}'s {{Health}}.''
+  {\em Journal of Human Resources}, 56(4):~971--996.
+
+\harvarditem[Stommes, Aronow \harvardand\ S{\"a}vje]{Drew Stommes, P.~M. Aronow
+  \harvardand\ Fredrik S{\"a}vje}{2023}{stommes_reliability_2023}
+{\bf Stommes, Drew, P.~M. Aronow, and Fredrik S{\"a}vje.} 2023. ``On the
+  Reliability of Published Findings Using the Regression Discontinuity Design
+  in Political Science.'' {\em Research \& Politics}, 10(2).
+
+\harvarditem[Timm, Gelman \harvardand\ Carlin]{Andrew Timm, Andrew Gelman
+  \harvardand\ John Carlin}{2019}{timm_retrodesign_2019}
+{\bf Timm, Andrew, Andrew Gelman, and John Carlin.} 2019. ``Retrodesign:
+  {{Tools}} for {{Type S}} ({{Sign}}) and {{Type M}} ({{Magnitude}})
+  {{Errors}}.''
+
+\harvarditem[{U.S. EPA}]{{U.S. EPA}}{2015}{u.s.epa_preamble_2015}
+{\bf {U.S. EPA}.} 2015. ``Preamble {{To The Integrated Science Assessments}}
+  ({{ISA}}).'' U.S. Environmental Protection Agency Reports and {{Assessments}}
+  EPA/600/R-15/067, Washington, DC.
+
+\harvarditem[{U.S. EPA}]{{U.S. EPA}}{2023}{u.s.epa_environmental_2023}
+{\bf {U.S. EPA}.} 2023. ``Environmental {{Benefits Mapping}} and {{Analysis
+  Program Community Edition}} - {{User}}'s {{Manual}}.'' U.S. Environmental
+  Protection Agency.
+
+\harvarditem[{U.S. EPA}]{{U.S. EPA}}{2024{\em a}}{u.s.epa_final_2024}
+{\bf {U.S. EPA}.} 2024{\em a}. ``Final {{Regulatory Impact Analysis}} for the
+  {{Reconsideration}} of the {{National Ambient Air Quality Standards}} for
+  {{Particulate Matter}}.'' U.S. Environmental Protection Agency
+  EPA-452/R-24-006.
+
+\harvarditem[{U.S. EPA}]{{U.S. EPA}}{2024{\em b}}{u.s.epa_guidelines_2024}
+{\bf {U.S. EPA}.} 2024{\em b}. ``Guidelines for {{Preparing Economic Analyses}}
+  (3rd Edition).'' EPA-240-R-24-001, Washington, DC.
+
+\harvarditem[{Vichit-Vadakan}, Vajanapoom \harvardand\ Ostro]{Nuntavarn
+  {Vichit-Vadakan}, Nitaya Vajanapoom \harvardand\ Bart
+  Ostro}{2008}{vichit-vadakan_public_2008}
+{\bf {Vichit-Vadakan}, Nuntavarn, Nitaya Vajanapoom, and Bart Ostro.} 2008.
+  ``The {{Public Health}} and {{Air Pollution}} in {{Asia}} ({{PAPA}})
+  {{Project}}: Estimating the Mortality Effects of Particulate Matter in
+  {{Bangkok}}, {{Thailand}}.'' {\em Environmental Health Perspectives},
+  116(9):~1179--1182.
+
+\harvarditem[Vivalt]{Eva Vivalt}{2019}{vivalt_specification_2019}
+{\bf Vivalt, Eva.} 2019. ``Specification {{Searching}} and {{Significance
+  Inflation Across Time}}, {{Methods}} and {{Disciplines}}.'' {\em Oxford
+  Bulletin of Economics and Statistics}, 81(4):~797--816.
+
+\harvarditem[Wasserstein \harvardand\ Lazar]{Ronald~L. Wasserstein \harvardand\
+  Nicole~A. Lazar}{2016}{wasserstein_asa_2016}
+{\bf Wasserstein, Ronald~L., and Nicole~A. Lazar.} 2016. ``The {{ASA
+  Statement}} on {\emph{p}} -{{Values}}: {{Context}}, {{Process}}, and
+  {{Purpose}}.'' {\em The American Statistician}, 70(2):~129--133.
+
+\harvarditem[Xia et~al.]{Fan Xia, Jianwei Xing, Jintao Xu \harvardand\
+  Xiaochuan Pan}{2022}{xia_short-term_2022}
+{\bf Xia, Fan, Jianwei Xing, Jintao Xu, and Xiaochuan Pan.} 2022. ``The
+  Short-Term Impact of Air Pollution on Medical Expenditures: {{Evidence}} from
+  {{Beijing}}.'' {\em Journal of Environmental Economics and Management},
+  114:~102680.
+
+\harvarditem[Young]{Alwyn Young}{2022}{young_consistency_2022}
+{\bf Young, Alwyn.} 2022. ``Consistency without {{Inference}}: {{Instrumental
+  Variables}} in {{Practical Application}}.'' {\em European Economic Review},
+  147:~104112.
+
+\harvarditem[Zhong, Cao \harvardand\ Wang]{Nan Zhong, Jing Cao \harvardand\
+  Yuzhu Wang}{2017}{zhong_traffic_2017}
+{\bf Zhong, Nan, Jing Cao, and Yuzhu Wang.} 2017. ``Traffic {{Congestion}},
+  {{Ambient Air Pollution}}, and {{Health}}: {{Evidence}} from {{Driving
+  Restrictions}} in {{Beijing}}.'' {\em Journal of the Association of
+  Environmental and Resource Economists}, 4(3):~821--856.
+
+\harvarditem[Ziliak \harvardand\ McCloskey]{Stephen~Thomas Ziliak \harvardand\
+  Deirdre~N. McCloskey}{2008}{ziliak_cult_2008}
+{\bf Ziliak, Stephen~Thomas, and Deirdre~N. McCloskey.} 2008. {\em The Cult of
+  Statistical Significance: How the Standard Error Costs Us Jobs, Justice, and
+  Lives.} {\em Economics, Cognition, and Society}, Ann Arbor:University of
+  Michigan Press.
+
+\harvarditem[Zwet \harvardand\ Cator]{Erik~W. Zwet \harvardand\ Eric~A.
+  Cator}{2021}{zwet_significance_2021}
+{\bf Zwet, Erik~W., and Eric~A. Cator.} 2021. ``The Significance Filter, the
+  Winner's Curse and the Need to Shrink.'' {\em Statistica Neerlandica},
+  stan.12241.
+
+\end{thebibliography}
