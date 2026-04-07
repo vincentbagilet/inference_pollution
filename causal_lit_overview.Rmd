@@ -19,7 +19,8 @@ knitr::opts_chunk$set(
   cache.path = "cache/",
   cache = FALSE,
   fig.path = "images/causal_lit_overview/",
-  echo = FALSE,
+  code_folding = TRUE,
+  # echo = FALSE,
   message = FALSE,
   warning = FALSE,
   out.width = "85%",
@@ -54,7 +55,9 @@ packages <- c(
   "kableExtra",
   "patchwork",
   "DT",
-  "mediocrethemes"
+  "mediocrethemes",
+  "fixest",
+  "modelsummary"
   # "vincentbagilet/mediocrethemes"
 )
 
@@ -64,32 +67,27 @@ lapply(packages, library, character.only = TRUE)
 set_mediocre_all(pal = "leo")
 ```
 
-We load the literature review data:
+We load the literature review data and export it to `.csv`. You can download it [here](https://github.com/vincentbagilet/inference_pollution/tree/master/shared).
 
-```{r load_data, echo=TRUE}
+```{r load_data, echo=TRUE, code_folding=FALSE}
 # load literature review data
-data_literature <-
-  readRDS(here::here(
-    "data",
-    "literature_review_causal_inference",
-    "data_literature_review.rds"
-  ))
+data_lit_causal <- readRDS(here("data", "lit_causal", "data_lit_causal.rds"))
 ```
 
 ### Description of Coded Variables
 
-We retrieved data `r nrow(data_literature)` estimates from `r data_literature %>% select(paper_label) %>% distinct() %>% nrow()` articles. For each paper, we coded 25 variables:
+We retrieved data `r nrow(data_lit_causal)` estimates from `r data_lit_causal %>% select(paper_label) %>% distinct() %>% nrow()` articles. For each paper, we coded 25 variables:
 
 * `paper_label`: the first author and publication date of the article. This is the identifier of a study.
-* `paper_estimate_id`: this is the unique identifier of a result. The median number of results reported by studies is `r median(data_literature %>% group_by(paper_label) %>% summarise(n = n()) %>% pull(n))`.
+* `paper_estimate_id`: this is the unique identifier of a result. The median number of results reported by studies is `r median(data_lit_causal %>% group_by(paper_label) %>% summarise(n = n()) %>% pull(n))`.
 * `url`: the internet link of the publication.
-* `publication_year`: year of publication. Papers we consider were published between `r min(data_literature$publication_year)` and `r max(data_literature$publication_year)`.
-* `field`: whether the variable was published in economics or in epidemiology. `r data_literature %>% select(paper_label, field) %>% distinct() %>% summarize(round(mean(field=="economics")*100,0))` of studies are published in economics journals, the rest being published in epidemiology/public health journals.
+* `publication_year`: year of publication. Papers we consider were published between `r min(data_lit_causal$publication_year)` and `r max(data_lit_causal$publication_year)`.
+* `field`: whether the variable was published in economics or in epidemiology. `r data_lit_causal %>% select(paper_label, field) %>% distinct() %>% summarize(round(mean(field=="economics")*100,0))` of studies are published in economics journals, the rest being published in epidemiology/public health journals.
 * `context`: the location of the study.
-* `empirical_strategy`: the empirical strategy used by researchers ("conventional time series model", "reduced-form", "difference-in-differences, "instrumental variable", etc...). We display below the 5 most used empirical strategies for our `r nrow(data_literature)` estimates:
+* `empirical_strategy`: the empirical strategy used by researchers ("conventional time series model", "reduced-form", "difference-in-differences, "instrumental variable", etc...). We display below the 5 most used empirical strategies for our `r nrow(data_lit_causal)` estimates:
 
 ```{r table_empirical_strategy}
-data_literature %>%
+data_lit_causal %>%
   group_by(empirical_strategy) %>%
   summarise(n = n()) %>%
   mutate(proportion = n / sum(n) * 100,
@@ -103,16 +101,16 @@ data_literature %>%
 ```
 
 * `outcome`: the health outcome studied. 
-* `outcome_type`: whether the health outcome is a mortality or morbidity outcome. `r round(sum(data_literature$outcome_type=="mortality")/nrow(data_literature)*100, 0)`% of outcomes are related to mortality.
+* `outcome_type`: whether the health outcome is a mortality or morbidity outcome. `r round(sum(data_lit_causal$outcome_type=="mortality")/nrow(data_lit_causal)*100, 0)`% of outcomes are related to mortality.
 * `outcome_subgroup`: indicates which age group is studied.
 * `control_outcome`: dummy equals to 1 if the health outcome is an outcome that should not be affected by the treatment of interest.
 * `independent_variable`: the treatment of interest.
 * `temporal_scale`: indicates at which temporal scale data are recorded (e.g., at the daily level).
 * `sample_size`: number of observations.
 * `increase_independent_variable`: the increase in the independent variable considered (e.g., a 1 $\mu g/m^3$ increase in an air pollutant concentration).
-* `independent_variable_dummy`: indicates whether the independent variable is binary. `r round(sum(data_literature$independent_variable_dummy==1)/nrow(data_literature)*100, 0)`% of estimates are for a binary treatment.
-* `standardized_effect`: indicates whether the estimates have already been standardized. `r round(sum(data_literature$standardized_effect==1)/nrow(data_literature)*100, 0)`% of estimates are already standardized.
-* `log_outcome`: is the estimate expressed in relative term. `r round(sum(data_literature$log_outcome==1)/nrow(data_literature)*100, 0)`% of estimates represent relative increase in the health outcome.
+* `independent_variable_dummy`: indicates whether the independent variable is binary. `r round(sum(data_lit_causal$independent_variable_dummy==1)/nrow(data_lit_causal)*100, 0)`% of estimates are for a binary treatment.
+* `is_standardized`: indicates whether the estimates have already been standardized. `r round(sum(data_lit_causal$is_standardized==1)/nrow(data_lit_causal)*100, 0)`% of estimates are already standardized.
+* `log_outcome`: is the estimate expressed in relative term. `r round(sum(data_lit_causal$log_outcome==1)/nrow(data_lit_causal)*100, 0)`% of estimates represent relative increase in the health outcome.
 * `mean_outcome` and `sd_outcome`: the average and the standard deviation of the outcome.
 * `mean_independant_variable` and `sd_independent_variable`: the average and standard deviation of the treatment of interest.
 * `estimate` and `standard_error`: the values of the estimate and its standard error.
@@ -120,12 +118,12 @@ data_literature %>%
 * `source_summary_stats`: where we retrieve in the paper the figures on the average and standard deviation of variables.
 * `source_results`: where we retrieve in the paper the figures on the estimates and standard errors.
 * `remarks`: remarks on whether we have to do some computations on our own to retrieve the relevant information. For instance, we had to infer for very few papers the mean and standard deviation of a pollutant or an health outcome with statistics such as the median and the quartiles. We use the formula found [here](https://stats.stackexchange.com/questions/256456/how-to-calculate-mean-and-standard-deviation-from-median-and-quartiles).
-* `open_data`: whether the data are available to reproduce the findings of the study. Only `r round(sum(data_literature$open_data==1)/nrow(data_literature)*100, 0)`% of results are directly reproducible.
+* `open_data`: whether the data are available to reproduce the findings of the study. Only `r round(sum(data_lit_causal$open_data==1)/nrow(data_lit_causal)*100, 0)`% of results are directly reproducible.
 
 The data set is as follows:
 
 ```{r datatable_all_estimates, code_folding=TRUE, layout="l-body-outset"}
-data_literature |> 
+data_lit_causal |> 
   DT::datatable(
     filter = 'top', 
     options = list(
@@ -148,18 +146,8 @@ In the case where authors used linear regression models with log-transformed var
 
 ```{r standardizing_effects}
 # standardize log models
-data_literature_logs <- data_literature %>%
+data_lit_causal_logs <- data_lit_causal %>%
   filter(log_outcome == 1) %>%
-  select(
-    paper_estimate_id,
-    standardized_effect,
-    independent_variable_dummy,
-    mean_outcome,
-    sd_outcome,
-    sd_independent_variable,
-    estimate,
-    standard_error
-  ) %>%
   mutate(
     estimate_unlog = (exp(estimate) - 1) * mean_outcome,
     ci_upper_95_unlog = (exp(estimate + 1.96 * standard_error) - 1) * mean_outcome,
@@ -167,15 +155,15 @@ data_literature_logs <- data_literature %>%
   ) %>%
   mutate(
     standardized_estimate = case_when(
-      standardized_effect == 0 &
+      is_standardized == 0 &
         independent_variable_dummy == 0 ~ estimate_unlog * sd_independent_variable / sd_outcome,
-      standardized_effect == 0 &
+      is_standardized == 0 &
         independent_variable_dummy == 1 ~ estimate_unlog / sd_outcome,
-      standardized_effect == 1 ~ estimate_unlog
+      is_standardized == 1 ~ estimate_unlog
     ),
     standardized_standard_error = case_when(
-      standardized_effect == 0 ~ standard_error_unlog * standardized_estimate / estimate_unlog,
-      standardized_effect == 1 ~ standard_error_unlog
+      is_standardized == 0 ~ standard_error_unlog * standardized_estimate / estimate_unlog,
+      is_standardized == 1 ~ standard_error_unlog
     )
   ) %>%
   select(paper_estimate_id,
@@ -183,29 +171,19 @@ data_literature_logs <- data_literature %>%
          standardized_standard_error)
 
 # standardize other models
-data_literature_not_logs <- data_literature %>%
+data_lit_causal_not_logs <- data_lit_causal %>%
   filter(log_outcome != 1) %>%
-  select(
-    paper_estimate_id,
-    standardized_effect,
-    independent_variable_dummy,
-    mean_outcome,
-    sd_outcome,
-    sd_independent_variable,
-    estimate,
-    standard_error
-  ) %>%
   mutate(
     standardized_estimate = case_when(
-      standardized_effect == 0 &
+      is_standardized == 0 &
         independent_variable_dummy == 0 ~ estimate * sd_independent_variable / sd_outcome,
-      standardized_effect == 0 &
+      is_standardized == 0 &
         independent_variable_dummy == 1 ~ estimate / sd_outcome,
-      standardized_effect == 1 ~ estimate
+      is_standardized == 1 ~ estimate
     ),
     standardized_standard_error = case_when(
-      standardized_effect == 0 ~ standard_error * standardized_estimate / estimate,
-      standardized_effect == 1 ~ standard_error
+      is_standardized == 0 ~ standard_error * standardized_estimate / estimate,
+      is_standardized == 1 ~ standard_error
     )
   ) %>%
   select(paper_estimate_id,
@@ -213,9 +191,9 @@ data_literature_not_logs <- data_literature %>%
          standardized_standard_error)
 
 # merge the two datasets
-data_literature <-
-  bind_rows(data_literature_logs, data_literature_not_logs) %>%
-  left_join(data_literature, ., by = "paper_estimate_id") %>%
+data_lit_causal_std <-
+  bind_rows(data_lit_causal_logs, data_lit_causal_not_logs) %>%
+  left_join(data_lit_causal, ., by = "paper_estimate_id") %>%
   select(
     paper_label:standard_error,
     standardized_estimate,
@@ -223,18 +201,18 @@ data_literature <-
     first_stage_statistic:open_data
   )
 
-saveRDS(data_literature, here::here(
+saveRDS(data_lit_causal_std, here::here(
     "data",
-    "literature_review_causal_inference",
-    "data_literature_review_std.rds"
+    "lit_causal",
+    "data_lit_causal_std.rds"
   ))
 ```
 
-We are able to standardize the effects of `r round(sum(!is.na(data_literature$standardized_estimate))/nrow(data_literature)*100, 0)`% of all estimates. We display below summary statistics on the distribution of the standardized effect sizes of causal inference methods:
+We are able to standardize the effects of `r round(sum(!is.na(data_lit_causal_std$standardized_estimate))/nrow(data_lit_causal_std)*100, 0)`% of all estimates. We display below summary statistics on the distribution of the standardized effect sizes of causal inference methods:
 
-```{r summary_standardized_effects}
+```{r summary_std}
 # display sample sizes
-data_literature %>%
+summary_std <- data_lit_causal_std %>%
   filter(!(empirical_strategy %in% c("conventional time series", "conventional time series - suggestive evidence"))) %>%
   mutate(standardized_estimate = abs(standardized_estimate)) %>%
   summarise(
@@ -244,18 +222,20 @@ data_literature %>%
     "Median" = median(standardized_estimate, na.rm = TRUE),
     "Third Quartile" = quantile(standardized_estimate, na.rm = TRUE)[4],
     "Maximum" = max(standardized_estimate, na.rm = TRUE)
-  ) %>%
+  ) 
+
+summary_std %>%
   kable(., align = rep("c", 6)) %>%
   kable_styling(position = "center")
 ```
 
-We see that half of the studies estimated effect sizes below `r round(median(data_literature$standardized_estimate, na.rm = TRUE), 2)` standard deviation.
+Half of the studies estimate effect sizes below `r round(summary_std[["Median"]], 2)` standard deviation.
 
 We plot below the ratio of 2SLS estimates over OLS estimates:
 
 ```{r graph_ratio_ols_iv, fig.asp=0.5}
 # compute ratio 2sls/ols
-data_ratio_ols_iv <- data_literature %>%
+data_ratio_ols_iv <- data_lit_causal_std %>%
     select(paper_label, empirical_strategy, outcome, independent_variable, estimate, standard_error) %>%
     filter(empirical_strategy %in% c("conventional time series", "instrumental variable")) %>%
     arrange(paper_label, outcome, independent_variable) %>%
@@ -301,24 +281,34 @@ For half of the studies reporting both an IV estimate and an OLS estimate, the r
 
 # Evidence of Publication Bias
 
-### Distribution of t-statistics
+### Distribution of z-statistics
 
-We plot the distribution of weighted t-statistics by following [Brodeur et al. (2020)](https://www.aeaweb.org/articles?id=10.1257/aer.20190687) where the weights are equal to the inverse of the number of tests presented in the same table multiplied by the inverse of the number of tables in the article. 
+We plot the distribution of weighted z-statistics by following [Brodeur et al. (2020)](https://www.aeaweb.org/articles?id=10.1257/aer.20190687) where the weights are equal to the inverse of the number of tests in an article. As in the paper, we assume that the degrees of freedom are large enough so that we can assume that the estimates are normally distributed.
 
+```{r graph_z_statistics}
+data_lit_causal_caliper <- data_lit_causal_std %>%
+  filter(control_outcome != 1) %>% #remove placebo
+  filter(str_detect(empirical_strategy, "conventional time series", negate = TRUE)) %>%
+  # mutate(table = stringr::word(source_results, 1, sep = " - ")) %>% 
+  add_count(paper_label, name = "n_tests") %>% 
+  mutate(
+    weight = 1/n_tests,
+    z_stat = estimate / standard_error,
+    abs_z  = abs(z_stat)
+  )
 
-```{r graph_t_statistics}
-graph_distribution_t <- data_literature %>%
-  mutate(table = stringr::word(source_results, 1, sep = "-")) %>%
-  group_by(paper_label, table) %>%
-  mutate(n_tests = 1/n()) %>%
-  group_by(paper_label) %>%
-  mutate(n_tables = 1/length(unique(table))) %>%
-  ungroup() %>%
-  mutate(weight = n_tests*n_tables) %>%
-  ggplot(., aes(x = abs(estimate/standard_error), y = ..density.., weight = weight)) + 
-  geom_histogram(bins = 60, colour = "white", alpha = 0.6) +
-  geom_density(bw = 0.35, fill = NA, size = 0.9) +
-  geom_vline(xintercept = 1.96, size = 0.9, colour = "#f07167") +
+  # group_by(paper_label) %>%
+  # mutate(n_tests = 1/n()) %>%
+  # group_by(paper_label) %>%
+  # mutate(n_tables = 1/length(unique(table))) %>%
+  # ungroup() %>%
+  # mutate(weight = n_tests*n_tables) 
+
+graph_distribution_t <- data_lit_causal_caliper %>%
+  ggplot(., aes(x = abs(estimate/standard_error), y = after_stat(density), weight = weight)) + 
+  geom_histogram(bins = 50, colour = "white", alpha = 0.6) +
+  geom_density(bw = 0.4, fill = NA, linewidth = 0.9) +
+  geom_vline(xintercept = 1.96, linewidth = 0.9, colour = "#f07167") +
   # geom_curve(aes(x = 5, y = 0.37,
   #            xend = 2.1, yend = 0.27),
   #            curvature = -0.3,
@@ -328,13 +318,11 @@ graph_distribution_t <- data_literature %>%
   # annotate("text", x = 5.5, y = 0.38, label = "5% Significance Threshold", colour = "#f07167", size = 6) +
   scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
   labs(
-    title = "Weighted Distribution of the t-statistics",
-    subtitle = "More mass around the 1.96 threshold.",
-    x = "t-statistic",
+    title = "Weighted Distribution of the z-statistics",
+    subtitle = "More mass around the 1.96 threshold",
+    x = "z-statistic",
     y = "Density"
   )
-  
-graph_distribution_t
 
 ggsave(
   filename = here::here(
@@ -347,40 +335,26 @@ ggsave(
   units = "cm"
   # device = cairo_pdf
 )
+  
+graph_distribution_t
 ```
 
 We then restrict the sample to studies published in economics journals. The figure remains essentially the same.
 
 ```{r graph_distribution_t_econ, echo=FALSE}
-graph_distrib_t_econ <- data_literature %>%
-  filter(field == "economics") |> 
-  mutate(table = stringr::word(source_results, 1, sep = "-")) %>%
-  group_by(paper_label, table) %>%
-  mutate(n_tests = 1/n()) %>%
-  group_by(paper_label) %>%
-  mutate(n_tables = 1/length(unique(table))) %>%
-  ungroup() %>%
-  mutate(weight = n_tests*n_tables) %>%
-  ggplot(., aes(x = abs(estimate/standard_error), y = ..density.., weight = weight)) + 
-  geom_histogram(bins = 60, colour = "white", alpha = 0.6) +
-  geom_density(bw = 0.35, fill = NA, size = 0.9) +
+graph_distrib_t_econ <- data_lit_causal_caliper %>%
+  filter(field == "economics") %>%
+  ggplot(., aes(x = abs_z, y = ..density.., weight = weight)) + 
+  geom_histogram(bins = 50, colour = "white", alpha = 0.6) +
+  geom_density(bw = 0.4, fill = NA, size = 0.9) +
   geom_vline(xintercept = 1.96, size = 0.9, colour = "#f07167") +
-  # geom_curve(aes(x = 5, y = 0.37,
-  #            xend = 2.1, yend = 0.27),
-  #            curvature = -0.3,
-  #            arrow = arrow(length = unit(0.42, "cm")),
-  #            colour = "#f07167",
-  #            lineend = "round") +
-  # annotate("text", x = 5.5, y = 0.38, label = "5% Significance Threshold", colour = "#f07167", size = 6) +
   scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
   labs(
-    title = "Weighted Distribution of the t-statistics",
-    subtitle = "Only estimates from economics journals.",
-    x = "t-statistic",
+    title = "Weighted Distribution of the z-statistics",
+    subtitle = "Only estimates from economics journals",
+    x = "z-statistic",
     y = "Density"
   )
-
-graph_distrib_t_econ
 
 ggsave(
   filename = here::here(
@@ -393,7 +367,215 @@ ggsave(
   units = "cm"
   # device = cairo_pdf
 )
+
+graph_distrib_t_econ
 ```
+
+### Formal tests
+
+We then implement formal tests, as in [Brodeur et al. (2020)](https://www.aeaweb.org/articles?id=10.1257/aer.20190687).
+Caliper tests themselves follow [Gerber and Malhotra (2008a)](https://www.emerald.com/qjps/article-abstract/3/3/313/1328368/Do-Statistical-Reporting-Standards-Affect-What-Is?redirectedFrom=fulltext). 
+
+The idea behind these tests is to compare the number of test statistics just above and just below a significance threshold. We create a function `simple_caliper_test` that computes the number and share of estimates just above and below (in a certain window) a given significance level, weighted by the inverse of the number of test by article.
+
+#### Counting test statistics
+
+We first count test statistics in bandwidths around significance thresholds:
+
+```{r simple_caliper_test, code_folding=FALSE, echo=TRUE}
+simple_caliper_test <- function(df, sign_level, window_width) {
+  threshold <- qnorm(1 - sign_level/2)
+  
+  df_w <- df %>%
+    filter((abs_z >= threshold - window_width) & (abs_z <= threshold + window_width)) %>%
+    mutate(above = (abs_z >= threshold))
+
+  w_above <- df_w %>% filter(above) %>% pull(weight) %>% sum()
+  w_total <- sum(df_w$weight)
+
+  tibble(
+    sign_level, 
+    window_width,
+    n_in_window = nrow(df_w),
+    n_above = df_w %>% filter(above) %>% nrow(),
+    n_below = df_w %>% filter(!above) %>% nrow(),
+    share_above = n_above / (n_above + n_below),
+    share_above_weighted = w_above / w_total
+  )
+}
+
+caliper_simple_results <- 
+  expand_grid(
+    sign_level = c(0.1, 0.05, 0.01),
+    window_width = c(0.20, 0.30, 0.50)
+  ) %>%
+  pmap(simple_caliper_test, df = data_lit_causal_caliper) %>%
+  list_rbind()
+
+caliper_simple_results |> 
+  kable(digits = 2)
+```
+
+To ease reading, we make a graph to represent this data:
+
+```{r simple_caliper_test_graph, fig.asp=1}
+caliper_simple_results |>  
+  mutate(
+    sign_level = as.factor(sign_level),
+    window_width = as.factor(window_width)
+  ) |> 
+  ggplot(aes(x = sign_level, y = window_width, fill = share_above_weighted)) + 
+  geom_tile(
+    color = "white", linewidth = 2
+  ) +
+  geom_label(aes(label = round(share_above_weighted, 2))) +
+  coord_fixed() + 
+  labs(
+    title = "Weighted share of observations above the threshold",
+    x = "Significance threshold",
+    y = "Window width",
+    fill = NULL
+  ) +
+  scale_fill_gradient2(
+    midpoint = 0.5,
+    low = colors_mediocre$base,
+    mid = colors_mediocre$background,
+    high = colors_mediocre$complementary,
+    guide = guide_colourbar(theme = theme(
+      legend.key.width = unit(5, "cm"), 
+      legend.key.height = unit(0.25, "cm"), 
+      legend.ticks.length = unit(0.125, "cm"), 
+      legend.title.position = "top", legend.margin = margin(t = -0.4, unit = "cm")))
+  ) 
+```
+
+Focusing on the 5% threshold, as in the rest of the paper, the weights just above the threshold are larger than just below, suggesting selection on significance around this threshold. Interestingly, there does not seem to be selection on significance around the 1% threshold. That might be explained by the fact that the main threshold used in the economics literature is the 5% one.
+
+Regardless, considering the relatively small number of observations (`r nrow(data_caliper)` estimates), one might need to analyse these results carefully.
+
+#### Randomization tests
+
+Then, as in Brodeur et al (2020), we test whether the observed test-statistics within each bandwidth could come from a binomial distribution with probability 0.5 to fall above the threshold. 
+
+```{r rand_test}
+caliper_simple_results |>
+  rowwise() |>
+  mutate(p_value_binom_test =
+           binom.test(n_above, n_in_window, 0.5, alternative = "greater")$p.value) |>
+  select(sign_level, window_width, n_in_window, p_value_binom_test) |>
+  kable(
+    col.names = c("Significance level", "Window width", "Number of tests", "p-value of binomial test"),
+    digits = 3
+  ) 
+```
+
+We do not find any conclusive evidence but that may partly come from the limited number of tests considered.
+
+#### Caliper test
+
+We then turn to a probit regression in order to be able to compare the likelihood of imbalance across various variables. However, these analyses only have little statistical power, considering the small number of observations.
+
+```{r logit_caliper}
+#adding dummy variables to control for
+data_caliper_logit <- data_lit_causal_caliper |> 
+  mutate(
+    is_economics = (field == "economics"),
+    is_mortality = (outcome_type == "mortality"),
+    recent = (publication_year >= 2019), #median publication year
+    is_published = (journal != "working paper"),
+    is_iv = (empirical_strategy == "instrumental variable"),
+    is_reduced = (empirical_strategy == "reduced-form"),
+    is_did = str_detect(empirical_strategy, "difference in differences")
+  )
+
+# define function
+run_logit_caliper <- function(df, fml_name, sign_level = 0.05, window_width = 0.5) {
+  threshold <- qnorm(1 - sign_level/2)
+  df_w <- df %>%
+    filter(abs_z >= threshold - window_width, abs_z <= threshold + window_width) %>%
+    mutate(above = as.logical(abs_z >= threshold))
+  
+   fml_str <- switch(fml_name,
+    base  = "above ~ 1",
+    covar = "above ~ is_economics + is_mortality + recent + is_published + is_iv + is_reduced + is_did"
+  )
+  
+  res <- feglm(
+    as.formula(fml_str),
+    data = df_w,
+    family = binomial(link = "probit"),
+    weights = ~ weight,
+    cluster = ~ paper_label
+  )
+}
+
+# apply function to set of parameters
+
+caliper_logit_param <- 
+  expand_grid(
+    sign_level = c(0.05, 0.1),
+    window_width = c(0.20, 0.50),
+    fml_name = c("base", "covar")
+  )
+
+caliper_logit_res <- caliper_logit_param |> 
+  pmap(run_logit_caliper, df = data_caliper_logit)
+
+models <- list(
+  "Above (signif 5%)" = list(
+    "±0.20" = caliper_logit_res[[1]],
+    "±0.20" = caliper_logit_res[[2]],
+    "±0.50" = caliper_logit_res[[3]],
+    "±0.50" = caliper_logit_res[[4]]
+  ),
+  "Above (signif 10%)" = list(
+    "±0.20" = caliper_logit_res[[5]],
+    "±0.20" = caliper_logit_res[[6]],
+    "±0.50" = caliper_logit_res[[7]],
+    "±0.50" = caliper_logit_res[[8]]
+  )
+)
+
+# names(caliper_logit_res) <- caliper_logit_param |> 
+#   mutate(name = paste("Signif:", sign_level, "window:", window_width)) |> 
+#   pull(name)
+# 
+# window_row <- data.frame(
+#   term = "Window width",
+#   caliper_logit_param %>%
+#     mutate(val = paste0("±", window_width)) %>%
+#     pull(val) %>%
+#     setNames(names(caliper_logit_res)) %>%
+#     as.list()
+# )
+
+
+modelsummary(
+  models,
+  stars = c("*" = 0.1, "**" = 0.05, "***" = 0.01),
+  shape = "cbind",
+  gof_map = c("nobs", "r.squared"),
+  coef_rename = c(
+    "(Intercept)" = "Intercept",
+    "is_economicsTRUE" = "Economics journal",
+    "is_mortalityTRUE" = "Morality outcome (dummy)",
+    "recentTRUE" = "Published after 2018",
+    "is_publishedTRUE" = "Published paper",
+    "is_ivTRUE" = "Instrumental variable",
+    "is_didTRUE" = "DiD",
+    "is_reducedTRUE" = "Reduced form"
+  ),
+  title = "Caliper Test: Logit Estimates of Excess Mass Above Significance Thresholds",
+  notes = paste(
+    "Weighted logit.",
+    "SEs clustered by article.",
+    "The dependent variable equals 1 if |t| is above the threshold."
+  )
+)
+
+```
+
+Considering the limited number of observations, it is rather difficult to draw clear conclusions. If anything, published papers seems to suffer more from selection on significance than working papers.
 
 ### Estimated Effect Sizes versus Precision
 
@@ -401,7 +583,7 @@ We plot below the relationship between the absolute values of standardized estim
   
 ```{r graph_effect_size_vs_precision}
 # make the graph of effect sizes versus precision
-graph_effect_precision <- data_literature %>%
+graph_effect_precision <- data_lit_causal_std %>%
   mutate(inverse_se = 1 / standardized_standard_error) %>%
   # drop control outcomes
   filter(control_outcome==0) %>%
@@ -418,22 +600,15 @@ graph_effect_precision <- data_literature %>%
   ) +
   geom_point(shape = 16, size = 1.8, alpha = 0.6) +
   scale_x_log10(
-    breaks = scales::trans_breaks("log10", function(x)
-      10 ^ x),
-    labels = scales::trans_format("log10", scales::math_format(10 ^
-                                                                 .x))
+    breaks = scales::trans_breaks("log10", \(x) 10 ^ x),
+    labels = scales::trans_format("log10", scales::math_format(10 ^ .x))
   ) +
   scale_y_log10(
-    breaks = scales::trans_breaks("log10", function(x)
-      10 ^ x),
-    labels = scales::trans_format("log10", scales::math_format(10 ^
-                                                                 .x))
+    breaks = scales::trans_breaks("log10", \(x) 10 ^ x),
+    labels = scales::trans_format("log10", scales::math_format(10 ^ .x))
   ) +
   xlab("Precision (Inverse of Standard Errors)") + ylab("Standardized Effect Sizes") +
   ggtitle("Standardized Estimates vs. Precision", subtitle = "Less precise studies find larger standardized effect sizes.") 
-
-# display the graph
-graph_effect_precision
 
 ggsave(
   graph_effect_precision,
@@ -447,13 +622,16 @@ ggsave(
   units = "cm"
   # device = cairo_pdf
 )
+
+# display the graph
+graph_effect_precision
 ```
 
 For economics journals, we then compare top 5 to other journals.
 
 ```{r graph_effect_size_vs_precision_field}
 # make the graph of effect sizes versus precision
-graph_effect_precision_field <- data_literature %>%
+graph_effect_precision_field <- data_lit_causal_std %>%
   mutate(
     top5 = (journal %in% c("AER", "JPE", "Econometrica", "ReStud", "QJE")),
     top5_name = ifelse(top5, "Top 5", "Other economics journal")
@@ -475,16 +653,12 @@ graph_effect_precision_field <- data_literature %>%
   ) +
   geom_point(shape = 16, size = 1.8, alpha = 0.6) +
   scale_x_log10(
-    breaks = scales::trans_breaks("log10", function(x)
-      10 ^ x),
-    labels = scales::trans_format("log10", scales::math_format(10 ^
-                                                                 .x))
+    breaks = scales::trans_breaks("log10", \(x) 10 ^ x),
+    labels = scales::trans_format("log10", scales::math_format(10 ^ .x))
   ) +
   scale_y_log10(
-    breaks = scales::trans_breaks("log10", function(x)
-      10 ^ x),
-    labels = scales::trans_format("log10", scales::math_format(10 ^
-                                                                 .x))
+    breaks = scales::trans_breaks("log10", \(x) 10 ^ x),
+    labels = scales::trans_format("log10", scales::math_format(10 ^ .x))
   ) +
   labs(
     x = "Precision (Inverse of Standard Errors)",
@@ -493,9 +667,6 @@ graph_effect_precision_field <- data_literature %>%
     subtitle = "Comparison between econoics journals",
     color = NULL
   ) 
-
-# display the graph
-graph_effect_precision_field
 
 ggsave(
   graph_effect_precision_field,
@@ -509,10 +680,13 @@ ggsave(
   units = "cm"
   # device = cairo_pdf
 )
+
+# display the graph
+graph_effect_precision_field
 ```
 
 
-```{r graph_intro_paper}
+```{r graph_intro_paper, echo=FALSE, code_folding=FALSE}
 # gather the three graphs in a single graph for the introduction of the paper
 graph_intro_paper <-
   graph_ratio_ols_iv / (graph_effect_precision + graph_distribution_t) +
@@ -547,9 +721,9 @@ To compute the three metrics, we need to make an assumption about the true effec
 
 We define the true effect sizes as a decreasing fraction of the estimates. We want to see how the overall distributions of the three metrics evolve with as we decrease the hypothesized true effect size.
 
-```{r data_for_retrodesign, echo = TRUE}
+```{r data_for_retrodesign, echo=TRUE, code_folding=FALSE}
 # test exaggeration and type s errors
-data_retrodesign <- data_literature %>%
+data_retrodesign <- data_lit_causal_std %>%
   # drop control outcomes
   filter(control_outcome == 0) %>%
   # drop conventional time series models
@@ -566,7 +740,7 @@ data_retrodesign <- data_literature %>%
 
 For each study, we compute the statistical power, the exaggeration ratio and the probability to make a type S error by defining their true effect sizes as decreasing fraction of the estimates. 
 
-```{r run_retrodesign, echo = TRUE}
+```{r run_retrodesign, echo = TRUE, code_folding=FALSE}
 # run retrospective power analysis for decreasing effect sizes
 data_retrodesign_fraction <- data_retrodesign |> 
   crossing(percentage = seq(from = 30, to = 100) / 100) |> 
@@ -632,9 +806,6 @@ graph_retrodesign_causal_inf <- data_retrodesign_fraction %>%
     axis.ticks.y = element_line(size = 0.5, color = "black")
   )
 
-# display the graph
-graph_retrodesign_causal_inf
-
 # save the graph
 ggsave(
   graph_retrodesign_causal_inf,
@@ -651,6 +822,9 @@ ggsave(
   units = "cm"
   # device = cairo_pdf
 )
+
+# display the graph
+graph_retrodesign_causal_inf
 ```
 
 We display below summary statistics for the scenario where true effect sizes are equal to the observed estimates reduced by 25%:
@@ -702,7 +876,7 @@ We retrieve 98 2SLS estimates that were statistically significant at the 5% leve
 
 ```{r graph_distrib_ols_as_true, fig.asp=0.7}
 # retrieve iv data
-data_iv <- data_literature %>%
+data_iv <- data_lit_causal_std %>%
   select(
     paper_label,
     empirical_strategy,
@@ -716,7 +890,7 @@ data_iv <- data_literature %>%
   select(-empirical_strategy)
 
 # retrieve ols data
-data_ols <- data_literature %>%
+data_ols <- data_lit_causal_std %>%
   select(paper_label,
          empirical_strategy,
          outcome,
@@ -817,9 +991,8 @@ graph_retro_iv_exagg <- data_retro_iv %>%
     panel.grid.major.y = element_blank()
   )
 
-# display the graph
+# combine graphs
 graph_retro_iv <- graph_retro_iv_power / graph_retro_iv_exagg
-graph_retro_iv
 
 # save graph
 ggsave(
@@ -836,11 +1009,190 @@ ggsave(
   units = "cm"
   # device = cairo_pdf
 )
+
+# display the graph
+graph_retro_iv
 ```
 
 The median statistical power is `r summary_retro_iv$median[2]`% and the median exaggeration ratio is `r summary_retro_iv$median[1]`. `r round(prop_adequate*100, 2)`% of IV designs have adequate power (*i.e.* greater than 80%).
 
+# Publication bias correction
 
+Then, we implement [Andrews and Kasy (2019)](https://www.aeaweb.org/articles?id=10.1257/aer.20180310)'s correction for publication bias. 
+
+```{r}
+library(MetaStudies)
+
+df <- data_lit_causal_std %>%
+  filter(control_outcome != 1) |> 
+  # filter(standardized_estimate != 0, standardized_standard_error != 0) |> 
+  filter(estimate != 0, standard_error != 0) |>
+  mutate(z_stat = estimate / standard_error)
+
+
+# Run Andrews-Kasy
+ms <- metastudies_estimation(
+  X         = df$estimate,
+  sigma     = df$standard_error,
+  cutoffs   = c(1.645, 1.96, 2.576),
+  symmetric = TRUE,
+  model     = "t"
+)
+
+ms$est_tab
+
+# Plot: publication probabilities (top) + latent density (bottom)
+estimates_plot(ms) 
+
+# Specification check: X-sigma independence in latent distribution
+metastudy_X_sigma_cors(ms)
+
+#Manual proba plot
+ms$dat |> 
+  as_tibble() |> 
+  janitor::clean_names() |> 
+  filter(z < 7) |> 
+  ggplot(aes(x = z, y = pub_prob)) + 
+  geom_line(linewidth = 1) + 
+  ylim(c(0, NA))
+
+# --- 2. Extract the step-function p(·) from the estimation -------------------
+
+# The estimated relative publication probabilities per |z| bin.
+# Last bin (|z| > 2.576) is normalized to 1.
+# We read them from est_tab: columns after the latent params are the bins.
+latent_cols <- intersect(c("µ", "sigma", "t", "df", "τ"), colnames(ms$est_tab))
+pub_cols    <- setdiff(colnames(ms$est_tab), latent_cols)
+pub_weights <- ms$est_tab["estimate", pub_cols]
+
+# Map from |z| to publication weight
+# Cutoffs in |z| space: 1.645, 1.96, 2.576
+# Bins: [0, 1.645], (1.645, 1.96], (1.96, 2.576], (2.576, Inf)
+z_cutoffs  <- c(1.645, 1.96, 2.576)
+bin_weights <- c(pub_weights, 1) # append 1 for the reference bin
+
+get_pub_weight <- function(z) {
+  bin <- findInterval(abs(z), c(0, z_cutoffs, Inf))
+  bin_weights[bin]
+}
+
+
+# --- 3. Per-study median-unbiased estimator (Proposition 1) ------------------
+
+# For each study with observed z, find omega such that
+# F_{Z|Omega}(z | omega) = 0.5
+# where F is the CDF of the *truncated* (post-selection) distribution.
+
+# CDF of the truncated z-distribution given omega and p(·)
+F_truncated <- function(z, omega, z_cuts, weights) {
+  # Numerator: integral from -Inf to z of p(t) * phi(t - omega) dt
+  # We break this into bins and sum
+
+  # All bin boundaries (symmetric around 0, plus -Inf and Inf)
+  all_bounds <- sort(c(-Inf, -rev(z_cuts), 0, z_cuts, Inf))
+  n_bins     <- length(all_bounds) - 1
+
+  # Weight for each bin
+  get_w <- function(z_val) {
+    bin <- findInterval(abs(z_val), c(0, z_cuts, Inf))
+    weights[bin]
+  }
+
+  numerator   <- 0
+  denominator <- 0
+
+  for (k in seq_len(n_bins)) {
+    lo <- all_bounds[k]
+    hi <- all_bounds[k + 1]
+    mid <- if (is.finite(lo) & is.finite(hi)) (lo + hi) / 2 else
+           if (is.finite(lo)) lo + 1 else hi - 1
+    w_k <- get_w(mid)
+
+    # Integral of phi(t - omega) from lo to hi
+    prob_k <- pnorm(hi, mean = omega, sd = 1) - pnorm(lo, mean = omega, sd = 1)
+    denominator <- denominator + w_k * prob_k
+
+    # For numerator, cap the upper bound at z
+    hi_num <- min(hi, z)
+    if (hi_num > lo) {
+      prob_num <- pnorm(hi_num, mean = omega, sd = 1) - pnorm(lo, mean = omega, sd = 1)
+      numerator <- numerator + w_k * prob_num
+    }
+  }
+
+  numerator / denominator
+}
+
+# Find omega such that F_truncated(z, omega) = 0.5
+median_unbiased <- function(z, z_cuts, weights) {
+  # Root-finding: F(z | omega) - 0.5 = 0
+  # F is decreasing in omega (larger true effect -> z is less extreme relative to it)
+  obj <- function(omega) F_truncated(z, omega, z_cuts, weights) - 0.5
+  tryCatch(
+    uniroot(obj, interval = c(-20, 20), tol = 1e-6)$root,
+    error = \(e) NA_real_
+  )
+}
+
+
+# --- 4. Apply to each study --------------------------------------------------
+
+# Work in z-space, then convert back
+df <- df |>
+  mutate(
+    omega_corrected = map_dbl(z_stat, \(z) {
+      median_unbiased(z, z_cutoffs, bin_weights)
+    }),
+    # Convert back to original units: theta = omega * sigma
+    estimate_corrected = omega_corrected * standard_error
+  )
+
+# Compare original vs. corrected
+df |>
+  filter(!is.na(omega_corrected)) |>
+  summarise(
+    mean_original  = mean(estimate),
+    mean_corrected = mean(estimate_corrected),
+    median_original  = median(abs(z_stat)),
+    median_corrected = median(abs(omega_corrected)),
+    media_correction_ratio = median(abs(z_stat)/abs(omega_corrected))
+  ) 
+
+# Plot: original vs. corrected z-statistics
+df |>
+  filter(!is.na(omega_corrected)) |>
+  ggplot(aes(z_stat, omega_corrected)) +
+  geom_point(alpha = 0.5, color = "#2196b3") +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "gray40") +
+  labs(x = "Original z-statistic", y = "Corrected ω (median-unbiased)") +
+  theme_minimal(base_size = 13)
+
+
+# --- 5. Publication probability CI plot --------------------------------------
+
+pub_probs <- tibble(
+  bin = pub_cols,
+  est = ms$est_tab["estimate", pub_cols],
+  se  = ms$est_tab["standard error", pub_cols]
+) |>
+  mutate(
+    ci_lo = est - 1.96 * se,
+    ci_hi = est + 1.96 * se,
+    bin   = fct_inorder(bin)
+  )
+
+ggplot(pub_probs, aes(bin, est)) +
+  geom_point(size = 3, color = "#2196b3") +
+  geom_errorbar(aes(ymin = ci_lo, ymax = ci_hi), width = 0.2, color = "#2196b3") +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "gray40") +
+  labs(
+    x = "|z|-statistic bin (relative to |z| > 2.576 = 1)",
+    y = "Relative publication probability",
+    caption = "Dashed line = no selection."
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(axis.text.x = element_text(angle = 25, hjust = 1))
+```
 
 
 

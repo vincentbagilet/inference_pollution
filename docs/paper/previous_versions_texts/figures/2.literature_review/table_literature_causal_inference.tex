@@ -1,0 +1,65 @@
+\begin{table}[]
+\thispagestyle{empty}
+\caption{Our Corpus of Papers from the Causal Inference Literature.}
+\begin{adjustwidth}{-0.5cm}{0cm}
+\centering
+\scriptsize
+\begin{threeparttable}
+\label{tab:lit_review}
+\begin{tabular}{p{2.5cm}p{3cm}p{7cm}p{7cm}p{4cm}}
+\toprule
+\textbf{Article}      & \textbf{Location}           & \textbf{Health Outcome}                                     & \textbf{Independent Variables}                                                     & \textbf{Study Design}                             \\ \midrule
+\rowcolor{Gray}
+\cite{arceo_does_2016}    & Mexico City, Mexico         & Infant Mortality                                            & PM10, Thermal Inversion (IV)                                       & Instrumental Variable                             \\
+\cite{austin2020covid}          & Counties, USA               & Rates of Confirmed COVID-19 Deaths                          & PM2.5 (air pollutant), Wind Direction (IV)                                         & Instrumental Variable                             \\
+\rowcolor{Gray}
+\cite{baccini_assessing_2017}         & Milan, Italy                & Non-Accidental Mortality                                    & Dummy for PM10 Concentration \textgreater To 40 µg/m³                              & Propensity Score Matching                         \\
+\cite{barwick_morbidity_2018}         & All Cities, China           & Number of Health Spending Transactions                      & PM2.5, Spatial Spillovers of PM2.5 (IV)                            & Instrumental Variable                             \\
+\rowcolor{Gray}
+\cite{bauernschuster_when_2017}  & 5 Largest Cities, Germany   & Admissions for Abnormalities of Breathing (age below 5)     & PM10, Public Transport Strikes Dummy                               & Difference in Differences                         \\
+\cite{beard_winter_2012}          & Salt Lake County, USA       & Emergency Visits For Asthma                                 & Thermal Inversions                                                                 & Time-stratified case-crossover design             \\
+\rowcolor{Gray}
+\cite{chen_effect_2018}           & Toronto, Canada             & Asthma-Related Emergency Department Visits                  & Air Quality Eligibility, Air Quality Altert                                        & Fuzzy Regression Discontinuity                    \\
+\cite{deryugina_mortality_2019}      & Counties, USA               & All Causes of Mortality (Age 65+)                           & PM2.5, Wind Direction (IV)                                         & Instrumental Variable                             \\
+\rowcolor{Gray}
+\cite{ebenstein_particulate_2015}       & 2 Cities, Israel            & Hospital Admissions Due To Lung Illnesses                   & PM10 (air pollutant), Sandstorms (IV)                                              & Instrumental Variable                             \\
+\cite{forastiere_assessing_2020}     & Milan, Italy                & Non-Accidental Mortality                                    & Setting PM10 Daily Exposure Levels \textgreater To 40 µg/m³ To 40                  & Generalized Propensity Score                      \\
+\rowcolor{Gray}
+\cite{giaccherini2021particulate}     & Municipalities, Italy       & Respiratory Hospital Admission                              & PM10, Public Transport Strikes                                     & Difference in Differences                         \\
+\cite{godzinski2019short}      & 10 Cities, France           & Emergency Admissions for Upper Respiratory System (Age 0-4) & CO,  Public Transport Strikes                                      & Difference in Differences                         \\
+\rowcolor{Gray}
+\cite{halliday_vog_2019}       & Hawaii, USA                 & ER Admission for Pulmonary Outcomes                         & PM2.5,  SO2 Emissions From Kilauea Volcano and Wind Direction (IV) & Instrumental Variable                             \\
+\cite{he2016effect}            & 34 Urban Districts, China   & Monthly Standardized Mortality Rate                         & PM10, Regulation and Traffic Control Status (IV)                   & Instrumental Variable                             \\
+\rowcolor{Gray}
+\cite{he2020straw}            & China                       & Monthly Number of Deaths for All-Causes                     & PM2.5, Straw Burning (IV)                                          & Instrumental Variable                             \\
+\cite{isphording_pandemic_2021}     & Counties, Germany           & Mortality of Covid-19 Positive Male Patients (Age 80+)      & PM10,  Wind direction (IV)                                         & Instrumental Variable                             \\
+\rowcolor{Gray}
+\cite{jans_economic_2018}           & Sweden                      & Children Health Care Visits for Respiratory Illness         & PM10, Thermal Inversion (IV)                                       & Reduced-Form                             \\
+\cite{jia_is_2019}            & South Korea                 & Mortality Rates for Respiratory and Cardiovascular Diseases & Dusty Days Times China's AQI                                                       & Reduced-Form                                      \\
+\rowcolor{Gray}
+\cite{kim_sensitivity_2013}            & South Korea                 & Hospital Admissions for Respiratory Illnesses               & PM10 (air pollutant), Average PM10 Level By Date (IV)                              & Instrumental Variable                             \\
+\cite{knittel_caution_2016}        & California, USA             & Infant Mortality                                            & PM10, Road Traffic Flow and Weather variables (IV)                 & Instrumental Variable                             \\
+\rowcolor{Gray}
+\cite{moretti_pollution_2011}        & South California, USA       & Hospital Admissions for Respiratory Illnesses               & O3, Vessel Traffic (IV)                                            & Instrumental Variable                             \\
+\cite{mullins_effects_2015}       & Santiago Metropole, Chile   & Cumulative Deaths (age \textgreater 64)                     & PM10, Air quality Alerts                                           & Matching + Difference in Differences              \\
+\rowcolor{Gray}
+\cite{schlenker_airports_2016}     & California, USA             & Acute Respiratory Hospitalization                           & CO,  Planes Taxi Time (IV)                                         & Instrumental Variable                             \\
+\cite{schwartz_estimating_2015}a       & Boston, USA                 & Non-Accidental Mortality                                    & PM2.5, Back Trajectories of PM2.5 (IV)                             & Instrumental Variable                             \\
+\rowcolor{Gray}
+\cite{schwartz_estimating_2017}       & Boston, USA                 & Non-Accidental Mortality                                    & PM2.5, Height Of Planetary Boundary Layer and Wind Speed (IV)      & Instrumental Variable                             \\
+\cite{schwartz_national_2018}      & 135 Cities, USA             & Non-Accidental Mortality                                    & PM2.5, Planetary Boundary Layer, Wind Speed, and Air Pressure (IV) & Instrumental Variable                             \\
+\rowcolor{Gray}
+\cite{sheldon_impact_2017}     & Singapore                   & Acute Upper Respiratory Tract Infections                    & Pollutant Index, Indonesian Fire Radiative Power (IV)                              & Instrumental Variable                             \\
+\cite{williams_short-term_2019}       & USA                         & Asthma Rescue Event                                         & PM2.5                                                             & Poisson fixed-effects models                      \\
+\rowcolor{Gray}
+\cite{zhong2017traffic}         & Beijing, China              & Ambulance Call Rate for Coronary Heart Problem              & NO2, Number 4 Day (IV)                                             & Instrumental Variable                             \\
+
+\bottomrule
+\end{tabular}
+\begin{tablenotes}
+\scriptsize
+\item \textit{Notes}: For each study, we report its location, one of the health outcome analyzed, the independent variables (the air pollutant and in the case of an instrumental variable strategy, the instrument) and the study design.
+\end{tablenotes}
+\end{threeparttable}
+\end{adjustwidth}
+\end{table}

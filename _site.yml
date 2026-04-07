@@ -15,13 +15,13 @@ navbar:
       href: summary.html
     - text: "Intuition"
       href: intuition.html
-    - text: "Literature review"
+    - text: "Literature analysis"
       menu:
         - text: "Retrieving abstracts from the standard literature"
           href: std_lit_getting_abstracts.html
         - text: "Analysis of the standard literature"
           href: std_lit_analysis.html
-        - text: "Study of a meta-analysis"
+        - text: "Calibration of a meta-analysis"
           href: meta_analysis_epi.html
         - text: "---"
         - text: "Analysis of the causal literature"

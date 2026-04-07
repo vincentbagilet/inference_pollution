@@ -1,0 +1,97 @@
+\documentclass[11pt]{article}
+% load packages
+\usepackage{amssymb,amsmath,amsfonts,geometry,graphicx,color,setspace,natbib,hyperref}
+\usepackage{kpfonts}
+\usepackage[tableposition=top, labelfont=bf]{caption}
+\usepackage{booktabs}
+\usepackage[flushleft]{threeparttable}
+\usepackage{subcaption}
+\usepackage{siunitx}
+\usepackage[capposition=top]{floatrow}
+\usepackage[table,xcdraw]{xcolor}
+\usepackage{placeins}
+\usepackage{lineno}
+\usepackage{natbib}
+\usepackage{tabularx} % in the preamble
+\usepackage{dsfont}
+\usepackage[nameinlink,capitalise]{cleveref}
+\newcommand{\crefrangeconjunction}{--}
+
+
+\usepackage{siunitx}
+\sisetup{
+  per-mode=symbol,
+  group-separator={,},
+  group-four-digits
+}
+\DeclareSIUnit{\ugpcm}{\micro\gram\per\cubic\meter}
+
+
+%\onehalfspacing
+\geometry{left=0.6in,right=0.6in,top=0.5in,bottom=0.5in}
+%\interfootnotelinepenalty=\@M
+
+% sections options
+\usepackage{titlesec}
+\titleformat*{\section}{\fontfamily{qag}\selectfontf\bfseries\large\color{cerulean}}
+\titleformat*{\subsection}{\fontfamily{qag}\selectfont\bfseries\large}
+\titleformat*{\subsubsection}{\fontfamily{qag}\selectfont\bfseries\normalsize}
+\usepackage{color, colortbl}
+\definecolor{Gray}{gray}{0.9}
+% color options
+\definecolor{cerulean}{rgb}{0.0, 0.48, 0.65}
+\definecolor{vermilion}{rgb}{0.89, 0.26, 0.2}
+\definecolor{alizarin}{rgb}{0.82, 0.1, 0.26}
+\definecolor{americanrose}{rgb}{1.0, 0.01, 0.24}
+\definecolor{red(ryb)}{rgb}{1.0, 0.15, 0.07}
+\hypersetup{
+    colorlinks,
+    linkcolor={cerulean},
+    citecolor={cerulean},
+    urlcolor={cerulean}
+}
+% fix color of brackets for citations
+\bibpunct{\textcolor{cerulean}{(}}{\textcolor{cerulean}{)}}{,}{a}{}{;}
+
+
+% load abstract package
+\usepackage{abstract}
+\renewcommand{\abstractnamefont}{\bfseries\fontfamily{qag}\selectfont}
+
+\pagenumbering{gobble}
+
+\usepackage[T1]{fontenc}
+\usepackage{inconsolata}
+
+\setlength\parindent{0pt}
+%----------------------------------------------------------------------
+
+% DOCUMENT STARTS
+
+%----------------------------------------------------------------------
+
+\begin{document}
+
+\noindent {\LARGE\fontfamily{qag}\selectfont\textbf{\color{cerulean}Disclosure Statement}}
+
+\begin{flushright}
+Columbia University \\
+New York, US \\
+\url{vincent.bagilet@columabia.edu}
+\end{flushright}
+
+\textbf{Paper}: Accurately Estimating Relatively Small Effects: Air Pollution and Health \\
+
+April 24th, 2023,  \\
+
+This research was conducted during my PhD in Sutstainable Development at Columbia University, United States. I have no conflict of interest to declare and did not receive any financial or non financial support for this research, beyond my doctoral fellowship. No ethical consideration apply.\\
+
+A previous version of this work was coauthored with Léo Zabrock-Hallack, during his PhD at the Paris School of Economics, France and post-doctorate at the RFF-CMCC European Institute on Economics and the Environment, Milan, Italy.
+\\
+\\
+Vincent Bagilet \\
+PhD student in Sustainable Development at Columbia University\\
+\url{https://vincentbagilet.github.io/}
+
+
+\end{document}

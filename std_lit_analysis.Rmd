@@ -18,7 +18,7 @@ text-align: justify}
 knitr::opts_chunk$set(fig.path = "images/std_lit_analysis/",
                cache.path = "cache/",
                cache = FALSE,
-               echo = FALSE,
+               code_folding = TRUE,
                message = FALSE,
                warning = FALSE,
                out.width = "85%",
@@ -41,7 +41,9 @@ packages <- c(
   "knitr",
   "skimr",
   "ggridges",
-  "mediocrethemes"
+  "mediocrethemes",
+  "fixest",
+  "modelsummary"
   # "vincentbagilet/mediocrethemes"
 )
 
@@ -67,7 +69,7 @@ We retrieved the articles from [PubMed](https://pubmed.ncbi.nlm.nih.gov/) and [S
 
 'TITLE(("air pollution" OR "air quality" OR "particulate matter" OR ozone OR "nitrogen dioxide" OR "sulfur dioxide" OR "PM10" OR "PM2.5" OR "carbon dioxide" OR "carbon monoxide") AND ("emergency" OR "mortality" OR "stroke" OR "cerebrovascular" OR "cardiovascular" OR "death" OR "hospitalization") AND NOT ("long term" OR "long-term")) AND "short term"'
 
-```{r}
+```{r load_data}
 # load abstract texts and metadata
 abstracts_and_metadata <-
   readRDS(here(
@@ -87,7 +89,7 @@ This query enables us to retrieve `r nrow(abstracts_and_metadata)` abstracts.
 
 We display the main themes of the articles using a wordcloud:
 
-```{r}
+```{r themes_wordcloud}
 abstracts_and_metadata %>%
   unnest_tokens(word, abstract, to_lower = TRUE) %>%
   anti_join(tidytext::stop_words, by = "word") %>%
@@ -103,7 +105,7 @@ abstracts_and_metadata %>%
 
 And we display the list of words the most frequently used:
 
-```{r fig.asp = 1}
+```{r graph_freq_words, fig.asp = 1}
 abstracts_and_metadata %>%
   unnest_tokens(word, abstract, to_lower = TRUE) %>%
   anti_join(tidytext::stop_words, by = "word") %>%
@@ -219,7 +221,7 @@ Note that we manually selected articles that correspond to the type of articles 
 
 We skim through abstracts for which we retrieve an effect or not to see whether there are clear differences across study subsets. 
 
-First of all, we notice that we did not select some papers displaying effects in their abstracts because they do not mention confidence intervals. We need standard errors to compute power, type M and type S error, hence why we did not select these papers. A small part of them seem to however mention p-values. We could have build on this to increase slightly our set of articles considered but it would not have drastically increased the set of articles considered. As discussed previously, we also acknowledge that our algorithm fails to detect a small share of otherwise valid estimates.
+First of all, we notice that we did not select some papers displaying effects in their abstracts because they do not mention confidence intervals. We need standard errors to compute power, exaggeration and type S error, hence why we did not select these papers. A small part of them seem to however mention p-values. We could have build on this to increase slightly our set of articles considered but it would not have drastically increased the set of articles considered. As discussed previously, we also acknowledge that our algorithm fails to detect a small share of otherwise valid estimates.
 
 We then noticed that a non-negligible share of articles for which we do not detect an effect seem to to be off-topic. Our quick exploration did not show evidence of such an issue in articles for which we detected an effect. This is rather reassuring; we are filtering out not well-suited papers.
 
@@ -630,17 +632,17 @@ We notice that *for about 55% of the estimates considered here, the magnitude of
 
 # Retrospective Power analysis
 
-We then turn to the power analysis. The objective is to evaluate the power, type M and type S errors for each estimate. 
+We then turn to the power analysis. The objective is to evaluate the power, exaggeration and type S errors for each estimate. 
 
 To compute these values, we would need to know the true effect size. Yet, true effects are of course unknown. One solution could be to use estimates from the literature and meta-analyses as best guesses for these true values. Yet, in the setting of this automated literature review, detecting what is exactly measured in each analysis is particularly challenging since there is no standardized way of reporting the results beyond mentioning confidence intervals. One study may for instance claim that a 10 $\mu g/m^{3}$ increase in PM2.5 concentration is associated with an increase of x% in hospital admissions over the course of a day while another study may state that a 2% increase in ozone concentration increases the number of deaths by 3 over a month. Fortunately, for each estimate retrieved, even though we do not know what is measured, we can evaluate the precision with which it is estimated.
 
-To circumvent the fact that we do not know the actual effect size, we follow a strategy suggested by Gelman and Carlin (2014). We consider a range of potential "true" effect sizes and run a sensitivity analysis. We investigate what would be the power, type M and type S error if the true effect was only a fraction of the measured effect. This enables us **to assess whether the design of the study would be *good enough* to detect a smaller effect**. If assuming that the true effect is half of the measured effect yields a power of 30%, there is probably a major issue with the design of this study. With this design, this (non zero) effect would only be detected 30% of the time.
+To circumvent the fact that we do not know the actual effect size, we follow a strategy suggested by Gelman and Carlin (2014). We consider a range of potential "true" effect sizes and run a sensitivity analysis. We investigate what would be the power, exaggeration and type S error if the true effect was only a fraction of the measured effect. This enables us **to assess whether the design of the study would be *good enough* to detect a smaller effect**. If assuming that the true effect is half of the measured effect yields a power of 30%, there is probably a major issue with the design of this study. With this design, this (non zero) effect would only be detected 30% of the time.
 
-Of course, there is no reason to think *a priori* that a given effect would be overestimated. The values for power, type M and type S errors are therefore only informative. 
+Of course, there is no reason to think *a priori* that a given effect would be overestimated. The values for power, exaggeration and type S errors are therefore only informative. 
 
-To carry out the analysis, we use the package `retrodesign` which computes post analysis design calculations (power, type M and type S errors). We run the function `retro_desing()` for several effect sizes.
+To carry out the analysis, we use the package `retrodesign` which computes post analysis design calculations (power, exaggeration and type S errors). We run the function `retro_desing()` for several effect sizes.
 
-In a first part, we investigate whether the literature might be subject to design issues. We analyze the distribution of power, type M and type S errors in the whole set of abstracts, how they evolve jointly or along several variables such as the size of the true effect. We find clear evidence of heterogeneity across articles. Some of them seem to present robust designs while others seem much more problematic, yielding low power and high rates of type M error, even for large hypothesized true effect sizes.
+In a first part, we investigate whether the literature might be subject to design issues. We analyze the distribution of power, exaggeration and type S errors in the whole set of abstracts, how they evolve jointly or along several variables such as the size of the true effect. We find clear evidence of heterogeneity across articles. Some of them seem to present robust designs while others seem much more problematic, yielding low power and high rates of type M error, even for large hypothesized true effect sizes.
 
 We then compute and plot power and exaggeration curves. They represent the statistical power and exaggeration ratio of each study against hypothetical true effect sizes defined as a fraction of the observed estimates.
 
@@ -777,7 +779,7 @@ If the true effects of studies were equal to half of the estimates, half of the 
 
 # Analysis of the sources of heterogeneity
 
-We then investigate potential sources of heterogeneity.
+We then investigate potential sources of heterogeneity. We start by building graphs and then turn to a more synthetic regression analysis.
 
 To simplify and clarify our analysis, we consider that an estimate has low power if its computed power is lower than 80% if the true effect is half of the measured effect. These numbers are arbitrary. 80% is the threshold usually used in power analyses and half is purely arbitrary and could be changed easily in a robustness check. Following this criterion, the number and proportion of estimates with low power is as follows:
 
@@ -799,7 +801,7 @@ articles_low_adequate %>%
 
 Based this criterion, **the number of studies with low power is concernedly high**. 
 
-Such articles are also associated with large type M errors:
+Such articles are also associated with large exaggeration:
 
 ```{r}
 articles_low_adequate %>% 
@@ -809,7 +811,7 @@ articles_low_adequate %>%
    median_type_m = median(type_m)
   ) %>% 
   mutate_at(vars(mean_type_m, median_type_m), ~ round(., 2)) %>%
-  kable(col.names = c("Power", "Mean type M", "Median type M")) %>%
+  kable(col.names = c("Power", "Mean exaggeration", "Median exaggeration")) %>%
   kable_styling(position = "center")
 ```
 
@@ -844,7 +846,7 @@ articles_low_adequate %>%
 
 **The proportion of articles with low power does not seem to have drastically evolved after the 1990s**. One may have expected that this proportion would have decreased in time as researchers have access to more and more data, computational power and as estimation methods improve. 
 
-We can also look more generally at how power, type M and type S error evolved in time.
+We can also look more generally at how power, exaggeration and type S error evolved in time.
 
 ```{r}
 retro_analysis_pubdate <- data_retrodesign_fraction %>% 
@@ -884,11 +886,11 @@ retro_analysis_pubdate %>%
   # geom_smooth(size = 0.3, formula = y ~ x + I(x^2)) +
   # facet_wrap(~ prop_true_effect_phrase) +
   labs(
-    title = "Evolution of mean type M error in the literature with publication date", 
+    title = "Evolution of mean exaggeration in the literature with publication date", 
     subtitle = "If the magnitude of true effect is half of the measured effect",
     size = "Number of articles published per year",
     x = "Publication date", 
-    y = "Type M"
+    y = "Exaggeration"
   )
 
 retro_analysis_pubdate %>% 
@@ -907,15 +909,15 @@ retro_analysis_pubdate %>%
     subtitle = "If the magnitude of true effect is half of the measured effect",
     size = "Number of articles published per year",
     x = "Publication date", 
-    y = "Type S"
+    y = "Type S error rate"
   )
 ```
 
-There does not seem to be a clear trend in the evolution of power and type S error. However, type M error seems to increase slightly in time. This is rather concerning. One may potentially explain that by the fact that the literature is chasing smaller and smaller effects, leading to more type M error. This hypothesis is however difficult to verify since the effects we retrieved are not standardized, as mentioned previously.
+There does not seem to be a clear trend in the evolution of power and type S error. However, exaggeration seems to increase slightly in time. This is rather concerning. One may potentially explain that by the fact that the literature is chasing smaller and smaller effects, leading to more exaggeration. This hypothesis is however difficult to verify since the effects we retrieved are not standardized, as mentioned previously.
 
-Carrying out an analysis by quantile clearly shows that this evolution is driven by outliers with vary large type M errors. The yearly maximum type M error rates have increased in recent years.
+Carrying out an analysis by quantile clearly shows that this evolution is driven by outliers with vary large exaggerations. The yearly maximum exaggeration have increased in recent years.
 
-```{r}
+```{r fig.asp=1}
 retro_analysis_pubdate %>% 
   filter(percentage == 0.75) %>% 
   group_by(year = year(pub_date), percentage) %>%
@@ -932,10 +934,10 @@ retro_analysis_pubdate %>%
   # geom_smooth(size = 0.3, formula = y ~ x + I(x^2)) +
   facet_wrap(~ quantile, scales = "free_y") +
   labs(
-    title = "Evolution type M error with publication date, by quantile", 
+    title = "Evolution exaggeration with publication date, by quantile", 
     subtitle = "If the magnitude of true effect is half of the measured effect",
     x = "Publication date", 
-    y = "Type M"
+    y = "Exaggeration"
   )
 ```
 
@@ -1114,7 +1116,8 @@ Finally, we explore the link between power and the number of observations. Remem
 articles_low_adequate %>% 
   ggplot() +
   geom_density(
-    aes(x = n_obs, color = low_power_phrase, fill = low_power_phrase)
+    aes(x = n_obs, color = low_power_phrase, fill = low_power_phrase),
+    alpha = 0.6
   ) +
   labs(
     title = "Distribution of the number of observations",
@@ -1129,7 +1132,8 @@ articles_low_adequate %>%
 articles_low_adequate %>% 
   ggplot() +
   geom_density(
-    aes(x = length_study, color = low_power_phrase, fill = low_power_phrase)
+    aes(x = length_study, color = low_power_phrase, fill = low_power_phrase),
+    alpha = 0.6
   ) +
   labs(
     title = "Distribution of the length of the study",
@@ -1144,7 +1148,8 @@ articles_low_adequate %>%
 articles_low_adequate %>% 
   ggplot() +
   geom_density(
-    aes(x = n_cities, color = low_power_phrase, fill = low_power_phrase)
+    aes(x = n_cities, color = low_power_phrase, fill = low_power_phrase),
+    alpha = 0.6
   ) +
   labs(
     title = "Distribution of the number of cities in each study",
@@ -1159,9 +1164,96 @@ articles_low_adequate %>%
 
 There does not seem to be substantial heterogeneity in terms of number of observations or length of the study period (at least in articles for which we were able to retrieve this information). We may not observe any difference in terms of number of observations because we do not have this information for many studies. We have retrieved more data about the number of cities considered and it seems that more studies with low power only consider one city. The data are imperfect but this result may come from the fact that estimates from studies focusing on one city are likely to be less precise than those from studies focusing on several cities. This would be due to a smaller number of observations.
 
-### Summary
+### Regression analysis
 
-We have seem that mean and median power do not seem to have greatly evolved in time but the average type M seems to have increased in time. This pattern seems to be driven by the fact that more and more papers with very large type M errors have been published recently. We have also seen that health science journals seem to be more prone to power issues than other journals. However, there seems to be a shared lack of concern for low power issues across all fields. Finally, we did not find evidence of obvious heterogeneity in outcome, pollutant or sub-population studied but noticed that more studies with low power only seem to be considering only one city.
+We then turn to regressions to run a more thorough analysis. I need to wrangle my data to run this analysis: I create dummies for the variables of interest and define reference categories.
+
+I do not control for the length of the study or the number of cities for two reasons: 
+
+- These variable are mechanically correlated with power and for instance the number of observation may systematically vary in studies considering $NO_x$ vs $CO$ and if so, one would not want to control for the number of observations as they would be defining features of analyses of a certain type of pollutants,
+- There are many missing values for these variables
+
+<!-- We want to compare :  -->
+
+<!-- - Population considered (`subpop`). It is either "elders" or "infants". When it is `NA`, it probably means that the whole population is considered. However, it might also be the case that the population considered was just not detected. There are `r articles_low_adequate |> unnest(subpop) |> count(subpop) |> filter(is.na(subpop)) |> pull(n)` missing observations. We thus want to compare these specific population to the rest of the population. -->
+<!-- - Outcomes (`outcome`). It is either "emergency" or "mortality" (or missing or non-detected. There are `r articles_low_adequate |> unnest(outcome) |> count(outcome) |> filter(is.na(outcome)) |> pull(n)`). We thus want to compare these outcomes together, *ie* excluding missing values -->
+<!-- - Fields (`subject_area`).  -->
+
+#### Raw power
+
+
+```{r reg_power}
+unnest_manual <- function(df, var) {
+  df |> 
+    unnest({{ var }}) |> 
+    mutate({{ var }} := ifelse(is.na({{ var }}), paste("missing", rlang::as_name(enquo(var)), sep = "_"), {{ var }})) |>
+    pivot_wider(names_from = {{ var }}, values_from = {{ var }}, values_fn = \(x) TRUE, values_fill = FALSE) |>
+    janitor::clean_names()
+}
+
+data_reg <- articles_low_adequate |> 
+  mutate(
+    year = year(pub_date),
+    n_obs_1000 = n_obs/1000,
+    subject_area = ifelse(subject_area == "Life Sciences" | is.na(subject_area), "missing_subject_area", as.character(subject_area))
+  ) |> 
+  unnest_manual(subpop) |> 
+  unnest_manual(outcome) |> 
+  pivot_wider(names_from = subject_area, values_from = subject_area, values_fn = \(x) TRUE, values_fill = FALSE) |> 
+  unnest_manual(pollutant) 
+
+vars <- names(data_reg |> select(elders:nox))
+#remove ref categories
+vars <- vars[-which(vars %in% c("missing_subpop", "emergency", "multidisciplinary", "missing_pollutant"))]
+
+reg_power <- data_reg |> 
+  feols(
+    data = _,
+    fml = power ~ year + 
+      sw(elders + infants, #ref = missing ie the overall population
+      mortality + missing_outcome, #ref = emergency 
+      health_sciences + physical_sciences + missing_subject_area, #ref = multidisciplinary
+      particulate_matter + air_quality_index + pm2_5 + o3 + pm10 + so2 + no2 + co + no + bc + nox, 
+      elders + infants + mortality + missing_outcome + health_sciences + physical_sciences + missing_subject_area + particulate_matter + air_quality_index + pm2_5 + o3 + pm10 + so2 + no2 + co + no + bc + nox), 
+    vcov = ~doi
+  )
+
+names(reg_power) <- rep("power", length(reg_power))
+
+modelsummary(reg_power, gof_omit = "IC|Adj|Log", stars = TRUE, coef_rename = \(x) str_remove(x, "TRUE")) 
+```
+
+From these regressions, we get that there does not seem to be major disparities apart from the fact that:
+
+- Studies published in health science journals seem to have higher power than those published in other fields (or with missing field information)
+- Studies interested considering air quality indexes seem to have higher power on average (and studies considering black carbon may have lower power). However, only `r data_reg |> count(doi, air_quality_index) |> filter(air_quality_index) |> nrow()` studies in our dataset consider such a pollutant.
+
+#### Adequate power
+
+Arguably, having an "adequate" power could matter most than power itself. I thus re-run the same analysis but with `adequate_power` as an outcome variable (and using a logit model).
+
+```{r reg_adeq}
+reg_adeq <- data_reg |> 
+  mutate(adeq_power = !low_power) |> 
+  feglm(
+    data = _,
+    fml = adeq_power ~ year + 
+      sw(elders + infants, #ref = missing ie the overall population
+      mortality + missing_outcome, #ref = emergency 
+      health_sciences + physical_sciences + missing_subject_area, #ref = multidisciplinary
+      particulate_matter + air_quality_index + pm2_5 + o3 + pm10 + so2 + no2 + co + no + bc + nox, 
+      elders + infants + mortality + missing_outcome + health_sciences + physical_sciences + missing_subject_area + particulate_matter + air_quality_index + pm2_5 + o3 + pm10 + so2 + no2 + co + no + bc + nox), 
+    vcov = ~doi,
+    family = binomial(link = "logit")
+  )
+
+names(reg_adeq) <- rep("adeq_power", length(reg_adeq))
+
+modelsummary(reg_adeq, gof_omit = "IC|Adj|Log", stars = TRUE, coef_rename = \(x) str_remove(x, "TRUE"))
+```
+
+The results for raw power seem to carry, even though studies considering "mortality" as an outcome may have a lower rate of adequate power than those considering hospital admissions.
+
 
 
 

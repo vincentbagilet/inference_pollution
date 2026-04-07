@@ -1,5 +1,5 @@
 ---
-title: "Low Statistical Power in the NHST Framework"
+title: "Background on Statistical Power and Exaggeration"
 date: "`r Sys.Date()`"
 output:
   distill::distill_article:
@@ -320,13 +320,13 @@ graph_ci <- data_results_10000_experiments %>%
 graph_ci
 
 # # save the graph
-# ggsave(
-#   graph_ci,
-#   filename = here::here("3.outputs", "graph_ci.pdf"),
-#   width = 30,
-#   height = 12,
-#   units = "cm"
-# )
+ggsave(
+  graph_ci,
+  filename = here::here("images", "intuition", "graph_intuition_few.pdf"),
+  width = 20,
+  height = 8,
+  units = "cm"
+)
 ```       
        
 ### Computing Statistical Power, Type M and S Errors

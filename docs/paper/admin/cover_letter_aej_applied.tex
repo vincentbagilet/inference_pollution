@@ -1,0 +1,107 @@
+\documentclass[11pt]{article}
+% load packages
+\usepackage{amssymb,amsmath,amsfonts,geometry,graphicx,color,setspace,natbib,hyperref}
+\usepackage{kpfonts}
+\usepackage[tableposition=top, labelfont=bf]{caption}
+\usepackage{booktabs}
+\usepackage[flushleft]{threeparttable}
+\usepackage{subcaption}
+\usepackage{siunitx}
+\usepackage[capposition=top]{floatrow}
+\usepackage[table,xcdraw]{xcolor}
+\usepackage{placeins}
+\usepackage{lineno}
+\usepackage{natbib}
+\usepackage{tabularx} % in the preamble
+\usepackage{dsfont}
+\usepackage[nameinlink,capitalise]{cleveref}
+\newcommand{\crefrangeconjunction}{--}
+
+
+\usepackage{siunitx}
+\sisetup{
+  per-mode=symbol,
+  group-separator={,},
+  group-four-digits
+}
+\DeclareSIUnit{\ugpcm}{\micro\gram\per\cubic\meter}
+
+
+%\onehalfspacing
+\geometry{left=0.6in,right=0.6in,top=0.5in,bottom=0.5in}
+%\interfootnotelinepenalty=\@M
+
+% sections options
+\usepackage{titlesec}
+\titleformat*{\section}{\fontfamily{qag}\selectfontf\bfseries\large\color{cerulean}}
+\titleformat*{\subsection}{\fontfamily{qag}\selectfont\bfseries\large}
+\titleformat*{\subsubsection}{\fontfamily{qag}\selectfont\bfseries\normalsize}
+\usepackage{color, colortbl}
+\definecolor{Gray}{gray}{0.9}
+% color options
+\definecolor{cerulean}{rgb}{0.0, 0.48, 0.65}
+\definecolor{vermilion}{rgb}{0.89, 0.26, 0.2}
+\definecolor{alizarin}{rgb}{0.82, 0.1, 0.26}
+\definecolor{americanrose}{rgb}{1.0, 0.01, 0.24}
+\definecolor{red(ryb)}{rgb}{1.0, 0.15, 0.07}
+\hypersetup{
+    colorlinks,
+    linkcolor={cerulean},
+    citecolor={cerulean},
+    urlcolor={cerulean}
+}
+% fix color of brackets for citations
+\bibpunct{\textcolor{cerulean}{(}}{\textcolor{cerulean}{)}}{,}{a}{}{;}
+
+
+% load abstract package
+\usepackage{abstract}
+\renewcommand{\abstractnamefont}{\bfseries\fontfamily{qag}\selectfont}
+
+\pagenumbering{gobble}
+
+\usepackage[T1]{fontenc}
+\usepackage{inconsolata}
+
+\setlength\parindent{0pt}
+%----------------------------------------------------------------------
+
+% DOCUMENT STARTS
+
+%----------------------------------------------------------------------
+
+\begin{document}
+
+\noindent {\LARGE\fontfamily{qag}\selectfont\textbf{\color{cerulean}Cover Letter}}
+
+\begin{flushright}
+Columbia University \\
+New York, US \\
+\url{vincent.bagilet@columabia.edu}
+\end{flushright}
+
+April 24th, 2023, \\
+
+To the Board of Editors of \textit{American Economic Journal: Applied Economics}. \\
+
+Dear Editors,
+\\
+\\
+I am pleased to submit an original research article entitled \textit{Accurately Estimating Relatively Small Effects: Air Pollution and Health}, for consideration for publication in \textit{American Economic Journal: Applied Economics}.
+\\
+\\
+I would like to point that we do not have a stand alone online appendix. I made all appendix material and code available on the project's website in reader friendly HTML documents (\url{https://vincentbagilet.github.io/inference_pollution}). Complementary code can be found on the project's GitHub (\url{https://github.com/vincentbagilet/inference_pollution}).
+\\
+\\
+I hope that you will find it interesting and I look forward to hearing from you.
+\\
+\\
+Thank you for your consideration,
+\\
+\\
+Vincent Bagilet \\
+PhD student\\
+\url{https://vincentbagilet.github.io/}
+
+
+\end{document}

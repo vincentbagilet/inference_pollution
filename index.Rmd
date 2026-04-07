@@ -17,4 +17,4 @@ Hi and welcome!
 
 This is the website for the paper [Accurate Estimation of Small Effects: Illustration Through Air Pollution and Health](inference_pollution_paper.pdf). It gathers the paper, all the code and some additional material.
 
-In this paper, I assess the ability of various research designs in measuring small effects, that of air pollution on health in the short-term. 
+In this paper, I **identify tangible design parameters** that can lead to inaccurate estimates of relatively small effects, through the case of the short-term health effects of air pollution.
