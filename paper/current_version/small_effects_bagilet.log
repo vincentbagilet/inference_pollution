@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.11.27)  7 APR 2026 07:46
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.11.27)  10 APR 2026 18:28
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -1090,15 +1090,15 @@ e 45.
 pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./images/graph_experiment_re
 sults.pdf): PDF inclusion: found PDF version <1.7>, but at most version <1.5> a
 llowed
-<images/graph_experiment_results.pdf, id=213, 853.1875pt x 426.59375pt>
+<images/graph_experiment_results.pdf, id=203, 853.1875pt x 426.59375pt>
 File: images/graph_experiment_results.pdf Graphic file (type pdf)
 <use images/graph_experiment_results.pdf>
 Package pdftex.def Info: images/graph_experiment_results.pdf  used on input lin
-e 123.
+e 124.
 (pdftex.def)             Requested size: 469.75502pt x 234.88113pt.
-[6 <./images/graph_experiment_results.pdf>] [7]
+[6] [7 <./images/graph_experiment_results.pdf>]
 LaTeX Font Info:    Trying to load font information for T1+jkpss on input line 
-152.
+153.
 
 (/usr/local/texlive/2023/texmf-dist/tex/latex/kpfonts/t1jkpss.fd
 File: t1jkpss.fd 2007/07/16 Fontinst v1.928 font definitions for T1/jkpss.
@@ -1107,166 +1107,168 @@ File: t1jkpss.fd 2007/07/16 Fontinst v1.928 font definitions for T1/jkpss.
 pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./images/graph_retrodesign_c
 ausal_inf.pdf): PDF inclusion: found PDF version <1.7>, but at most version <1.
 5> allowed
-<images/graph_retrodesign_causal_inf.pdf, id=340, 511.9125pt x 284.06125pt>
+<images/graph_retrodesign_causal_inf.pdf, id=332, 511.9125pt x 284.06125pt>
 File: images/graph_retrodesign_causal_inf.pdf Graphic file (type pdf)
 <use images/graph_retrodesign_causal_inf.pdf>
 Package pdftex.def Info: images/graph_retrodesign_causal_inf.pdf  used on input
- line 167.
+ line 168.
 (pdftex.def)             Requested size: 469.75502pt x 260.66766pt.
-[10 <./images/graph_retrodesign_causal_inf.pdf>]
+[10]
 
 pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./images/graph_retro_iv.pdf)
 : PDF inclusion: found PDF version <1.7>, but at most version <1.5> allowed
-<images/graph_retro_iv.pdf, id=370, 853.1875pt x 426.59375pt>
+<images/graph_retro_iv.pdf, id=342, 853.1875pt x 426.59375pt>
 File: images/graph_retro_iv.pdf Graphic file (type pdf)
 <use images/graph_retro_iv.pdf>
-Package pdftex.def Info: images/graph_retro_iv.pdf  used on input line 176.
+Package pdftex.def Info: images/graph_retro_iv.pdf  used on input line 177.
 (pdftex.def)             Requested size: 469.75502pt x 234.88113pt.
-<../../images/causal_lit_overview/graph_distribution_t.pdf, id=377, 397.485pt x
+<../../images/causal_lit_overview/graph_distribution_t.pdf, id=349, 397.485pt x
  341.275pt>
 File: ../../images/causal_lit_overview/graph_distribution_t.pdf Graphic file (t
 ype pdf)
 <use ../../images/causal_lit_overview/graph_distribution_t.pdf>
 Package pdftex.def Info: ../../images/causal_lit_overview/graph_distribution_t.
-pdf  used on input line 187.
+pdf  used on input line 188.
 (pdftex.def)             Requested size: 225.4804pt x 193.59663pt.
-<images/graph_effect_precision.pdf, id=378, 397.485pt x 341.275pt>
+<images/graph_effect_precision.pdf, id=350, 397.485pt x 341.275pt>
 File: images/graph_effect_precision.pdf Graphic file (type pdf)
 <use images/graph_effect_precision.pdf>
 Package pdftex.def Info: images/graph_effect_precision.pdf  used on input line 
-188.
+189.
 (pdftex.def)             Requested size: 225.4804pt x 193.59663pt.
-[11]
+[11 <./images/graph_retrodesign_causal_inf.pdf>]
 LaTeX Font Info:    Font shape `T1/zi4/b/n' will be
-(Font)              scaled to size 12.0pt on input line 198.
+(Font)              scaled to size 12.0pt on input line 199.
 LaTeX Font Info:    Font shape `T1/zi4/m/n' will be
-(Font)              scaled to size 9.0pt on input line 198.
+(Font)              scaled to size 9.0pt on input line 199.
 LaTeX Font Info:    Font shape `T1/zi4/m/n' will be
-(Font)              scaled to size 7.0pt on input line 198.
+(Font)              scaled to size 7.0pt on input line 199.
  [12 <./images/graph_retro_iv.pdf>]
 
 pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./images/graph_retrodesign_e
 pi.pdf): PDF inclusion: found PDF version <1.7>, but at most version <1.5> allo
 wed
-<images/graph_retrodesign_epi.pdf, id=431, 511.9125pt x 284.06125pt>
+<images/graph_retrodesign_epi.pdf, id=424, 511.9125pt x 284.06125pt>
 File: images/graph_retrodesign_epi.pdf Graphic file (type pdf)
 <use images/graph_retrodesign_epi.pdf>
 Package pdftex.def Info: images/graph_retrodesign_epi.pdf  used on input line 2
-17.
+18.
 (pdftex.def)             Requested size: 469.75502pt x 260.66766pt.
-
+[13 <../../images/causal_lit_overview/graph_distribution_t.pdf> <./images/graph
+_effect_precision.pdf>]
 
 pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./images/graph_shah_2015.pdf
 ): PDF inclusion: found PDF version <1.7>, but at most version <1.5> allowed
-<images/graph_shah_2015.pdf, id=439, 853.1875pt x 426.59375pt>
+<images/graph_shah_2015.pdf, id=450, 853.1875pt x 426.59375pt>
 File: images/graph_shah_2015.pdf Graphic file (type pdf)
 <use images/graph_shah_2015.pdf>
-Package pdftex.def Info: images/graph_shah_2015.pdf  used on input line 226.
+Package pdftex.def Info: images/graph_shah_2015.pdf  used on input line 227.
 (pdftex.def)             Requested size: 422.77664pt x 211.38911pt.
-[13 <../../images/causal_lit_overview/graph_distribution_t.pdf> <./images/graph
-_effect_precision.pdf>]
-<images/distrib_t_stat_epi.pdf, id=463, 511.9125pt x 284.06125pt>
+<images/distrib_t_stat_epi.pdf, id=456, 511.9125pt x 284.06125pt>
 File: images/distrib_t_stat_epi.pdf Graphic file (type pdf)
 <use images/distrib_t_stat_epi.pdf>
-Package pdftex.def Info: images/distrib_t_stat_epi.pdf  used on input line 235.
+Package pdftex.def Info: images/distrib_t_stat_epi.pdf  used on input line 236.
 
 (pdftex.def)             Requested size: 375.80544pt x 208.53326pt.
- [14 <./images/graph_retrodesign_epi.pdf>] [15 <./images/graph_shah_2015.pdf> <
-./images/distrib_t_stat_epi.pdf>]
-(./tables/policy_implications.tex) [16] [17] [18] [19] [20] [21] [22]
+[14 <./images/graph_retrodesign_epi.pdf>] [15 <./images/graph_shah_2015.pdf> <.
+/images/distrib_t_stat_epi.pdf>] [16] (./tables/policy_implications.tex)
+[17] [18] [19] [20] [21] [22]
 
 pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./images/graph_sample_size.p
 df): PDF inclusion: found PDF version <1.7>, but at most version <1.5> allowed
-<images/graph_sample_size.pdf, id=668, 853.1875pt x 568.1225pt>
+<images/graph_sample_size.pdf, id=659, 853.1875pt x 568.1225pt>
 File: images/graph_sample_size.pdf Graphic file (type pdf)
 <use images/graph_sample_size.pdf>
-Package pdftex.def Info: images/graph_sample_size.pdf  used on input line 405.
+Package pdftex.def Info: images/graph_sample_size.pdf  used on input line 406.
 (pdftex.def)             Requested size: 469.75502pt x 312.80641pt.
-<images/graph_effect_size.pdf, id=674, 853.1875pt x 568.1225pt>
+<images/graph_effect_size.pdf, id=665, 853.1875pt x 568.1225pt>
 File: images/graph_effect_size.pdf Graphic file (type pdf)
 <use images/graph_effect_size.pdf>
-Package pdftex.def Info: images/graph_effect_size.pdf  used on input line 418.
+Package pdftex.def Info: images/graph_effect_size.pdf  used on input line 419.
 (pdftex.def)             Requested size: 469.75502pt x 312.80641pt.
 [23]
 
 pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./images/graph_prop_exo_shoc
 ks.pdf): PDF inclusion: found PDF version <1.7>, but at most version <1.5> allo
 wed
-<images/graph_prop_exo_shocks.pdf, id=686, 853.1875pt x 568.1225pt>
+<images/graph_prop_exo_shocks.pdf, id=676, 853.1875pt x 568.1225pt>
 File: images/graph_prop_exo_shocks.pdf Graphic file (type pdf)
 <use images/graph_prop_exo_shocks.pdf>
 Package pdftex.def Info: images/graph_prop_exo_shocks.pdf  used on input line 4
-29.
+30.
 (pdftex.def)             Requested size: 469.75502pt x 312.80641pt.
 [24 <./images/graph_sample_size.pdf>] [25 <./images/graph_effect_size.pdf>]
 (./tables/table_count_cases.tex) [26 <./images/graph_prop_exo_shocks.pdf>]
+[27]
 
 pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./images/graph_iv.pdf): PDF 
 inclusion: found PDF version <1.7>, but at most version <1.5> allowed
-<images/graph_iv.pdf, id=756, 568.1225pt x 255.95625pt>
+<images/graph_iv.pdf, id=752, 568.1225pt x 255.95625pt>
 File: images/graph_iv.pdf Graphic file (type pdf)
 <use images/graph_iv.pdf>
-Package pdftex.def Info: images/graph_iv.pdf  used on input line 456.
+Package pdftex.def Info: images/graph_iv.pdf  used on input line 457.
 (pdftex.def)             Requested size: 469.75502pt x 211.64688pt.
-[27] [28 <./images/graph_iv.pdf>] [29] [30] (./small_effects_bagilet.bbl
-[31]
+[28 <./images/graph_iv.pdf>] [29] [30] (./small_effects_bagilet.bbl [31]
 Underfull \hbox (badness 1087) in paragraph at lines 197--200
 []\T1/jkp/b/n/12 Dominici, Francesca, and Cor-win Zigler. \T1/jkp/m/n/12 2017. 
 ``Best Prac-tices for Gaug-ing Ev-i-
  []
 
 [32] [33] [34] [35] [36]) [37]
-Overfull \hbox (18.4909pt too wide) in paragraph at lines 528--529
+Overfull \hbox (18.4909pt too wide) in paragraph at lines 529--530
 [] []\T1/jkp/b/n/12 In-stru-men-tal Vari-able De-sign:[] [][]\T1/jkp/m/n/12 Mor
 etti and Nei-dell[][] []([][]2011[][][])[], [][]Eben-stein, Frank and Reingew-
  []
 
-<images/iv_example.pdf, id=989, 853.1875pt x 375.4025pt>
+<images/iv_example.pdf, id=981, 853.1875pt x 375.4025pt>
 File: images/iv_example.pdf Graphic file (type pdf)
 <use images/iv_example.pdf>
-Package pdftex.def Info: images/iv_example.pdf  used on input line 547.
+Package pdftex.def Info: images/iv_example.pdf  used on input line 548.
 (pdftex.def)             Requested size: 469.75502pt x 206.6954pt.
 [38] [39 <./images/iv_example.pdf>]
 
 pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./images/graph_strikes.pdf):
  PDF inclusion: found PDF version <1.7>, but at most version <1.5> allowed
-<images/graph_strikes.pdf, id=1039, 853.1875pt x 341.275pt>
+<images/graph_strikes.pdf, id=1031, 853.1875pt x 341.275pt>
 File: images/graph_strikes.pdf Graphic file (type pdf)
 <use images/graph_strikes.pdf>
-Package pdftex.def Info: images/graph_strikes.pdf  used on input line 567.
+Package pdftex.def Info: images/graph_strikes.pdf  used on input line 568.
 (pdftex.def)             Requested size: 469.75502pt x 187.9049pt.
 [40] [41 <./images/graph_strikes.pdf>]
 
 pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./images/graph_air_quality_a
 lerts.pdf): PDF inclusion: found PDF version <1.7>, but at most version <1.5> a
 llowed
-<images/graph_air_quality_alerts.pdf, id=1078, 853.1875pt x 341.275pt>
+<images/graph_air_quality_alerts.pdf, id=1070, 853.1875pt x 341.275pt>
 File: images/graph_air_quality_alerts.pdf Graphic file (type pdf)
 <use images/graph_air_quality_alerts.pdf>
 Package pdftex.def Info: images/graph_air_quality_alerts.pdf  used on input lin
-e 584.
+e 585.
 (pdftex.def)             Requested size: 469.75502pt x 187.9049pt.
 [42 <./images/graph_air_quality_alerts.pdf>]
 
 pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./images/graph_iv_wind.pdf):
  PDF inclusion: found PDF version <1.7>, but at most version <1.5> allowed
-<images/graph_iv_wind.pdf, id=1122, 853.1875pt x 710.655pt>
+<images/graph_iv_wind.pdf, id=1114, 853.1875pt x 710.655pt>
 File: images/graph_iv_wind.pdf Graphic file (type pdf)
 <use images/graph_iv_wind.pdf>
-Package pdftex.def Info: images/graph_iv_wind.pdf  used on input line 601.
+Package pdftex.def Info: images/graph_iv_wind.pdf  used on input line 602.
 (pdftex.def)             Requested size: 469.75502pt x 391.28436pt.
 [43] [44 <./images/graph_iv_wind.pdf>] (./small_effects_bagilet.aux)
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
 Package rerunfilecheck Info: File `small_effects_bagilet.out' has not changed.
 (rerunfilecheck)             Checksum: FE23D621171479747268F067B21DB769;4817.
  ) 
 Here is how much of TeX's memory you used:
  21775 strings out of 476025
  417387 string characters out of 5790016
- 1868388 words of memory out of 5000000
+ 1867388 words of memory out of 5000000
  41670 multiletter control sequences out of 15000+600000
  635694 words of font info for 138 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 99i,16n,145p,2102b,1190s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 99i,16n,145p,2470b,1190s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2023/texmf-dist/fonts/type1/public/inconsolata/Inconsolat
 a-zi4b.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/inconsolata/I
 nconsolata-zi4r.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/kpfo
@@ -1284,10 +1286,10 @@ f-dist/fonts/type1/public/kpfonts/jkpsy.pfb></usr/local/texlive/2023/texmf-dist
 /fonts/type1/public/kpfonts/jkpsyb.pfb></usr/local/texlive/2023/texmf-dist/font
 s/type1/public/tex-gyre/qagb.pfb></usr/local/texlive/2023/texmf-dist/fonts/type
 1/public/tex-gyre/qagr.pfb>
-Output written on small_effects_bagilet.pdf (45 pages, 5215720 bytes).
+Output written on small_effects_bagilet.pdf (45 pages, 5215324 bytes).
 PDF statistics:
- 1274 PDF objects out of 1440 (max. 8388607)
- 1040 compressed objects within 11 object streams
+ 1266 PDF objects out of 1440 (max. 8388607)
+ 1032 compressed objects within 11 object streams
  201 named destinations out of 1000 (max. 500000)
  233 words of extra memory for PDF output out of 10000 (max. 10000000)
 
