@@ -20,6 +20,7 @@
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
 pre > code.sourceCode { white-space: pre; position: relative; }
 pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
@@ -94,8 +95,8 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <link rel="icon" type="image/vnd.microsoft.icon" href="images/site/favicon.ico"/>
 
   <!--  https://schema.org/Article -->
-  <meta property="article:published" itemprop="datePublished" content="2024-05-06"/>
-  <meta property="article:created" itemprop="dateCreated" content="2024-05-06"/>
+  <meta property="article:published" itemprop="datePublished" content="2026-04-22"/>
+  <meta property="article:created" itemprop="dateCreated" content="2026-04-22"/>
 
   <!--  https://developers.facebook.com/docs/sharing/webmasters#markup -->
   <meta property="og:title" content="Estimating Small Effects: Results of Prospective Power Simulations"/>
@@ -111,7 +112,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <!--radix_placeholder_rmarkdown_metadata-->
 
   <script type="text/json" id="radix-rmarkdown-metadata">
-  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","date","output","editor_options"]}},"value":[{"type":"character","attributes":{},"value":["Results of Prospective Power Simulations"]},{"type":"character","attributes":{},"value":["2024-05-06"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["toc"]}},"value":[{"type":"logical","attributes":{},"value":[true]}]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["chunk_output_type"]}},"value":[{"type":"character","attributes":{},"value":["console"]}]}]}
+  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","date","output","editor_options"]}},"value":[{"type":"character","attributes":{},"value":["Results of Prospective Power Simulations"]},{"type":"character","attributes":{},"value":["2026-04-22"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["toc"]}},"value":[{"type":"logical","attributes":{},"value":[true]}]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["chunk_output_type"]}},"value":[{"type":"character","attributes":{},"value":["console"]}]}]}
   </script>
   <!--/radix_placeholder_rmarkdown_metadata-->
   <!--radix_placeholder_navigation_in_header-->
@@ -459,8 +460,8 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   </style>
 
   <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
-  <link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet"/>
-  <link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet"/>
+  <link href="site_libs/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"/>
+  <link href="site_libs/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"/>
   <script src="site_libs/headroom-0.9.4/headroom.min.js"></script>
   <!--/radix_placeholder_navigation_in_header-->
   <!--radix_placeholder_distill-->
@@ -2190,7 +2191,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
     color: var(--hover-color, white);
   }</style>
   <!--/radix_placeholder_distill-->
-  <script src="site_libs/header-attrs-2.26/header-attrs.js"></script>
+  <script src="site_libs/header-attrs-2.30/header-attrs.js"></script>
   <script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
   <link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
   <link href="site_libs/bsTable-3.3.7/bootstrapTable.min.css" rel="stylesheet" />
@@ -2214,7 +2215,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <!--radix_placeholder_front_matter-->
 
 <script id="distill-front-matter" type="text/json">
-{"title":"Results of Prospective Power Simulations","authors":[],"publishedDate":"2024-05-06T00:00:00.000+02:00"}
+{"title":"Results of Prospective Power Simulations","authors":[],"publishedDate":"2026-04-22T00:00:00.000+02:00"}
 </script>
 
 <!--/radix_placeholder_front_matter-->
@@ -2230,14 +2231,14 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <a href="intuition.html">Intuition</a>
 <div class="nav-dropdown">
 <button class="nav-dropbtn">
-Literature review
+Literature analysis
  
 <span class="down-arrow">&#x25BE;</span>
 </button>
 <div class="nav-dropdown-content">
 <a href="std_lit_getting_abstracts.html">Retrieving abstracts from the standard literature</a>
 <a href="std_lit_analysis.html">Analysis of the standard literature</a>
-<a href="meta_analysis_epi.html">Study of a meta-analysis</a>
+<a href="meta_analysis_epi.html">Calibration of a meta-analysis</a>
 <hr/>
 <a href="causal_lit_overview.html">Analysis of the causal literature</a>
 </div>
@@ -2283,15 +2284,14 @@ Simulations
 <nav class="l-text toc figcaption" id="TOC">
 <h3>Contents</h3>
 <ul>
-<li><a href="#loading-packages" id="toc-loading-packages">Loading Packages</a></li>
 <li><a href="#general-simulations" id="toc-general-simulations">General Simulations</a>
 <ul>
 <li><a href="#loading-data" id="toc-loading-data">Loading Data</a></li>
-<li><a href="#influence-of-sample-size-on-power-and-exaggeration" id="toc-influence-of-sample-size-on-power-and-exaggeration">Influence of Sample Size on Power and Exaggeration</a></li>
-<li><a href="#influence-of-effect-size-on-power-and-exaggeration" id="toc-influence-of-effect-size-on-power-and-exaggeration">Influence of Effect Size on Power and Exaggeration</a></li>
-<li><a href="#influence-of-propotion-of-exogenous-shocks-on-power-and-exaggeration" id="toc-influence-of-propotion-of-exogenous-shocks-on-power-and-exaggeration">Influence of Propotion of Exogenous Shocks on Power and Exaggeration</a></li>
-<li><a href="#influence-of-iv-strength-on-power-and-exaggeration" id="toc-influence-of-iv-strength-on-power-and-exaggeration">Influence of IV Strength on Power and Exaggeration</a></li>
-<li><a href="#influence-of-number-of-cases-on-power-and-exaggeration" id="toc-influence-of-number-of-cases-on-power-and-exaggeration">Influence of Number of cases on Power and Exaggeration</a></li>
+<li><a href="#sample-size-on-power-and-exaggeration" id="toc-sample-size-on-power-and-exaggeration">Sample Size on Power and Exaggeration</a></li>
+<li><a href="#effect-size-on-power-and-exaggeration" id="toc-effect-size-on-power-and-exaggeration">Effect Size on Power and Exaggeration</a></li>
+<li><a href="#propotion-of-exogenous-shocks-on-power-and-exaggeration" id="toc-propotion-of-exogenous-shocks-on-power-and-exaggeration">Propotion of Exogenous Shocks on Power and Exaggeration</a></li>
+<li><a href="#iv-strength-on-power-and-exaggeration" id="toc-iv-strength-on-power-and-exaggeration">IV Strength on Power and Exaggeration</a></li>
+<li><a href="#number-of-cases-on-power-and-exaggeration" id="toc-number-of-cases-on-power-and-exaggeration">Number of cases on Power and Exaggeration</a></li>
 </ul></li>
 <li><a href="#cases-studies" id="toc-cases-studies">Cases Studies</a>
 <ul>
@@ -2306,12 +2306,10 @@ Simulations
 body {
 text-align: justify}
 </style>
-<h1 id="loading-packages">Loading Packages</h1>
-<p>We load the required packages and the data:</p>
 <div class="layout-chunk" data-layout="l-body">
 <details>
 <summary>
-Show the packages used
+Code to load the packages used here
 </summary>
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='st'><a href='https://groundhogr.com/'>"groundhog"</a></span><span class='op'>)</span></span>
@@ -2327,46 +2325,46 @@ Show the packages used
 <span><span class='co'># groundhog.library(packages, "2022-11-28")</span></span>
 <span><span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='va'>packages</span>, <span class='va'>library</span>, character.only <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span></span>
 <span></span>
-<span><span class='fu'><a href='https://vincentbagilet.github.io/mediocrethemes/reference/set_mediocre_all.html'>set_mediocre_all</a></span><span class='op'>(</span>pal <span class='op'>=</span> <span class='st'>"leo"</span><span class='op'>)</span></span></code></pre>
+<span><span class='fu'>set_mediocre_all</span><span class='op'>(</span>pal <span class='op'>=</span> <span class='st'>"leo"</span><span class='op'>)</span></span></code></pre>
 </div>
 </details>
 </div>
-<h1 id="general-simulations">General Simulations</h1>
+<h2 id="general-simulations">General Simulations</h2>
 <h3 id="loading-data">Loading Data</h3>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
 <pre class="sourceCode r"><code class="sourceCode r"><span><span class='co'># load small sample simulation results</span></span>
-<span><span class='va'>summary_evol_large</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/readRDS.html'>readRDS</a></span><span class='op'>(</span><span class='fu'><a href='https://here.r-lib.org//reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"data"</span>, <span class='st'>"simulations"</span>, <span class='st'>"summary_evol_large.RDS"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
-<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>sample_size <span class='op'>=</span> <span class='st'>"large"</span><span class='op'>)</span></span>
+<span><span class='va'>summary_evol_large</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/readRDS.html'>readRDS</a></span><span class='op'>(</span><span class='fu'>here</span><span class='op'>(</span><span class='st'>"data"</span>, <span class='st'>"simulations"</span>, <span class='st'>"summary_evol_large.RDS"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>mutate</span><span class='op'>(</span>sample_size <span class='op'>=</span> <span class='st'>"large"</span><span class='op'>)</span></span>
 <span></span>
 <span><span class='co'># load large sample simulation results</span></span>
-<span><span class='va'>summary_evol_small</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/readRDS.html'>readRDS</a></span><span class='op'>(</span><span class='fu'><a href='https://here.r-lib.org//reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"data"</span>, <span class='st'>"simulations"</span>, <span class='st'>"summary_evol_small.RDS"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
-<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>sample_size <span class='op'>=</span> <span class='st'>"small"</span><span class='op'>)</span></span>
+<span><span class='va'>summary_evol_small</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/readRDS.html'>readRDS</a></span><span class='op'>(</span><span class='fu'>here</span><span class='op'>(</span><span class='st'>"data"</span>, <span class='st'>"simulations"</span>, <span class='st'>"summary_evol_small.RDS"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>mutate</span><span class='op'>(</span>sample_size <span class='op'>=</span> <span class='st'>"small"</span><span class='op'>)</span></span>
 <span></span>
 <span><span class='co'># prepare data for graphs</span></span>
-<span><span class='va'>summary_evol_all</span> <span class='op'>&lt;-</span> <span class='va'>summary_evol_large</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
-<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/bind_rows.html'>bind_rows</a></span><span class='op'>(</span><span class='va'>summary_evol_small</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
-<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span></span>
-<span>    id_method <span class='op'>=</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/case_when.html'>case_when</a></span><span class='op'>(</span></span>
+<span><span class='va'>summary_evol_all</span> <span class='op'>&lt;-</span> <span class='va'>summary_evol_large</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>bind_rows</span><span class='op'>(</span><span class='va'>summary_evol_small</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>mutate</span><span class='op'>(</span></span>
+<span>    id_method <span class='op'>=</span> <span class='fu'>case_when</span><span class='op'>(</span></span>
 <span>      <span class='va'>id_method</span> <span class='op'>==</span> <span class='st'>"IV"</span> <span class='op'>~</span> <span class='st'>"Instrumental Variable"</span>,</span>
 <span>      <span class='va'>id_method</span> <span class='op'>==</span> <span class='st'>"OLS"</span> <span class='op'>~</span> <span class='st'>"Standard Regression"</span>,</span>
 <span>      <span class='va'>id_method</span> <span class='op'>==</span> <span class='st'>"reduced_form"</span> <span class='op'>~</span> <span class='st'>"Reduced-Form"</span>,</span>
 <span>      <span class='va'>id_method</span> <span class='op'>==</span> <span class='st'>"RDD"</span> <span class='op'>~</span> <span class='st'>"Discontinuity Design"</span></span>
 <span>    <span class='op'>)</span>,</span>
 <span>    n_obs <span class='op'>=</span> <span class='va'>n_days</span> <span class='op'>*</span> <span class='va'>n_cities</span></span>
-<span>  <span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
-<span>  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/pivot_longer.html'>pivot_longer</a></span><span class='op'>(</span></span>
+<span>  <span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>pivot_longer</span><span class='op'>(</span></span>
 <span>    cols <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"power"</span>, <span class='st'>"type_m"</span>, <span class='st'>"mean_f_stat"</span><span class='op'>)</span>,</span>
 <span>    names_to <span class='op'>=</span> <span class='st'>"metrics"</span>,</span>
 <span>    values_to <span class='op'>=</span> <span class='st'>"stat_value"</span></span>
-<span>  <span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
-<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span></span>
-<span>    metrics_name <span class='op'>=</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/case_when.html'>case_when</a></span><span class='op'>(</span></span>
+<span>  <span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>mutate</span><span class='op'>(</span></span>
+<span>    metrics_name <span class='op'>=</span> <span class='fu'>case_when</span><span class='op'>(</span></span>
 <span>      <span class='va'>metrics</span> <span class='op'>==</span> <span class='st'>"power"</span> <span class='op'>~</span> <span class='st'>"Statistical Power (%)"</span>,</span>
 <span>      <span class='va'>metrics</span> <span class='op'>==</span> <span class='st'>"type_m"</span> <span class='op'>~</span> <span class='st'>"Exaggeration Ratio"</span>,</span>
 <span>      <span class='va'>metrics</span> <span class='op'>==</span> <span class='st'>"mean_f_stat"</span> <span class='op'>~</span> <span class='st'>"F-Statistic"</span>,</span>
 <span>    <span class='op'>)</span>,</span>
-<span>    id_method_name <span class='op'>=</span> <span class='fu'><a href='https://forcats.tidyverse.org/reference/fct_relevel.html'>fct_relevel</a></span><span class='op'>(</span></span>
+<span>    id_method_name <span class='op'>=</span> <span class='fu'>fct_relevel</span><span class='op'>(</span></span>
 <span>      <span class='va'>id_method</span>,</span>
 <span>      <span class='st'>"Standard Regression"</span>,</span>
 <span>      <span class='st'>"Reduced-Form"</span>,</span>
@@ -2375,25 +2373,230 @@ Show the packages used
 <span>  <span class='op'>)</span></span></code></pre>
 </div>
 </div>
-<h3 id="influence-of-sample-size-on-power-and-exaggeration">Influence of Sample Size on Power and Exaggeration</h3>
+<h3 id="sample-size-on-power-and-exaggeration">Sample Size on Power and Exaggeration</h3>
 <div class="layout-chunk" data-layout="l-body">
-<p><img src="images/sim_results/graph_sample_size-1.png" width="85%" style="display: block; margin: auto;" /></p>
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='co'># make the graph</span></span>
+<span><span class='va'>graph_sample_size</span> <span class='op'>&lt;-</span> <span class='va'>summary_evol_all</span>  <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>id_method</span> <span class='op'>!=</span> <span class='st'>"Discontinuity Design"</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>outcome</span> <span class='op'>==</span> <span class='st'>"death_total"</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>percent_effect_size</span> <span class='op'>==</span> <span class='fl'>1.0</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>p_obs_treat</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='cn'>NA</span>, <span class='fl'>0.5</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>iv_strength</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='cn'>NA</span>, <span class='fl'>0.5</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>metrics</span> <span class='op'>!=</span> <span class='st'>"mean_f_stat"</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>mutate</span><span class='op'>(</span>n_cities <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/factor.html'>as.factor</a></span><span class='op'>(</span><span class='va'>n_cities</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>ggplot</span><span class='op'>(</span><span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>n_days</span>, y <span class='op'>=</span> <span class='va'>stat_value</span>, colour <span class='op'>=</span> <span class='va'>n_cities</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'>geom_line</span><span class='op'>(</span>size <span class='op'>=</span> <span class='fl'>0.5</span>, linetype <span class='op'>=</span> <span class='st'>"dashed"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'>geom_point</span><span class='op'>(</span>size <span class='op'>=</span> <span class='fl'>2.8</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'>facet_grid</span><span class='op'>(</span><span class='fu'>fct_rev</span><span class='op'>(</span><span class='va'>metrics_name</span><span class='op'>)</span> <span class='op'>~</span> <span class='va'>id_method_name</span>,</span>
+<span>             scale <span class='op'>=</span> <span class='st'>"free"</span>,</span>
+<span>             switch <span class='op'>=</span> <span class='st'>"y"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'>labs</span><span class='op'>(</span>x <span class='op'>=</span> <span class='st'>"Number of Days"</span>,</span>
+<span>       y <span class='op'>=</span> <span class='cn'>NULL</span>,</span>
+<span>       color <span class='op'>=</span> <span class='st'>"Number of Cities:"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'>ylim</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0</span>, <span class='cn'>NA</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'>theme</span><span class='op'>(</span>legend.justification <span class='op'>=</span> <span class='st'>"left"</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># print the graph</span></span>
+<span><span class='va'>graph_sample_size</span></span></code></pre>
 </div>
-<h3 id="influence-of-effect-size-on-power-and-exaggeration">Influence of Effect Size on Power and Exaggeration</h3>
-<div class="layout-chunk" data-layout="l-body">
-<p><img src="images/sim_results/graph_effect_size-1.png" width="85%" style="display: block; margin: auto;" /></p>
+</details>
+<img src="images/sim_results/graph_sample_size-1.png" width="85%" style="display: block; margin: auto;" />
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='co'># save the graph</span></span>
+<span><span class='fu'>ggsave</span><span class='op'>(</span></span>
+<span>  <span class='va'>graph_sample_size</span>,</span>
+<span>  filename <span class='op'>=</span> <span class='fu'>here</span><span class='fu'>::</span><span class='fu'><a href='https://here.r-lib.org/reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"images"</span>, <span class='st'>"graph_sample_size.pdf"</span><span class='op'>)</span>,</span>
+<span>  width <span class='op'>=</span> <span class='fl'>30</span>,</span>
+<span>  height <span class='op'>=</span> <span class='fl'>20</span>,</span>
+<span>  units <span class='op'>=</span> <span class='st'>"cm"</span></span>
+<span><span class='op'>)</span></span></code></pre>
 </div>
-<h3 id="influence-of-propotion-of-exogenous-shocks-on-power-and-exaggeration">Influence of Propotion of Exogenous Shocks on Power and Exaggeration</h3>
-<div class="layout-chunk" data-layout="l-body">
-<p><img src="images/sim_results/graph_prop_shocks-1.png" width="85%" style="display: block; margin: auto;" /></p>
+</details>
 </div>
-<h3 id="influence-of-iv-strength-on-power-and-exaggeration">Influence of IV Strength on Power and Exaggeration</h3>
+<h3 id="effect-size-on-power-and-exaggeration">Effect Size on Power and Exaggeration</h3>
 <div class="layout-chunk" data-layout="l-body">
-<p><img src="images/sim_results/graph_iv_strength-1.png" width="85%" style="display: block; margin: auto;" /></p>
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='co'># make the graph</span></span>
+<span><span class='va'>graph_effect_size</span> <span class='op'>&lt;-</span> <span class='va'>summary_evol_all</span>  <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>id_method</span> <span class='op'>!=</span> <span class='st'>"Discontinuity Design"</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>outcome</span> <span class='op'>==</span> <span class='st'>"death_total"</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>p_obs_treat</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='cn'>NA</span>, <span class='fl'>0.5</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>iv_strength</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='cn'>NA</span>, <span class='fl'>0.5</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>metrics</span> <span class='op'>!=</span> <span class='st'>"mean_f_stat"</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>n_obs</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>10000</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>ggplot</span><span class='op'>(</span><span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>percent_effect_size</span>, y <span class='op'>=</span> <span class='va'>stat_value</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'>geom_line</span><span class='op'>(</span>size <span class='op'>=</span> <span class='fl'>0.5</span>, linetype <span class='op'>=</span> <span class='st'>"dashed"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'>geom_point</span><span class='op'>(</span>size <span class='op'>=</span> <span class='fl'>2.8</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'>facet_grid</span><span class='op'>(</span><span class='fu'>fct_rev</span><span class='op'>(</span><span class='va'>metrics_name</span><span class='op'>)</span> <span class='op'>~</span> <span class='va'>id_method_name</span>,</span>
+<span>             scale <span class='op'>=</span> <span class='st'>"free"</span>,</span>
+<span>             switch <span class='op'>=</span> <span class='st'>"y"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'>labs</span><span class='op'>(</span>x <span class='op'>=</span> <span class='st'>"Effect Size (%)"</span>,</span>
+<span>       y <span class='op'>=</span> <span class='cn'>NULL</span>,</span>
+<span>       color <span class='op'>=</span> <span class='st'>"Number of Cities"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'>ylim</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0</span>, <span class='cn'>NA</span><span class='op'>)</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># print the graph</span></span>
+<span><span class='va'>graph_effect_size</span></span></code></pre>
 </div>
-<h3 id="influence-of-number-of-cases-on-power-and-exaggeration">Influence of Number of cases on Power and Exaggeration</h3>
+</details>
+<img src="images/sim_results/graph_effect_size-1.png" width="85%" style="display: block; margin: auto;" />
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='co'># save the graph</span></span>
+<span><span class='fu'>ggsave</span><span class='op'>(</span></span>
+<span>  <span class='va'>graph_effect_size</span>,</span>
+<span>  filename <span class='op'>=</span> <span class='fu'>here</span><span class='fu'>::</span><span class='fu'><a href='https://here.r-lib.org/reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"images"</span>, <span class='st'>"graph_effect_size.pdf"</span><span class='op'>)</span>,</span>
+<span>  width <span class='op'>=</span> <span class='fl'>30</span>,</span>
+<span>  height <span class='op'>=</span> <span class='fl'>20</span>,</span>
+<span>  units <span class='op'>=</span> <span class='st'>"cm"</span></span>
+<span><span class='op'>)</span></span></code></pre>
+</div>
+</details>
+</div>
+<h3 id="propotion-of-exogenous-shocks-on-power-and-exaggeration">Propotion of Exogenous Shocks on Power and Exaggeration</h3>
 <div class="layout-chunk" data-layout="l-body">
-<table class="table" style="margin-left: auto; margin-right: auto;">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='co'># make the graph</span></span>
+<span><span class='va'>graph_prop_exo_shocks</span> <span class='op'>&lt;-</span> <span class='va'>summary_evol_all</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>id_method</span> <span class='op'>!=</span> <span class='st'>"Standard Regression"</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>n_obs</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>10000</span>, <span class='fl'>100000</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>outcome</span> <span class='op'>==</span> <span class='st'>"death_total"</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>percent_effect_size</span> <span class='op'>==</span> <span class='fl'>1.0</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>iv_strength</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='cn'>NA</span>, <span class='fl'>0.5</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>metrics</span> <span class='op'>!=</span> <span class='st'>"mean_f_stat"</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>mutate</span><span class='op'>(</span>n_obs <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>n_obs</span> <span class='op'>==</span> <span class='fl'>10000</span>, <span class='st'>"10,000"</span>, <span class='st'>"100,000"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>mutate</span><span class='op'>(</span>p_obs_treat <span class='op'>=</span> <span class='va'>p_obs_treat</span> <span class='op'>*</span> <span class='fl'>100</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>ggplot</span><span class='op'>(</span><span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>p_obs_treat</span>, y <span class='op'>=</span> <span class='va'>stat_value</span>, colour <span class='op'>=</span> <span class='va'>n_obs</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'>geom_line</span><span class='op'>(</span>size <span class='op'>=</span> <span class='fl'>0.5</span>, linetype <span class='op'>=</span> <span class='st'>"dashed"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'>geom_point</span><span class='op'>(</span>size <span class='op'>=</span> <span class='fl'>2.8</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'>facet_grid</span><span class='op'>(</span><span class='fu'>fct_rev</span><span class='op'>(</span><span class='va'>metrics_name</span><span class='op'>)</span> <span class='op'>~</span> <span class='va'>id_method_name</span>,</span>
+<span>             scales <span class='op'>=</span> <span class='st'>"free"</span>,</span>
+<span>             switch <span class='op'>=</span> <span class='st'>"y"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'>labs</span><span class='op'>(</span>x <span class='op'>=</span> <span class='st'>"Proportion of Exogenous Shocks (%)"</span>,</span>
+<span>       y <span class='op'>=</span> <span class='cn'>NULL</span>,</span>
+<span>       color <span class='op'>=</span> <span class='st'>"Sample Size:"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'>ylim</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0</span>, <span class='cn'>NA</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'>theme</span><span class='op'>(</span>legend.justification <span class='op'>=</span> <span class='st'>"left"</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># print the graph</span></span>
+<span><span class='va'>graph_prop_exo_shocks</span></span></code></pre>
+</div>
+</details>
+<img src="images/sim_results/graph_prop_shocks-1.png" width="85%" style="display: block; margin: auto;" />
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='co'># save the graph</span></span>
+<span><span class='fu'>ggsave</span><span class='op'>(</span></span>
+<span>  <span class='va'>graph_prop_exo_shocks</span>,</span>
+<span>  filename <span class='op'>=</span> <span class='fu'>here</span><span class='fu'>::</span><span class='fu'><a href='https://here.r-lib.org/reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"images"</span>, <span class='st'>"graph_prop_exo_shocks.pdf"</span><span class='op'>)</span>,</span>
+<span>  width <span class='op'>=</span> <span class='fl'>30</span>,</span>
+<span>  height <span class='op'>=</span> <span class='fl'>20</span>,</span>
+<span>  units <span class='op'>=</span> <span class='st'>"cm"</span></span>
+<span><span class='op'>)</span></span></code></pre>
+</div>
+</details>
+</div>
+<h3 id="iv-strength-on-power-and-exaggeration">IV Strength on Power and Exaggeration</h3>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='co'># make the graph</span></span>
+<span><span class='va'>graph_iv</span> <span class='op'>&lt;-</span> <span class='va'>summary_evol_all</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>id_method</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"Instrumental Variable"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>n_days</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1000</span>, <span class='fl'>2500</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>outcome</span> <span class='op'>==</span> <span class='st'>"death_total"</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>percent_effect_size</span> <span class='op'>==</span> <span class='fl'>1.0</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>p_obs_treat</span> <span class='op'>==</span> <span class='fl'>0.5</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>mutate</span><span class='op'>(</span>n_cities <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/factor.html'>as.factor</a></span><span class='op'>(</span><span class='va'>n_cities</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>n_obs</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>10000</span>, <span class='fl'>100000</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>mutate</span><span class='op'>(</span>n_obs <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>n_obs</span> <span class='op'>==</span> <span class='fl'>10000</span>, <span class='st'>"10,000"</span>, <span class='st'>"100,000"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>mutate</span><span class='op'>(</span>metrics_name <span class='op'>=</span> <span class='fu'>fct_relevel</span><span class='op'>(</span><span class='va'>metrics_name</span>, <span class='st'>"Statistical Power (%)"</span>, <span class='st'>"Exaggeration Ratio"</span>, <span class='st'>"F-Statistic"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>ggplot</span><span class='op'>(</span><span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>iv_strength</span>, y <span class='op'>=</span> <span class='va'>stat_value</span>, colour <span class='op'>=</span> <span class='va'>n_obs</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'>geom_line</span><span class='op'>(</span>size <span class='op'>=</span> <span class='fl'>0.5</span>, linetype <span class='op'>=</span> <span class='st'>"dashed"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'>geom_point</span><span class='op'>(</span>size <span class='op'>=</span> <span class='fl'>2.8</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'>scale_y_continuous</span><span class='op'>(</span>breaks <span class='op'>=</span> <span class='fu'>scales</span><span class='fu'>::</span><span class='fu'><a href='https://scales.r-lib.org/reference/pretty_breaks.html'>pretty_breaks</a></span><span class='op'>(</span>n <span class='op'>=</span> <span class='fl'>6</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'>facet_wrap</span><span class='op'>(</span> <span class='op'>~</span> <span class='va'>metrics_name</span>, scale <span class='op'>=</span> <span class='st'>"free_y"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'>labs</span><span class='op'>(</span>x <span class='op'>=</span> <span class='st'>"IV First-Stage Effect Size"</span>,</span>
+<span>       y <span class='op'>=</span> <span class='cn'>NULL</span>,</span>
+<span>       color <span class='op'>=</span> <span class='st'>"Sample Size:"</span><span class='op'>)</span>  </span>
+<span></span>
+<span><span class='co'># print the graph</span></span>
+<span><span class='va'>graph_iv</span></span></code></pre>
+</div>
+</details>
+<img src="images/sim_results/graph_iv_strength-1.png" width="85%" style="display: block; margin: auto;" />
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='co'># save the graph</span></span>
+<span><span class='fu'>ggsave</span><span class='op'>(</span></span>
+<span>  <span class='va'>graph_iv</span>,</span>
+<span>  filename <span class='op'>=</span> <span class='fu'>here</span><span class='fu'>::</span><span class='fu'><a href='https://here.r-lib.org/reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"images"</span>, <span class='st'>"graph_iv.pdf"</span><span class='op'>)</span>,</span>
+<span>  width <span class='op'>=</span> <span class='fl'>30</span>,</span>
+<span>  height <span class='op'>=</span> <span class='fl'>12</span>,</span>
+<span>  units <span class='op'>=</span> <span class='st'>"cm"</span></span>
+<span>  <span class='co'># device = cairo_pdf</span></span>
+<span><span class='op'>)</span></span></code></pre>
+</div>
+</details>
+</div>
+<h3 id="number-of-cases-on-power-and-exaggeration">Number of cases on Power and Exaggeration</h3>
+<div class="layout-chunk" data-layout="l-body">
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='co'># make table</span></span>
+<span><span class='va'>summary_evol_all</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>id_method</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"Instrumental Variable"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>n_days</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>2500</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>percent_effect_size</span> <span class='op'>==</span> <span class='fl'>1.0</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>p_obs_treat</span> <span class='op'>==</span> <span class='fl'>0.5</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'><a href='https://rdrr.io/r/stats/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>iv_strength</span> <span class='op'>==</span> <span class='fl'>0.5</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>select</span><span class='op'>(</span><span class='va'>outcome</span>, <span class='va'>metrics_name</span>, <span class='va'>stat_value</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>pivot_wider</span><span class='op'>(</span>names_from <span class='op'>=</span> <span class='va'>outcome</span>, values_from <span class='op'>=</span> <span class='va'>stat_value</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>select</span><span class='op'>(</span><span class='va'>metrics_name</span>, <span class='va'>death_total</span>, <span class='va'>resp_total</span>, <span class='va'>copd_age_65_75</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>mutate_at</span><span class='op'>(</span><span class='fu'>vars</span><span class='op'>(</span><span class='op'>-</span><span class='va'>metrics_name</span><span class='op'>)</span>, <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/base/Round.html'>round</a></span><span class='op'>(</span><span class='va'>.</span>, <span class='fl'>1</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>rename</span><span class='op'>(</span></span>
+<span>    <span class='st'>"Metric"</span> <span class='op'>=</span> <span class='va'>metrics_name</span>,</span>
+<span>    <span class='st'>"Non-Accidental Causes"</span> <span class='op'>=</span> <span class='va'>death_total</span>,</span>
+<span>    <span class='st'>"Respiratory Causes"</span> <span class='op'>=</span> <span class='va'>resp_total</span>,</span>
+<span>    <span class='st'>"COPD Elderly"</span> <span class='op'>=</span> <span class='va'>copd_age_65_75</span></span>
+<span>  <span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>knitr</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/pkg/knitr/man/kable.html'>kable</a></span><span class='op'>(</span><span class='va'>.</span>, align <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"l"</span>, <span class='st'>"c"</span>, <span class='st'>"c"</span>, <span class='st'>"c"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>kableExtra</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/pkg/kableExtra/man/kable_styling.html'>kable_styling</a></span><span class='op'>(</span>position <span class='op'>=</span> <span class='st'>"center"</span><span class='op'>)</span></span></code></pre>
+</div>
+</details>
+<table class="table" style="color: black; margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
 <th style="text-align:left;">
@@ -2456,21 +2659,295 @@ F-Statistic
 </tbody>
 </table>
 </div>
-<h1 id="cases-studies">Cases Studies</h1>
+<h2 id="cases-studies">Cases Studies</h2>
 <div class="layout-chunk" data-layout="l-body">
-
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='co'># modify summarise_simulations to compute mean standard error</span></span>
+<span><span class='va'>summarise_simulations</span> <span class='op'>&lt;-</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>data</span><span class='op'>)</span> <span class='op'>{</span></span>
+<span>  <span class='va'>data</span> <span class='op'>%&gt;%</span> </span>
+<span>    <span class='fu'>mutate</span><span class='op'>(</span></span>
+<span>      CI_low <span class='op'>=</span> <span class='va'>estimate</span> <span class='op'>+</span> <span class='va'>se</span><span class='op'>*</span><span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>qnorm</a></span><span class='op'>(</span><span class='op'>(</span><span class='fl'>1</span><span class='op'>-</span><span class='fl'>0.95</span><span class='op'>)</span><span class='op'>/</span><span class='fl'>2</span><span class='op'>)</span>,</span>
+<span>      CI_high <span class='op'>=</span> <span class='va'>estimate</span> <span class='op'>-</span> <span class='va'>se</span><span class='op'>*</span><span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>qnorm</a></span><span class='op'>(</span><span class='op'>(</span><span class='fl'>1</span><span class='op'>-</span><span class='fl'>0.95</span><span class='op'>)</span><span class='op'>/</span><span class='fl'>2</span><span class='op'>)</span>,</span>
+<span>      length_CI <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>abs</a></span><span class='op'>(</span><span class='va'>CI_high</span> <span class='op'>-</span> <span class='va'>CI_low</span><span class='op'>)</span>,</span>
+<span>      covered <span class='op'>=</span> <span class='op'>(</span><span class='va'>true_effect</span> <span class='op'>&gt;</span> <span class='va'>CI_low</span> <span class='op'>&amp;</span> <span class='va'>true_effect</span> <span class='op'>&lt;</span> <span class='va'>CI_high</span><span class='op'>)</span>, </span>
+<span>      covered_signif <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>p_value</span> <span class='op'>&gt;</span> <span class='fl'>0.05</span>, <span class='cn'>NA</span>, <span class='va'>covered</span><span class='op'>)</span> <span class='co'>#to consider only significant estimates</span></span>
+<span>    <span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
+<span>    <span class='fu'>group_by</span><span class='op'>(</span><span class='va'>formula</span>, <span class='va'>quasi_exp</span>, <span class='va'>n_days</span>, <span class='va'>n_cities</span>, <span class='va'>p_obs_treat</span>, <span class='va'>percent_effect_size</span>, <span class='va'>id_method</span>, <span class='va'>iv_strength</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>    <span class='fu'>summarise</span><span class='op'>(</span></span>
+<span>      power <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>p_value</span> <span class='op'>&lt;=</span> <span class='fl'>0.05</span>, na.rm <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>*</span><span class='fl'>100</span>, </span>
+<span>      type_m <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>p_value</span> <span class='op'>&lt;=</span> <span class='fl'>0.05</span>, <span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>abs</a></span><span class='op'>(</span><span class='va'>estimate</span><span class='op'>/</span><span class='va'>true_effect</span><span class='op'>)</span>, <span class='cn'>NA</span><span class='op'>)</span>, na.rm <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>,</span>
+<span>      type_s <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>p_value</span> <span class='op'>&lt;=</span> <span class='fl'>0.05</span>, <span class='fu'><a href='https://rdrr.io/r/base/sign.html'>sign</a></span><span class='op'>(</span><span class='va'>estimate</span><span class='op'>)</span> <span class='op'>!=</span> <span class='fu'><a href='https://rdrr.io/r/base/sign.html'>sign</a></span><span class='op'>(</span><span class='va'>true_effect</span><span class='op'>)</span>, <span class='cn'>NA</span><span class='op'>)</span>, na.rm <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>/</span><span class='fu'>n</span><span class='op'>(</span><span class='op'>)</span><span class='op'>*</span><span class='fl'>100</span>,</span>
+<span>      coverage_rate <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>covered_signif</span>, na.rm <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>*</span><span class='fl'>100</span>,</span>
+<span>      coverage_rate_all <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>covered</span>, na.rm <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span><span class='op'>*</span><span class='fl'>100</span>,</span>
+<span>      mean_se <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>se</span>, na.rm <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>,</span>
+<span>      mean_f_stat <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>f_stat</span>, na.rm <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>,</span>
+<span>      mean_signal_to_noise <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>estimate</span><span class='op'>/</span><span class='va'>length_CI</span>, na.rm <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>,</span>
+<span>      .groups  <span class='op'>=</span> <span class='st'>"drop"</span></span>
+<span>    <span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
+<span>    <span class='fu'>ungroup</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>%&gt;%</span> </span>
+<span>    <span class='fu'>mutate</span><span class='op'>(</span></span>
+<span>      outcome <span class='op'>=</span> <span class='fu'>str_extract</span><span class='op'>(</span><span class='va'>formula</span>, <span class='st'>"^[^\\s~]+(?=\\s?~)"</span><span class='op'>)</span>,</span>
+<span>      n_days <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/integer.html'>as.integer</a></span><span class='op'>(</span><span class='va'>n_days</span><span class='op'>)</span>,</span>
+<span>      n_cities <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/integer.html'>as.integer</a></span><span class='op'>(</span><span class='va'>n_cities</span><span class='op'>)</span></span>
+<span>    <span class='op'>)</span></span>
+<span><span class='op'>}</span></span></code></pre>
+</div>
+</details>
 </div>
 <h3 id="public-transport-strikes-design">Public Transport Strikes Design</h3>
 <div class="layout-chunk" data-layout="l-body">
-<p><img src="images/sim_results/graph_strikes-1.png" width="85%" style="display: block; margin: auto;" /></p>
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='co'># load simulations data for reduced form</span></span>
+<span><span class='va'>sim_reduced</span> <span class='op'>&lt;-</span><span class='fu'><a href='https://rdrr.io/r/base/readRDS.html'>readRDS</a></span><span class='op'>(</span><span class='fu'>here</span><span class='op'>(</span><span class='st'>"data"</span>, <span class='st'>"simulations"</span>, <span class='st'>"sim_evol_usual_reduced.RDS"</span><span class='op'>)</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># get summary of metrics</span></span>
+<span><span class='va'>summary_sim_reduced</span> <span class='op'>&lt;-</span> <span class='fu'>summarise_simulations</span><span class='op'>(</span><span class='va'>sim_reduced</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># check precision</span></span>
+<span><span class='va'>summary_sim_reduced</span> <span class='op'>&lt;-</span> <span class='va'>summary_sim_reduced</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>mutate</span><span class='op'>(</span></span>
+<span>    percentage_precision <span class='op'>=</span> <span class='fu'>case_when</span><span class='op'>(</span></span>
+<span>      <span class='va'>outcome</span> <span class='op'>==</span> <span class='st'>"death_total"</span> <span class='op'>~</span> <span class='va'>mean_se</span> <span class='op'>/</span> <span class='fl'>23</span> <span class='op'>*</span> <span class='fl'>100</span>,</span>
+<span>      <span class='va'>outcome</span> <span class='op'>==</span> <span class='st'>"resp_total"</span> <span class='op'>~</span> <span class='va'>mean_se</span> <span class='op'>/</span></span>
+<span>        <span class='fl'>2</span> <span class='op'>*</span> <span class='fl'>100</span>,</span>
+<span>      <span class='va'>outcome</span> <span class='op'>==</span> <span class='st'>"copd_age_65_75"</span> <span class='op'>~</span> <span class='va'>mean_se</span> <span class='op'>/</span></span>
+<span>        <span class='fl'>0.3</span> <span class='op'>*</span> <span class='fl'>100</span></span>
+<span>    <span class='op'>)</span></span>
+<span>  <span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># function to make a geom_tile graph </span></span>
+<span><span class='va'>function_tiles</span> <span class='op'>&lt;-</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>data</span>, <span class='va'>metric</span><span class='op'>)</span> <span class='op'>{</span></span>
+<span>  <span class='fu'>ggplot</span><span class='op'>(</span>data <span class='op'>=</span> <span class='va'>data</span>, <span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>p_obs_treat</span>, y <span class='op'>=</span> <span class='va'>percent_effect_size</span>, fill <span class='op'>=</span> <span class='va'>value</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>    <span class='fu'>geom_tile</span><span class='op'>(</span>colour <span class='op'>=</span> <span class='st'>"white"</span>, lwd <span class='op'>=</span> <span class='fl'>2.5</span>, linetype <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>    <span class='fu'>geom_text</span><span class='op'>(</span><span class='fu'>aes</span><span class='op'>(</span>label <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Round.html'>round</a></span><span class='op'>(</span><span class='va'>value</span>, <span class='fl'>1</span><span class='op'>)</span><span class='op'>)</span>, colour <span class='op'>=</span> <span class='st'>"black"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>    <span class='fu'>scale_fill_gradient</span><span class='op'>(</span>name <span class='op'>=</span> <span class='va'>metric</span>, low <span class='op'>=</span> <span class='st'>"white"</span>, high <span class='op'>=</span> <span class='st'>"#0081a7"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>    <span class='fu'>labs</span><span class='op'>(</span>x <span class='op'>=</span> <span class='cn'>NULL</span>, y <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span> <span class='op'>+</span> </span>
+<span>    <span class='fu'>guides</span><span class='op'>(</span>fill <span class='op'>=</span> <span class='fu'>guide_colorbar</span><span class='op'>(</span>title.hjust <span class='op'>=</span> <span class='fl'>0.5</span>, title.position <span class='op'>=</span> <span class='st'>"top"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>    <span class='fu'>coord_fixed</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>    <span class='fu'>theme</span><span class='op'>(</span></span>
+<span>      axis.ticks.x <span class='op'>=</span> <span class='fu'>element_blank</span><span class='op'>(</span><span class='op'>)</span>,</span>
+<span>      axis.ticks.y <span class='op'>=</span> <span class='fu'>element_blank</span><span class='op'>(</span><span class='op'>)</span>,</span>
+<span>      panel.grid.major.y <span class='op'>=</span> <span class='fu'>element_blank</span><span class='op'>(</span><span class='op'>)</span>,</span>
+<span>      legend.text<span class='op'>=</span><span class='fu'>element_text</span><span class='op'>(</span>size<span class='op'>=</span><span class='fl'>8</span><span class='op'>)</span></span>
+<span>    <span class='op'>)</span></span>
+<span><span class='op'>}</span></span>
+<span></span>
+<span><span class='co'># nest the results by metric</span></span>
+<span><span class='va'>nested_summary_sim_reduced</span> <span class='op'>&lt;-</span> <span class='va'>summary_sim_reduced</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>pivot_longer</span><span class='op'>(</span>cols <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>power</span>, <span class='va'>type_m</span>, <span class='va'>percentage_precision</span><span class='op'>)</span>, names_to <span class='op'>=</span> <span class='st'>"metric"</span>, values_to <span class='op'>=</span> <span class='st'>"value"</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>mutate</span><span class='op'>(</span>metric <span class='op'>=</span> <span class='fu'>case_when</span><span class='op'>(</span><span class='va'>metric</span> <span class='op'>==</span> <span class='st'>"power"</span> <span class='op'>~</span> <span class='st'>"Statistical Power (%)"</span>,</span>
+<span>                            <span class='va'>metric</span> <span class='op'>==</span> <span class='st'>"type_m"</span> <span class='op'>~</span> <span class='st'>"Exaggeration Factor"</span>,</span>
+<span>                            <span class='va'>metric</span> <span class='op'>==</span> <span class='st'>"percentage_precision"</span> <span class='op'>~</span> <span class='st'>"Standard Error (%)"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>mutate</span><span class='op'>(</span>p_obs_treat <span class='op'>=</span> <span class='va'>p_obs_treat</span><span class='op'>*</span><span class='fl'>100</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>mutate_at</span><span class='op'>(</span><span class='fu'>vars</span><span class='op'>(</span><span class='va'>p_obs_treat</span>, <span class='va'>percent_effect_size</span><span class='op'>)</span>, <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/base/factor.html'>as.factor</a></span><span class='op'>(</span><span class='va'>.</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>group_by</span><span class='op'>(</span><span class='va'>metric</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>nest</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>mutate</span><span class='op'>(</span>graph_tile <span class='op'>=</span> <span class='fu'>map2</span><span class='op'>(</span><span class='va'>data</span>, <span class='va'>metric</span>, <span class='op'>~</span> <span class='fu'>function_tiles</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.y</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># combine the plots</span></span>
+<span><span class='va'>graph_strikes</span> <span class='op'>&lt;-</span></span>
+<span>  <span class='va'>nested_summary_sim_reduced</span><span class='op'>$</span><span class='va'>graph_tile</span><span class='op'>[[</span><span class='fl'>1</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>+</span> <span class='fu'>ylab</span><span class='op'>(</span><span class='st'>"Effect Size (%)"</span><span class='op'>)</span> <span class='op'>+</span> <span class='va'>nested_summary_sim_reduced</span><span class='op'>$</span><span class='va'>graph_tile</span><span class='op'>[[</span><span class='fl'>2</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>+</span> <span class='va'>nested_summary_sim_reduced</span><span class='op'>$</span><span class='va'>graph_tile</span><span class='op'>[[</span><span class='fl'>3</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>+</span> <span class='fu'>xlab</span><span class='op'>(</span><span class='st'>"Proportion of Exogenous Shocks (%)"</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># display graph</span></span>
+<span><span class='va'>graph_strikes</span></span></code></pre>
+</div>
+</details>
+<img src="images/sim_results/graph_strikes-1.png" width="85%" style="display: block; margin: auto;" />
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='co'># save the graph</span></span>
+<span><span class='fu'>ggsave</span><span class='op'>(</span></span>
+<span>    <span class='va'>graph_strikes</span>,</span>
+<span>    filename <span class='op'>=</span> <span class='fu'>here</span><span class='fu'>::</span><span class='fu'><a href='https://here.r-lib.org/reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"images"</span>, <span class='st'>"graph_strikes.pdf"</span><span class='op'>)</span>,</span>
+<span>    width <span class='op'>=</span> <span class='fl'>30</span>,</span>
+<span>    height <span class='op'>=</span> <span class='fl'>12</span>,</span>
+<span>    units <span class='op'>=</span> <span class='st'>"cm"</span></span>
+<span>    <span class='co'># device = cairo_pdf</span></span>
+<span>  <span class='op'>)</span></span></code></pre>
+</div>
+</details>
 </div>
 <h3 id="air-pollution-alerts-design">Air Pollution Alerts Design</h3>
 <div class="layout-chunk" data-layout="l-body">
-<p><img src="images/sim_results/graph_air_quality_alerts-1.png" width="85%" style="display: block; margin: auto;" /></p>
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='co'># load simulations data for reduced form</span></span>
+<span><span class='va'>sim_rdd</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/readRDS.html'>readRDS</a></span><span class='op'>(</span><span class='fu'>here</span><span class='op'>(</span><span class='st'>"data"</span>, <span class='st'>"simulations"</span>, <span class='st'>"sim_evol_usual_rdd.RDS"</span><span class='op'>)</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># get summary of metrics</span></span>
+<span><span class='va'>summary_sim_rdd</span> <span class='op'>&lt;-</span> <span class='fu'>summarise_simulations</span><span class='op'>(</span><span class='va'>sim_rdd</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># check precision</span></span>
+<span><span class='va'>summary_sim_rdd</span> <span class='op'>&lt;-</span> <span class='va'>summary_sim_rdd</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>mutate</span><span class='op'>(</span></span>
+<span>    percentage_precision <span class='op'>=</span> <span class='fu'>case_when</span><span class='op'>(</span></span>
+<span>      <span class='va'>outcome</span> <span class='op'>==</span> <span class='st'>"death_total"</span> <span class='op'>~</span> <span class='va'>mean_se</span> <span class='op'>/</span> <span class='fl'>23</span> <span class='op'>*</span> <span class='fl'>100</span>,</span>
+<span>      <span class='va'>outcome</span> <span class='op'>==</span> <span class='st'>"resp_total"</span> <span class='op'>~</span> <span class='va'>mean_se</span> <span class='op'>/</span></span>
+<span>        <span class='fl'>2</span> <span class='op'>*</span> <span class='fl'>100</span>,</span>
+<span>      <span class='va'>outcome</span> <span class='op'>==</span> <span class='st'>"copd_age_65_75"</span> <span class='op'>~</span> <span class='va'>mean_se</span> <span class='op'>/</span></span>
+<span>        <span class='fl'>0.3</span> <span class='op'>*</span> <span class='fl'>100</span></span>
+<span>    <span class='op'>)</span></span>
+<span>  <span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># function to make a geom_tile graph</span></span>
+<span><span class='va'>function_tiles</span> <span class='op'>&lt;-</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>data</span>, <span class='va'>metric</span><span class='op'>)</span> <span class='op'>{</span></span>
+<span>  <span class='fu'>ggplot</span><span class='op'>(</span>data <span class='op'>=</span> <span class='va'>data</span>,</span>
+<span>         <span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>p_obs_treat</span>, y <span class='op'>=</span> <span class='va'>percent_effect_size</span>, fill <span class='op'>=</span> <span class='va'>value</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>    <span class='fu'>geom_tile</span><span class='op'>(</span>colour <span class='op'>=</span> <span class='st'>"white"</span>, lwd <span class='op'>=</span> <span class='fl'>2.5</span>, linetype <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>    <span class='fu'>geom_text</span><span class='op'>(</span><span class='fu'>aes</span><span class='op'>(</span>label <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Round.html'>round</a></span><span class='op'>(</span><span class='va'>value</span>, <span class='fl'>1</span><span class='op'>)</span><span class='op'>)</span>, colour <span class='op'>=</span> <span class='st'>"black"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>    <span class='fu'>scale_fill_gradient</span><span class='op'>(</span>name <span class='op'>=</span> <span class='va'>metric</span>, low <span class='op'>=</span> <span class='st'>"white"</span>, high <span class='op'>=</span> <span class='st'>"#0081a7"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>    <span class='fu'>labs</span><span class='op'>(</span>x <span class='op'>=</span> <span class='cn'>NULL</span>, y <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>    <span class='fu'>guides</span><span class='op'>(</span>fill <span class='op'>=</span> <span class='fu'>guide_colorbar</span><span class='op'>(</span>title.hjust <span class='op'>=</span> <span class='fl'>0.5</span>, title.position <span class='op'>=</span> <span class='st'>"top"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>    <span class='fu'>coord_fixed</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>    <span class='fu'>theme</span><span class='op'>(</span></span>
+<span>      axis.ticks.x <span class='op'>=</span> <span class='fu'>element_blank</span><span class='op'>(</span><span class='op'>)</span>,</span>
+<span>      axis.ticks.y <span class='op'>=</span> <span class='fu'>element_blank</span><span class='op'>(</span><span class='op'>)</span>,</span>
+<span>      panel.grid.major.y <span class='op'>=</span> <span class='fu'>element_blank</span><span class='op'>(</span><span class='op'>)</span>,</span>
+<span>      legend.text<span class='op'>=</span><span class='fu'>element_text</span><span class='op'>(</span>size<span class='op'>=</span><span class='fl'>8</span><span class='op'>)</span></span>
+<span>    <span class='op'>)</span></span>
+<span><span class='op'>}</span></span>
+<span></span>
+<span><span class='co'># nest the results by metric</span></span>
+<span><span class='va'>nested_summary_sim_rdd</span> <span class='op'>&lt;-</span> <span class='va'>summary_sim_rdd</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>pivot_longer</span><span class='op'>(</span></span>
+<span>    cols <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>power</span>, <span class='va'>type_m</span>, <span class='va'>percentage_precision</span><span class='op'>)</span>,</span>
+<span>    names_to <span class='op'>=</span> <span class='st'>"metric"</span>,</span>
+<span>    values_to <span class='op'>=</span> <span class='st'>"value"</span></span>
+<span>  <span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>mutate</span><span class='op'>(</span></span>
+<span>    metric <span class='op'>=</span> <span class='fu'>case_when</span><span class='op'>(</span></span>
+<span>      <span class='va'>metric</span> <span class='op'>==</span> <span class='st'>"power"</span> <span class='op'>~</span> <span class='st'>"Statistical Power (%)"</span>,</span>
+<span>      <span class='va'>metric</span> <span class='op'>==</span> <span class='st'>"type_m"</span> <span class='op'>~</span> <span class='st'>"Exaggeration Factor"</span>,</span>
+<span>      <span class='va'>metric</span> <span class='op'>==</span> <span class='st'>"percentage_precision"</span> <span class='op'>~</span> <span class='st'>"Standard Error (%)"</span></span>
+<span>    <span class='op'>)</span></span>
+<span>  <span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>mutate</span><span class='op'>(</span>p_obs_treat <span class='op'>=</span> <span class='va'>p_obs_treat</span> <span class='op'>*</span> <span class='fl'>100</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>mutate_at</span><span class='op'>(</span><span class='fu'>vars</span><span class='op'>(</span><span class='va'>p_obs_treat</span>, <span class='va'>percent_effect_size</span><span class='op'>)</span>, <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/base/factor.html'>as.factor</a></span><span class='op'>(</span><span class='va'>.</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>group_by</span><span class='op'>(</span><span class='va'>metric</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>nest</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>mutate</span><span class='op'>(</span>graph_tile <span class='op'>=</span> <span class='fu'>map2</span><span class='op'>(</span><span class='va'>data</span>, <span class='va'>metric</span>, <span class='op'>~</span> <span class='fu'>function_tiles</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.y</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># combine the plots</span></span>
+<span><span class='va'>graph_air_quality_alerts</span> <span class='op'>&lt;-</span></span>
+<span>  <span class='va'>nested_summary_sim_rdd</span><span class='op'>$</span><span class='va'>graph_tile</span><span class='op'>[[</span><span class='fl'>1</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>+</span> <span class='fu'>ylab</span><span class='op'>(</span><span class='st'>"Effect Size (%)"</span><span class='op'>)</span> <span class='op'>+</span> <span class='va'>nested_summary_sim_rdd</span><span class='op'>$</span><span class='va'>graph_tile</span><span class='op'>[[</span><span class='fl'>2</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>+</span> <span class='va'>nested_summary_sim_rdd</span><span class='op'>$</span><span class='va'>graph_tile</span><span class='op'>[[</span><span class='fl'>3</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>+</span> <span class='fu'>xlab</span><span class='op'>(</span><span class='st'>"Proportion of Air Quality Alerts (%)"</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># display graph</span></span>
+<span><span class='va'>graph_air_quality_alerts</span></span></code></pre>
+</div>
+</details>
+<img src="images/sim_results/graph_air_quality_alerts-1.png" width="85%" style="display: block; margin: auto;" />
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='co'># save the graph</span></span>
+<span><span class='fu'>ggsave</span><span class='op'>(</span></span>
+<span>  <span class='va'>graph_air_quality_alerts</span>,</span>
+<span>  filename <span class='op'>=</span> <span class='fu'>here</span><span class='fu'>::</span><span class='fu'><a href='https://here.r-lib.org/reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"images"</span>, <span class='st'>"graph_air_quality_alerts.pdf"</span><span class='op'>)</span>,</span>
+<span>  width <span class='op'>=</span> <span class='fl'>30</span>,</span>
+<span>  height <span class='op'>=</span> <span class='fl'>12</span>,</span>
+<span>  units <span class='op'>=</span> <span class='st'>"cm"</span></span>
+<span>  <span class='co'># device = cairo_pdf</span></span>
+<span><span class='op'>)</span></span></code></pre>
+</div>
+</details>
 </div>
 <h3 id="instrumental-variable-design">Instrumental Variable Design</h3>
 <div class="layout-chunk" data-layout="l-body">
-<p><img src="images/sim_results/graph_iv_wind-1.png" width="85%" style="display: block; margin: auto;" /></p>
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='co'># load simulations data for reduced form</span></span>
+<span><span class='va'>sim_iv</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/readRDS.html'>readRDS</a></span><span class='op'>(</span><span class='fu'>here</span><span class='op'>(</span><span class='st'>"data"</span>, <span class='st'>"simulations"</span>, <span class='st'>"sim_evol_usual_iv.RDS"</span><span class='op'>)</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># get summary of metrics</span></span>
+<span><span class='va'>summary_sim_iv</span> <span class='op'>&lt;-</span> <span class='fu'>summarise_simulations</span><span class='op'>(</span><span class='va'>sim_iv</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># check precision</span></span>
+<span><span class='va'>summary_sim_iv</span> <span class='op'>&lt;-</span> <span class='va'>summary_sim_iv</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>mutate</span><span class='op'>(</span></span>
+<span>    percentage_precision <span class='op'>=</span> <span class='fu'>case_when</span><span class='op'>(</span></span>
+<span>      <span class='va'>outcome</span> <span class='op'>==</span> <span class='st'>"death_total"</span> <span class='op'>~</span> <span class='va'>mean_se</span> <span class='op'>/</span> <span class='fl'>23</span> <span class='op'>*</span> <span class='fl'>100</span>,</span>
+<span>      <span class='va'>outcome</span> <span class='op'>==</span> <span class='st'>"resp_total"</span> <span class='op'>~</span> <span class='va'>mean_se</span> <span class='op'>/</span></span>
+<span>        <span class='fl'>2</span> <span class='op'>*</span> <span class='fl'>100</span>,</span>
+<span>      <span class='va'>outcome</span> <span class='op'>==</span> <span class='st'>"copd_age_65_75"</span> <span class='op'>~</span> <span class='va'>mean_se</span> <span class='op'>/</span></span>
+<span>        <span class='fl'>0.3</span> <span class='op'>*</span> <span class='fl'>100</span></span>
+<span>    <span class='op'>)</span></span>
+<span>  <span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># function to make a geom_tile graph </span></span>
+<span><span class='va'>function_tiles</span> <span class='op'>&lt;-</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>data</span>, <span class='va'>metric</span><span class='op'>)</span> <span class='op'>{</span></span>
+<span>  <span class='fu'>ggplot</span><span class='op'>(</span>data <span class='op'>=</span> <span class='va'>data</span>, <span class='fu'>aes</span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>iv_strength</span>, y <span class='op'>=</span> <span class='va'>outcome</span>, fill <span class='op'>=</span> <span class='va'>value</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>    <span class='fu'>geom_tile</span><span class='op'>(</span>colour <span class='op'>=</span> <span class='st'>"white"</span>, lwd <span class='op'>=</span> <span class='fl'>2.5</span>, linetype <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>    <span class='fu'>geom_text</span><span class='op'>(</span><span class='fu'>aes</span><span class='op'>(</span>label <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Round.html'>round</a></span><span class='op'>(</span><span class='va'>value</span>, <span class='fl'>1</span><span class='op'>)</span><span class='op'>)</span>, colour <span class='op'>=</span> <span class='st'>"black"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>    <span class='fu'>scale_fill_gradient</span><span class='op'>(</span>name <span class='op'>=</span> <span class='va'>metric</span>, low <span class='op'>=</span> <span class='st'>"white"</span>, high <span class='op'>=</span> <span class='st'>"#0081a7"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>    <span class='fu'>labs</span><span class='op'>(</span>x <span class='op'>=</span> <span class='cn'>NULL</span>, y <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span> <span class='op'>+</span> </span>
+<span>    <span class='fu'>guides</span><span class='op'>(</span>fill <span class='op'>=</span> <span class='fu'>guide_colorbar</span><span class='op'>(</span>title.hjust <span class='op'>=</span> <span class='fl'>0.5</span>, title.position <span class='op'>=</span> <span class='st'>"top"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>    <span class='fu'>theme</span><span class='op'>(</span></span>
+<span>      axis.ticks.x <span class='op'>=</span> <span class='fu'>element_blank</span><span class='op'>(</span><span class='op'>)</span>,</span>
+<span>      axis.ticks.y <span class='op'>=</span> <span class='fu'>element_blank</span><span class='op'>(</span><span class='op'>)</span>,</span>
+<span>      panel.grid.major.y <span class='op'>=</span> <span class='fu'>element_blank</span><span class='op'>(</span><span class='op'>)</span>,</span>
+<span>      legend.text<span class='op'>=</span><span class='fu'>element_text</span><span class='op'>(</span>size<span class='op'>=</span><span class='fl'>8</span><span class='op'>)</span></span>
+<span>    <span class='op'>)</span></span>
+<span><span class='op'>}</span></span>
+<span></span>
+<span><span class='co'># nest the results by metric</span></span>
+<span><span class='va'>nested_summary_sim_iv</span> <span class='op'>&lt;-</span> <span class='va'>summary_sim_iv</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>pivot_longer</span><span class='op'>(</span>cols <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>power</span>, <span class='va'>type_m</span>, <span class='va'>percentage_precision</span>, <span class='va'>mean_f_stat</span><span class='op'>)</span>, names_to <span class='op'>=</span> <span class='st'>"metric"</span>, values_to <span class='op'>=</span> <span class='st'>"value"</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>mutate</span><span class='op'>(</span>metric <span class='op'>=</span> <span class='fu'>case_when</span><span class='op'>(</span><span class='va'>metric</span> <span class='op'>==</span> <span class='st'>"power"</span> <span class='op'>~</span> <span class='st'>"Statistical Power (%)"</span>,</span>
+<span>                            <span class='va'>metric</span> <span class='op'>==</span> <span class='st'>"type_m"</span> <span class='op'>~</span> <span class='st'>"Exaggeration Factor"</span>,</span>
+<span>                            <span class='va'>metric</span> <span class='op'>==</span> <span class='st'>"percentage_precision"</span> <span class='op'>~</span> <span class='st'>"Standard Error (%)"</span>,</span>
+<span>                            <span class='va'>metric</span> <span class='op'>==</span> <span class='st'>"mean_f_stat"</span> <span class='op'>~</span> <span class='st'>"F-Statistic"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>mutate</span><span class='op'>(</span>outcome <span class='op'>=</span> <span class='fu'>case_when</span><span class='op'>(</span><span class='va'>outcome</span> <span class='op'>==</span> <span class='st'>"death_total"</span> <span class='op'>~</span> <span class='st'>"Non-Accidental"</span>,</span>
+<span>                             <span class='va'>outcome</span> <span class='op'>==</span> <span class='st'>"resp_total"</span> <span class='op'>~</span> <span class='st'>"Respiratory"</span>,</span>
+<span>                             <span class='va'>outcome</span> <span class='op'>==</span> <span class='st'>"copd_age_65_75"</span> <span class='op'>~</span> <span class='st'>"Elderly COPD"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>mutate</span><span class='op'>(</span>outcome <span class='op'>=</span> <span class='fu'>fct_relevel</span><span class='op'>(</span><span class='va'>outcome</span>, <span class='st'>"Elderly COPD"</span>, <span class='st'>"Respiratory"</span>, <span class='st'>"Non-Accidental"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>group_by</span><span class='op'>(</span><span class='va'>metric</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>nest</span><span class='op'>(</span><span class='op'>)</span> <span class='op'>%&gt;%</span></span>
+<span>  <span class='fu'>mutate</span><span class='op'>(</span>graph_tile <span class='op'>=</span> <span class='fu'>map2</span><span class='op'>(</span><span class='va'>data</span>, <span class='va'>metric</span>, <span class='op'>~</span> <span class='fu'>function_tiles</span><span class='op'>(</span><span class='va'>.x</span>, <span class='va'>.y</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># combine the plots</span></span>
+<span><span class='va'>graph_iv_wind</span> <span class='op'>&lt;-</span></span>
+<span>  <span class='va'>nested_summary_sim_iv</span><span class='op'>$</span><span class='va'>graph_tile</span><span class='op'>[[</span><span class='fl'>1</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>+</span> <span class='va'>nested_summary_sim_iv</span><span class='op'>$</span><span class='va'>graph_tile</span><span class='op'>[[</span><span class='fl'>2</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>+</span> <span class='fu'>theme</span><span class='op'>(</span>axis.text.y <span class='op'>=</span> <span class='fu'>element_blank</span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='va'>nested_summary_sim_iv</span><span class='op'>$</span><span class='va'>graph_tile</span><span class='op'>[[</span><span class='fl'>3</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>+</span> <span class='va'>nested_summary_sim_iv</span><span class='op'>$</span><span class='va'>graph_tile</span><span class='op'>[[</span><span class='fl'>4</span><span class='op'>]</span><span class='op'>]</span> <span class='op'>+</span> <span class='fu'>scale_fill_gradient</span><span class='op'>(</span>name <span class='op'>=</span> <span class='st'>"F-Statistic"</span>, low <span class='op'>=</span> <span class='st'>"white"</span>, high <span class='op'>=</span> <span class='st'>"#0081a7"</span>, breaks <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>2000</span>, <span class='fl'>5000</span>, <span class='fl'>8000</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'>theme</span><span class='op'>(</span>axis.text.y <span class='op'>=</span> <span class='fu'>element_blank</span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'>xlab</span><span class='op'>(</span><span class='st'>"Standardized IV Strength"</span><span class='op'>)</span> <span class='op'>+</span> <span class='fu'>plot_layout</span><span class='op'>(</span>ncol <span class='op'>=</span> <span class='fl'>2</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># display the graph</span></span>
+<span><span class='va'>graph_iv_wind</span></span></code></pre>
+</div>
+</details>
+<img src="images/sim_results/graph_iv_wind-1.png" width="85%" style="display: block; margin: auto;" />
+<details>
+<summary>
+Show code
+</summary>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='co'># save the graph</span></span>
+<span><span class='fu'>ggsave</span><span class='op'>(</span></span>
+<span>    <span class='va'>graph_iv_wind</span>,</span>
+<span>    filename <span class='op'>=</span> <span class='fu'>here</span><span class='fu'>::</span><span class='fu'><a href='https://here.r-lib.org/reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"images"</span>, <span class='st'>"graph_iv_wind.pdf"</span><span class='op'>)</span>,</span>
+<span>    width <span class='op'>=</span> <span class='fl'>30</span>,</span>
+<span>    height <span class='op'>=</span> <span class='fl'>25</span>,</span>
+<span>    units <span class='op'>=</span> <span class='st'>"cm"</span></span>
+<span>    <span class='co'># device = cairo_pdf</span></span>
+<span>  <span class='op'>)</span></span></code></pre>
+</div>
+</details>
 </div>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
 <!--radix_placeholder_article_footer-->

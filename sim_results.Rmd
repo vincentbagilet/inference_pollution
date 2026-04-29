@@ -16,9 +16,9 @@ text-align: justify}
 ```{r setup, include=FALSE}
 # code chunk option
 knitr::opts_chunk$set(
-  echo = FALSE,
   message = FALSE,
   warning = FALSE,
+  code_folding = TRUE,
   # layout = "l-body-outset",
   dpi = 300,
   cache.path = "cache/",
@@ -29,11 +29,8 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Loading Packages
 
-We load the required packages and the data:
-
-```{r loading_packages, code_folding="Show the packages used", results='hide'}
+```{r loading_packages, code_folding="Code to load the packages used here", results='hide'}
 library("groundhog")
 packages <- c(
   "here",
@@ -51,11 +48,11 @@ set_mediocre_all(pal = "leo")
 ```
 
 
-# General Simulations
+## General Simulations
 
 ### Loading Data 
 
-```{r data_general_sim, echo = TRUE}
+```{r data_general_sim, code_folding=FALSE}
 # load small sample simulation results
 summary_evol_large <- readRDS(here("data", "simulations", "summary_evol_large.RDS")) %>%
   mutate(sample_size = "large")
@@ -96,9 +93,9 @@ summary_evol_all <- summary_evol_large %>%
   )
 ```
 
-### Influence of Sample Size on Power and Exaggeration
+### Sample Size on Power and Exaggeration
 
-```{r graph_sample_size, fig.width=10, fig.height=5}
+```{r graph_sample_size, fig.asp=1}
 # make the graph
 graph_sample_size <- summary_evol_all  %>%
   filter(id_method != "Discontinuity Design") %>%
@@ -134,9 +131,9 @@ ggsave(
 ```
 
 
-### Influence of Effect Size on Power and Exaggeration
+### Effect Size on Power and Exaggeration
 
-```{r graph_effect_size, fig.width=10, fig.height=5}
+```{r graph_effect_size, fig.asp=1}
 # make the graph
 graph_effect_size <- summary_evol_all  %>%
   filter(id_method != "Discontinuity Design") %>%
@@ -170,9 +167,9 @@ ggsave(
 ```
 
 
-### Influence of Propotion of Exogenous Shocks on Power and Exaggeration
+### Propotion of Exogenous Shocks on Power and Exaggeration
 
-```{r graph_prop_shocks, fig.width=10, fig.height=5}
+```{r graph_prop_shocks, fig.asp=1}
 # make the graph
 graph_prop_exo_shocks <- summary_evol_all %>%
   filter(id_method != "Standard Regression") %>%
@@ -208,9 +205,9 @@ ggsave(
 )
 ```
 
-### Influence of IV Strength on Power and Exaggeration
+### IV Strength on Power and Exaggeration
 
-```{r graph_iv_strength, fig.width=10, fig.height=5}
+```{r graph_iv_strength, fig.asp=0.7}
 # make the graph
 graph_iv <- summary_evol_all %>%
   filter(id_method %in% c("Instrumental Variable")) %>%
@@ -245,7 +242,7 @@ ggsave(
 )
 ```
 
-### Influence of Number of cases on Power and Exaggeration
+### Number of cases on Power and Exaggeration
 
 ```{r table_n_cases}
 # make table
@@ -269,7 +266,7 @@ summary_evol_all %>%
   kableExtra::kable_styling(position = "center")
 ```
 
-# Cases Studies
+## Cases Studies
 
 ```{r}
 # modify summarise_simulations to compute mean standard error
@@ -451,7 +448,7 @@ ggsave(
 
 ### Instrumental Variable Design
 
-```{r graph_iv_wind, fig.width=10, fig.height=5}
+```{r graph_iv_wind, fig.asp=1}
 # load simulations data for reduced form
 sim_iv <- readRDS(here("data", "simulations", "sim_evol_usual_iv.RDS"))
 

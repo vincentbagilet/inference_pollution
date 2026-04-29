@@ -26,6 +26,13 @@ navbar:
         - text: "---"
         - text: "Analysis of the causal literature"
           href: causal_lit_overview.html
+        - text: "---"
+        - text: "Boadly, in top journals"
+          href: lit_top_journals.html
+        - text: "Boadly, in IVs"
+          href: lit_IVs.html
+        - text: "Boadly, in Experimental economics"
+          href: lit_exp.html
     - text: "Simulations"
       menu:
         - text: "Data wrangling"

@@ -1,0 +1,284 @@
+---
+title: "Exaggeration in top economic journals and across strategies"
+description: "In this document, leveraging data form @brodeur_methods_2020, I examine potential exaggeration of significant estimates from papers published in top economics journals. This analysis shows that while exaggeration is reassuringly limited in some papers, it can be substantial in many others. There does not seem to be substantial differences across methods."
+output: 
+  distill::distill_article:
+    toc: true
+    float: true
+# bibliography: paper/causal_exaggeration.bib
+editor_options: 
+  chunk_output_type: console
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+```{r setup_comparison, include=FALSE, results='hide', warning=FALSE}
+library(knitr)
+opts_chunk$set(fig.path = "images/lit_top_journals/",
+               cache.path = "cache/",
+               cache = FALSE,
+               echo = TRUE, #set to false to hide code
+               message = FALSE,
+               warning = FALSE,
+               out.width = "85%",
+               dpi = 350,
+               fig.align = "center",
+               dev.args = list(bg="transparent"))  
+```  
+
+```{r packages_comparison, message=FALSE, warning=FALSE, code_folding='Show the packages used in this document'}
+library(tidyverse) 
+library(knitr) 
+library(mediocrethemes)
+library(here)
+library(retrodesign)
+library(haven)
+library(DT)
+library(kableExtra)
+
+set_mediocre_all(pal = "leo")
+```
+
+## Approach and Data
+
+### Approach and Limitations
+
+@brodeur_methods_2020 assesses selection on significance in the universe hypothesis tests reported in articles published in 2015 and 2018 in the 25 top economics journals and using RCT, DID, RDD or IV. I leverage this data to investigate statistical power and exaggeration in this literature and then compare them across methods. 
+
+To do so, I first run a naive analysis: I **explore whether the design of each study would enable to retrieve the true effect if it was twice smaller that the one found in the study**.
+
+There is no *a priori* reason to believe that the magnitude of the true effect of a specific study would be half of that of the estimate and not the estimate obtained. I am not claiming that these would be the true effect. Rather, I wonder what would be the power and exaggeration under this reasonable assumption, @ioannidis_power_2017 finding a typical exaggeration of two in the economics literature. This approach is also to some extent conservative: hypothesized effect sizes based on exaggerated estimates will be too large and will thus minimize exaggeration.
+
+Note that @gelman_beyond_2014, the seminal article on exaggeration, warns against using estimates from the study as true effects since they might be exaggerated. It instead recommends using estimate from other studies or meta analyses. Since meta-analyses estimates are not readily available for the studies in @brodeur_methods_2020, I however run an analysis where hypothetical true effects are based on the published estimates. Even though the approach can be discussed, it allows a quick analysis of a very broad literature, in particular comparing the vulnerability of various studies.
+
+<!-- Statistical significance is evaluated using p-values and t-statistics in the analysis. This allows avoiding issues if the null is not a null of no effect. -->
+
+In this document, I explore potential exaggeration of significant estimates. I exclude non-significant as they have not been selected on significance.^[Note that this exclusion is conservative.] This also allows abstracting from specifications for which significance was not even an objective (placebo tests or when trying to show an absence of effect). 
+
+### Data
+
+To run the analysis, I first retrieve the @brodeur_methods_2020 data from [OPENIPCSR](https://www.openicpsr.org/openicpsr/project/120246/version/V2/view) and store it locally. I load it and wrangle it. The authors fixed some of their data after the publication of the article (changes explained in the `Changelog.txt` file). I keep the most recent data.
+
+```{r wrangle_brodeur}
+data_brodeur_raw <- read_dta(here("data", "lit_review_econ", "brodeur_v2", "data", "MM Data.dta"))
+
+data_brodeur <- data_brodeur_raw |> 
+  mutate(
+    estimate = ifelse(!is.na(mu_new), mu_new, mu_orig),
+    estimate = abs(estimate), #sign does not matter here
+    se = ifelse(!is.na(sd_new), sd_new, sd_orig)
+  ) |> 
+  group_by(title) |> 
+  mutate(article_id = cur_group_id()) |> 
+  ungroup() |> 
+  select(method, estimate, se, article_id) |> 
+  filter(se > 0) |> 
+  mutate(
+    signif = (abs(estimate) > qnorm(0.975)*se)
+  )
+```
+
+### Brief exploratory data analysis
+
+After some filtering, there are `r nrow(data_brodeur)` estimates with associated p-values from `r length(unique(data_brodeur$article_id))` articles. `r data_brodeur |> filter(signif) |> nrow()` of these estimates are significant at the 5% confidence level. The distribution of the number of articles across journals is as follows:
+
+```{r explore_nb_journal, code_folding='Show the code used to generate the table'}
+data_brodeur_raw |> 
+  select(journal, title) |> 
+  distinct() |> 
+  count(journal) |> 
+  arrange(desc(n)) |> 
+  kbl(col.names = c("Journal", "Number of articles")) |> 
+  kable_paper(c("hover"), html_font = "Lora") |> 
+  scroll_box(width = "100%", height = "350px") 
+```
+
+The breakdown of the number of significant estimates by causal methods is:
+
+```{r explore_nb_method, code_folding='Show the code used to generate the table'}
+data_brodeur |> 
+  group_by(method) |> 
+  summarise(
+    n = n(),
+    n_signif = sum(signif, na.rm = TRUE)
+  ) %>% 
+  bind_rows(tibble(method = "Total", n = sum(.$n), n_signif = sum(.$n_signif))) |> 
+  kable(
+    col.names = c("Method", 
+                  "Number of estimates", 
+                  "Number of significant estimates")
+  )
+```
+
+## Overall power assessment
+
+I then explore the power of the literature to retrieve effects whose magnitude would be equal to half the published estimate, using the `retrodesign` package. The preferred results are the ones restricted to the `r data_brodeur |> filter(signif) |> nrow()` statistically significant estimates. 
+
+```{r retro_brodeur}
+retro_brodeur <- data_brodeur |> 
+  mutate(
+    retro = map2(estimate/2, se, \(x, y) retro_design_closed_form(x, y))
+    #retro_design returns a list with power, type_s, type_m
+  ) |> 
+  unnest_wider(retro) |> 
+  mutate(power = power * 100, type_s = type_s * 100)
+
+retro_brodeur_signif <- retro_brodeur |> 
+  filter(signif)
+```
+
+For this hypothetical effect size, we have:
+
+```{r power_calc, code_folding=TRUE}
+source(here("functions.R"))
+
+summary_power(retro_brodeur, lint_names = TRUE) |> 
+  mutate(Results = "All", .before = 1) |> 
+  bind_rows(
+    retro_brodeur |> 
+      filter(signif) |> 
+      summary_power(lint_names = TRUE) |> 
+      mutate(Results = "Significant", .before = 1)
+  ) |> 
+  kable()
+```
+
+The overall distribution of power for significant estimates is:
+
+```{r graph_distrib_power, code_folding=TRUE, fig.asp=0.8}
+retro_brodeur_signif |> 
+  ggplot(aes(x = power)) + 
+  # geom_density() + 
+  geom_histogram(bins = 100) + 
+  labs(
+    title = "Distribution of power in the causal inference literature",
+    subtitle = "Assuming a true effect size equal to half of the obtained estimate",
+    x = "Power",
+    y = "Count",
+    caption = "There are no design with very low power because insignificant results were filtered out"
+  ) +
+  xlim(c(0, NA)) 
+```
+
+This figure underlines clear heterogeneity across designs. A substantial share of these designs have more than 99% power to detect such effect (`r round(mean(retro_brodeur_signif$power > 99)*100, 0)`% of designs). Yet, only `r round(mean(retro_brodeur_signif$power > 80)*100)`% of these designs would have a power greater than the conventional 80% threshold. For one quarter of the studies, exaggeration would be greater than `r round(quantile(retro_brodeur_signif$type_m, 0.75), 1)`. 
+
+```{r retro_brodeur_full, echo=FALSE}
+retro_brodeur_full <- data_brodeur |> 
+  mutate(
+    retro = map2(estimate, se, \(x, y) retro_design_closed_form(x, y))
+  ) |> 
+  unnest_wider(retro) |> 
+  mutate(power = power * 100, type_s = type_s * 100) |> 
+  filter(signif)
+```
+
+Interestingly, restricting the sample to significant results, while the median power of to detect the estimate obtained itself would be `r round(median(retro_brodeur_full$power), 0)`%, only `r round(mean(retro_brodeur_full$power > 80)*100)`% of estimates would have a power greater to detect the estimate found in the analysis.
+
+**Power issues do not therefore concern all designs but can be substantial for some of them.** 
+
+Importantly, type-S does not seem to be a important concern here:
+
+```{r graph_distrib_type_s, code_folding=TRUE}
+retro_brodeur_signif |> 
+  ggplot(aes(x = type_s)) + 
+  # geom_density() + 
+  geom_histogram(bins = 50) + 
+  labs(
+    title = "Distribution of type-S in the causal inference literature",
+    subtitle = "Assuming a true effect size equal to half of the obtained estimate",
+    x = "Type S (%)",
+    y = "Count"
+  ) + 
+  xlim(c(-0.3, 10))
+```
+
+## Comparison across methods
+
+I then explore differences in exaggeration across methods. There are two ingredients in the recipe for exaggeration:
+
+1. Selection on significance
+1. Low statistical power
+
+<!-- A low statistical power leads the estimator to be imprecise and statistically significant estimates to be located in the tail of the distribution of estimates and to thus overestimate true effects. Publication bias corresponds to a larger probability of publishing estimates that come from this non-representative sample of estimates. In the absence of publication bias, low statistical power would not create exaggeration. -->
+
+In order to explore whether some causal identification methods are more prone to exaggeration than others, we can thus explore which ones are more subject to each of these ingredients. 
+
+### Differences of publication bias across methods
+
+Studying differences across methods in terms of selection on significance is the main goal of @brodeur_methods_2020. The paper shows that IV and to a lesser extent DiD are particularly problematic in this regard. RDD and RCT seem to be less prone to this issue.
+
+### Differences of statistical power and exaggeration across methods
+
+I decompose the analysis carried above by identification strategy. For each identification strategy, the median power and exaggeration is:
+
+```{r median_retro_brodeur, code_folding='Show the code used to generate the table'}
+retro_brodeur_signif |> 
+  group_by(method) |> 
+  summarise(
+    median_exagg = median(type_m),
+    median_power = median(power),
+    sd_of_power = sd(power),
+    percent_adequate_power = mean(power > 80)*100
+  ) |> 
+  rename_with(\(x) str_to_title(str_replace_all(x, "_", " "))) |>
+  kable()
+```
+
+There does not seem to be substantial differences in medians. If anything, RCT seem to perform slightly less well than the others and DID slightly better. 
+
+The distributions of power and exaggeration, by methods, are:
+
+```{r graph_retro_brodeur, code_folding='Show the code used to generate the graph', fig.asp=0.8, dpi=300}
+retro_brodeur_signif |> 
+  ggplot(aes(x = power, fill = method, color = method)) +
+  geom_density(alpha = 0.15, adjust = 0.5) +
+  # facet_wrap(~method, scales = "free_y") + 
+  labs(
+    title = "Distribution of hypothetical statistical power",
+    subtitle = "Comparison across identification strategies",
+    x = "Power (%)",
+    y = "Density", 
+    caption = "Hypothetical true effect equal to half of the estimate",
+    fill = NULL,
+    color = NULL
+  )
+
+retro_brodeur_signif |> 
+  # filter(exagg < 3) |> 
+  ggplot(aes(x = type_m, fill = method, color = method)) +
+  geom_density(alpha = 0.15) +
+  # facet_wrap(~method) + 
+  labs(
+    title = "Distribution of hypothetical exaggeration",
+    subtitle = "Comparison across identification strategies",
+    x = "Exaggeration ratio",
+    y = "Density", 
+    caption = "Hypothetical true effect equals to half of the estimate",
+    fill = NULL,
+    color = NULL
+  )
+
+# ggsave(here("images", "comparison", "exagg_brodeur.pdf"), height = 5, width = 8)
+```
+
+The results are rather similar across strategies. If anything, we notice that DID performs slightly better. However, if there is initially more exaggeration for one of the methods, considering hypothetical true effect sizes equal to half of the observed estimates would attenuate this difference.
+
+
+<!-- Test MDE -->
+
+<!-- ```{r} -->
+<!-- data_brodeur |>  -->
+<!--   mutate( -->
+<!--     MDE = 2.8*se, -->
+<!--     ratio = MDE/estimate -->
+<!--   ) |>  -->
+<!--   summarise( -->
+<!--     mean_ratio = median(ratio, na.rm = TRUE) -->
+<!--   ) -->
+<!-- ``` -->
+
+
+

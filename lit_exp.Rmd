@@ -1,0 +1,220 @@
+---
+title: "Exaggeration in experimental economics"
+description: "In this document, leveraging data form @camerer_evaluating_2016, I examine potential exaggeration in experimental economics using replication results as hypothetical true effect sizes. The experimental literature seems to display less exaggeration on average that non-experimental ones but this figure hides substantial heterogeneity, exaggeration being large for some studies."
+output: 
+  distill::distill_article:
+    toc: true
+    float: true
+# bibliography: paper/current_version/air_pollution.bib
+editor_options: 
+  chunk_output_type: console
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+```{r setup_comparison, include=FALSE, results='hide', warning=FALSE}
+library(knitr)
+opts_chunk$set(fig.path = "images/lit_exp/",
+               cache.path = "cache/",
+               cache = FALSE,
+               echo = TRUE, #set to false to hide code
+               message = FALSE,
+               warning = FALSE,
+               out.width = "85%",
+               dpi = 300,
+               fig.align = "center",
+               dev.args = list(bg="transparent"))  
+```  
+
+```{r packages_comparison, message=FALSE, warning=FALSE, code_folding='Show the packages used in this document'}
+library(tidyverse) 
+library(knitr) 
+library(mediocrethemes)
+library(here)
+library(retrodesign)
+library(haven)
+library(DT)
+library(kableExtra)
+
+set_mediocre_all(pal = "leo")
+```
+
+## Setting and data
+
+@camerer_evaluating_2016 replicate 18 experimental economics studies published in the *American Economic Review* and the *Quarterly Journal of Economics* between 2011 and 2014. They find that original studies on average overestimate the replicated effect by a factor of 1.5 and only 61% of the replication find a significant effect in the same direction as the original study.
+
+**In this document, I report and replicate their results and further explore exaggeration in the original studies.** This data allows to have a convincing estimate of the true effect (the replicated point estimate) and to evaluate the ability of the original design to accurately capture this estimate. 
+
+I retrieve the data from the [project website](http://experimentaleconreplications.com/scripts.html). I just ran their Stata script `create_studydetails.do` to generate their data set. Since the standard errors of the estimates are not reported in this data set, I recompute them based on a normal distribution.
+
+```{r load_data_camerer, code_folding=TRUE}
+data_camerer_raw <- read_dta("data/lit_review_econ/studydetails.dta") 
+
+data_camerer <- data_camerer_raw |>  
+  mutate(
+    se_orig = (eorigu95 - eorig)/qnorm(0.975),
+    se_rep = (erepu95 - erep)/qnorm(0.975),
+  ) |> 
+  select(
+    study, 
+    p_value_orig = porig, 
+    p_value_rep = prep, 
+    se_orig, 
+    se_rep, 
+    estimate_orig = eorig, 
+    estimate_rep = erep
+  ) |> 
+  mutate(
+    ratio = abs(estimate_orig/estimate_rep),
+    same_sign_signif = 
+      (sign(estimate_orig) == sign(estimate_rep)
+             & p_value_rep < 0.05)
+  )
+```
+
+## Replicability and Ratio Origingal/Replicated Estimate
+
+I first reproduce the results in @camerer_evaluating_2016, evaluating the proportion of studies that find results in the same direction as the original study. I also compute the median ratio of the original over the replicated estimate.
+
+```{r replicability, code_folding=TRUE}
+data_camerer |> 
+  mutate(same_sign_and_signif = ifelse(same_sign_signif, "Yes", "No")) |> 
+  group_by(same_sign_and_signif) %>%
+  summarise(
+    number = n(),
+    proportion = n()/nrow(.),
+    `median_ratio_orig/rep` = median(ratio),
+    `3rd_quartile_ratio_orig/rep` = quantile(ratio, 0.75)
+  ) |>
+  rename_with(\(x) str_to_title(str_replace_all(x, "_", " "))) |>
+  kable(digits = 2) 
+```
+
+The ratios of the original over the replicated estimate do not seem to be too large for studies that replicate but are more concerning for those that do not replicate:
+
+```{r distrib_ratio, code_folding=TRUE}
+data_camerer |> 
+  # filter(same_sign_and_signif) |> 
+  arrange(desc(ratio)) |>  
+  mutate(
+    same_sign = ifelse(sign(estimate_orig) == sign(estimate_rep), "✓", " "),
+    signif_rep = ifelse(p_value_rep < 0.05, "✓", " "),
+    signif_orig = ifelse(p_value_orig < 0.05, "✓", " ")
+  ) |> 
+  select(
+    study_id = study, 
+    `ratio_orig/rep` = ratio, 
+    same_sign, 
+    signif_rep,
+    signif_orig
+  ) |>
+  rename_with(\(x) str_to_title(str_replace_all(x, "_", " "))) |>
+  kable(digits = 2, align = "c") 
+```
+
+
+## Power Calculations
+
+### Power and Exaggeration
+
+I then compute the statistical power and exaggeration of the initial analysis. To do so, I assume that the true effect is equal to the effect found in the replication and compute the corresponding statistical power and exaggeration of the original study using the `retrodesign` package.
+
+```{r camerer_retro}
+retro_camerer <- data_camerer |> 
+  mutate(
+    retro = map2(estimate_rep, se_orig, \(x, y) retro_design_closed_form(x, y))
+    #retro_design returns a list with power, type_s, type_m
+  ) |> 
+  unnest_wider(retro) |> 
+  mutate(power = power * 100, type_s = type_s * 100)
+```
+
+For most studies, power and exaggeration are limited but some of them display limitations:
+
+```{r median_exagg, code_folding=TRUE}
+source(here("functions.R"))
+
+retro_camerer |> 
+  summary_power() |>
+  rename_with(\(x) str_to_title(str_replace_all(x, "_", " "))) |>
+  kable()
+```
+
+Plotting the whole distribution of exaggeration ratio and power clarifies this heterogeneity:
+
+```{r distrib_camerer_retro, code_folding=TRUE}
+retro_camerer |> 
+  filter(p_value_orig < 0.05) |> 
+  ggplot() +
+  geom_dotplot(aes(x = type_m), color = NA) +
+  labs(
+    title = "Distribution of the exaggeration ratio in the original studies",
+    subtitle = "If the true effect was equal to the replicated one",
+    x = "Exaggeration ratio (log scale)",
+    y = "Number of studies",
+    caption = "Each dot represents one study"
+  ) + 
+  scale_x_log10() +
+  scale_y_continuous(NULL, breaks = NULL) 
+
+retro_camerer |> 
+  ggplot() +
+  geom_dotplot(aes(x = power), color = NA) +
+  labs(
+    title = "Distribution of the power in the original studies",
+    subtitle = "If the true effect was equal to the replicated one",
+    x = "Power (%)",
+    y = "Number of studies",
+    caption = "Each dot represents one study"
+  ) +
+  scale_y_continuous(NULL, breaks = NULL) 
+```
+
+A non-negligible portion of the studies has a low power to detect the original results and are therefore likely to produce inflated statistically significant estimates. One study produces extremely large exaggeration.
+
+### Adequate Power
+
+I finally compute the proportion of original studies that would have adequate power as defined by the customary and arbitrary 80% threshold, still assuming that the true effect is equal to the replication one.
+
+```{r adequate_camerer, code_folding=TRUE}
+retro_camerer |> 
+  group_by(
+    adequate_power = ifelse(power >= 80, "Yes", "No")
+  ) %>%
+  summarise(
+    nb = n(),
+    prop = n()/nrow(.)
+  ) |> 
+  kable(col.names = c(
+    "Adequate power", 
+    "Number",
+    "Proportion"),
+    digits = 2
+  )
+```
+
+All these results show that even the experimental literature suffers from power and exaggeration issues, despite power being central to this literature. 
+
+<!-- ## Randomized Control Trials -->
+
+<!-- We want to look at replications of RCTs in Development Economics. To do so, we use [the list of replication papers put together by Sandip Sukhtankar](https://www.aeaweb.org/articles?id=10.1257/aer.p20171120). -->
+
+<!-- We gather the list of RCTs that have been replicated in Development Economics. -->
+
+<!-- ```{r rep_dvpt} -->
+<!-- rep_dvpt_raw <- read_dta(here("Misc", "replication_data_final.dta")) -->
+
+<!-- rep_dvpt <- rep_dvpt_raw |>  -->
+<!--   filter( (Replicated == "Replicated")) -->
+
+<!-- rep_dvpt |> count(Title) -->
+<!-- ``` -->
+
+
+
+
+
+

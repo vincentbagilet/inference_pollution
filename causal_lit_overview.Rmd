@@ -344,10 +344,10 @@ We then restrict the sample to studies published in economics journals. The figu
 ```{r graph_distribution_t_econ, echo=FALSE}
 graph_distrib_t_econ <- data_lit_causal_caliper %>%
   filter(field == "economics") %>%
-  ggplot(., aes(x = abs_z, y = ..density.., weight = weight)) + 
+  ggplot(., aes(x = abs_z, y = after_stat(density), weight = weight)) + 
   geom_histogram(bins = 50, colour = "white", alpha = 0.6) +
-  geom_density(bw = 0.4, fill = NA, size = 0.9) +
-  geom_vline(xintercept = 1.96, size = 0.9, colour = "#f07167") +
+  geom_density(bw = 0.4, fill = NA, linewidth = 0.9) +
+  geom_vline(xintercept = 1.96, linewidth = 0.9, colour = "#f07167") +
   scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
   labs(
     title = "Weighted Distribution of the z-statistics",
@@ -497,7 +497,7 @@ run_logit_caliper <- function(df, fml_name, sign_level = 0.05, window_width = 0.
   
    fml_str <- switch(fml_name,
     base  = "above ~ 1",
-    covar = "above ~ is_economics + is_mortality + recent + is_published + is_iv + is_reduced + is_did"
+    all = "above ~ is_economics + is_mortality + recent + is_published + is_iv + is_reduced + is_did"
   )
   
   res <- feglm(
@@ -515,7 +515,7 @@ caliper_logit_param <-
   expand_grid(
     sign_level = c(0.05, 0.1),
     window_width = c(0.20, 0.50),
-    fml_name = c("base", "covar")
+    fml_name = c("base", "all")
   )
 
 caliper_logit_res <- caliper_logit_param |> 
@@ -1016,183 +1016,182 @@ graph_retro_iv
 
 The median statistical power is `r summary_retro_iv$median[2]`% and the median exaggeration ratio is `r summary_retro_iv$median[1]`. `r round(prop_adequate*100, 2)`% of IV designs have adequate power (*i.e.* greater than 80%).
 
-# Publication bias correction
+<!-- # Publication bias correction -->
 
-Then, we implement [Andrews and Kasy (2019)](https://www.aeaweb.org/articles?id=10.1257/aer.20180310)'s correction for publication bias. 
+<!-- Then, we implement [Andrews and Kasy (2019)](https://www.aeaweb.org/articles?id=10.1257/aer.20180310)'s correction for publication bias.  -->
 
-```{r}
-library(MetaStudies)
+<!-- ```{r} -->
+<!-- library(MetaStudies) -->
 
-df <- data_lit_causal_std %>%
-  filter(control_outcome != 1) |> 
-  # filter(standardized_estimate != 0, standardized_standard_error != 0) |> 
-  filter(estimate != 0, standard_error != 0) |>
-  mutate(z_stat = estimate / standard_error)
-
-
-# Run Andrews-Kasy
-ms <- metastudies_estimation(
-  X         = df$estimate,
-  sigma     = df$standard_error,
-  cutoffs   = c(1.645, 1.96, 2.576),
-  symmetric = TRUE,
-  model     = "t"
-)
-
-ms$est_tab
-
-# Plot: publication probabilities (top) + latent density (bottom)
-estimates_plot(ms) 
-
-# Specification check: X-sigma independence in latent distribution
-metastudy_X_sigma_cors(ms)
-
-#Manual proba plot
-ms$dat |> 
-  as_tibble() |> 
-  janitor::clean_names() |> 
-  filter(z < 7) |> 
-  ggplot(aes(x = z, y = pub_prob)) + 
-  geom_line(linewidth = 1) + 
-  ylim(c(0, NA))
-
-# --- 2. Extract the step-function p(·) from the estimation -------------------
-
-# The estimated relative publication probabilities per |z| bin.
-# Last bin (|z| > 2.576) is normalized to 1.
-# We read them from est_tab: columns after the latent params are the bins.
-latent_cols <- intersect(c("µ", "sigma", "t", "df", "τ"), colnames(ms$est_tab))
-pub_cols    <- setdiff(colnames(ms$est_tab), latent_cols)
-pub_weights <- ms$est_tab["estimate", pub_cols]
-
-# Map from |z| to publication weight
-# Cutoffs in |z| space: 1.645, 1.96, 2.576
-# Bins: [0, 1.645], (1.645, 1.96], (1.96, 2.576], (2.576, Inf)
-z_cutoffs  <- c(1.645, 1.96, 2.576)
-bin_weights <- c(pub_weights, 1) # append 1 for the reference bin
-
-get_pub_weight <- function(z) {
-  bin <- findInterval(abs(z), c(0, z_cutoffs, Inf))
-  bin_weights[bin]
-}
+<!-- df <- data_lit_causal_std %>% -->
+<!--   filter(control_outcome != 1) |>  -->
+<!--   # filter(standardized_estimate != 0, standardized_standard_error != 0) |>  -->
+<!--   filter(estimate != 0, standard_error != 0) |> -->
+<!--   mutate(z_stat = estimate / standard_error) -->
 
 
-# --- 3. Per-study median-unbiased estimator (Proposition 1) ------------------
+<!-- # Run Andrews-Kasy -->
+<!-- ms <- metastudies_estimation( -->
+<!--   X         = df$estimate, -->
+<!--   sigma     = df$standard_error, -->
+<!--   cutoffs   = c(1.645, 1.96, 2.576), -->
+<!--   symmetric = TRUE, -->
+<!--   model     = "t" -->
+<!-- ) -->
 
-# For each study with observed z, find omega such that
-# F_{Z|Omega}(z | omega) = 0.5
-# where F is the CDF of the *truncated* (post-selection) distribution.
+<!-- ms$est_tab -->
 
-# CDF of the truncated z-distribution given omega and p(·)
-F_truncated <- function(z, omega, z_cuts, weights) {
-  # Numerator: integral from -Inf to z of p(t) * phi(t - omega) dt
-  # We break this into bins and sum
+<!-- # Plot: publication probabilities (top) + latent density (bottom) -->
+<!-- estimates_plot(ms)  -->
 
-  # All bin boundaries (symmetric around 0, plus -Inf and Inf)
-  all_bounds <- sort(c(-Inf, -rev(z_cuts), 0, z_cuts, Inf))
-  n_bins     <- length(all_bounds) - 1
+<!--          # Specification check: X-sigma independence in latent distribution -->
+<!-- metastudy_X_sigma_cors(ms) -->
 
-  # Weight for each bin
-  get_w <- function(z_val) {
-    bin <- findInterval(abs(z_val), c(0, z_cuts, Inf))
-    weights[bin]
-  }
+<!-- #Manual proba plot -->
+<!-- ms$dat |>  -->
+<!--   as_tibble() |>  -->
+<!--   janitor::clean_names() |>  -->
+<!--   filter(z < 7) |>  -->
+<!--   ggplot(aes(x = z, y = pub_prob)) +  -->
+<!--   geom_line(linewidth = 1) +  -->
+<!--   ylim(c(0, NA)) -->
 
-  numerator   <- 0
-  denominator <- 0
+<!-- # --- 2. Extract the step-function p(·) from the estimation ------------------- -->
 
-  for (k in seq_len(n_bins)) {
-    lo <- all_bounds[k]
-    hi <- all_bounds[k + 1]
-    mid <- if (is.finite(lo) & is.finite(hi)) (lo + hi) / 2 else
-           if (is.finite(lo)) lo + 1 else hi - 1
-    w_k <- get_w(mid)
+<!-- # The estimated relative publication probabilities per |z| bin. -->
+<!-- # Last bin (|z| > 2.576) is normalized to 1. -->
+<!-- # We read them from est_tab: columns after the latent params are the bins. -->
+<!-- latent_cols <- intersect(c("µ", "sigma", "t", "df", "τ"), colnames(ms$est_tab)) -->
+<!-- pub_cols    <- setdiff(colnames(ms$est_tab), latent_cols) -->
+<!-- pub_weights <- ms$est_tab["estimate", pub_cols] -->
 
-    # Integral of phi(t - omega) from lo to hi
-    prob_k <- pnorm(hi, mean = omega, sd = 1) - pnorm(lo, mean = omega, sd = 1)
-    denominator <- denominator + w_k * prob_k
+<!-- # Map from |z| to publication weight -->
+<!-- # Cutoffs in |z| space: 1.645, 1.96, 2.576 -->
+<!-- # Bins: [0, 1.645], (1.645, 1.96], (1.96, 2.576], (2.576, Inf) -->
+<!-- z_cutoffs  <- c(1.645, 1.96, 2.576) -->
+<!-- bin_weights <- c(pub_weights, 1) # append 1 for the reference bin -->
 
-    # For numerator, cap the upper bound at z
-    hi_num <- min(hi, z)
-    if (hi_num > lo) {
-      prob_num <- pnorm(hi_num, mean = omega, sd = 1) - pnorm(lo, mean = omega, sd = 1)
-      numerator <- numerator + w_k * prob_num
-    }
-  }
-
-  numerator / denominator
-}
-
-# Find omega such that F_truncated(z, omega) = 0.5
-median_unbiased <- function(z, z_cuts, weights) {
-  # Root-finding: F(z | omega) - 0.5 = 0
-  # F is decreasing in omega (larger true effect -> z is less extreme relative to it)
-  obj <- function(omega) F_truncated(z, omega, z_cuts, weights) - 0.5
-  tryCatch(
-    uniroot(obj, interval = c(-20, 20), tol = 1e-6)$root,
-    error = \(e) NA_real_
-  )
-}
+<!-- get_pub_weight <- function(z) { -->
+<!--   bin <- findInterval(abs(z), c(0, z_cutoffs, Inf)) -->
+<!--   bin_weights[bin] -->
+<!-- } -->
 
 
-# --- 4. Apply to each study --------------------------------------------------
+<!-- # --- 3. Per-study median-unbiased estimator (Proposition 1) ------------------ -->
 
-# Work in z-space, then convert back
-df <- df |>
-  mutate(
-    omega_corrected = map_dbl(z_stat, \(z) {
-      median_unbiased(z, z_cutoffs, bin_weights)
-    }),
-    # Convert back to original units: theta = omega * sigma
-    estimate_corrected = omega_corrected * standard_error
-  )
+<!-- # For each study with observed z, find omega such that -->
+<!-- # F_{Z|Omega}(z | omega) = 0.5 -->
+<!-- # where F is the CDF of the *truncated* (post-selection) distribution. -->
 
-# Compare original vs. corrected
-df |>
-  filter(!is.na(omega_corrected)) |>
-  summarise(
-    mean_original  = mean(estimate),
-    mean_corrected = mean(estimate_corrected),
-    median_original  = median(abs(z_stat)),
-    median_corrected = median(abs(omega_corrected)),
-    media_correction_ratio = median(abs(z_stat)/abs(omega_corrected))
-  ) 
+<!-- # CDF of the truncated z-distribution given omega and p(·) -->
+<!-- F_truncated <- function(z, omega, z_cuts, weights) { -->
+<!--   # Numerator: integral from -Inf to z of p(t) * phi(t - omega) dt -->
+<!--   # We break this into bins and sum -->
 
-# Plot: original vs. corrected z-statistics
-df |>
-  filter(!is.na(omega_corrected)) |>
-  ggplot(aes(z_stat, omega_corrected)) +
-  geom_point(alpha = 0.5, color = "#2196b3") +
-  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "gray40") +
-  labs(x = "Original z-statistic", y = "Corrected ω (median-unbiased)") +
-  theme_minimal(base_size = 13)
+<!--   # All bin boundaries (symmetric around 0, plus -Inf and Inf) -->
+<!--   all_bounds <- sort(c(-Inf, -rev(z_cuts), 0, z_cuts, Inf)) -->
+<!--   n_bins     <- length(all_bounds) - 1 -->
+
+<!--   # Weight for each bin -->
+<!--   get_w <- function(z_val) { -->
+<!--     bin <- findInterval(abs(z_val), c(0, z_cuts, Inf)) -->
+<!--     weights[bin] -->
+<!--   } -->
+
+<!--   numerator   <- 0 -->
+<!--   denominator <- 0 -->
+
+<!--   for (k in seq_len(n_bins)) { -->
+<!--     lo <- all_bounds[k] -->
+<!--     hi <- all_bounds[k + 1] -->
+<!--     mid <- if (is.finite(lo) & is.finite(hi)) (lo + hi) / 2 else -->
+<!--            if (is.finite(lo)) lo + 1 else hi - 1 -->
+<!--     w_k <- get_w(mid) -->
+
+<!--     # Integral of phi(t - omega) from lo to hi -->
+<!--     prob_k <- pnorm(hi, mean = omega, sd = 1) - pnorm(lo, mean = omega, sd = 1) -->
+<!--     denominator <- denominator + w_k * prob_k -->
+
+<!--     # For numerator, cap the upper bound at z -->
+<!--     hi_num <- min(hi, z) -->
+<!--     if (hi_num > lo) { -->
+<!--       prob_num <- pnorm(hi_num, mean = omega, sd = 1) - pnorm(lo, mean = omega, sd = 1) -->
+<!--       numerator <- numerator + w_k * prob_num -->
+<!--     } -->
+<!--   } -->
+
+<!--   numerator / denominator -->
+<!-- } -->
+
+<!-- # Find omega such that F_truncated(z, omega) = 0.5 -->
+<!-- median_unbiased <- function(z, z_cuts, weights) { -->
+<!--   # Root-finding: F(z | omega) - 0.5 = 0 -->
+<!--   # F is decreasing in omega (larger true effect -> z is less extreme relative to it) -->
+<!--   obj <- function(omega) F_truncated(z, omega, z_cuts, weights) - 0.5 -->
+<!--   tryCatch( -->
+<!--     uniroot(obj, interval = c(-20, 20), tol = 1e-6)$root, -->
+<!--     error = \(e) NA_real_ -->
+<!--   ) -->
+<!-- } -->
 
 
-# --- 5. Publication probability CI plot --------------------------------------
+<!-- # --- 4. Apply to each study -------------------------------------------------- -->
 
-pub_probs <- tibble(
-  bin = pub_cols,
-  est = ms$est_tab["estimate", pub_cols],
-  se  = ms$est_tab["standard error", pub_cols]
-) |>
-  mutate(
-    ci_lo = est - 1.96 * se,
-    ci_hi = est + 1.96 * se,
-    bin   = fct_inorder(bin)
-  )
+<!-- # Work in z-space, then convert back -->
+<!-- df <- df |> -->
+<!--   mutate( -->
+<!--     omega_corrected = map_dbl(z_stat, \(z) { -->
+<!--       median_unbiased(z, z_cutoffs, bin_weights) -->
+<!--     }), -->
+<!--     # Convert back to original units: theta = omega * sigma -->
+<!--     estimate_corrected = omega_corrected * standard_error -->
+<!--   ) -->
 
-ggplot(pub_probs, aes(bin, est)) +
-  geom_point(size = 3, color = "#2196b3") +
-  geom_errorbar(aes(ymin = ci_lo, ymax = ci_hi), width = 0.2, color = "#2196b3") +
-  geom_hline(yintercept = 1, linetype = "dashed", color = "gray40") +
-  labs(
-    x = "|z|-statistic bin (relative to |z| > 2.576 = 1)",
-    y = "Relative publication probability",
-    caption = "Dashed line = no selection."
-  ) +
-  theme_minimal(base_size = 13) +
-  theme(axis.text.x = element_text(angle = 25, hjust = 1))
-```
+<!-- # Compare original vs. corrected -->
+<!-- df |> -->
+<!--   filter(!is.na(omega_corrected)) |> -->
+<!--   summarise( -->
+<!--     mean_original  = mean(estimate), -->
+<!--     mean_corrected = mean(estimate_corrected), -->
+<!--     median_original  = median(abs(z_stat)), -->
+<!--     median_corrected = median(abs(omega_corrected)), -->
+<!--     media_correction_ratio = median(abs(z_stat)/abs(omega_corrected)) -->
+<!--   )  -->
+
+<!-- # Plot: original vs. corrected z-statistics -->
+<!-- df |> -->
+<!--   filter(!is.na(omega_corrected)) |> -->
+<!--   ggplot(aes(z_stat, omega_corrected)) + -->
+<!--   geom_point(alpha = 0.5, color = "#2196b3") + -->
+<!--   geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "gray40") + -->
+<!--   labs(x = "Original z-statistic", y = "Corrected ω (median-unbiased)")  -->
+
+
+<!-- # --- 5. Publication probability CI plot -------------------------------------- -->
+
+<!-- pub_probs <- tibble( -->
+<!--   bin = pub_cols, -->
+<!--   est = ms$est_tab["estimate", pub_cols], -->
+<!--   se  = ms$est_tab["standard error", pub_cols] -->
+<!-- ) |> -->
+<!--   mutate( -->
+<!--     ci_lo = est - 1.96 * se, -->
+<!--     ci_hi = est + 1.96 * se, -->
+<!--     bin   = fct_inorder(bin) -->
+<!--   ) -->
+
+<!-- ggplot(pub_probs, aes(bin, est)) + -->
+<!--   geom_point(size = 3, color = "#2196b3") + -->
+<!--   geom_linerange(aes(ymin = ci_lo, ymax = ci_hi), linewidth = 0.8, color = "#2196b3") + -->
+<!--   geom_hline(yintercept = 1, linetype = "dashed", color = "gray40") + -->
+<!--   labs( -->
+<!--     x = "|z|-statistic bin (relative to |z| > 2.576 = 1)", -->
+<!--     y = "Relative publication probability", -->
+<!--     caption = "Dashed line = no selection." -->
+<!--   ) + -->
+<!--   # theme_minimal(base_size = 13) + -->
+<!--   theme(axis.text.x = element_text(angle = 25, hjust = 1)) -->
+<!-- ``` -->
 
 
 
