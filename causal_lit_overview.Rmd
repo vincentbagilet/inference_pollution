@@ -723,7 +723,7 @@ We define the true effect sizes as a decreasing fraction of the estimates. We wa
 
 ```{r data_for_retrodesign, echo=TRUE, code_folding=FALSE}
 # test exaggeration and type s errors
-data_retrodesign <- data_lit_causal_std %>%
+data_retro <- data_lit_causal_std %>%
   # drop control outcomes
   filter(control_outcome == 0) %>%
   # drop conventional time series models
@@ -733,7 +733,7 @@ data_retrodesign <- data_lit_causal_std %>%
       "conventional time series - suggestive evidence"
     )
   )) %>%
-  select(paper_label, paper_estimate_id, estimate, standard_error) %>%
+  # select(paper_label, paper_estimate_id, estimate, standard_error, sample_size) %>%
   # select statistical significant estimates at the 5% level
   filter(abs(estimate / standard_error) >= 1.96)
 ```
@@ -742,7 +742,7 @@ For each study, we compute the statistical power, the exaggeration ratio and the
 
 ```{r run_retrodesign, echo = TRUE, code_folding=FALSE}
 # run retrospective power analysis for decreasing effect sizes
-data_retrodesign_fraction <- data_retrodesign |> 
+data_retro_frac_tidy <- data_retro |> 
   crossing(percentage = seq(from = 30, to = 100) / 100) |> 
   mutate(hypothetical_effect_size = percentage * estimate) |> 
   mutate(
@@ -751,7 +751,9 @@ data_retrodesign_fraction <- data_retrodesign |>
     #retro_design returns a list with power, type_s, type_m
   ) |> 
   unnest_wider(retro) |> 
-  mutate(power = power * 100) |> 
+  mutate(power = power * 100) 
+
+data_retro_frac <- data_retro_frac_tidy |> 
   pivot_longer(
     cols = c(power, type_m, type_s),
     names_to = "metric",
@@ -766,7 +768,7 @@ data_retrodesign_fraction <- data_retrodesign |>
   )
 
 # compute mean values of metrics for the entire literature
-data_retrodesign_fraction_mean <- data_retrodesign_fraction %>%
+data_retro_frac_mean <- data_retro_frac %>%
   group_by(metric, percentage) %>%
   summarise(median_value = median(value))
 ```
@@ -775,7 +777,7 @@ We then plot the power and the exaggeration ratio metrics for the different scen
   
 ```{r graph_retrodesign_causal_inf}
 # make the graph of the retrospective power analysis
-graph_retrodesign_causal_inf <- data_retrodesign_fraction %>%
+graph_retrodesign_causal_inf <- data_retro_frac %>%
   filter(metric != "Type S Error (%)") %>%
   ggplot(., aes(
     x = percentage * 100,
@@ -784,7 +786,7 @@ graph_retrodesign_causal_inf <- data_retrodesign_fraction %>%
   )) +
   geom_line(colour = "#adb5bd", alpha = 0.2) +
   geom_line(
-    data = data_retrodesign_fraction_mean %>% 
+    data = data_retro_frac_mean %>% 
       filter(metric != "Type S Error (%)"),
     aes(
       x = percentage * 100,
@@ -830,7 +832,7 @@ graph_retrodesign_causal_inf
 We display below summary statistics for the scenario where true effect sizes are equal to the observed estimates reduced by 25%:
   
 ```{r}
-data_retrodesign_fraction %>%
+data_retro_frac %>%
   filter(percentage == 0.75) %>%
   group_by(metric) %>%
   summarise(
@@ -850,7 +852,7 @@ data_retrodesign_fraction %>%
 And here when estimates are divided by two:
 
 ```{r}
-data_retrodesign_fraction %>%
+data_retro_frac %>%
   filter(percentage == 0.5) %>%
   group_by(metric) %>%
   summarise(
@@ -867,6 +869,37 @@ data_retrodesign_fraction %>%
   kable_styling(position = "center")
 ```
 
+### Effect Size and Exaggeration
+
+We now explore the relationship between our power metrics and the number of observations, for an hypothetical effect equal to half the point estimate.
+
+```{r exagg_sample_size, fig.asp=0.8}
+data_retro_frac |> 
+  filter(percentage == 0.5) |> 
+  # filter(str_detect(metric, "Exaggeration")) |> 
+  ggplot(aes(x = sample_size, y = value)) + 
+  geom_point() + 
+  scale_x_log10() +
+  geom_smooth() +
+  facet_wrap(~ metric, scales = "free_y") + 
+  labs(
+    title = "Relationship between the metrics of interest and sample size",
+    x = "Sample Size",
+    y = NULL
+  )
+```
+
+We also run a quick and simple regression
+
+```{r reg_sample_size}
+reg <- 
+  feols(
+    data = data_retro_frac_tidy, 
+    c(power, type_m) ~ log(sample_size), vcov = ~ paper_label
+  )
+
+modelsummary(reg, gof_omit = "IC|Adj|Log")
+```
 
 ### OLS Estimates as True Effect Sizes
 
@@ -883,7 +916,9 @@ data_iv <- data_lit_causal_std %>%
     outcome,
     independent_variable,
     estimate,
-    standard_error
+    standard_error,
+    sample_size,
+    first_stage_statistic
   ) %>%
   filter(empirical_strategy == "instrumental variable") %>%
   filter(abs(estimate / standard_error) >= 1.96) %>%
@@ -1015,6 +1050,38 @@ graph_retro_iv
 ```
 
 The median statistical power is `r summary_retro_iv$median[2]`% and the median exaggeration ratio is `r summary_retro_iv$median[1]`. `r round(prop_adequate*100, 2)`% of IV designs have adequate power (*i.e.* greater than 80%).
+
+We also explore how this evolves with the number of observation.
+
+```{r exagg_sample_size_iv, fig.asp=0.8}
+data_retro_iv |> 
+  # filter(percentage == 0.5) |> 
+  # filter(str_detect(metric, "Exaggeration")) |> 
+  ggplot(aes(x = sample_size, y = value)) + 
+  geom_point() + 
+  scale_x_log10() +
+  geom_smooth() +
+  facet_wrap(~ metric, scales = "free_y") + 
+  labs(
+    title = "Relationship between the metrics of interest and sample size",
+    x = "Sample Size",
+    y = NULL
+  )
+```
+
+We also run a quick and simple regression:
+
+```{r reg_sample_size_iv}
+reg_iv <- data_retro_iv |> 
+  # pivot_wider(values_from = value, names_from = metric) |> 
+  feols(
+    data = , 
+    c(power, type_m) ~ log(sample_size), vcov = ~ paper_label
+  )
+
+modelsummary(reg_iv, gof_omit = "IC|Adj|Log")
+```
+
 
 <!-- # Publication bias correction -->
 

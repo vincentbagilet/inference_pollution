@@ -14,6 +14,11 @@
   and Shocks to Worker Productivity.'' {\em Journal of Political Economy},
   130(1):~1--47.
 
+\harvarditem[{Aguilar-Gomez}]{Sandra
+  {Aguilar-Gomez}}{2020}{aguilar2020adaptation}
+{\bf {Aguilar-Gomez}, Sandra.} 2020. ``Adaptation and Mitigation of Pollution:
+  Evidence from Air Quality Warnings.''
+
 \harvarditem[Alto{\`e} et~al.]{Gianmarco Alto{\`e}, Giulia Bertoldo, Claudio
   Zandonella~Callegher, Enrico Toffalini, Antonio Calcagn{\`i}, Livio Finos
   \harvardand\ Massimiliano Pastore}{2020}{altoe_enhancing_2020}
@@ -30,11 +35,10 @@
   Replication Crisis}} If {{We Don}}'t {{Expect Replication}}.'' {\em The
   American Statistician}, 73(sup1):~262--270.
 
-\harvarditem[Anderson, Hyun \harvardand\ Lee]{Michael~L Anderson, Minwoo Hyun
-  \harvardand\ Jaecheol Lee}{2022}{anderson2022bounds}
-{\bf Anderson, Michael~L, Minwoo Hyun, and Jaecheol Lee.} 2022. ``Bounds,
-  Benefits, and Bad Air: {{Welfare}} Impacts of Pollution Alerts.'' National
-  Bureau of Economic Research.
+\harvarditem[Anderson, Hyun \harvardand\ Lee]{Michael~L. Anderson, Minwoo Hyun
+  \harvardand\ Jaecheol Lee}{2022}{anderson_bounds_2022}
+{\bf Anderson, Michael~L., Minwoo Hyun, and Jaecheol Lee.} 2022. ``Bounds,
+  {{Benefits}}, and {{Bad Air}}: {{Welfare Impacts}} of {{Pollution Alerts}}.''
 
 \harvarditem[Andrews \harvardand\ Kasy]{Isaiah Andrews \harvardand\ Maximilian
   Kasy}{2019}{andrews_identification_2019}
@@ -202,7 +206,8 @@
   Frank \harvardand\ Yaniv Reingewertz}{2015}{ebenstein_particulate_2015}
 {\bf Ebenstein, Avraham, Eyal Frank, and Yaniv Reingewertz.} 2015.
   ``Particulate {{Matter Concentrations}}, {{Sandstorms}} and {{Respiratory
-  Hospital Admissions}} in {{Israel}}.'' 17:~6.
+  Hospital Admissions}} in {{Israel}}.'' {\em The Israel Medical Association
+  journal}, 17:~6.
 
 \harvarditem[Ebenstein, Lavy \harvardand\ Roth]{Avraham Ebenstein, Victor Lavy
   \harvardand\ Sefi Roth}{2016}{ebenstein_long-run_2016}
@@ -270,14 +275,14 @@
 
 \harvarditem[Griffin et~al.]{Beth~Ann Griffin, Megan~S. Schuler, Elizabeth~A.
   Stuart, Stephen Patrick, Elizabeth McNeer, Rosanna Smart, David Powell,
-  Bradley~D. Stein, Terry Schell \harvardand\ Rosalie~L.
+  Bradley~D. Stein, Terry~L. Schell \harvardand\ Rosalie~Liccardo
   Pacula}{2021}{griffin_moving_2021}
 {\bf Griffin, Beth~Ann, Megan~S. Schuler, Elizabeth~A. Stuart, Stephen Patrick,
-  Elizabeth McNeer, Rosanna Smart, David Powell, Bradley~D. Stein, Terry
-  Schell, and Rosalie~L. Pacula.} 2021. ``Moving beyond the Classic
-  Difference-in-Differences Model: {{A}} Simulation Study Comparing Statistical
-  Methods for Estimating Effectiveness of State-Level Policies.'' {\em
-  arXiv:2003.12008 [stat]}.
+  Elizabeth McNeer, Rosanna Smart, David Powell, Bradley~D. Stein, Terry~L.
+  Schell, and Rosalie~Liccardo Pacula.} 2021. ``Moving beyond the Classic
+  Difference-in-Differences Model: A Simulation Study Comparing Statistical
+  Methods for Estimating Effectiveness of State-Level Policies.'' {\em BMC
+  Medical Research Methodology}, 21(1):~279.
 
 \harvarditem[Guidetti, Pereda \harvardand\ Severnini]{Bruna Guidetti, Paula
   Pereda \harvardand\ Edson Severnini}{2021}{guidetti_placebo_2021}
@@ -292,9 +297,9 @@
   {{Using Volcanic Eruptions}} to {{Estimate}} the {{Health Costs}} of
   {{Particulates}}.'' {\em The Economic Journal}, 129(620):~1782--1816.
 
-\harvarditem[Hanlon]{W~Walker Hanlon}{2018}{hanlon2018london}
-{\bf Hanlon, W~Walker.} 2018. ``London Fog: A Century of Pollution and
-  Mortality, 1866-1965.'' {\em The Review of Economics and Statistics}, 1--49.
+\harvarditem[Hanlon]{W.~Walker Hanlon}{2018}{hanlon_london_2018}
+{\bf Hanlon, W.~Walker.} 2018. ``London {{Fog}}: {{A Century}} of {{Pollution}}
+  and {{Mortality}}, 1866-1965.''
 
 \harvarditem[He, Fan \harvardand\ Zhou]{Guojun He, Maoyong Fan \harvardand\
   Maigeng Zhou}{2016}{he_effect_2016}
@@ -308,11 +313,6 @@
 {\bf He, Guojun, Tong Liu, and Maigeng Zhou.} 2020. ``Straw Burning, {{PM2}}.5,
   and Death: {{Evidence}} from {{China}}.'' {\em Journal of Development
   Economics}, 145:~102468.
-
-\harvarditem[Hern{\'a}n]{Miguel~A. Hern{\'a}n}{2022}{hernan_causal_2022}
-{\bf Hern{\'a}n, Miguel~A.} 2022. ``Causal Analyses of Existing Databases: No
-  Power Calculations Required.'' {\em Journal of Clinical Epidemiology},
-  144:~203--205.
 
 \harvarditem[Herrnstadt et~al.]{Evan Herrnstadt, Anthony Heyes, Erich
   Muehlegger \harvardand\ Soodeh Saberian}{2021}{herrnstadt_air_2021}
@@ -450,8 +450,8 @@
 \harvarditem[Peng \harvardand\ Dominici]{Roger~D Peng \harvardand\ Francesca
   Dominici}{2008}{peng2008statistical}
 {\bf Peng, Roger~D, and Francesca Dominici.} 2008. ``Statistical Methods for
-  Environmental Epidemiology with {{R}}.'' {\em R: a case study in air
-  pollution and health}.
+  Environmental Epidemiology with {{R}}: {{A Case Study}} in {{Air Pollution}}
+  and {{Health}}.'' {\em Springer}, 144.
 
 \harvarditem[Peng, Dominici \harvardand\ Louis]{Roger~D Peng, Francesca
   Dominici \harvardand\ Thomas~A Louis}{2006}{peng2006model}
@@ -460,9 +460,9 @@
   of the Royal Statistical Society: Series A (Statistics in Society)},
   169(2):~179--203.
 
-\harvarditem[Romer]{David Romer}{2020}{romer2020praise}
-{\bf Romer, David.} 2020. ``In Praise of Confidence Intervals.'' Vol. 110,
-  55--60.
+\harvarditem[Romer]{David Romer}{2020}{romer_praise_2020}
+{\bf Romer, David.} 2020. ``In {{Praise}} of {{Confidence Intervals}}.'' {\em
+  AEA Papers and Proceedings}, 110:~55--60.
 
 \harvarditem[Rosenthal]{Robert Rosenthal}{1979}{rosenthal_file_1979}
 {\bf Rosenthal, Robert.} 1979. ``The File Drawer Problem and Tolerance for Null
@@ -625,6 +625,6 @@
   Cator}{2021}{zwet_significance_2021}
 {\bf Zwet, Erik~W., and Eric~A. Cator.} 2021. ``The Significance Filter, the
   Winner's Curse and the Need to Shrink.'' {\em Statistica Neerlandica},
-  stan.12241.
+  75(4):~437--452.
 
 \end{thebibliography}
